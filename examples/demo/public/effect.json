@@ -114,6 +114,7 @@
         "rotation": 0
       },
       "modifiers": {
+        "drag": { "magnitude": 0, "spread": 0, "useDirection": false, "rotation": 0 },
         "gravity": {
           "x": 0,
           "y": 160

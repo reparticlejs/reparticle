@@ -92,6 +92,11 @@ export async function createPreview(
         (current.heightCurve !== 'constant' &&
           patch.height !== undefined &&
           patch.height !== current.height);
+      const dragChanged =
+        (patch.dragCurve !== undefined && patch.dragCurve !== current.dragCurve) ||
+        (current.dragCurve !== 'constant' &&
+          patch.drag !== undefined &&
+          patch.drag !== current.drag);
       const spaceChanged = patch.space !== undefined && patch.space !== current.space;
       const modeChanged = patch.playMode !== undefined && patch.playMode !== current.playMode;
       const delayChanged =
@@ -188,6 +193,7 @@ export async function createPreview(
         diameterCurveChanged ||
         widthCurveChanged ||
         heightCurveChanged ||
+        dragChanged ||
         spaceChanged ||
         rateSpreadChanged ||
         durationChanged ||

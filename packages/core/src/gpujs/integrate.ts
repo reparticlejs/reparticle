@@ -1,5 +1,6 @@
 import type { KernelContext, ParticleTexel, ParticleTexture } from '#types/layout.js';
 
+import { applyDrag } from '../behaviors/drag';
 import { applyGravity } from '../behaviors/gravity';
 import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { advancePosition, advanceVelocity } from '../behaviors/motion';
@@ -12,7 +13,7 @@ import { spawnRotation } from './spawn-rotation';
 
 /**
  * GPU storage adapter: map this output texel to a particle, then apply its behavior.
- * All three bands read the previous texture so position and lifetime agree on spawning.
+ * All four bands read the previous texture so position and lifetime agree on spawning.
  * The texture dimensions guarantee these indices; non-null assertions express that contract.
  */
 export function integrate(
@@ -54,12 +55,24 @@ export function integrate(
   emitterCosine: number,
   emitterSine: number,
   emitterScale: number,
+  dragMagnitude: number,
+  dragSpread: number,
+  dragDirectional: number,
+  dragX: number,
+  dragY: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
   const spawnOffset = (particleId - spawnStart + this.constants.capacity) % this.constants.capacity;
   const properties = state[particleRow + this.constants.rows]![this.thread.x]!;
   const isSpawning = particleId < this.constants.capacity && spawnOffset < spawnCount;
+
+  if (this.thread.y >= this.constants.rows * 3) {
+    if (isSpawning) {
+      return [propertyVariation(particleId, seed, 14), 0, 0, 0];
+    }
+    return state[particleRow + this.constants.rows * 3]![this.thread.x]!;
+  }
 
   // Color texel: initialRed, initialGreen, initialBlue, initialAlpha.
   if (this.thread.y >= this.constants.rows * 2) {
@@ -97,11 +110,31 @@ export function integrate(
     }
     const sampledSpeed =
       (speed + propertyVariation(particleId, seed, 1) * speedSpread) * emitterScale;
+    const birthX =
+      (emitterCosine * spawned[2] - emitterSine * spawned[3]) * sampledSpeed + inheritedVelocityX;
+    const birthY =
+      (emitterSine * spawned[2] + emitterCosine * spawned[3]) * sampledSpeed + inheritedVelocityY;
+    const birthProjection = birthX * dragX + birthY * dragY;
+    const birthFactor = propertyVariation(particleId, seed, 14);
     return [
       emitterX + (emitterCosine * spawned[0] - emitterSine * spawned[1]) * emitterScale,
       emitterY + (emitterSine * spawned[0] + emitterCosine * spawned[1]) * emitterScale,
-      (emitterCosine * spawned[2] - emitterSine * spawned[3]) * sampledSpeed + inheritedVelocityX,
-      (emitterSine * spawned[2] + emitterCosine * spawned[3]) * sampledSpeed + inheritedVelocityY,
+      applyDrag(
+        birthX,
+        dragDirectional > 0.5 ? birthProjection * dragX : birthX,
+        dragMagnitude,
+        dragSpread,
+        birthFactor,
+        seconds,
+      ),
+      applyDrag(
+        birthY,
+        dragDirectional > 0.5 ? birthProjection * dragY : birthY,
+        dragMagnitude,
+        dragSpread,
+        birthFactor,
+        seconds,
+      ),
     ];
   }
 
@@ -121,13 +154,37 @@ export function integrate(
     return [x, y, 0, 0];
   }
 
-  // Accumulate modifiers first, then integrate each axis exactly once.
+  // Gravity precedes drag. Keep the existing position integrator, adding drag's velocity delta.
   const accelerationX = applyGravity(0, 0);
   const accelerationY = applyGravity(0, gravity);
+  const acceleratedX = advanceVelocity(velocityX, accelerationX, seconds);
+  const acceleratedY = advanceVelocity(velocityY, accelerationY, seconds);
+  let modifierState = [0, 0, 0, 0];
+  if (dragSpread !== 0) {
+    modifierState = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
+  }
+  const factor = modifierState[0]!;
+  const projection = acceleratedX * dragX + acceleratedY * dragY;
+  const dampedX = applyDrag(
+    acceleratedX,
+    dragDirectional > 0.5 ? projection * dragX : acceleratedX,
+    dragMagnitude,
+    dragSpread,
+    factor,
+    seconds,
+  );
+  const dampedY = applyDrag(
+    acceleratedY,
+    dragDirectional > 0.5 ? projection * dragY : acceleratedY,
+    dragMagnitude,
+    dragSpread,
+    factor,
+    seconds,
+  );
   return [
-    advancePosition(x, velocityX, accelerationX, seconds),
-    advancePosition(y, velocityY, accelerationY, seconds),
-    advanceVelocity(velocityX, accelerationX, seconds),
-    advanceVelocity(velocityY, accelerationY, seconds),
+    advancePosition(x, velocityX, accelerationX, seconds) + (dampedX - acceleratedX) * seconds,
+    advancePosition(y, velocityY, accelerationY, seconds) + (dampedY - acceleratedY) * seconds,
+    dampedX,
+    dampedY,
   ];
 }

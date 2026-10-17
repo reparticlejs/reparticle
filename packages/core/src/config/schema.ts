@@ -1,5 +1,6 @@
 import {
   strictObject,
+  boolean,
   number,
   int,
   string,
@@ -66,7 +67,16 @@ const initialPropertiesSchema = strictObject({
 });
 
 const gravitySchema = strictObject({ x: literal(0), y: number() });
-const modifiersSchema = strictObject({ gravity: gravitySchema });
+const dragSchema = strictObject({
+  magnitude: scalarPropertySchema.default(0),
+  spread: number().nonnegative().default(0),
+  useDirection: boolean().default(false),
+  rotation: number().default(0),
+});
+const modifiersSchema = strictObject({
+  gravity: gravitySchema,
+  drag: dragSchema.default({ magnitude: 0, spread: 0, useDirection: false, rotation: 0 }),
+});
 
 /** Numeric updates only; shape type, identity, capacity and seed require recreation. */
 export const emitterParametersSchema = strictObject({
@@ -112,7 +122,17 @@ export const emitterParametersSchema = strictObject({
       'Initial parameter values must be numbers',
     )
     .optional(),
-  modifiers: strictObject({ gravity: gravitySchema.partial().optional() }).optional(),
+  modifiers: strictObject({
+    gravity: gravitySchema.partial().optional(),
+    drag: strictObject({
+      magnitude: number(),
+      spread: number().nonnegative(),
+      useDirection: boolean(),
+      rotation: number(),
+    })
+      .partial()
+      .optional(),
+  }).optional(),
 });
 
 export const emitterConfigSchema = strictObject({

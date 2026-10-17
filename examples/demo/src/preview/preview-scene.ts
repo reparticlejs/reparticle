@@ -73,6 +73,8 @@ export class PreviewScene {
       (next.widthCurve !== 'constant' && next.width !== this.settings.width) ||
       next.heightCurve !== this.settings.heightCurve ||
       (next.heightCurve !== 'constant' && next.height !== this.settings.height) ||
+      next.dragCurve !== this.settings.dragCurve ||
+      (next.dragCurve !== 'constant' && next.drag !== this.settings.drag) ||
       next.space !== this.settings.space ||
       next.rateSpread !== this.settings.rateSpread ||
       next.duration !== this.settings.duration ||
@@ -146,6 +148,10 @@ export class PreviewScene {
       next.size === current.size &&
       next.rate === current.rate &&
       next.gravity === current.gravity &&
+      next.drag === current.drag &&
+      next.dragSpread === current.dragSpread &&
+      next.dragDirectional === current.dragDirectional &&
+      next.dragRotation === current.dragRotation &&
       next.speed === current.speed &&
       next.speedSpread === current.speedSpread &&
       next.lifetimeSpread === current.lifetimeSpread &&

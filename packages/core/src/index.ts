@@ -35,6 +35,7 @@ export class Emitter {
   private initialRotation: SampledCurve;
   private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
+  private dragMagnitude: SampledCurve;
   private spawnRate: SpawnRate;
   private shape: SampledShape;
   private readonly playback: EmitterPlayback;
@@ -64,6 +65,7 @@ export class Emitter {
     this.initialBlue = new SampledCurve(this.settings.initial.blue);
     this.initialAlpha = new SampledCurve(this.settings.initial.alpha);
     this.initialLifetime = new SampledCurve(this.settings.initial.lifetime);
+    this.dragMagnitude = new SampledCurve(this.settings.modifiers.drag.magnitude);
     this.shape = new SampledShape(this.settings.emission.shape);
     this.gl = context.gl;
     this.canvas = context.canvas;
@@ -87,7 +89,7 @@ export class Emitter {
     ) {
       throw new Error('GPU simulation requires WebGL2 and EXT_color_buffer_float');
     }
-    if (this.rows * 3 > gl.getParameter(gl.MAX_TEXTURE_SIZE)) {
+    if (this.rows * 4 > gl.getParameter(gl.MAX_TEXTURE_SIZE)) {
       throw new RangeError('Capacity exceeds GPU texture limits');
     }
     const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
@@ -107,8 +109,9 @@ export class Emitter {
     gpu.addFunction(functions.spawnCone2D);
     gpu.addFunction(functions.spawnRotation);
     gpu.addFunction(functions.propertyVariation);
+    gpu.addFunction(functions.applyDrag);
     const config: IGPUKernelSettings = {
-      output: [this.width, this.rows * 3],
+      output: [this.width, this.rows * 4],
       precision: 'single',
       pipeline: true,
       immutable: false,
@@ -169,6 +172,10 @@ export class Emitter {
   setParameters(patch: EmitterParameters): void {
     this.assertAlive();
     const settings = updateEmitterConfig(this.settings, patch);
+    const dragMagnitude =
+      patch.modifiers?.drag?.magnitude === undefined
+        ? this.dragMagnitude
+        : new SampledCurve(settings.modifiers.drag.magnitude);
     const shape =
       patch.emission?.shape === undefined ? this.shape : new SampledShape(settings.emission.shape);
     const spawnRate =
@@ -206,6 +213,7 @@ export class Emitter {
         ? this.initialLifetime
         : new SampledCurve(settings.initial.lifetime);
     this.settings = settings;
+    this.dragMagnitude = dragMagnitude;
     this.shape = shape;
     this.initialLifetime = initialLifetime;
     this.initialRed = initialRed;
@@ -250,6 +258,7 @@ export class Emitter {
     const scale = worldSpace ? o.scale : 1;
     const rotation = worldSpace ? o.rotation : 0;
     const radians = (-rotation * Math.PI) / 180;
+    const dragRadians = -((rotation + o.modifiers.drag.rotation) * Math.PI) / 180;
     const initialRotation = this.initialRotation.at(this.playback.normalizedAge);
     const particleRotation =
       o.orientation === 'movement-direction' ? initialRotation : initialRotation + rotation;
@@ -292,6 +301,11 @@ export class Emitter {
       Math.cos(radians),
       Math.sin(radians),
       scale,
+      this.dragMagnitude.at(this.playback.normalizedAge),
+      o.modifiers.drag.spread,
+      o.modifiers.drag.useDirection ? 1 : 0,
+      Math.cos(dragRadians),
+      Math.sin(dragRadians),
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;
@@ -340,7 +354,7 @@ export class Emitter {
     gl.colorMask(true, true, true, true);
     // GPU.js does not declare this WebGL-specific internal field.
     const size = (kernel.kernel as typeof kernel.kernel & { maxTexSize?: number[] }).maxTexSize;
-    gl.viewport(0, 0, size?.[0] ?? this.width, size?.[1] ?? this.rows * 3);
+    gl.viewport(0, 0, size?.[0] ?? this.width, size?.[1] ?? this.rows * 4);
     try {
       const result = kernel(...args);
       if (!isPipelineTexture(result, gl)) {

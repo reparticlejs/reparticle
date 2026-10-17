@@ -49,6 +49,11 @@ it('adds inherited motion only at birth without changing initial-direction orien
       1,
       0,
       1,
+      0,
+      0,
+      0,
+      0,
+      1,
     );
   const base = run(1, 0, 0);
   const inherited = run(1, 100, -50);

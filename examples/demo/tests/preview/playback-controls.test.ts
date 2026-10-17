@@ -64,3 +64,27 @@ it('maps emitter scale independently of initial particle size', () => {
   expect(changed.scale).toBe(2);
   expect(changed.initial.size).toEqual(definition.initial.size);
 });
+
+it('preserves authored drag curves and maps independent drag edits', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.modifiers.drag.magnitude = {
+    points: [
+      { time: 0, value: 0, tangent: 2 },
+      { time: 1, value: 2, tangent: 2 },
+    ],
+  };
+  const controls = initialControls(definition);
+  expect(controls.dragCurve).toBe('effect');
+  const changed = applyControls(definition, {
+    ...controls,
+    dragSpread: 2,
+    dragDirectional: true,
+    dragRotation: 90,
+  });
+  expect(changed.modifiers.drag).toEqual({
+    magnitude: definition.modifiers.drag.magnitude,
+    spread: 2,
+    useDirection: true,
+    rotation: 90,
+  });
+});

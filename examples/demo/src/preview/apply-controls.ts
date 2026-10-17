@@ -3,6 +3,7 @@ import type { EmitterConfig, EmitterParameters } from '@reparticle/core';
 import type { PreviewControls } from '../types/preview';
 import { alphaCurves } from './alpha-curves';
 import { colorCurves } from './color-curves';
+import { dragMagnitude } from './drag-magnitude';
 import { emissionRate } from './emission-rate';
 import { emitterDiameter } from './emitter-diameter';
 import { emitterHeight } from './emitter-height';
@@ -78,7 +79,16 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
           ? definition.overLifetime.scale
           : sizeCurves[controls.sizeCurve],
     },
-    modifiers: { ...definition.modifiers, gravity },
+    modifiers: {
+      ...definition.modifiers,
+      gravity,
+      drag: {
+        magnitude: dragMagnitude(controls),
+        spread: controls.dragSpread,
+        useDirection: controls.dragDirectional,
+        rotation: controls.dragRotation,
+      },
+    },
     inheritVelocity: controls.inheritVelocity,
     rotation: controls.emitterRotation,
     scale: controls.emitterScale,
@@ -116,6 +126,15 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     rateCurve: typeof definition.emission.rate === 'number' ? 'constant' : 'effect',
     effectRate: definition.emission.rate,
     gravity: definition.modifiers.gravity.y,
+    drag:
+      typeof definition.modifiers.drag.magnitude === 'number'
+        ? definition.modifiers.drag.magnitude
+        : 1,
+    dragCurve: typeof definition.modifiers.drag.magnitude === 'number' ? 'constant' : 'effect',
+    effectDrag: definition.modifiers.drag.magnitude,
+    dragSpread: definition.modifiers.drag.spread,
+    dragDirectional: definition.modifiers.drag.useDirection,
+    dragRotation: definition.modifiers.drag.rotation,
     inheritVelocity: definition.inheritVelocity,
     emitterRotation: definition.rotation,
     emitterScale: definition.scale,
@@ -201,7 +220,15 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
       ...(controls.initialGreenCurve === 'constant' ? { green: controls.green } : {}),
       ...(controls.initialBlueCurve === 'constant' ? { blue: controls.blue } : {}),
     },
-    modifiers: { gravity: { y: controls.gravity } },
+    modifiers: {
+      gravity: { y: controls.gravity },
+      drag: {
+        ...(controls.dragCurve === 'constant' ? { magnitude: controls.drag } : {}),
+        spread: controls.dragSpread,
+        useDirection: controls.dragDirectional,
+        rotation: controls.dragRotation,
+      },
+    },
     inheritVelocity: controls.inheritVelocity,
     rotation: controls.emitterRotation,
     scale: controls.emitterScale,
