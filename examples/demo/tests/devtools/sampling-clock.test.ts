@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createStatsSamplingClock } from "../stats/measurement/create-stats-sampling-clock.js";
+import { createStatsSamplingClock } from "#src/devtools/stats/measurement/create-stats-sampling-clock.js";
 
 describe("stats sampling clock", () => {
   it("delivers intervals before permitting collection at the deadline", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SpawnSchedule, defaults, validateOptions } from "./options";
+import { SpawnSchedule, defaults, validateOptions } from "#src/options.js";
 describe("spawn scheduling", () => {
   it("retains fractional emission across frames", () => {
     const schedule = new SpawnSchedule(1000);

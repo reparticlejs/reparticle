@@ -12,9 +12,12 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run src"
+    "test": "vitest run tests"
   },
   "dependencies": {
     "gpu.js": "catalog:"
+  },
+  "imports": {
+    "#src/*": "./src/*"
   }
 }

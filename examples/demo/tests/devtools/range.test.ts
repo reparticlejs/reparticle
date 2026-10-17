@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 
-import { createStatsRange } from "../stats/measurement/create-stats-range.js";
+import { createStatsRange } from "#src/devtools/stats/measurement/create-stats-range.js";
 
 it("starts empty, ignores invalid measurements, and includes valid zero", () => {
   const range = createStatsRange();

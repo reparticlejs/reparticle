@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-import { createWebglTracker } from "../stats/webgl/create-webgl-tracker.js";
-import { observeWebglMethod } from "../stats/webgl/observe-webgl-method.js";
+import { createWebglTracker } from "#src/devtools/stats/webgl/create-webgl-tracker.js";
+import { observeWebglMethod } from "#src/devtools/stats/webgl/observe-webgl-method.js";
 
 const cleanup: (() => void)[] = [];
 

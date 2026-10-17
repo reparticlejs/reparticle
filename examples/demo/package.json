@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run",
+    "test": "vitest run tests",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -20,5 +20,8 @@
     "@types/d3-scale": "catalog:",
     "@types/d3-shape": "catalog:",
     "sass-embedded": "catalog:"
+  },
+  "imports": {
+    "#src/*": "./src/*"
   }
 }

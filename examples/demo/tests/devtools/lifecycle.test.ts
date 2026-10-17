@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { createStatsLifecycle } from "../stats/lifecycle/create-stats-lifecycle";
+import { createStatsLifecycle } from "#src/devtools/stats/lifecycle/create-stats-lifecycle.js";
 
 afterEach(() => vi.unstubAllGlobals());
 it("samples host frames only while visible and releases subscriptions on destroy", () => {

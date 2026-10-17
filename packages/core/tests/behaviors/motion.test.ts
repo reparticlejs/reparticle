@@ -1,8 +1,12 @@
 import { expect, it } from "vitest";
-import { advancePosition, advancePositionWithGravity, advanceVelocity } from "./motion";
-import { spawnDirection, spawnSpeed, spawnVariation } from "./spawn";
-import { integrate } from "../gpujs/integrate";
-import type { KernelContext, ParticleTexture } from "../gpujs/layout";
+import {
+  advancePosition,
+  advancePositionWithGravity,
+  advanceVelocity,
+} from "#src/behaviors/motion.js";
+import { spawnDirection, spawnSpeed, spawnVariation } from "#src/behaviors/spawn.js";
+import { integrate } from "#src/gpujs/integrate.js";
+import type { KernelContext, ParticleTexture } from "#src/gpujs/layout.js";
 
 it("integrates gravity equivalently over one step and ten smaller steps", () => {
   let position = 10,

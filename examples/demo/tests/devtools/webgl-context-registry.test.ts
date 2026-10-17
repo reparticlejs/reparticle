@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-import { registerWebglContext, subscribeWebglContexts } from "../stats/webgl/context-registry.js";
-import type { StatsWebglContextListener } from "../types/webgl.js";
+import {
+  registerWebglContext,
+  subscribeWebglContexts,
+} from "#src/devtools/stats/webgl/context-registry.js";
+import type { StatsWebglContextListener } from "#src/devtools/types/webgl.js";
 
 const cleanup: (() => void)[] = [];
 
