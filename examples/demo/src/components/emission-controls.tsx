@@ -4,6 +4,7 @@ import { rateCurveOptions } from './rate-curve-options';
 import { SelectField } from './select-field';
 import { ShapeControls } from './shape-controls';
 import { Slider } from './slider';
+import { speedCurveOptions } from './speed-curve-options';
 
 export function EmissionControls({ controls, onChange }: ControlSectionProps) {
   const exceedsCapacity =
@@ -75,15 +76,24 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
         unit=" s"
         onChange={(lifetimeSpread) => onChange({ lifetimeSpread })}
       />
-      <Slider
-        id="speed"
-        label="Speed"
-        value={controls.speed}
-        min={0}
-        max={1000}
-        unit=" px/s"
-        onChange={(speed) => onChange({ speed })}
+      <SelectField
+        id="speed-curve"
+        label="Initial speed over emitter lifetime"
+        value={controls.speedCurve}
+        options={speedCurveOptions}
+        onChange={(speedCurve) => onChange({ speedCurve })}
       />
+      {controls.speedCurve !== 'effect' && (
+        <Slider
+          id="speed"
+          label="Speed"
+          value={controls.speed}
+          min={0}
+          max={1000}
+          unit=" px/s"
+          onChange={(speed) => onChange({ speed })}
+        />
+      )}
       <Slider
         id="speed-spread"
         label="Speed spread ±"

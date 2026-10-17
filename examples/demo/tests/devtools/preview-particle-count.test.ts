@@ -12,6 +12,8 @@ const controls: PreviewControls = {
   orientation: 'default',
   playMode: 'loop',
   rateCurve: 'constant',
+  speedCurve: 'constant',
+  effectSpeed: 220,
   effectRate: 4000,
   speed: 220,
   speedSpread: 0,

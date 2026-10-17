@@ -40,6 +40,8 @@ export class PreviewScene {
   setControls(patch: Partial<PreviewControls>): PreviewControls {
     const next = { ...this.settings, ...patch };
     if (
+      next.speedCurve !== this.settings.speedCurve ||
+      (next.speedCurve !== 'constant' && next.speed !== this.settings.speed) ||
       next.rateCurve !== this.settings.rateCurve ||
       (next.rateCurve !== 'constant' && next.rate !== this.settings.rate) ||
       next.orientation !== this.settings.orientation ||

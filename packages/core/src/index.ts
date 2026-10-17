@@ -5,6 +5,7 @@ import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 
 import { emitterConfigSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
+import { SampledCurve } from './curves/sampled-curve';
 import { EmitterPlayback } from './emitter-playback';
 import functions from './gpujs/functions.json';
 import { isPipelineTexture } from './gpujs/is-pipeline-texture';
@@ -23,6 +24,7 @@ export class Emitter {
   emitting = true;
   private settings: EmitterConfig;
   private readonly schedule: SpawnSchedule;
+  private initialSpeed: SampledCurve;
   private spawnRate: SpawnRate;
   private readonly playback: EmitterPlayback;
   private readonly kernels: IKernelRunShortcut[] = [];
@@ -39,6 +41,7 @@ export class Emitter {
   constructor(context: EmitterContext, definition: EmitterConfig) {
     this.settings = emitterConfigSchema.parse(definition);
     this.spawnRate = new SpawnRate(this.settings.emission.rate);
+    this.initialSpeed = new SampledCurve(this.settings.initial.speed);
     this.gl = context.gl;
     this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
@@ -122,7 +125,12 @@ export class Emitter {
     const settings = updateEmitterConfig(this.settings, patch);
     const spawnRate =
       patch.emission?.rate === undefined ? this.spawnRate : new SpawnRate(settings.emission.rate);
+    const initialSpeed =
+      patch.initial?.speed === undefined
+        ? this.initialSpeed
+        : new SampledCurve(settings.initial.speed);
     this.settings = settings;
+    this.initialSpeed = initialSpeed;
     this.spawnRate = spawnRate;
   }
   /** GPU resource handle for renderer adapters. Never calls toArray/readPixels. */
@@ -177,7 +185,7 @@ export class Emitter {
       count,
       this.x,
       this.y,
-      o.initial.speed,
+      this.initialSpeed.at(this.playback.normalizedAge),
       o.initial.direction,
       o.initial.spread,
       o.modifiers.gravity.y,

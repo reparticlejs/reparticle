@@ -79,3 +79,24 @@ it('preserves an authored emission curve during numeric appearance updates', () 
   expect(applyControls(configured, restored).emission.rate).toEqual(configured.emission.rate);
   expect(emitterParameters({ ...restored, size: 40 }).emission?.rate).toBeUndefined();
 });
+
+it('restores authored speed curves and leaves them intact during unrelated numeric updates', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  const controls = { ...initialControls(definition), speedCurve: 'ramp-up' as const, speed: 200 };
+  const configured = applyControls(definition, controls);
+  expect(configured.initial.speed).toEqual({
+    points: [
+      { time: 0, value: 0, tangent: 200 },
+      { time: 1, value: 200, tangent: 200 },
+    ],
+  });
+  const restored = initialControls(configured);
+  expect(restored.speedCurve).toBe('effect');
+  expect(applyControls(configured, restored).initial.speed).toEqual(configured.initial.speed);
+  expect(
+    emitterParameters({ ...restored, gravity: 50, speedSpread: 20 }).initial?.speed,
+  ).toBeUndefined();
+  expect(emitterParameters({ ...restored, speedCurve: 'constant', speed: 50 }).initial?.speed).toBe(
+    50,
+  );
+});

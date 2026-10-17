@@ -4,6 +4,7 @@ import type { PreviewControls } from '../types/preview';
 import { alphaCurves } from './alpha-curves';
 import { colorCurves } from './color-curves';
 import { emissionRate } from './emission-rate';
+import { initialSpeed } from './initial-speed';
 import { rotationCurves } from './rotation-curves';
 import { sizeCurves } from './size-curves';
 
@@ -15,7 +16,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     ...definition.initial,
     lifetime: controls.lifetime,
     lifetimeSpread: controls.lifetimeSpread,
-    speed: controls.speed,
+    speed: initialSpeed(controls),
     speedSpread: controls.speedSpread,
     size: controls.size,
     sizeSpread: controls.sizeSpread,
@@ -84,7 +85,9 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     gravity: definition.modifiers.gravity.y,
     lifetime: definition.initial.lifetime,
     lifetimeSpread: definition.initial.lifetimeSpread,
-    speed: definition.initial.speed,
+    speed: typeof definition.initial.speed === 'number' ? definition.initial.speed : 220,
+    speedCurve: typeof definition.initial.speed === 'number' ? 'constant' : 'effect',
+    effectSpeed: definition.initial.speed,
     speedSpread: definition.initial.speedSpread,
     seed: definition.seed,
     texture: 'star',
@@ -123,7 +126,7 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
     initial: {
       lifetime: controls.lifetime,
       lifetimeSpread: controls.lifetimeSpread,
-      speed: controls.speed,
+      ...(controls.speedCurve === 'constant' ? { speed: controls.speed } : {}),
       speedSpread: controls.speedSpread,
       size: controls.size,
       sizeSpread: controls.sizeSpread,

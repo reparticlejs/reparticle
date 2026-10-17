@@ -51,7 +51,7 @@ const initialPropertiesSchema = strictObject({
   lifetime: number().positive(),
   lifetimeSpread: number().nonnegative().default(0),
   speedSpread: number().nonnegative().default(0),
-  speed: number().nonnegative(),
+  speed: scalarPropertySchema,
   direction: number(),
   spread: number().nonnegative(),
 });
@@ -75,6 +75,7 @@ export const emitterParametersSchema = strictObject({
     .extend({
       lifetimeSpread: number().nonnegative(),
       speedSpread: number().nonnegative(),
+      speed: number(),
       rotation: number(),
       rotationSpread: number().nonnegative(),
       sizeSpread: number().nonnegative(),

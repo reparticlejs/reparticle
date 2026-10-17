@@ -1,20 +1,16 @@
 import type { ScalarProperty } from '#types/curve.js';
 
-import { CURVE_SEGMENTS, sampleCurve } from './curves/sample-curve';
+import { SampledCurve } from './curves/sampled-curve';
 
-/** Absolute particles per second, sampled once and evaluated on the emitter clock. */
+/** Absolute particles per second, clamped after evaluating the emitter-time curve. */
 export class SpawnRate {
-  private readonly samples: Float32Array;
+  private readonly curve: SampledCurve;
 
   constructor(property: ScalarProperty) {
-    this.samples = sampleCurve(property);
+    this.curve = new SampledCurve(property);
   }
 
   at(normalizedAge: number): number {
-    const position = Math.max(0, Math.min(1, normalizedAge)) * CURVE_SEGMENTS;
-    const segment = Math.min(Math.floor(position), CURVE_SEGMENTS - 1);
-    const left = this.samples[segment]!;
-    const right = this.samples[segment + 1]!;
-    return Math.max(0, left + (right - left) * (position - segment));
+    return Math.max(0, this.curve.at(normalizedAge));
   }
 }

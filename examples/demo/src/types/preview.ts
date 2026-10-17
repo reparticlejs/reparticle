@@ -41,6 +41,8 @@ export interface PreviewControls {
   gravity: number;
   lifetime: number;
   speed: number;
+  speedCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectSpeed: EmitterConfig['initial']['speed'];
   speedSpread: number;
   lifetimeSpread: number;
   seed: number;

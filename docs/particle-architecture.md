@@ -167,3 +167,5 @@ Example emission rate ramp over the emitter's configured duration:
   "shape": { "type": "point" }
 }
 ```
+
+`initial.speed` accepts a constant or an emitter-time Hermite curve with absolute speed values (pixels/second in the demo). It uses the same cached 64-segment sampling and post-advance emitter clock as spawn rate, including once/loop boundaries, delay, and prewarm. The evaluated speed is passed to the GPU, where each newborn adds its independent `speedSpread` offset. Signed values are preserved: negative speed reverses the shape's direction. Existing particles are not rescaled when the emitter curve changes over time; their stored velocity continues under modifiers. Numeric speed patches replace the curve for future births, while unrelated patches preserve it. Curve changes require recreation. No extra per-particle channels or GPU function changes are needed.
