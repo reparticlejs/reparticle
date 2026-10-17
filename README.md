@@ -24,7 +24,7 @@ Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error;
 - `packages/core`: GPU.js 2.24.1 simulation, mathematical behaviors, bounded spawn scheduling. No Pixi dependency. Takes a host WebGL2 context; this GPU backend is browser-based, not a headless CPU implementation.
 - `packages/core/src/gpujs`: typed GPU storage adapters. Readable motion and spawning math lives in `src/behaviors`. GPU.js receives ordinary functions directly through `createKernel` and `addFunction`, using its published types.
 - `packages/pixi`: shares Pixi's WebGL2 context and renders directly from the simulation texture with one instanced draw. No Sprite per particle or CPU particle array.
-- `examples/demo`: React/TypeScript UI with a Pixi preview and explicit GPU diagnostics. React owns controls and status; Pixi owns the animation loop.
+- `examples/demo`: React/TypeScript UI with a Pixi preview. React owns controls and status; Pixi owns the animation loop.
 
 GPU state contains position, velocity, age, and lifetime. Two mutable update kernels alternate output textures; both are allocated and warmed before playback. The CPU sends only time, emitter parameters, and a spawn range. The fixed-capacity ring recycles the oldest slots when full; dead particles are hidden in the vertex shader. The UI displays capacity, not a fabricated live-particle count.
 
@@ -98,6 +98,6 @@ Updates are validated atomically. Capacity, seed, ID and shape cannot be changed
 
 ## Demo UI
 
-The demo uses React with the official Vite React plugin. `src/app.tsx` and `src/components` render the controls, `src/hooks/use-particle-preview.ts` connects component lifetime to the preview, and `src/preview/create-preview.ts` owns the Pixi application, particle view, and stats. Types live in `src/types`; tests live in `tests`. React dependencies belong only to the demo.
+The demo uses React with the official Vite React plugin. `src/app.tsx` owns UI settings and status. `ParticlePreview` owns the canvas, pointer handling, and renderer lifetime through `useMountEffect`; its handle exposes update and reset commands for UI events. `EmitterControls` edits settings, and `PreviewStatus` displays status and errors. `src/preview/create-preview.ts` owns the imperative Pixi application, particle view, and stats. Types live in `src/types`; tests live in `tests`. React dependencies belong only to the demo.
 
 GPU updates run on Pixi's ticker without React state updates per frame. Controls are disabled until asynchronous initialization succeeds. Unmounting, Strict Mode remounts, failed startup, and hot reload release the owned GPU scene and stats. Shared artwork remains owned by Pixi's asset cache.

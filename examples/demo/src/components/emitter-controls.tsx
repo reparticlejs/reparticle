@@ -92,6 +92,12 @@ export function EmitterControls({ controls, disabled, onChange, onReset }: Emitt
         <button id="pause" onClick={() => onChange({ paused: !controls.paused })}>
           {controls.paused ? 'Resume' : 'Pause'}
         </button>
+        <button
+          id="stats-toggle"
+          onClick={() => onChange({ statsVisible: !controls.statsVisible })}
+        >
+          {controls.statsVisible ? 'Hide stats' : 'Show stats'}
+        </button>
         <button id="reset" onClick={onReset}>
           Reset
         </button>

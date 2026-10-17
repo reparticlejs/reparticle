@@ -1,6 +1,6 @@
 import type { PreviewStatusProps } from '../types/controls';
 
-export function PreviewStatus({ controls, ready, error, onChange }: PreviewStatusProps) {
+export function PreviewStatus({ controls, ready, error }: PreviewStatusProps) {
   let status = 'Starting GPU simulation…';
   if (ready) {
     status = 'GPU.js · WebGL2 · direct GPU rendering';
@@ -14,12 +14,6 @@ export function PreviewStatus({ controls, ready, error, onChange }: PreviewStatu
     capacityNote = 'Emission × lifetime exceeds capacity: older particles will be replaced early.';
   }
 
-  function toggleStats() {
-    if (controls) {
-      onChange({ statsVisible: !controls.statsVisible });
-    }
-  }
-
   return (
     <>
       {controls && (
@@ -29,12 +23,6 @@ export function PreviewStatus({ controls, ready, error, onChange }: PreviewStatu
       )}
 
       <output id="status">{status}</output>
-
-      {controls && (
-        <button id="stats-toggle" disabled={!ready} onClick={toggleStats}>
-          {controls.statsVisible ? 'Hide stats' : 'Show stats'}
-        </button>
-      )}
 
       {error && (
         <p id="error" role="alert">

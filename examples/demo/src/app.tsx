@@ -1,10 +1,27 @@
-import { EmitterControls } from './components/emitter-controls';
-import { ParticlePreview } from './components/particle-preview';
-import { PreviewStatus } from './components/preview-status';
-import { useParticlePreview } from './hooks/use-particle-preview';
+import { useRef, useState } from "react";
+
+import { EmitterControls } from "./components/emitter-controls";
+import { ParticlePreview } from "./components/particle-preview";
+import { PreviewStatus } from "./components/preview-status";
+import type { ParticlePreviewHandle } from "./types/controls";
+import type { PreviewControls } from "./types/preview";
 
 export function App() {
-  const { host, controls, ready, error, update, reset, movePointer } = useParticlePreview();
+  const preview = useRef<ParticlePreviewHandle>(null);
+  const [controls, setControls] = useState<PreviewControls | null>(null);
+  const [error, setError] = useState("");
+  const ready = controls !== null;
+
+  function update(patch: Partial<PreviewControls>) {
+    const applied = preview.current?.update(patch);
+    if (applied) {
+      setControls(applied);
+    }
+  }
+
+  function reset() {
+    preview.current?.reset();
+  }
 
   return (
     <main>
@@ -14,7 +31,11 @@ export function App() {
       </header>
 
       <section className="workspace">
-        <ParticlePreview hostRef={host} onPointerMove={movePointer} />
+        <ParticlePreview
+          ref={preview}
+          onReady={setControls}
+          onError={setError}
+        />
 
         {controls && (
           <EmitterControls
@@ -26,7 +47,7 @@ export function App() {
         )}
       </section>
 
-      <PreviewStatus controls={controls} ready={ready} error={error} onChange={update} />
+      <PreviewStatus controls={controls} ready={ready} error={error} />
     </main>
   );
 }

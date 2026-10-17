@@ -20,14 +20,19 @@ export interface SliderProps {
   onChange: (value: number) => void;
 }
 
+export interface ParticlePreviewHandle {
+  update: (patch: Partial<PreviewControls>) => PreviewControls | null;
+  reset: () => void;
+}
+
 export interface ParticlePreviewProps {
-  hostRef: Ref<HTMLDivElement>;
-  onPointerMove: (x: number, y: number) => void;
+  ref: Ref<ParticlePreviewHandle>;
+  onReady: (controls: PreviewControls) => void;
+  onError: (message: string) => void;
 }
 
 export interface PreviewStatusProps {
   controls: PreviewControls | null;
   ready: boolean;
   error: string;
-  onChange: (patch: Partial<PreviewControls>) => void;
 }
