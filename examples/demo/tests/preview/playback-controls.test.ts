@@ -88,3 +88,19 @@ it('preserves authored drag curves and maps independent drag edits', () => {
     rotation: 90,
   });
 });
+
+it('preserves acceleration curves while changing direction and spread', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.modifiers.acceleration.magnitude = {
+    points: [
+      { time: 0, value: 0, tangent: 100 },
+      { time: 1, value: 100, tangent: 100 },
+    ],
+  };
+  const controls = initialControls(definition);
+  expect(controls.accelerationCurve).toBe('effect');
+  expect(
+    applyControls(definition, { ...controls, accelerationRotation: 90, accelerationSpread: 20 })
+      .modifiers.acceleration,
+  ).toEqual({ magnitude: definition.modifiers.acceleration.magnitude, spread: 20, rotation: 90 });
+});

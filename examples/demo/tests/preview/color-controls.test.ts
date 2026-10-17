@@ -94,7 +94,7 @@ it('restores authored speed curves and leaves them intact during unrelated numer
   expect(restored.speedCurve).toBe('effect');
   expect(applyControls(configured, restored).initial.speed).toEqual(configured.initial.speed);
   expect(
-    emitterParameters({ ...restored, gravity: 50, speedSpread: 20 }).initial?.speed,
+    emitterParameters({ ...restored, acceleration: 50, speedSpread: 20 }).initial?.speed,
   ).toBeUndefined();
   expect(emitterParameters({ ...restored, speedCurve: 'constant', speed: 50 }).initial?.speed).toBe(
     50,
@@ -123,7 +123,7 @@ it('keeps emitter-time size separate from particle-lifetime scale', () => {
     configured.overLifetime.scale,
   );
   expect(
-    emitterParameters({ ...restored, sizeSpread: 10, gravity: 50 }).initial?.size,
+    emitterParameters({ ...restored, sizeSpread: 10, acceleration: 50 }).initial?.size,
   ).toBeUndefined();
   expect(
     emitterParameters({ ...restored, initialSizeCurve: 'constant', size: 20 }).initial?.size,

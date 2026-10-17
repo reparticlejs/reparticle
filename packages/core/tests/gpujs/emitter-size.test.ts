@@ -70,6 +70,9 @@ it.each([1, 2, 3])(
           0,
           0,
           1,
+          0,
+          0,
+          1,
         );
       context.thread.y = 0;
       expect(run(1)).toEqual(expected);

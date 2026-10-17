@@ -66,7 +66,11 @@ const initialPropertiesSchema = strictObject({
   spread: number().nonnegative(),
 });
 
-const gravitySchema = strictObject({ x: literal(0), y: number() });
+const accelerationSchema = strictObject({
+  magnitude: scalarPropertySchema.default(0),
+  spread: number().nonnegative().default(0),
+  rotation: number().default(0),
+});
 const dragSchema = strictObject({
   magnitude: scalarPropertySchema.default(0),
   spread: number().nonnegative().default(0),
@@ -74,7 +78,7 @@ const dragSchema = strictObject({
   rotation: number().default(0),
 });
 const modifiersSchema = strictObject({
-  gravity: gravitySchema,
+  acceleration: accelerationSchema.default({ magnitude: 0, spread: 0, rotation: 0 }),
   drag: dragSchema.default({ magnitude: 0, spread: 0, useDirection: false, rotation: 0 }),
 });
 
@@ -123,7 +127,13 @@ export const emitterParametersSchema = strictObject({
     )
     .optional(),
   modifiers: strictObject({
-    gravity: gravitySchema.partial().optional(),
+    acceleration: strictObject({
+      magnitude: number(),
+      spread: number().nonnegative(),
+      rotation: number(),
+    })
+      .partial()
+      .optional(),
     drag: strictObject({
       magnitude: number(),
       spread: number().nonnegative(),

@@ -59,6 +59,9 @@ it('retains spread for the lifetime, resamples on birth, and damps after gravity
       directional,
       1,
       0,
+      0,
+      0,
+      1,
     );
   expect(run(0, 1, 0).slice(2)).toEqual([70, 42]);
   expect(run(0, 99, 0).slice(2)).toEqual([70, 42]);

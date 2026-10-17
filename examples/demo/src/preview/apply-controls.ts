@@ -1,6 +1,7 @@
 import type { EmitterConfig, EmitterParameters } from '@reparticle/core';
 
 import type { PreviewControls } from '../types/preview';
+import { accelerationMagnitude } from './acceleration-magnitude';
 import { alphaCurves } from './alpha-curves';
 import { colorCurves } from './color-curves';
 import { dragMagnitude } from './drag-magnitude';
@@ -48,7 +49,11 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     green: initialGreen(controls),
     blue: initialBlue(controls),
   };
-  const gravity = { ...definition.modifiers.gravity, y: controls.gravity };
+  const acceleration = {
+    magnitude: accelerationMagnitude(controls),
+    spread: controls.accelerationSpread,
+    rotation: controls.accelerationRotation,
+  };
 
   return {
     ...definition,
@@ -81,7 +86,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     },
     modifiers: {
       ...definition.modifiers,
-      gravity,
+      acceleration,
       drag: {
         magnitude: dragMagnitude(controls),
         spread: controls.dragSpread,
@@ -125,7 +130,15 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     rate: typeof definition.emission.rate === 'number' ? definition.emission.rate : 4000,
     rateCurve: typeof definition.emission.rate === 'number' ? 'constant' : 'effect',
     effectRate: definition.emission.rate,
-    gravity: definition.modifiers.gravity.y,
+    acceleration:
+      typeof definition.modifiers.acceleration.magnitude === 'number'
+        ? definition.modifiers.acceleration.magnitude
+        : 160,
+    accelerationCurve:
+      typeof definition.modifiers.acceleration.magnitude === 'number' ? 'constant' : 'effect',
+    effectAcceleration: definition.modifiers.acceleration.magnitude,
+    accelerationSpread: definition.modifiers.acceleration.spread,
+    accelerationRotation: definition.modifiers.acceleration.rotation,
     drag:
       typeof definition.modifiers.drag.magnitude === 'number'
         ? definition.modifiers.drag.magnitude
@@ -221,7 +234,11 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
       ...(controls.initialBlueCurve === 'constant' ? { blue: controls.blue } : {}),
     },
     modifiers: {
-      gravity: { y: controls.gravity },
+      acceleration: {
+        ...(controls.accelerationCurve === 'constant' ? { magnitude: controls.acceleration } : {}),
+        spread: controls.accelerationSpread,
+        rotation: controls.accelerationRotation,
+      },
       drag: {
         ...(controls.dragCurve === 'constant' ? { magnitude: controls.drag } : {}),
         spread: controls.dragSpread,

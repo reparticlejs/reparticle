@@ -18,7 +18,7 @@ export function updateEmitterConfig(current: EmitterConfig, input: unknown): Emi
     initial: { ...current.initial, ...patch.initial },
     modifiers: {
       drag: { ...current.modifiers.drag, ...patch.modifiers?.drag },
-      gravity: { ...current.modifiers.gravity, ...patch.modifiers?.gravity },
+      acceleration: { ...current.modifiers.acceleration, ...patch.modifiers?.acceleration },
     },
   });
 }

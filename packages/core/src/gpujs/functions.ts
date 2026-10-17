@@ -2,7 +2,7 @@ export { applyDrag } from '../behaviors/drag';
 export { propertyVariation } from '../behaviors/property-variation';
 // Build input only. The runtime imports the generated source strings instead.
 export { circleAngle, circleRadius } from '../behaviors/circle';
-export { applyGravity } from '../behaviors/gravity';
+export { applyAcceleration } from '../behaviors/acceleration';
 export { advanceAge, particleAlive } from '../behaviors/lifetime';
 export { advancePosition, advanceVelocity } from '../behaviors/motion';
 export { spawnVariation, spawnDirection } from '../behaviors/spawn';

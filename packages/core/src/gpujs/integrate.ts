@@ -1,7 +1,7 @@
 import type { KernelContext, ParticleTexel, ParticleTexture } from '#types/layout.js';
 
+import { applyAcceleration } from '../behaviors/acceleration';
 import { applyDrag } from '../behaviors/drag';
-import { applyGravity } from '../behaviors/gravity';
 import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { advancePosition, advanceVelocity } from '../behaviors/motion';
 import { propertyVariation } from '../behaviors/property-variation';
@@ -27,7 +27,7 @@ export function integrate(
   speed: number,
   direction: number,
   spread: number,
-  gravity: number,
+  accelerationMagnitude: number,
   lifetime: number,
   seed: number,
   shapeType: number,
@@ -60,6 +60,9 @@ export function integrate(
   dragDirectional: number,
   dragX: number,
   dragY: number,
+  accelerationSpread: number,
+  accelerationDirectionX: number,
+  accelerationDirectionY: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -110,12 +113,28 @@ export function integrate(
     }
     const sampledSpeed =
       (speed + propertyVariation(particleId, seed, 1) * speedSpread) * emitterScale;
-    const birthX =
-      (emitterCosine * spawned[2] - emitterSine * spawned[3]) * sampledSpeed + inheritedVelocityX;
-    const birthY =
-      (emitterSine * spawned[2] + emitterCosine * spawned[3]) * sampledSpeed + inheritedVelocityY;
-    const birthProjection = birthX * dragX + birthY * dragY;
     const birthFactor = propertyVariation(particleId, seed, 14);
+    const birthAccelerationX = applyAcceleration(
+      accelerationDirectionX,
+      accelerationMagnitude,
+      accelerationSpread,
+      birthFactor,
+    );
+    const birthAccelerationY = applyAcceleration(
+      accelerationDirectionY,
+      accelerationMagnitude,
+      accelerationSpread,
+      birthFactor,
+    );
+    const birthX =
+      (emitterCosine * spawned[2] - emitterSine * spawned[3]) * sampledSpeed +
+      inheritedVelocityX +
+      birthAccelerationX * seconds;
+    const birthY =
+      (emitterSine * spawned[2] + emitterCosine * spawned[3]) * sampledSpeed +
+      inheritedVelocityY +
+      birthAccelerationY * seconds;
+    const birthProjection = birthX * dragX + birthY * dragY;
     return [
       emitterX + (emitterCosine * spawned[0] - emitterSine * spawned[1]) * emitterScale,
       emitterY + (emitterSine * spawned[0] + emitterCosine * spawned[1]) * emitterScale,
@@ -154,16 +173,26 @@ export function integrate(
     return [x, y, 0, 0];
   }
 
-  // Gravity precedes drag. Keep the existing position integrator, adding drag's velocity delta.
-  const accelerationX = applyGravity(0, 0);
-  const accelerationY = applyGravity(0, gravity);
-  const acceleratedX = advanceVelocity(velocityX, accelerationX, seconds);
-  const acceleratedY = advanceVelocity(velocityY, accelerationY, seconds);
+  // Acceleration precedes drag; both modifiers share the particle's birth spread factor.
   let modifierState = [0, 0, 0, 0];
-  if (dragSpread !== 0) {
+  if (dragSpread !== 0 || accelerationSpread !== 0) {
     modifierState = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
   }
   const factor = modifierState[0]!;
+  const accelerationX = applyAcceleration(
+    accelerationDirectionX,
+    accelerationMagnitude,
+    accelerationSpread,
+    factor,
+  );
+  const accelerationY = applyAcceleration(
+    accelerationDirectionY,
+    accelerationMagnitude,
+    accelerationSpread,
+    factor,
+  );
+  const acceleratedX = advanceVelocity(velocityX, accelerationX, seconds);
+  const acceleratedY = advanceVelocity(velocityY, accelerationY, seconds);
   const projection = acceleratedX * dragX + acceleratedY * dragY;
   const dampedX = applyDrag(
     acceleratedX,

@@ -81,14 +81,7 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
           onChange={(inheritVelocity) => onChange({ inheritVelocity })}
         />
       )}
-      <Slider
-        id="gravity"
-        label="Gravity"
-        value={controls.gravity}
-        min={-200}
-        max={500}
-        onChange={(gravity) => onChange({ gravity })}
-      />
+
       <SelectField
         id="initial-lifetime-curve"
         label="Initial lifetime over emitter lifetime"

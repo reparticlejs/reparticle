@@ -35,6 +35,7 @@ export class Emitter {
   private initialRotation: SampledCurve;
   private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
+  private accelerationMagnitude: SampledCurve;
   private dragMagnitude: SampledCurve;
   private spawnRate: SpawnRate;
   private shape: SampledShape;
@@ -66,6 +67,7 @@ export class Emitter {
     this.initialAlpha = new SampledCurve(this.settings.initial.alpha);
     this.initialLifetime = new SampledCurve(this.settings.initial.lifetime);
     this.dragMagnitude = new SampledCurve(this.settings.modifiers.drag.magnitude);
+    this.accelerationMagnitude = new SampledCurve(this.settings.modifiers.acceleration.magnitude);
     this.shape = new SampledShape(this.settings.emission.shape);
     this.gl = context.gl;
     this.canvas = context.canvas;
@@ -94,7 +96,7 @@ export class Emitter {
     }
     const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
     gpu.addFunction(functions.advancePosition);
-    gpu.addFunction(functions.applyGravity);
+    gpu.addFunction(functions.applyAcceleration);
     gpu.addFunction(functions.advanceAge);
     // The alive flag is numeric in GPU storage.
     gpu.addFunction(functions.particleAlive, { returnType: 'Number' });
@@ -172,6 +174,10 @@ export class Emitter {
   setParameters(patch: EmitterParameters): void {
     this.assertAlive();
     const settings = updateEmitterConfig(this.settings, patch);
+    const accelerationMagnitude =
+      patch.modifiers?.acceleration?.magnitude === undefined
+        ? this.accelerationMagnitude
+        : new SampledCurve(settings.modifiers.acceleration.magnitude);
     const dragMagnitude =
       patch.modifiers?.drag?.magnitude === undefined
         ? this.dragMagnitude
@@ -213,6 +219,7 @@ export class Emitter {
         ? this.initialLifetime
         : new SampledCurve(settings.initial.lifetime);
     this.settings = settings;
+    this.accelerationMagnitude = accelerationMagnitude;
     this.dragMagnitude = dragMagnitude;
     this.shape = shape;
     this.initialLifetime = initialLifetime;
@@ -258,6 +265,7 @@ export class Emitter {
     const scale = worldSpace ? o.scale : 1;
     const rotation = worldSpace ? o.rotation : 0;
     const radians = (-rotation * Math.PI) / 180;
+    const accelerationRadians = -((rotation + o.modifiers.acceleration.rotation) * Math.PI) / 180;
     const dragRadians = -((rotation + o.modifiers.drag.rotation) * Math.PI) / 180;
     const initialRotation = this.initialRotation.at(this.playback.normalizedAge);
     const particleRotation =
@@ -273,7 +281,7 @@ export class Emitter {
       this.initialSpeed.at(this.playback.normalizedAge),
       o.initial.direction,
       o.initial.spread,
-      o.modifiers.gravity.y * scale,
+      this.accelerationMagnitude.at(this.playback.normalizedAge) * scale,
       this.initialLifetime.at(this.playback.normalizedAge),
       this.seed,
       this.shape.type,
@@ -306,6 +314,9 @@ export class Emitter {
       o.modifiers.drag.useDirection ? 1 : 0,
       Math.cos(dragRadians),
       Math.sin(dragRadians),
+      o.modifiers.acceleration.spread * scale,
+      Math.sin(accelerationRadians),
+      -Math.cos(accelerationRadians),
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

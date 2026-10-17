@@ -101,7 +101,6 @@
         "greenSpread": 0,
         "blueSpread": 0,
         "alphaSpread": 0,
-
         "rotationSpread": 0,
         "lifetimeSpread": 0,
         "speed": 220,
@@ -114,10 +113,16 @@
         "rotation": 0
       },
       "modifiers": {
-        "drag": { "magnitude": 0, "spread": 0, "useDirection": false, "rotation": 0 },
-        "gravity": {
-          "x": 0,
-          "y": 160
+        "drag": {
+          "magnitude": 0,
+          "spread": 0,
+          "useDirection": false,
+          "rotation": 0
+        },
+        "acceleration": {
+          "magnitude": 160,
+          "spread": 0,
+          "rotation": 180
         }
       },
       "rotation": 0,

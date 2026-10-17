@@ -62,7 +62,11 @@ export interface PreviewControls {
   rateSpread: number;
   rateCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectRate: EmitterConfig['emission']['rate'];
-  gravity: number;
+  acceleration: number;
+  accelerationSpread: number;
+  accelerationRotation: number;
+  accelerationCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectAcceleration: EmitterConfig['modifiers']['acceleration']['magnitude'];
   drag: number;
   dragSpread: number;
   dragDirectional: boolean;

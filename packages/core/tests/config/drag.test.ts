@@ -10,7 +10,7 @@ it('defaults drag to zero and preserves authored curves during other modifier up
   const source = skeleton.emitters[0]!;
   const config = parseEffectConfig({
     version: 1,
-    emitters: [{ ...source, modifiers: { gravity: source.modifiers.gravity } }],
+    emitters: [{ ...source, modifiers: { acceleration: source.modifiers.acceleration } }],
   }).emitters[0];
   expect(config.modifiers.drag).toEqual({
     magnitude: 0,
@@ -28,7 +28,7 @@ it('defaults drag to zero and preserves authored curves during other modifier up
     modifiers: { drag: { spread: 2, useDirection: true, rotation: 90 } },
   });
   expect(updated.modifiers.drag.magnitude).toEqual(config.modifiers.drag.magnitude);
-  expect(updated.modifiers.gravity).toEqual(config.modifiers.gravity);
+  expect(updated.modifiers.acceleration).toEqual(config.modifiers.acceleration);
   expect(
     updateEmitterConfig(updated, { modifiers: { drag: { magnitude: -1 } } }).modifiers.drag
       .magnitude,
