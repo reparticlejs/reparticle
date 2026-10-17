@@ -62,6 +62,13 @@ export interface PreviewControls {
   rateSpread: number;
   rateCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectRate: EmitterConfig['emission']['rate'];
+  radial: number;
+  radialSpread: number;
+  radialX: number;
+  radialY: number;
+  radialMaxDistance: number;
+  radialCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectRadial: ScalarProperty;
   acceleration: number;
   accelerationSpread: number;
   accelerationRotation: number;

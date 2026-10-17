@@ -5,6 +5,8 @@ import { applyDrag } from '../behaviors/drag';
 import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { advancePosition, advanceVelocity } from '../behaviors/motion';
 import { propertyVariation } from '../behaviors/property-variation';
+import { applyRadial } from '../behaviors/radial';
+import { particleHeading } from './particle-heading';
 import { spawnBox } from './spawn-box';
 import { spawnCircle } from './spawn-circle';
 import { spawnCone2D } from './spawn-cone2d';
@@ -63,6 +65,13 @@ export function integrate(
   accelerationSpread: number,
   accelerationDirectionX: number,
   accelerationDirectionY: number,
+  radialMagnitude: number,
+  radialSpread: number,
+  radialX: number,
+  radialY: number,
+  radialMaxDistance: number,
+  rotationCurve: Float32Array,
+  orientToMovement: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -102,11 +111,11 @@ export function integrate(
     } else if (shapeType === 3) {
       spawned = spawnCone2D(particleId, seed, 0, 0, 1, sampledX, sampledY);
     }
+    let rotation = initialRotation + propertyVariation(particleId, seed, 4) * rotationSpread;
+    if (orientToDirection > 0.5) {
+      rotation += spawnRotation(spawned[2], spawned[3]);
+    }
     if (this.thread.y >= this.constants.rows) {
-      let rotation = initialRotation + propertyVariation(particleId, seed, 4) * rotationSpread;
-      if (orientToDirection > 0.5) {
-        rotation += spawnRotation(spawned[2], spawned[3]);
-      }
       const sampledLifetime = lifetime + propertyVariation(particleId, seed, 2) * lifetimeSpread;
       const sampledSize = initialSize + propertyVariation(particleId, seed, 3) * sizeSpread;
       return [0, sampledLifetime, sampledSize * emitterScale, rotation];
@@ -134,10 +143,41 @@ export function integrate(
       (emitterSine * spawned[2] + emitterCosine * spawned[3]) * sampledSpeed +
       inheritedVelocityY +
       birthAccelerationY * seconds;
+    const positionX =
+      emitterX + (emitterCosine * spawned[0] - emitterSine * spawned[1]) * emitterScale;
+    const positionY =
+      emitterY + (emitterSine * spawned[0] + emitterCosine * spawned[1]) * emitterScale;
+    let birthRadial = [0, 0];
+    if (radialMagnitude !== 0 || radialSpread !== 0) {
+      let heading: [number, number] = [0, -1];
+      if (positionX === radialX && positionY === radialY) {
+        heading = particleHeading(
+          rotation,
+          0,
+          lifetime,
+          rotationCurve,
+          birthX - birthAccelerationX * seconds,
+          birthY - birthAccelerationY * seconds,
+          orientToMovement,
+        );
+      }
+      birthRadial = applyRadial(
+        positionX,
+        positionY,
+        radialX,
+        radialY,
+        heading[0],
+        heading[1],
+        radialMagnitude,
+        radialSpread,
+        birthFactor,
+        radialMaxDistance,
+      );
+    }
     const birthProjection = birthX * dragX + birthY * dragY;
     return [
-      emitterX + (emitterCosine * spawned[0] - emitterSine * spawned[1]) * emitterScale,
-      emitterY + (emitterSine * spawned[0] + emitterCosine * spawned[1]) * emitterScale,
+      positionX,
+      positionY,
       applyDrag(
         birthX,
         dragDirectional > 0.5 ? birthProjection * dragX : birthX,
@@ -145,7 +185,8 @@ export function integrate(
         dragSpread,
         birthFactor,
         seconds,
-      ),
+      ) +
+        birthRadial[0]! * seconds,
       applyDrag(
         birthY,
         dragDirectional > 0.5 ? birthProjection * dragY : birthY,
@@ -153,7 +194,8 @@ export function integrate(
         dragSpread,
         birthFactor,
         seconds,
-      ),
+      ) +
+        birthRadial[1]! * seconds,
     ];
   }
 
@@ -175,7 +217,7 @@ export function integrate(
 
   // Acceleration precedes drag; both modifiers share the particle's birth spread factor.
   let modifierState = [0, 0, 0, 0];
-  if (dragSpread !== 0 || accelerationSpread !== 0) {
+  if (dragSpread !== 0 || accelerationSpread !== 0 || radialSpread !== 0) {
     modifierState = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
   }
   const factor = modifierState[0]!;
@@ -191,6 +233,33 @@ export function integrate(
     accelerationSpread,
     factor,
   );
+  let radial = [0, 0];
+  if (radialMagnitude !== 0 || radialSpread !== 0) {
+    let heading: [number, number] = [0, -1];
+    if (x === radialX && y === radialY) {
+      heading = particleHeading(
+        properties[3],
+        age + seconds,
+        particleLifetime,
+        rotationCurve,
+        velocityX,
+        velocityY,
+        orientToMovement,
+      );
+    }
+    radial = applyRadial(
+      x,
+      y,
+      radialX,
+      radialY,
+      heading[0],
+      heading[1],
+      radialMagnitude,
+      radialSpread,
+      factor,
+      radialMaxDistance,
+    );
+  }
   const acceleratedX = advanceVelocity(velocityX, accelerationX, seconds);
   const acceleratedY = advanceVelocity(velocityY, accelerationY, seconds);
   const projection = acceleratedX * dragX + acceleratedY * dragY;
@@ -211,9 +280,11 @@ export function integrate(
     seconds,
   );
   return [
-    advancePosition(x, velocityX, accelerationX, seconds) + (dampedX - acceleratedX) * seconds,
-    advancePosition(y, velocityY, accelerationY, seconds) + (dampedY - acceleratedY) * seconds,
-    dampedX,
-    dampedY,
+    advancePosition(x, velocityX, accelerationX, seconds) +
+      (dampedX - acceleratedX + radial[0]! * seconds) * seconds,
+    advancePosition(y, velocityY, accelerationY, seconds) +
+      (dampedY - acceleratedY + radial[1]! * seconds) * seconds,
+    dampedX + radial[0]! * seconds,
+    dampedY + radial[1]! * seconds,
   ];
 }

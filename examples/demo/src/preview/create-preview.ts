@@ -92,6 +92,11 @@ export async function createPreview(
         (current.heightCurve !== 'constant' &&
           patch.height !== undefined &&
           patch.height !== current.height);
+      const radialChanged =
+        (patch.radialCurve !== undefined && patch.radialCurve !== current.radialCurve) ||
+        (current.radialCurve !== 'constant' &&
+          patch.radial !== undefined &&
+          patch.radial !== current.radial);
       const accelerationChanged =
         (patch.accelerationCurve !== undefined &&
           patch.accelerationCurve !== current.accelerationCurve) ||
@@ -199,6 +204,7 @@ export async function createPreview(
         diameterCurveChanged ||
         widthCurveChanged ||
         heightCurveChanged ||
+        radialChanged ||
         accelerationChanged ||
         dragChanged ||
         spaceChanged ||

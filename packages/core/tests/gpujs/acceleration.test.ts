@@ -62,6 +62,13 @@ it('shares persistent spread with drag and applies acceleration first on both ax
       40,
       0.6,
       -0.8,
+      0,
+      0,
+      0,
+      0,
+      0,
+      new Float32Array(65),
+      0,
     );
   expect(run(1)[2]).toBeCloseTo((100 + 120 * 0.6 * 0.1) * 0.7);
   expect(run(1)[3]).toBeCloseTo((50 - 120 * 0.8 * 0.1) * 0.7);

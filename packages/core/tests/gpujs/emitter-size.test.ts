@@ -73,6 +73,13 @@ it.each([1, 2, 3])(
           0,
           0,
           1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          new Float32Array(65),
+          0,
         );
       context.thread.y = 0;
       expect(run(1)).toEqual(expected);

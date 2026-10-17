@@ -5,6 +5,7 @@ import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 
 import { emitterConfigSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
+import { sampleCurve } from './curves/sample-curve';
 import { SampledCurve } from './curves/sampled-curve';
 import { SampledShape } from './curves/sampled-shape';
 import { EmitterPlayback } from './emitter-playback';
@@ -35,6 +36,8 @@ export class Emitter {
   private initialRotation: SampledCurve;
   private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
+  private radialMagnitude: SampledCurve;
+  private readonly rotationSamples: Float32Array;
   private accelerationMagnitude: SampledCurve;
   private dragMagnitude: SampledCurve;
   private spawnRate: SpawnRate;
@@ -67,6 +70,8 @@ export class Emitter {
     this.initialAlpha = new SampledCurve(this.settings.initial.alpha);
     this.initialLifetime = new SampledCurve(this.settings.initial.lifetime);
     this.dragMagnitude = new SampledCurve(this.settings.modifiers.drag.magnitude);
+    this.radialMagnitude = new SampledCurve(this.settings.modifiers.radial.magnitude);
+    this.rotationSamples = sampleCurve(this.settings.overLifetime.rotation);
     this.accelerationMagnitude = new SampledCurve(this.settings.modifiers.acceleration.magnitude);
     this.shape = new SampledShape(this.settings.emission.shape);
     this.gl = context.gl;
@@ -97,6 +102,8 @@ export class Emitter {
     const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
     gpu.addFunction(functions.advancePosition);
     gpu.addFunction(functions.applyAcceleration);
+    gpu.addFunction(functions.applyRadial);
+    gpu.addFunction(functions.particleHeading);
     gpu.addFunction(functions.advanceAge);
     // The alive flag is numeric in GPU storage.
     gpu.addFunction(functions.particleAlive, { returnType: 'Number' });
@@ -174,6 +181,10 @@ export class Emitter {
   setParameters(patch: EmitterParameters): void {
     this.assertAlive();
     const settings = updateEmitterConfig(this.settings, patch);
+    const radialMagnitude =
+      patch.modifiers?.radial?.magnitude === undefined
+        ? this.radialMagnitude
+        : new SampledCurve(settings.modifiers.radial.magnitude);
     const accelerationMagnitude =
       patch.modifiers?.acceleration?.magnitude === undefined
         ? this.accelerationMagnitude
@@ -219,6 +230,7 @@ export class Emitter {
         ? this.initialLifetime
         : new SampledCurve(settings.initial.lifetime);
     this.settings = settings;
+    this.radialMagnitude = radialMagnitude;
     this.accelerationMagnitude = accelerationMagnitude;
     this.dragMagnitude = dragMagnitude;
     this.shape = shape;
@@ -267,6 +279,13 @@ export class Emitter {
     const radians = (-rotation * Math.PI) / 180;
     const accelerationRadians = -((rotation + o.modifiers.acceleration.rotation) * Math.PI) / 180;
     const dragRadians = -((rotation + o.modifiers.drag.rotation) * Math.PI) / 180;
+    const radial = o.modifiers.radial;
+    const radialX =
+      (worldSpace ? this.x : 0) +
+      (Math.cos(radians) * radial.x - Math.sin(radians) * radial.y) * scale;
+    const radialY =
+      (worldSpace ? this.y : 0) +
+      (Math.sin(radians) * radial.x + Math.cos(radians) * radial.y) * scale;
     const initialRotation = this.initialRotation.at(this.playback.normalizedAge);
     const particleRotation =
       o.orientation === 'movement-direction' ? initialRotation : initialRotation + rotation;
@@ -317,6 +336,13 @@ export class Emitter {
       o.modifiers.acceleration.spread * scale,
       Math.sin(accelerationRadians),
       -Math.cos(accelerationRadians),
+      this.radialMagnitude.at(this.playback.normalizedAge) * scale,
+      radial.spread * scale,
+      radialX,
+      radialY,
+      radial.maxDistance * scale,
+      this.rotationSamples,
+      o.orientation === 'movement-direction' ? 1 : 0,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;
@@ -363,6 +389,8 @@ export class Emitter {
     gl.disable(gl.SCISSOR_TEST);
     gl.disable(gl.CULL_FACE);
     gl.colorMask(true, true, true, true);
+    // Curve textures contain data, not colors; Pixi may leave alpha premultiplication enabled.
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
     // GPU.js does not declare this WebGL-specific internal field.
     const size = (kernel.kernel as typeof kernel.kernel & { maxTexSize?: number[] }).maxTexSize;
     gl.viewport(0, 0, size?.[0] ?? this.width, size?.[1] ?? this.rows * 4);

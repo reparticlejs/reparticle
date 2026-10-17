@@ -104,3 +104,30 @@ it('preserves acceleration curves while changing direction and spread', () => {
       .modifiers.acceleration,
   ).toEqual({ magnitude: definition.modifiers.acceleration.magnitude, spread: 20, rotation: 90 });
 });
+
+it('preserves radial curves while changing the center, cutoff, and spread', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.modifiers.radial.magnitude = {
+    points: [
+      { time: 0, value: 0, tangent: 100 },
+      { time: 1, value: 100, tangent: 100 },
+    ],
+  };
+  const controls = initialControls(definition);
+  expect(controls.radialCurve).toBe('effect');
+  expect(
+    applyControls(definition, {
+      ...controls,
+      radialX: 20,
+      radialY: -30,
+      radialMaxDistance: 200,
+      radialSpread: 40,
+    }).modifiers.radial,
+  ).toEqual({
+    magnitude: definition.modifiers.radial.magnitude,
+    x: 20,
+    y: -30,
+    maxDistance: 200,
+    spread: 40,
+  });
+});

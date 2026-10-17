@@ -17,6 +17,7 @@ import { initialRed } from './initial-red';
 import { initialRotation } from './initial-rotation';
 import { initialSize } from './initial-size';
 import { initialSpeed } from './initial-speed';
+import { radialMagnitude } from './radial-magnitude';
 import { rotationCurves } from './rotation-curves';
 import { sizeCurves } from './size-curves';
 
@@ -87,6 +88,13 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     modifiers: {
       ...definition.modifiers,
       acceleration,
+      radial: {
+        magnitude: radialMagnitude(controls),
+        spread: controls.radialSpread,
+        x: controls.radialX,
+        y: controls.radialY,
+        maxDistance: controls.radialMaxDistance,
+      },
       drag: {
         magnitude: dragMagnitude(controls),
         spread: controls.dragSpread,
@@ -130,6 +138,16 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     rate: typeof definition.emission.rate === 'number' ? definition.emission.rate : 4000,
     rateCurve: typeof definition.emission.rate === 'number' ? 'constant' : 'effect',
     effectRate: definition.emission.rate,
+    radial:
+      typeof definition.modifiers.radial.magnitude === 'number'
+        ? definition.modifiers.radial.magnitude
+        : 160,
+    radialCurve: typeof definition.modifiers.radial.magnitude === 'number' ? 'constant' : 'effect',
+    effectRadial: definition.modifiers.radial.magnitude,
+    radialSpread: definition.modifiers.radial.spread,
+    radialX: definition.modifiers.radial.x,
+    radialY: definition.modifiers.radial.y,
+    radialMaxDistance: definition.modifiers.radial.maxDistance,
     acceleration:
       typeof definition.modifiers.acceleration.magnitude === 'number'
         ? definition.modifiers.acceleration.magnitude
@@ -234,6 +252,13 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
       ...(controls.initialBlueCurve === 'constant' ? { blue: controls.blue } : {}),
     },
     modifiers: {
+      radial: {
+        ...(controls.radialCurve === 'constant' ? { magnitude: controls.radial } : {}),
+        spread: controls.radialSpread,
+        x: controls.radialX,
+        y: controls.radialY,
+        maxDistance: controls.radialMaxDistance,
+      },
       acceleration: {
         ...(controls.accelerationCurve === 'constant' ? { magnitude: controls.acceleration } : {}),
         spread: controls.accelerationSpread,
