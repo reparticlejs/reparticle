@@ -13,16 +13,24 @@ import { scalarPropertySchema } from './curve';
 
 const shapeSchema = discriminatedUnion('type', [
   strictObject({ type: literal('point') }),
-  strictObject({ type: literal('circle'), diameter: number().nonnegative() }),
+  strictObject({
+    type: literal('circle'),
+    diameter: scalarPropertySchema,
+    diameterSpread: number().nonnegative().default(0),
+  }),
   strictObject({
     type: literal('box'),
-    width: number().nonnegative(),
-    height: number().nonnegative(),
+    width: scalarPropertySchema,
+    widthSpread: number().nonnegative().default(0),
+    height: scalarPropertySchema,
+    heightSpread: number().nonnegative().default(0),
   }),
   strictObject({
     type: literal('cone2d'),
-    width: number().nonnegative(),
-    height: number().nonnegative(),
+    width: scalarPropertySchema,
+    widthSpread: number().nonnegative().default(0),
+    height: scalarPropertySchema,
+    heightSpread: number().nonnegative().default(0),
   }),
 ]);
 
@@ -65,9 +73,12 @@ export const emitterParametersSchema = strictObject({
   emission: strictObject({
     rate: number().nonnegative(),
     shape: strictObject({
-      diameter: number().nonnegative(),
-      width: number().nonnegative(),
-      height: number().nonnegative(),
+      diameter: number(),
+      diameterSpread: number().nonnegative(),
+      width: number(),
+      widthSpread: number().nonnegative(),
+      height: number(),
+      heightSpread: number().nonnegative(),
     }).partial(),
   })
     .partial()

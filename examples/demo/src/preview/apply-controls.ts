@@ -4,6 +4,9 @@ import type { PreviewControls } from '../types/preview';
 import { alphaCurves } from './alpha-curves';
 import { colorCurves } from './color-curves';
 import { emissionRate } from './emission-rate';
+import { emitterDiameter } from './emitter-diameter';
+import { emitterHeight } from './emitter-height';
+import { emitterWidth } from './emitter-width';
 import { initialAlpha } from './initial-alpha';
 import { initialBlue } from './initial-blue';
 import { initialGreen } from './initial-green';
@@ -91,10 +94,19 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     orientation: definition.orientation,
     playMode: definition.playMode,
     shape: definition.emission.shape.type,
-    diameter:
-      definition.emission.shape.type === 'circle' ? definition.emission.shape.diameter : 100,
-    width: 'width' in shape ? shape.width : 200,
-    height: 'height' in shape ? shape.height : 100,
+    diameter: shape.type === 'circle' && typeof shape.diameter === 'number' ? shape.diameter : 100,
+    diameterCurve:
+      shape.type === 'circle' && typeof shape.diameter !== 'number' ? 'effect' : 'constant',
+    effectDiameter: shape.type === 'circle' ? shape.diameter : 100,
+    diameterSpread: shape.type === 'circle' ? shape.diameterSpread : 0,
+    width: 'width' in shape && typeof shape.width === 'number' ? shape.width : 200,
+    widthCurve: 'width' in shape && typeof shape.width !== 'number' ? 'effect' : 'constant',
+    effectWidth: 'width' in shape ? shape.width : 200,
+    widthSpread: 'widthSpread' in shape ? shape.widthSpread : 0,
+    height: 'height' in shape && typeof shape.height === 'number' ? shape.height : 100,
+    heightCurve: 'height' in shape && typeof shape.height !== 'number' ? 'effect' : 'constant',
+    effectHeight: 'height' in shape ? shape.height : 100,
+    heightSpread: 'heightSpread' in shape ? shape.heightSpread : 0,
     rateSpread: definition.emission.rateSpread,
     rate: typeof definition.emission.rate === 'number' ? definition.emission.rate : 4000,
     rateCurve: typeof definition.emission.rate === 'number' ? 'constant' : 'effect',
@@ -148,9 +160,17 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
   const emission: EmitterParameters['emission'] =
     controls.rateCurve === 'constant' ? { rate: controls.rate } : {};
   if (controls.shape === 'circle') {
-    emission.shape = { diameter: controls.diameter };
+    emission.shape = {
+      ...(controls.diameterCurve === 'constant' ? { diameter: controls.diameter } : {}),
+      diameterSpread: controls.diameterSpread,
+    };
   } else if (controls.shape === 'box' || controls.shape === 'cone2d') {
-    emission.shape = { width: controls.width, height: controls.height };
+    emission.shape = {
+      ...(controls.widthCurve === 'constant' ? { width: controls.width } : {}),
+      ...(controls.heightCurve === 'constant' ? { height: controls.height } : {}),
+      widthSpread: controls.widthSpread,
+      heightSpread: controls.heightSpread,
+    };
   }
   return {
     emission,
@@ -180,11 +200,27 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
 function emitterShape(controls: PreviewControls): EmitterConfig['emission']['shape'] {
   switch (controls.shape) {
     case 'circle':
-      return { type: 'circle', diameter: controls.diameter };
+      return {
+        type: 'circle',
+        diameter: emitterDiameter(controls),
+        diameterSpread: controls.diameterSpread,
+      };
     case 'box':
-      return { type: 'box', width: controls.width, height: controls.height };
+      return {
+        type: 'box',
+        width: emitterWidth(controls),
+        height: emitterHeight(controls),
+        widthSpread: controls.widthSpread,
+        heightSpread: controls.heightSpread,
+      };
     case 'cone2d':
-      return { type: 'cone2d', width: controls.width, height: controls.height };
+      return {
+        type: 'cone2d',
+        width: emitterWidth(controls),
+        height: emitterHeight(controls),
+        widthSpread: controls.widthSpread,
+        heightSpread: controls.heightSpread,
+      };
     case 'point':
       return { type: 'point' };
     default:

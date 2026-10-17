@@ -24,11 +24,23 @@ it.each([
 ])('accepts box dimensions %s × %s', (width, height) => {
   const original = parseEffectConfig(box(width, height)).emitters[0];
   const updated = updateEmitterConfig(original, { emission: { shape: { width: 300 } } });
-  expect(updated.emission.shape).toEqual({ type: 'box', width: 300, height });
-  expect(original.emission.shape).toEqual({ type: 'box', width, height });
+  expect(updated.emission.shape).toEqual({
+    widthSpread: 0,
+    heightSpread: 0,
+    type: 'box',
+    width: 300,
+    height,
+  });
+  expect(original.emission.shape).toEqual({
+    widthSpread: 0,
+    heightSpread: 0,
+    type: 'box',
+    width,
+    height,
+  });
 });
 
-it.each([-1, Infinity, NaN, '100', undefined])('rejects invalid box dimensions %s', (value) => {
+it.each([Infinity, NaN, '100', undefined])('rejects invalid box dimensions %s', (value) => {
   expect(() => parseEffectConfig(box(value, 100))).toThrow(ZodError);
   expect(() => parseEffectConfig(box(100, value))).toThrow(ZodError);
 });

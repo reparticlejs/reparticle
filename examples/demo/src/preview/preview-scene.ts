@@ -67,6 +67,12 @@ export class PreviewScene {
       next.shape !== this.settings.shape ||
       next.startOffset !== this.settings.startOffset ||
       next.startDelay !== this.settings.startDelay ||
+      next.diameterCurve !== this.settings.diameterCurve ||
+      (next.diameterCurve !== 'constant' && next.diameter !== this.settings.diameter) ||
+      next.widthCurve !== this.settings.widthCurve ||
+      (next.widthCurve !== 'constant' && next.width !== this.settings.width) ||
+      next.heightCurve !== this.settings.heightCurve ||
+      (next.heightCurve !== 'constant' && next.height !== this.settings.height) ||
       next.rateSpread !== this.settings.rateSpread ||
       next.duration !== this.settings.duration ||
       next.durationSpread !== this.settings.durationSpread ||

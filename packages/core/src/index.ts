@@ -6,6 +6,7 @@ import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 import { emitterConfigSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
 import { SampledCurve } from './curves/sampled-curve';
+import { SampledShape } from './curves/sampled-shape';
 import { EmitterPlayback } from './emitter-playback';
 import functions from './gpujs/functions.json';
 import { isPipelineTexture } from './gpujs/is-pipeline-texture';
@@ -33,6 +34,7 @@ export class Emitter {
   private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
   private spawnRate: SpawnRate;
+  private shape: SampledShape;
   private readonly playback: EmitterPlayback;
   private readonly kernels: IKernelRunShortcut[] = [];
   private readonly vaos: WebGLVertexArrayObject[] = [];
@@ -60,6 +62,7 @@ export class Emitter {
     this.initialBlue = new SampledCurve(this.settings.initial.blue);
     this.initialAlpha = new SampledCurve(this.settings.initial.alpha);
     this.initialLifetime = new SampledCurve(this.settings.initial.lifetime);
+    this.shape = new SampledShape(this.settings.emission.shape);
     this.gl = context.gl;
     this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
@@ -142,6 +145,8 @@ export class Emitter {
   setParameters(patch: EmitterParameters): void {
     this.assertAlive();
     const settings = updateEmitterConfig(this.settings, patch);
+    const shape =
+      patch.emission?.shape === undefined ? this.shape : new SampledShape(settings.emission.shape);
     const spawnRate =
       patch.emission?.rate === undefined
         ? this.spawnRate
@@ -177,6 +182,7 @@ export class Emitter {
         ? this.initialLifetime
         : new SampledCurve(settings.initial.lifetime);
     this.settings = settings;
+    this.shape = shape;
     this.initialLifetime = initialLifetime;
     this.initialRed = initialRed;
     this.initialGreen = initialGreen;
@@ -215,22 +221,6 @@ export class Emitter {
     const rate = active && this.emitting ? this.spawnRate.at(this.playback.normalizedAge) : 0;
     const { start, count } = this.schedule.next(rate, dt);
     const o = this.settings;
-    const shape = o.emission.shape;
-    let shapeType = 0;
-    let sizeX = 0;
-    let sizeY = 0;
-    if (shape.type === 'circle') {
-      shapeType = 1;
-      sizeX = shape.diameter;
-    } else if (shape.type === 'box') {
-      shapeType = 2;
-      sizeX = shape.width;
-      sizeY = shape.height;
-    } else if (shape.type === 'cone2d') {
-      shapeType = 3;
-      sizeX = shape.width;
-      sizeY = shape.height;
-    }
     this.output = this.run(
       this.nextKernel,
       this.output,
@@ -245,9 +235,9 @@ export class Emitter {
       o.modifiers.gravity.y,
       this.initialLifetime.at(this.playback.normalizedAge),
       this.seed,
-      shapeType,
-      sizeX,
-      sizeY,
+      this.shape.type,
+      this.shape.x.at(this.playback.normalizedAge),
+      this.shape.y.at(this.playback.normalizedAge),
       this.initialSize.at(this.playback.normalizedAge),
       this.initialAlpha.at(this.playback.normalizedAge),
       this.initialRed.at(this.playback.normalizedAge),
@@ -263,6 +253,8 @@ export class Emitter {
       o.initial.greenSpread,
       o.initial.blueSpread,
       o.initial.alphaSpread,
+      this.shape.spreadX,
+      this.shape.spreadY,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

@@ -24,11 +24,23 @@ it.each([
 ])('accepts cone2d dimensions %s × %s', (width, height) => {
   const original = parseEffectConfig(cone2d(width, height)).emitters[0];
   const updated = updateEmitterConfig(original, { emission: { shape: { width: 300 } } });
-  expect(updated.emission.shape).toEqual({ type: 'cone2d', width: 300, height });
-  expect(original.emission.shape).toEqual({ type: 'cone2d', width, height });
+  expect(updated.emission.shape).toEqual({
+    widthSpread: 0,
+    heightSpread: 0,
+    type: 'cone2d',
+    width: 300,
+    height,
+  });
+  expect(original.emission.shape).toEqual({
+    widthSpread: 0,
+    heightSpread: 0,
+    type: 'cone2d',
+    width,
+    height,
+  });
 });
 
-it.each([-1, Infinity, NaN, '100', undefined])('rejects invalid cone2d dimensions %s', (value) => {
+it.each([Infinity, NaN, '100', undefined])('rejects invalid cone2d dimensions %s', (value) => {
   expect(() => parseEffectConfig(cone2d(value, 100))).toThrow(ZodError);
   expect(() => parseEffectConfig(cone2d(100, value))).toThrow(ZodError);
 });
@@ -44,10 +56,16 @@ it('rejects shape-inappropriate numeric updates', () => {
   );
 });
 
-it('rejects negative dimension updates without changing the original cone', () => {
+it('rejects invalid dimension updates without changing the original cone', () => {
   const original = parseEffectConfig(cone2d(200, 100)).emitters[0];
-  expect(() => updateEmitterConfig(original, { emission: { shape: { height: -1 } } })).toThrow(
+  expect(() => updateEmitterConfig(original, { emission: { shape: { height: NaN } } })).toThrow(
     ZodError,
   );
-  expect(original.emission.shape).toEqual({ type: 'cone2d', width: 200, height: 100 });
+  expect(original.emission.shape).toEqual({
+    widthSpread: 0,
+    heightSpread: 0,
+    type: 'cone2d',
+    width: 200,
+    height: 100,
+  });
 });

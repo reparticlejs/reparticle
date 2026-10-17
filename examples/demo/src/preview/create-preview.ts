@@ -77,6 +77,21 @@ export async function createPreview(
         patch.startDelaySpread !== undefined && patch.startDelaySpread !== current.startDelaySpread;
       const rateSpreadChanged =
         patch.rateSpread !== undefined && patch.rateSpread !== current.rateSpread;
+      const diameterCurveChanged =
+        (patch.diameterCurve !== undefined && patch.diameterCurve !== current.diameterCurve) ||
+        (current.diameterCurve !== 'constant' &&
+          patch.diameter !== undefined &&
+          patch.diameter !== current.diameter);
+      const widthCurveChanged =
+        (patch.widthCurve !== undefined && patch.widthCurve !== current.widthCurve) ||
+        (current.widthCurve !== 'constant' &&
+          patch.width !== undefined &&
+          patch.width !== current.width);
+      const heightCurveChanged =
+        (patch.heightCurve !== undefined && patch.heightCurve !== current.heightCurve) ||
+        (current.heightCurve !== 'constant' &&
+          patch.height !== undefined &&
+          patch.height !== current.height);
       const modeChanged = patch.playMode !== undefined && patch.playMode !== current.playMode;
       const delayChanged =
         patch.startDelay !== undefined && patch.startDelay !== current.startDelay;
@@ -169,6 +184,9 @@ export async function createPreview(
         orientationChanged ||
         capacityChanged ||
         shapeChanged ||
+        diameterCurveChanged ||
+        widthCurveChanged ||
+        heightCurveChanged ||
         rateSpreadChanged ||
         durationChanged ||
         durationSpreadChanged ||

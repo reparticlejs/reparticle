@@ -47,6 +47,8 @@ export function integrate(
   greenSpread: number,
   blueSpread: number,
   alphaSpread: number,
+  emitterSizeSpreadX: number,
+  emitterSizeSpreadY: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -68,14 +70,16 @@ export function integrate(
   }
 
   if (isSpawning) {
+    const sampledX = sizeX + propertyVariation(particleId, seed, 12) * emitterSizeSpreadX;
+    const sampledY = sizeY + propertyVariation(particleId, seed, 13) * emitterSizeSpreadY;
     // Unit-speed motion preserves the shape direction even when actual speed is zero.
     let spawned = spawnMotion(particleId, seed, emitterX, emitterY, 1, direction, spread);
     if (shapeType === 1) {
-      spawned = spawnCircle(particleId, seed, emitterX, emitterY, 1, sizeX);
+      spawned = spawnCircle(particleId, seed, emitterX, emitterY, 1, sampledX);
     } else if (shapeType === 2) {
-      spawned = spawnBox(particleId, seed, emitterX, emitterY, 1, sizeX, sizeY);
+      spawned = spawnBox(particleId, seed, emitterX, emitterY, 1, sampledX, sampledY);
     } else if (shapeType === 3) {
-      spawned = spawnCone2D(particleId, seed, emitterX, emitterY, 1, sizeX, sizeY);
+      spawned = spawnCone2D(particleId, seed, emitterX, emitterY, 1, sampledX, sampledY);
     }
     if (this.thread.y >= this.constants.rows) {
       let rotation = initialRotation + propertyVariation(particleId, seed, 4) * rotationSpread;

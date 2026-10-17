@@ -1,4 +1,4 @@
-import type { EmitterConfig } from '@reparticle/core';
+import type { EmitterConfig, ScalarProperty } from '@reparticle/core';
 
 export type ColorCurves = Pick<EmitterConfig['overLifetime'], 'red' | 'green' | 'blue'>;
 
@@ -17,8 +17,17 @@ export interface PreviewControls {
   playMode: 'once' | 'loop';
   shape: EmitterShape;
   diameter: number;
+  diameterSpread: number;
+  diameterCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectDiameter: ScalarProperty;
   width: number;
+  widthSpread: number;
+  widthCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectWidth: ScalarProperty;
   height: number;
+  heightSpread: number;
+  heightCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectHeight: ScalarProperty;
   texture: ParticleTextureName;
   red: number;
   initialRedCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
