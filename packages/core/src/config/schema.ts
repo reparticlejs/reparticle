@@ -106,7 +106,9 @@ export const emitterConfigSchema = strictObject({
   seed: int().min(0).max(65535),
   startOffset: number().nonnegative().default(0),
   startDelay: number().nonnegative().default(0),
+  startDelaySpread: number().nonnegative().default(0),
   duration: number().nonnegative().default(1),
+  durationSpread: number().nonnegative().default(0),
   orientation: enumSchema(['default', 'initial-direction', 'movement-direction']).default(
     'default',
   ),

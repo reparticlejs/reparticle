@@ -1,4 +1,7 @@
 import type { EmitterConfig } from '#types/effect.js';
+import type { PlaybackVariation } from '#types/playback.js';
+
+import { propertyVariation } from './behaviors/property-variation';
 
 /** Frame-based emitter timing; particle lifetime is independent of this clock. */
 export class EmitterPlayback {
@@ -6,11 +9,19 @@ export class EmitterPlayback {
   private finished = false;
   private waiting = true;
 
+  private readonly duration: number;
+  private readonly startDelay: number;
+
   constructor(
-    private readonly duration: number,
+    duration: number,
     private readonly playMode: EmitterConfig['playMode'],
-    private readonly startDelay = 0,
-  ) {}
+    startDelay = 0,
+    { seed = 0, durationSpread = 0, startDelaySpread = 0 }: PlaybackVariation = {},
+  ) {
+    // Emitter-level samples stay fixed across loops and resets.
+    this.duration = Math.max(0, duration + propertyVariation(0, seed, 9) * durationSpread);
+    this.startDelay = startDelay + propertyVariation(0, seed, 10) * startDelaySpread;
+  }
 
   get emitting(): boolean {
     return !this.finished && (!this.waiting || this.delayReached);

@@ -33,6 +33,16 @@ export function PlaybackControls({ controls, onChange, onReset }: EmitterControl
         onChange={(duration) => onChange({ duration })}
       />
       <Slider
+        id="durationSpread"
+        label="Duration spread"
+        value={controls.durationSpread}
+        min={0}
+        max={5}
+        step={0.1}
+        unit=" s"
+        onChange={(durationSpread) => onChange({ durationSpread })}
+      />
+      <Slider
         id="start-delay"
         label="Start delay"
         value={controls.startDelay}
@@ -41,6 +51,16 @@ export function PlaybackControls({ controls, onChange, onReset }: EmitterControl
         step={0.1}
         unit=" s"
         onChange={(startDelay) => onChange({ startDelay })}
+      />
+      <Slider
+        id="startDelaySpread"
+        label="Start delay spread"
+        value={controls.startDelaySpread}
+        min={0}
+        max={5}
+        step={0.1}
+        unit=" s"
+        onChange={(startDelaySpread) => onChange({ startDelaySpread })}
       />
       <Slider
         id="start-offset"
@@ -54,8 +74,8 @@ export function PlaybackControls({ controls, onChange, onReset }: EmitterControl
       />
       <p>Start offset prewarms the simulation, capped at particle lifetime.</p>
       <p>
-        Changing delay, offset, duration or mode restarts the effect. Once stops emission; existing
-        particles finish their lifetime.
+        Spread is sampled once per emitter and retained on reset. Changing timing or mode restarts
+        the effect. Once stops emission; existing particles finish their lifetime.
       </p>
       <div className="playback-actions">
         <button id="pause" onClick={togglePlayback}>

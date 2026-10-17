@@ -68,6 +68,8 @@ export class PreviewScene {
       next.startOffset !== this.settings.startOffset ||
       next.startDelay !== this.settings.startDelay ||
       next.duration !== this.settings.duration ||
+      next.durationSpread !== this.settings.durationSpread ||
+      next.startDelaySpread !== this.settings.startDelaySpread ||
       next.playMode !== this.settings.playMode
     ) {
       this.view = replaceParticleView(

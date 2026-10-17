@@ -9,6 +9,8 @@ function setup() {
     shape: 'point',
     startOffset: 0,
     startDelay: 0,
+    startDelaySpread: 0,
+    durationSpread: 0,
     duration: 1,
     orientation: 'default',
     playMode: 'loop',

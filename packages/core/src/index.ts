@@ -64,6 +64,7 @@ export class Emitter {
       this.settings.duration,
       this.settings.playMode,
       this.settings.startDelay,
+      this.settings,
     );
     this.rows = Math.ceil(this.capacity / this.width);
     this.seed = this.initialSeed = this.settings.seed;

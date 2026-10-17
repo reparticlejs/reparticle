@@ -1,3 +1,4 @@
+import { propertyVariation } from '@reparticle/core';
 import { expect, it } from 'vitest';
 
 import { PreviewParticleCount } from '#src/devtools/stats/measurement/preview-particle-count.js';
@@ -8,6 +9,8 @@ const controls: PreviewControls = {
   shape: 'point',
   startOffset: 0.1,
   startDelay: 0,
+  startDelaySpread: 0,
+  durationSpread: 0,
   duration: 1,
   orientation: 'default',
   playMode: 'loop',
@@ -139,3 +142,37 @@ it('expires each birth batch using its captured emitter-time lifetime', () => {
   }
   expect(counter.count).toBe(0);
 });
+
+it.each(['once', 'loop'] as const)(
+  'mirrors sampled timing during prewarm and %s playback',
+  (playMode) => {
+    const varied = {
+      ...controls,
+      playMode,
+      seed: 42,
+      duration: 0.3,
+      durationSpread: 0.2,
+      startDelay: 0.1,
+      startDelaySpread: 0.3,
+      startOffset: 0.5,
+    };
+    const resolved = {
+      ...varied,
+      duration: Math.max(
+        0,
+        varied.duration + propertyVariation(0, varied.seed, 9) * varied.durationSpread,
+      ),
+      startDelay:
+        varied.startDelay + propertyVariation(0, varied.seed, 10) * varied.startDelaySpread,
+      durationSpread: 0,
+      startDelaySpread: 0,
+    };
+    const actual = new PreviewParticleCount(controls.capacity);
+    const expected = new PreviewParticleCount(controls.capacity);
+    for (let frame = 0; frame < 60; frame++) {
+      actual.advance(1 / 60, varied, true);
+      expected.advance(1 / 60, resolved, true);
+      expect(actual.count).toBe(expected.count);
+    }
+  },
+);

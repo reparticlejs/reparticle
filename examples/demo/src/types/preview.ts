@@ -10,6 +10,8 @@ export interface PreviewControls {
   capacity: number;
   startOffset: number;
   startDelay: number;
+  startDelaySpread: number;
+  durationSpread: number;
   duration: number;
   orientation: 'default' | 'initial-direction' | 'movement-direction';
   playMode: 'once' | 'loop';

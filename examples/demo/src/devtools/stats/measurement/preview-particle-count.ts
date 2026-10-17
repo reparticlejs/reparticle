@@ -37,6 +37,7 @@ export class PreviewParticleCount {
         controls.duration,
         controls.playMode,
         controls.startDelay,
+        controls,
       );
       prewarm(controls.startOffset, this.lifetime.maximum + controls.lifetimeSpread, (step) =>
         this.step(step, controls, emitting),

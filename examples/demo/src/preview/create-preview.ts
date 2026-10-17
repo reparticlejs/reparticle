@@ -71,6 +71,10 @@ export async function createPreview(
       const capacityChanged = patch.capacity !== undefined && patch.capacity !== current.capacity;
       const shapeChanged = patch.shape !== undefined && patch.shape !== current.shape;
       const durationChanged = patch.duration !== undefined && patch.duration !== current.duration;
+      const durationSpreadChanged =
+        patch.durationSpread !== undefined && patch.durationSpread !== current.durationSpread;
+      const delaySpreadChanged =
+        patch.startDelaySpread !== undefined && patch.startDelaySpread !== current.startDelaySpread;
       const modeChanged = patch.playMode !== undefined && patch.playMode !== current.playMode;
       const delayChanged =
         patch.startDelay !== undefined && patch.startDelay !== current.startDelay;
@@ -164,6 +168,8 @@ export async function createPreview(
         capacityChanged ||
         shapeChanged ||
         durationChanged ||
+        durationSpreadChanged ||
+        delaySpreadChanged ||
         modeChanged ||
         delayChanged ||
         offsetChanged ||

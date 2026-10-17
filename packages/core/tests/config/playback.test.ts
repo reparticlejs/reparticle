@@ -79,3 +79,25 @@ it.each([-1, NaN, Infinity, '1', null])('rejects invalid start offset %s', (star
     }),
   ).toThrow(ZodError);
 });
+
+it.each(['durationSpread', 'startDelaySpread'])(
+  'validates %s as nonnegative, defaulting to zero',
+  (key) => {
+    const input = effect(1, 'loop');
+    expect(parseEffectConfig(input).emitters[0]).toHaveProperty(key, 0);
+    for (const value of [0, 0.5, 10]) {
+      expect(
+        parseEffectConfig({ ...input, emitters: [{ ...input.emitters[0], [key]: value }] })
+          .emitters[0],
+      ).toHaveProperty(key, value);
+    }
+    for (const value of [-1, NaN, Infinity, '1', null]) {
+      expect(() =>
+        parseEffectConfig({ ...input, emitters: [{ ...input.emitters[0], [key]: value }] }),
+      ).toThrow(ZodError);
+    }
+    expect(() => updateEmitterConfig(parseEffectConfig(input).emitters[0], { [key]: 1 })).toThrow(
+      ZodError,
+    );
+  },
+);
