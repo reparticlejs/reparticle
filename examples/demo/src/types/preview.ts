@@ -25,6 +25,8 @@ export interface PreviewControls {
   alpha: number;
   alphaCurve: 'effect' | 'constant' | 'fade-out' | 'fade-in-out';
   rotation: number;
+  initialRotationCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectRotation: EmitterConfig['initial']['rotation'];
   rotationCurve: 'effect' | 'constant' | 'full-turn' | 'reverse-turn';
   size: number;
   initialSizeCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';

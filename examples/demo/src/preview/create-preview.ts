@@ -101,7 +101,16 @@ export async function createPreview(
         current.initialSizeCurve !== 'constant' &&
         patch.size !== undefined &&
         patch.size !== current.size;
+      const initialRotationCurveChanged =
+        patch.initialRotationCurve !== undefined &&
+        patch.initialRotationCurve !== current.initialRotationCurve;
+      const curveRotationChanged =
+        current.initialRotationCurve !== 'constant' &&
+        patch.rotation !== undefined &&
+        patch.rotation !== current.rotation;
       const rebuilding =
+        initialRotationCurveChanged ||
+        curveRotationChanged ||
         initialSizeCurveChanged ||
         curveSizeChanged ||
         speedCurveChanged ||

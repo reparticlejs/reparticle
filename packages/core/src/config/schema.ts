@@ -44,7 +44,7 @@ const initialPropertiesSchema = strictObject({
   green: number().default(1),
   blue: number().default(1),
   alpha: number().default(1),
-  rotation: number().default(0),
+  rotation: scalarPropertySchema.default(0),
   rotationSpread: number().nonnegative().default(0),
   sizeSpread: number().nonnegative().default(0),
   size: scalarPropertySchema.default(24),

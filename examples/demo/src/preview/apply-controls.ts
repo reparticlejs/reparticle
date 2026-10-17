@@ -4,6 +4,7 @@ import type { PreviewControls } from '../types/preview';
 import { alphaCurves } from './alpha-curves';
 import { colorCurves } from './color-curves';
 import { emissionRate } from './emission-rate';
+import { initialRotation } from './initial-rotation';
 import { initialSize } from './initial-size';
 import { initialSpeed } from './initial-speed';
 import { rotationCurves } from './rotation-curves';
@@ -27,7 +28,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     alphaSpread: controls.alphaSpread,
 
     rotationSpread: controls.rotationSpread,
-    rotation: controls.rotation,
+    rotation: initialRotation(controls),
     alpha: controls.alpha,
     red: controls.red,
     green: controls.green,
@@ -103,7 +104,9 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
 
     rotationSpread: definition.initial.rotationSpread,
     sizeCurve: 'effect',
-    rotation: definition.initial.rotation,
+    rotation: typeof definition.initial.rotation === 'number' ? definition.initial.rotation : 0,
+    initialRotationCurve: typeof definition.initial.rotation === 'number' ? 'constant' : 'effect',
+    effectRotation: definition.initial.rotation,
     rotationCurve: 'effect',
     alpha: definition.initial.alpha,
     alphaCurve: 'effect',
@@ -139,7 +142,7 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
       alphaSpread: controls.alphaSpread,
 
       rotationSpread: controls.rotationSpread,
-      rotation: controls.rotation,
+      ...(controls.initialRotationCurve === 'constant' ? { rotation: controls.rotation } : {}),
       alpha: controls.alpha,
       red: controls.red,
       green: controls.green,

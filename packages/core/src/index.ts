@@ -24,6 +24,7 @@ export class Emitter {
   emitting = true;
   private settings: EmitterConfig;
   private readonly schedule: SpawnSchedule;
+  private initialRotation: SampledCurve;
   private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
   private spawnRate: SpawnRate;
@@ -42,6 +43,7 @@ export class Emitter {
   constructor(context: EmitterContext, definition: EmitterConfig) {
     this.settings = emitterConfigSchema.parse(definition);
     this.spawnRate = new SpawnRate(this.settings.emission.rate);
+    this.initialRotation = new SampledCurve(this.settings.initial.rotation);
     this.initialSize = new SampledCurve(this.settings.initial.size);
     this.initialSpeed = new SampledCurve(this.settings.initial.speed);
     this.gl = context.gl;
@@ -135,7 +137,12 @@ export class Emitter {
       patch.initial?.size === undefined
         ? this.initialSize
         : new SampledCurve(settings.initial.size);
+    const initialRotation =
+      patch.initial?.rotation === undefined
+        ? this.initialRotation
+        : new SampledCurve(settings.initial.rotation);
     this.settings = settings;
+    this.initialRotation = initialRotation;
     this.initialSize = initialSize;
     this.initialSpeed = initialSpeed;
     this.spawnRate = spawnRate;
@@ -206,7 +213,7 @@ export class Emitter {
       o.initial.red,
       o.initial.green,
       o.initial.blue,
-      o.initial.rotation,
+      this.initialRotation.at(this.playback.normalizedAge),
       o.orientation === 'initial-direction' ? 1 : 0,
       o.initial.speedSpread,
       o.initial.lifetimeSpread,

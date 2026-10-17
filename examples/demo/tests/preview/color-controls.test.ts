@@ -129,3 +129,31 @@ it('keeps emitter-time size separate from particle-lifetime scale', () => {
     emitterParameters({ ...restored, initialSizeCurve: 'constant', size: 20 }).initial?.size,
   ).toBe(20);
 });
+
+it('keeps emitter rotation separate from particle rotation and preserves authored curves', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  const controls = {
+    ...initialControls(definition),
+    initialRotationCurve: 'ramp-up' as const,
+    rotation: 180,
+    rotationCurve: 'full-turn' as const,
+  };
+  const configured = applyControls(definition, controls);
+  expect(configured.initial.rotation).toEqual({
+    points: [
+      { time: 0, value: 0, tangent: 180 },
+      { time: 1, value: 180, tangent: 180 },
+    ],
+  });
+  const restored = initialControls(configured);
+  expect(restored.initialRotationCurve).toBe('effect');
+  expect(applyControls(configured, restored).initial.rotation).toEqual(configured.initial.rotation);
+  expect(applyControls(configured, restored).overLifetime.rotation).toEqual(
+    configured.overLifetime.rotation,
+  );
+  expect(emitterParameters({ ...restored, rotationSpread: 30 }).initial?.rotation).toBeUndefined();
+  expect(
+    emitterParameters({ ...restored, initialRotationCurve: 'constant', rotation: -90 }).initial
+      ?.rotation,
+  ).toBe(-90);
+});

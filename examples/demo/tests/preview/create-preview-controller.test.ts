@@ -15,6 +15,8 @@ function setup() {
     rateCurve: 'constant',
     speedCurve: 'constant',
     initialSizeCurve: 'constant',
+    initialRotationCurve: 'constant',
+    effectRotation: 0,
     effectSize: 24,
     effectSpeed: 220,
     effectRate: 4000,
