@@ -18,7 +18,7 @@ Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error;
 ## Structure
 
 - `packages/core`: GPU.js 2.24.1 simulation, mathematical behaviors, bounded spawn scheduling. No Pixi dependency. Takes a host WebGL2 context; this GPU backend is browser-based, not a headless CPU implementation.
-- `packages/core/src/gpujs`: internal JavaScript kernels and the narrow browser-bundle declaration. Kernel source strings survive production minification unchanged.
+- `packages/core/src/gpujs`: internal JavaScript kernels. The standard GPU.js package import uses its published types and Vite resolves its browser entry. Kernel source strings survive production minification unchanged.
 - `packages/pixi`: shares Pixi's WebGL2 context and renders directly from the simulation texture with one instanced draw. No Sprite per particle or CPU particle array.
 - `examples/demo`: TypeScript/Vite preview and explicit GPU diagnostics.
 

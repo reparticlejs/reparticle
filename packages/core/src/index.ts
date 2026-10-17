@@ -1,16 +1,17 @@
-import GPU from "gpu.js/dist/gpu-browser.js";
+import {
+  GPU,
+  Texture,
+  type IGPUKernelSettings,
+  type IKernelRunShortcut,
+  type KernelVariable,
+} from "gpu.js";
 import { initialize, integrate } from "./gpujs/kernels";
 import { defaults, SpawnSchedule, validateOptions, type EmitterOptions } from "./options";
 export type { EmitterOptions } from "./options";
 
-interface PipelineTexture {
+interface PipelineTexture extends Texture {
   texture: WebGLTexture;
   context: WebGL2RenderingContext;
-}
-interface Kernel {
-  (...args: unknown[]): PipelineTexture;
-  destroy(removeCanvasReferences?: boolean): void;
-  kernel: { maxTexSize?: number[] };
 }
 export interface EmitterContext {
   gl: WebGL2RenderingContext;
@@ -28,7 +29,7 @@ export class Emitter {
   emitting = true;
   private settings: EmitterOptions;
   private readonly schedule: SpawnSchedule;
-  private readonly kernels: Kernel[] = [];
+  private readonly kernels: IKernelRunShortcut[] = [];
   private readonly vaos: WebGLVertexArrayObject[] = [];
   private output!: PipelineTexture;
   private nextKernel = 1;
@@ -58,7 +59,7 @@ export class Emitter {
     if (this.rows * 2 > gl.getParameter(gl.MAX_TEXTURE_SIZE))
       throw new RangeError("Capacity exceeds GPU texture limits");
     const gpu = new GPU({ mode: "webgl2", canvas: this.canvas, context: gl });
-    const config = {
+    const config: IGPUKernelSettings = {
       output: [this.width, this.rows * 2],
       precision: "single",
       pipeline: true,
@@ -67,7 +68,7 @@ export class Emitter {
     };
     try {
       for (const source of [initialize, integrate, integrate]) {
-        this.kernels.push(gpu.createKernel(source, config) as Kernel);
+        this.kernels.push(gpu.createKernel(source, config));
         const vao = gl.createVertexArray();
         if (!vao) throw new Error("Unable to allocate simulation VAO");
         this.vaos.push(vao);
@@ -137,7 +138,7 @@ export class Emitter {
   private assertAlive(): void {
     if (this.disposed) throw new Error("Emitter has been destroyed");
   }
-  private run(index: number, ...args: unknown[]): PipelineTexture {
+  private run(index: number, ...args: KernelVariable[]): PipelineTexture {
     const gl = this.gl;
     const kernel = this.kernels[index]!;
     const width = this.canvas.width,
@@ -149,13 +150,20 @@ export class Emitter {
     gl.disable(gl.SCISSOR_TEST);
     gl.disable(gl.CULL_FACE);
     gl.colorMask(true, true, true, true);
-    const size = kernel.kernel.maxTexSize;
+    // GPU.js does not declare this WebGL-specific internal field.
+    const size = (kernel.kernel as typeof kernel.kernel & { maxTexSize?: number[] }).maxTexSize;
     gl.viewport(0, 0, size?.[0] ?? this.width, size?.[1] ?? this.rows * 2);
     try {
       const result = kernel(...args);
-      if (result.context !== gl || !result.texture)
+      if (
+        !(result instanceof Texture) ||
+        !("context" in result) ||
+        result.context !== gl ||
+        !("texture" in result) ||
+        !result.texture
+      )
         throw new Error("GPU.js did not return a shared-context texture");
-      return result;
+      return result as PipelineTexture;
     } finally {
       // GPU.js changes canvas dimensions on first compilation.
       if (this.canvas.width !== width) this.canvas.width = width;
