@@ -47,7 +47,7 @@ Simulation coordinates currently use local units, positive X right and positive 
 
 Version 1 is an unpublished initial contract. Add validated fields as their semantics and execution become available. Once published, incompatible semantic changes require a new version and migration rules. Do not predeclare fields that silently have no effect.
 
-Scalar speed is exact. The prototype's implicit speed variation, shrinking, and fading have been removed. Lifetime curves and randomized values will use explicit configuration. Texture and size remain renderer controls until their definition fields are implemented.
+Scalar speed is exact. The prototype's implicit speed variation, shrinking, and fading have been removed. Lifetime scale now uses an explicit curve; randomized values remain pending. Initial size belongs to the effect definition; texture remains a renderer control.
 
 ## Coverage inventory
 
@@ -64,7 +64,8 @@ Reference: [Defold Particle FX manual](https://defold.com/manuals/particlefx/), 
 - [ ] Sphere, 3D cone; box depth and remaining shape dimensions.
 - [ ] Initial/default/movement orientation, inherited velocity, velocity-aligned stretch.
 - [ ] Spawn rate, lifetime, speed, size, RGBA, rotation, stretch, angular velocity; emitter-time curves and random spread.
-- [ ] Lifetime scale, RGBA, rotation, stretch, angular velocity curves.
+- [x] Lifetime scale: Hermite curves sampled into 64 linear segments.
+- [ ] Lifetime RGBA, rotation, stretch, angular velocity curves.
 - [ ] Acceleration, drag, radial, vortex; transforms, magnitude, influence distance.
 - [ ] Images, atlases, animation, automatic/manual sizing, materials, tint constants.
 - [ ] Alpha, additive, multiply, screen blending.
@@ -78,7 +79,7 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 ## Implementation sequence
 
 1. **Configuration boundary — implemented.** Typed versioned definition, strict validation, independent output data, documented JSON fixture, tests outside source using package aliases. No GPU resources are created by parsing.
-2. **Connect one emitter — implemented.** The demo creates from JSON. `setParameters` validates atomic numeric patches, and `configuration` returns an independent snapshot. IDs, capacity and seed reach the runtime; scalar speed is exact. Flat prototype options and implicit visual changes are removed. Texture/size configuration remains in the rendering backlog.
+2. **Connect one emitter — implemented.** The demo creates from JSON. `setParameters` validates atomic numeric patches, and `configuration` returns an independent snapshot. IDs, capacity and seed reach the runtime; scalar speed is exact. Flat prototype options and implicit visual changes are removed. Texture configuration remains in the rendering backlog; initial size is implemented.
 3. **Separate lifecycle and acceleration — implemented.** Built-in lifetime helpers own age/activity, gravity contributes acceleration, and motion integrates each axis once using the constant-acceleration position term. Spawn initializes new particles before these stages. Helpers are registered in one GPU update kernel, not separate passes. The JSON is unchanged: horizontal gravity remains zero; numeric gravity updates affect living particles, while initial-property changes affect future births. GPU.js uses an explicitly numeric activity flag because registered boolean-return helpers are unsupported.
 4. **Value distributions.** Consistent constant/random representations; independent random channels; lifetime and other initial properties sampled once at birth.
 5. **Emitter playback — duration and once/loop implemented.** Remaining: explicit stop/retire APIs and state notifications.
@@ -130,3 +131,5 @@ Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev
 Start delay: `startDelay` is finite and nonnegative, defaults to zero, and is structural. Defold checks the existing timer against the delay before adding the current step. The crossing step does not emit; the next step emits its full frame, carrying any delay overshoot into the duration timer. Loop wrap does not reenter the waiting state. Reset restores the delay, and zero-time warmup does not consume it. The pre-step emission eligibility used by demo stats follows the same boundary. Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844).
 
 Start offset: `startOffset` is a finite nonnegative structural setting, default zero. Match Defold StartInstance: ignore offsets below 0.0001 and clamp simulated time to maximum particle lifetime (currently scalar `initial.lifetime`). Fast-forward in full float32 1/60-second steps with float32 elapsed accumulation, including delay and once/loop transitions. The last step is not shortened. Reparticle defers this work until the first positive update so consumers can position an emitter before its world-space particles are born. Reset queues it again; zero-time kernel warmup does not consume it. The debug overlay replays the shared timing utilities independently, keeping counting out of core. Reference: [Defold StartInstance](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L407-L429) and [FastForwardEmitter](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L313-L324).
+
+Size over lifetime is implemented as `initial.size` (default 24, captured at birth) multiplied by `overLifetime.scale` (default 1). Scale accepts a constant or `{ points: [{ time, value, tangent }] }`. Tangents are slopes equivalent to Defold ty/tx; Hermite interpolation is sampled into 64 linear segments, matching Defold PROPERTY_SAMPLE_COUNT. Time is normalized particle age, not emitter time. Core owns schema and curve math, and stores birth size in the lifetime texel's fourth channel. Pixi uploads the sampled curve once and evaluates it in its vertex shader, retaining texture aspect ratio. No texture expansion, extra simulation kernel, CPU particle state, or per-frame curve upload is required. Runtime initial-size updates affect future births only; curve edits require recreation. Initial-size spread, emitter-time size curves and automatic animated-frame sizing remain pending.

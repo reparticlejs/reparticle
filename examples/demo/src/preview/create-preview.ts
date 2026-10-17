@@ -76,13 +76,15 @@ export async function createPreview(
         patch.startDelay !== undefined && patch.startDelay !== current.startDelay;
       const offsetChanged =
         patch.startOffset !== undefined && patch.startOffset !== current.startOffset;
+      const curveChanged = patch.sizeCurve !== undefined && patch.sizeCurve !== current.sizeCurve;
       const rebuilding =
         capacityChanged ||
         shapeChanged ||
         durationChanged ||
         modeChanged ||
         delayChanged ||
-        offsetChanged;
+        offsetChanged ||
+        curveChanged;
       if (rebuilding) {
         debug.setVisible(false);
       }

@@ -18,6 +18,7 @@ const controls: PreviewControls = {
   lifetime: 1,
   texture: 'star',
   size: 24,
+  sizeCurve: 'effect',
   paused: false,
   statsVisible: true,
 };

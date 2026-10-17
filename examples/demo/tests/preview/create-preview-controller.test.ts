@@ -19,6 +19,7 @@ function setup() {
     lifetime: 2,
     texture: 'star',
     size: 24,
+    sizeCurve: 'effect',
     paused: false,
     statsVisible: true,
   };

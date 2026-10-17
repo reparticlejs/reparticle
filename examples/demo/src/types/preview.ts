@@ -14,6 +14,7 @@ export interface PreviewControls {
   height: number;
   texture: ParticleTextureName;
   size: number;
+  sizeCurve: 'effect' | 'constant' | 'shrink' | 'grow-shrink';
   rate: number;
   gravity: number;
   lifetime: number;

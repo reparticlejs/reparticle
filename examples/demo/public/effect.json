@@ -13,7 +13,29 @@
           "height": 100
         }
       },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.2,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
       "initial": {
+        "size": 24,
         "lifetime": 2,
         "speed": 220,
         "direction": -1.5707963267948966,

@@ -28,6 +28,7 @@ it.each([
   { emission: { rate: 100 }, initial: { lifetime: 0 } },
   { modifiers: { gravity: { x: 1 } } },
   { initial: { speed: undefined } },
+  { initial: { size: undefined } },
   { initial: { speed: NaN } },
 ])('rejects structural, unsupported or invalid updates atomically: %j', (patch) => {
   const current = parseEffectConfig(skeleton).emitters[0];

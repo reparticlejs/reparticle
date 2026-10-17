@@ -19,7 +19,6 @@ export function createParticleView(
   const view = new ParticleView(renderer, effect);
   try {
     view.texture = textures[controls.texture];
-    view.particleSize = controls.size;
     return view;
   } catch (error) {
     view.destroy();
@@ -33,8 +32,9 @@ export function replaceParticleView(
   current: ParticleView,
   textures: PreviewAssets['textures'],
   controls: PreviewControls,
+  definition: EmitterConfig,
 ): ParticleView {
-  const replacement = createParticleView(app, current.emitter.configuration, textures, controls);
+  const replacement = createParticleView(app, definition, textures, controls);
   try {
     replacement.emitter.x = current.emitter.x;
     replacement.emitter.y = current.emitter.y;

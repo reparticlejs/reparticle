@@ -175,6 +175,7 @@ export class Emitter {
       shapeType,
       sizeX,
       sizeY,
+      o.initial.size,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;
@@ -249,3 +250,6 @@ export type { EffectConfig, EmitterConfig, EmitterParameters } from '#types/effe
 
 export { EmitterPlayback } from './emitter-playback';
 export { prewarm } from './prewarm';
+
+export { sampleCurve, CURVE_SEGMENTS } from './curves/sample-curve';
+export type { Curve, CurvePoint, ScalarProperty } from '#types/curve.js';

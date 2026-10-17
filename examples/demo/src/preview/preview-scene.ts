@@ -40,6 +40,7 @@ export class PreviewScene {
   setControls(patch: Partial<PreviewControls>): PreviewControls {
     const next = { ...this.settings, ...patch };
     if (
+      next.sizeCurve !== this.settings.sizeCurve ||
       next.capacity !== this.settings.capacity ||
       next.shape !== this.settings.shape ||
       next.startOffset !== this.settings.startOffset ||
@@ -47,11 +48,16 @@ export class PreviewScene {
       next.duration !== this.settings.duration ||
       next.playMode !== this.settings.playMode
     ) {
-      this.view = replaceParticleView(this.app, this.view, this.assets.textures, next);
+      this.view = replaceParticleView(
+        this.app,
+        this.view,
+        this.assets.textures,
+        next,
+        this.assets.effect.emitters[0],
+      );
     } else {
       this.updateParameters(next);
       this.view.texture = this.assets.textures[next.texture];
-      this.view.particleSize = next.size;
     }
     this.settings = next;
     return { ...next };
@@ -88,6 +94,7 @@ export class PreviewScene {
   private updateParameters(next: PreviewControls): void {
     const current = this.settings;
     if (
+      next.size === current.size &&
       next.rate === current.rate &&
       next.gravity === current.gravity &&
       next.lifetime === current.lifetime &&

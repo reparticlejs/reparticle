@@ -61,7 +61,7 @@ import { ParticleView } from '@reparticle/pixi';
 const definition = await fetch('/effect.json').then((response) => response.json());
 const particles = new ParticleView(app.renderer, definition);
 particles.texture = await Assets.load('/textures/spark.png');
-particles.particleSize = 24; // longest edge; aspect ratio is preserved
+particles.emitter.setParameters({ initial: { size: 24 } }); // future births; longest edge
 app.stage.addChild(particles);
 app.ticker.add((ticker) => particles.update(Math.min(ticker.deltaMS / 1000, 0.05)));
 ```
@@ -169,3 +169,29 @@ Prewarm includes start delay and normal once/loop timing. A once emitter can fin
 Reparticle applies prewarm before the first positive `update`, after you have set the emitter position. `update(0)` does not consume it. `reset()` clears the simulation and schedules prewarm again at the current position. The normal update runs after the prewarm steps. Changing start offset requires recreation; the demo does this automatically and includes prewarmed particles in its stats.
 
 Prewarm has a one-time startup cost proportional to the simulated steps and allocated capacity. `EmitterPlayback` and `prewarm` expose the shared timing logic; the demo uses them for its separate debug counter, without putting particle counting into the runtime.
+
+### Size over lifetime
+
+`initial.size` is the particle's birth size in local units (longest edge, preserving texture aspect ratio). It defaults to `24`. Runtime updates affect future births only; existing particles retain their stored birth size. The procedural circle uses the same sizing as textured particles.
+
+`overLifetime.scale` multiplies birth size using normalized particle age: `0` at birth and `1` at death. It defaults to constant `1`. This follows Defold's **Initial Size × Life Scale** model. A number supplies a constant multiplier; a curve supplies points:
+
+```json
+"overLifetime": {
+  "scale": {
+    "points": [
+      { "time": 0, "value": 0, "tangent": 0 },
+      { "time": 0.2, "value": 1, "tangent": 0 },
+      { "time": 1, "value": 0, "tangent": 0 }
+    ]
+  }
+}
+```
+
+Points must be ordered with unique times in `[0, 1]`. Each `tangent` is a slope (`dy/dx`, equivalent to Defold's `ty/tx`); omitted tangents default to zero. Interpolation uses cubic Hermite curves. A single point uses its tangent as a line. Values and slopes may be signed; scale is not clamped, matching Defold. Use endpoints at `0` and `1` to define the full life interval explicitly.
+
+Like Defold, curves are baked into 64 linear segments. Pixi uploads the 65 endpoint samples once when creating a view and evaluates the curve in the vertex shader. Birth size occupies the formerly unused fourth lifetime channel: the particle texture stays the same size, with no extra simulation pass or readback. Curve changes require recreation. The demo offers the JSON curve, constant scale, shrink, and grow-then-shrink presets.
+
+This implements scalar initial size and lifetime scale. Initial-size spread, emitter-time size curves, and automatic animated-frame sizing remain separate features. The former `ParticleView.particleSize` renderer override is replaced by `initial.size` in configuration or `emitter.setParameters`.
+
+References: [Defold particle properties](https://defold.com/manuals/particlefx/#keyable-emitter-properties), [Hermite curve sampling](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L120-L175), and [64-segment resolution](https://github.com/defold/defold/blob/dev/engine/particle/src/particle_private.h#L27).

@@ -9,7 +9,8 @@ it('maps motion and lifetime texels without changing the behavior math', () => {
     thread: { x: 0, y: 0 },
     constants: { width: 1, rows: 1, capacity: 1 },
   };
-  const step = () => integrate.call(context, state, 0.1, 0, 0, 0, 0, 100, 0, 1, 100, 2, 1, 0, 0, 0);
+  const step = () =>
+    integrate.call(context, state, 0.1, 0, 0, 0, 0, 100, 0, 1, 100, 2, 1, 0, 0, 0, 24);
   expect(step()).toEqual([13, 16.5, 30, -30]);
   context.thread.y = 1;
   expect(step()).toEqual([0.6, 2, 1, 0]);
@@ -24,10 +25,11 @@ it('reinitializes a recycled slot without applying motion or aging on its birth 
     thread: { x: 0, y: 0 },
     constants: { width: 1, rows: 1, capacity: 1 },
   };
-  const step = () => integrate.call(context, state, 0.1, 0, 1, 5, 6, 220, 0, 0, 100, 3, 1, 0, 0, 0);
+  const step = () =>
+    integrate.call(context, state, 0.1, 0, 1, 5, 6, 220, 0, 0, 100, 3, 1, 0, 0, 0, 24);
   expect(step()).toEqual([5, 6, 220, 0]);
   context.thread.y = 1;
-  expect(step()).toEqual([0, 3, 1, 0]);
+  expect(step()).toEqual([0, 3, 1, 24]);
 });
 
 it('preserves birth lifetime and stops motion at expiry despite new initial parameters', () => {
@@ -37,7 +39,7 @@ it('preserves birth lifetime and stops motion at expiry despite new initial para
     constants: { width: 1, rows: 1, capacity: 1 },
   };
   const step = () =>
-    integrate.call(context, state, 0.1, 0, 0, 5, 6, 999, 0, 0, -100, 10, 1, 0, 0, 0);
+    integrate.call(context, state, 0.1, 0, 0, 5, 6, 999, 0, 0, -100, 10, 1, 0, 0, 0, 24);
   expect(step()).toEqual([10, 20, 0, 0]);
   context.thread.y = 1;
   expect(step()).toEqual([2.1, 2, 1, 0]);
@@ -49,7 +51,25 @@ it('uses radial circle spawning independently of point direction and spread', ()
     thread: { x: 0, y: 0 },
     constants: { width: 1, rows: 1, capacity: 1 },
   };
-  const first = integrate.call(context, state, 0.1, 0, 1, 5, 6, 220, 0, 0, 100, 3, 1, 1, 100, 0);
+  const first = integrate.call(
+    context,
+    state,
+    0.1,
+    0,
+    1,
+    5,
+    6,
+    220,
+    0,
+    0,
+    100,
+    3,
+    1,
+    1,
+    100,
+    0,
+    24,
+  );
   const changedPointDirection = integrate.call(
     context,
     state,
@@ -67,6 +87,7 @@ it('uses radial circle spawning independently of point direction and spread', ()
     1,
     100,
     0,
+    24,
   );
   expect(changedPointDirection).toEqual(first);
   expect(Math.hypot(first[0] - 5, first[1] - 6)).toBeLessThanOrEqual(50);
@@ -97,11 +118,24 @@ it('spawns a cone independently of point direction and keeps birth age at zero',
       3,
       200,
       100,
+      24,
     );
   const born = step(0, 0);
   expect(step(2, 10)).toEqual(born);
   expect(born[1]).toBeLessThan(20);
   expect(Math.hypot(born[2], born[3])).toBeCloseTo(220);
   context.thread.y = 1;
-  expect(step(0, 0)).toEqual([0, 3, 1, 0]);
+  expect(step(0, 0)).toEqual([0, 3, 1, 24]);
+});
+
+it('captures size at birth, preserves it when initial size changes, and replaces it on reuse', () => {
+  const state: ParticleTexture = [[[0, 0, 0, 0]], [[0.2, 2, 1, 12]]];
+  const context: KernelContext = {
+    thread: { x: 0, y: 1 },
+    constants: { width: 1, rows: 1, capacity: 1 },
+  };
+  const retained = integrate.call(context, state, 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 48);
+  expect(retained[3]).toBe(12);
+  const recycled = integrate.call(context, state, 0.1, 0, 1, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 48);
+  expect(recycled).toEqual([0, 2, 1, 48]);
 });

@@ -1,4 +1,4 @@
-import { Emitter, parseEffectConfig } from '@reparticle/core';
+import { Emitter, parseEffectConfig, sampleCurve, CURVE_SEGMENTS } from '@reparticle/core';
 import { RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
 
 const vertex = `#version 300 es
@@ -9,7 +9,8 @@ uniform int width;
 uniform int rows;
 uniform vec2 viewport;
 uniform mat3 transform;
-uniform vec2 particleSize;
+uniform vec2 particleAspect;
+uniform float sizeCurve[${CURVE_SEGMENTS + 1}];
 out vec2 uv;
 out float life;
 void main() {
@@ -19,7 +20,12 @@ void main() {
   vec4 meta = texelFetch(particles, at + ivec2(0, rows), 0);
   life = meta.z > 0.5 && meta.y > 0.0 ? max(0.0, 1.0 - meta.x / meta.y) : 0.0;
   uv = vec2(float(gl_VertexID & 1), float(gl_VertexID >> 1)) * 2.0 - 1.0;
-  vec2 world = (transform * vec3(p.xy + uv * particleSize * 0.5, 1.0)).xy;
+  float age = meta.y > 0.0 ? clamp(meta.x / meta.y, 0.0, 1.0) : 0.0;
+  float curvePosition = age * ${CURVE_SEGMENTS}.0;
+  int segment = min(int(curvePosition), ${CURVE_SEGMENTS - 1});
+  float scale = mix(sizeCurve[segment], sizeCurve[segment + 1], curvePosition - float(segment));
+  vec2 size = particleAspect * meta.w * scale;
+  vec2 world = (transform * vec3(p.xy + uv * size * 0.5, 1.0)).xy;
   gl_Position = life > 0.0 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
 }`;
 const fragment = `#version 300 es
@@ -89,8 +95,6 @@ export class ParticleView extends RenderContainer {
   private readonly matrix = new Float32Array(9);
   private disposed = false;
   private artwork: Texture | null = null;
-  /** Longest particle edge in local units. */
-  particleSize = 24;
   /** Caller owns the texture. Untrimmed, unrotated frames are supported. */
   get texture(): Texture | null {
     return this.artwork;
@@ -103,6 +107,7 @@ export class ParticleView extends RenderContainer {
   }
   constructor(renderer: WebGLRenderer, definition: unknown) {
     const config = parseEffectConfig(definition).emitters[0];
+    const sizeCurve = sampleCurve(config.overLifetime.scale);
     super({});
     this.host = renderer;
     const gl = renderer.gl;
@@ -129,9 +134,12 @@ export class ParticleView extends RenderContainer {
             'textured',
             'straightAlpha',
             'frame',
-            'particleSize',
+            'particleAspect',
+            'sizeCurve[0]',
           ].map((name) => [name, gl.getUniformLocation(this.program, name)]),
         );
+        gl.useProgram(this.program);
+        gl.uniform1fv(this.uniforms['sizeCurve[0]']!, sizeCurve);
       } catch (error) {
         this.emitter.destroy();
         throw error;
@@ -177,13 +185,9 @@ export class ParticleView extends RenderContainer {
       const uv = texture.uvs;
       gl.uniform4f(u.frame!, uv.x0, uv.y0, uv.x2, uv.y2);
       const longest = Math.max(texture.orig.width, texture.orig.height);
-      gl.uniform2f(
-        u.particleSize!,
-        (this.particleSize * texture.orig.width) / longest,
-        (this.particleSize * texture.orig.height) / longest,
-      );
+      gl.uniform2f(u.particleAspect!, texture.orig.width / longest, texture.orig.height / longest);
     } else {
-      gl.uniform2f(u.particleSize!, 10, 10);
+      gl.uniform2f(u.particleAspect!, 1, 1);
     }
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.emitter.texture);

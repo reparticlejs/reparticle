@@ -11,7 +11,9 @@
           "type": "point"
         }
       },
+      "overLifetime": { "scale": 1 },
       "initial": {
+        "size": 24,
         "lifetime": 2,
         "speed": 220,
         "direction": -1.5707963267948966,

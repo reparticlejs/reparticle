@@ -9,6 +9,8 @@ import {
   enum as enumSchema,
 } from 'zod';
 
+import { scalarPropertySchema } from './curve';
+
 const shapeSchema = discriminatedUnion('type', [
   strictObject({ type: literal('point') }),
   strictObject({ type: literal('circle'), diameter: number().nonnegative() }),
@@ -30,6 +32,7 @@ const emissionSchema = strictObject({
 });
 
 const initialPropertiesSchema = strictObject({
+  size: number().nonnegative().default(24),
   lifetime: number().positive(),
   speed: number().nonnegative(),
   direction: number(),
@@ -51,7 +54,14 @@ export const emitterParametersSchema = strictObject({
   })
     .partial()
     .optional(),
-  initial: initialPropertiesSchema.partial().optional(),
+  initial: initialPropertiesSchema
+    .extend({ size: number().nonnegative() })
+    .partial()
+    .refine(
+      (patch) => Object.values(patch).every((value) => value !== undefined),
+      'Initial parameter values must be numbers',
+    )
+    .optional(),
   modifiers: strictObject({ gravity: gravitySchema.partial().optional() }).optional(),
 });
 
@@ -66,6 +76,7 @@ export const emitterConfigSchema = strictObject({
   emission: emissionSchema,
   initial: initialPropertiesSchema,
   modifiers: modifiersSchema,
+  overLifetime: strictObject({ scale: scalarPropertySchema.default(1) }).default({ scale: 1 }),
 });
 
 /** Only implemented configuration features are accepted. */
