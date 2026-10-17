@@ -1,5 +1,3 @@
-// @vitest-environment happy-dom
-
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
 import type { Stats } from '#src/devtools/types/stats.js';
@@ -19,7 +17,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('pixi.js', () => ({
   Application: class {
     renderer = { gl: {} };
-    canvas = document.createElement('canvas');
+    canvas = {};
     screen = { width: 800, height: 500 };
     ticker = { add: vi.fn<() => void>(), remove: vi.fn<() => void>(), lastTime: 0 };
     children: { destroy?: () => void }[] = [];
@@ -54,13 +52,15 @@ vi.mock('@reparticle/pixi', () => ({
 vi.mock('#src/devtools/index.ts', () => ({ createStats: mocks.createStats }));
 
 function host() {
-  const container = document.createElement('div');
-  Object.defineProperties(container, {
-    clientWidth: { value: 800 },
-    clientHeight: { value: 500 },
-  });
-  const appendChild = vi.spyOn(container, 'appendChild');
-  return { element: container, appendChild };
+  const appendChild = vi.fn<HTMLDivElement['appendChild']>();
+  const element = { clientWidth: 800, clientHeight: 500, appendChild };
+  return { element, appendChild };
+}
+
+function createTestPreview(container: ReturnType<typeof host>['element'], signal: AbortSignal) {
+  // Pixi and stats are mocked; these lifecycle tests only use the host members above.
+  // @ts-expect-error The test double deliberately omits unused DOM members.
+  return createPreview(container, signal);
 }
 
 function deferred<T>() {
@@ -73,6 +73,7 @@ function deferred<T>() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubGlobal('window', { devicePixelRatio: 1 });
   vi.stubGlobal(
     'fetch',
     vi
@@ -98,7 +99,7 @@ it('destroys an initialization that finishes after React has unmounted', async (
   mocks.init.mockReturnValue(pending.promise);
   const controller = new AbortController();
   const { element: container, appendChild } = host();
-  const startup = createPreview(container, controller.signal);
+  const startup = createTestPreview(container, controller.signal);
   controller.abort();
   pending.resolve();
   expect(await startup).toBeNull();
@@ -112,7 +113,7 @@ it('does not attach a canvas when unmounted during texture loading', async () =>
   mocks.load.mockReturnValue(pending.promise);
   const controller = new AbortController();
   const { element: container, appendChild } = host();
-  const startup = createPreview(container, controller.signal);
+  const startup = createTestPreview(container, controller.signal);
   await vi.waitFor(() => expect(mocks.load).toHaveBeenCalledOnce());
   controller.abort();
   pending.resolve({});
@@ -124,7 +125,7 @@ it('does not attach a canvas when unmounted during texture loading', async () =>
 
 it('releases the renderer if loading assets fails', async () => {
   mocks.load.mockRejectedValue(new Error('asset failure'));
-  await expect(createPreview(host().element, new AbortController().signal)).rejects.toThrow(
+  await expect(createTestPreview(host().element, new AbortController().signal)).rejects.toThrow(
     'asset failure',
   );
   expect(mocks.destroyApp).toHaveBeenCalledOnce();
@@ -134,7 +135,7 @@ it('releases the particle view when stats startup fails', async () => {
   mocks.createStats.mockImplementationOnce(() => {
     throw new Error('stats failure');
   });
-  await expect(createPreview(host().element, new AbortController().signal)).rejects.toThrow(
+  await expect(createTestPreview(host().element, new AbortController().signal)).rejects.toThrow(
     'stats failure',
   );
   expect(mocks.destroyView).toHaveBeenCalledOnce();
@@ -143,7 +144,7 @@ it('releases the particle view when stats startup fails', async () => {
 
 it('destroys stats and the owned scene exactly once', async () => {
   const { element: container, appendChild } = host();
-  const runtime = await createPreview(container, new AbortController().signal);
+  const runtime = await createTestPreview(container, new AbortController().signal);
   expect(appendChild).toHaveBeenCalledOnce();
   runtime!.destroy();
   runtime!.destroy();
@@ -153,7 +154,7 @@ it('destroys stats and the owned scene exactly once', async () => {
 });
 
 it('releases the scene and application even when stats cleanup fails', async () => {
-  const runtime = await createPreview(host().element, new AbortController().signal);
+  const runtime = await createTestPreview(host().element, new AbortController().signal);
   mocks.destroyStats.mockImplementationOnce(() => {
     throw new Error('cleanup failure');
   });

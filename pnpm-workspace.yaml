@@ -12,7 +12,6 @@ catalog:
   'd3-shape': '3.2.0'
   eslint-plugin-import-x: 4.17.1
   'gpu.js': '2.24.1'
-  happy-dom: ^21.0.3
   'oxfmt': '0.63.0'
   'oxlint': '1.78.0'
   'oxlint-tsgolint': '7.0.2001'
