@@ -10,7 +10,7 @@ import { spawnMotion } from './spawn-motion';
 
 /**
  * GPU storage adapter: map this output texel to a particle, then apply its behavior.
- * Both halves read the previous texture so position and lifetime agree on spawning.
+ * All three bands read the previous texture so position and lifetime agree on spawning.
  * The texture dimensions guarantee these indices; non-null assertions express that contract.
  */
 export function integrate(
@@ -32,6 +32,9 @@ export function integrate(
   sizeY: number,
   initialSize: number,
   initialAlpha: number,
+  initialRed: number,
+  initialGreen: number,
+  initialBlue: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -39,10 +42,18 @@ export function integrate(
   const lifetimeState = state[particleRow + this.constants.rows]![this.thread.x]!;
   const isSpawning = particleId < this.constants.capacity && spawnOffset < spawnCount;
 
-  // Lifetime texel: age, lifetime, birth alpha, birth size.
+  // Color texel: birth RGBA.
+  if (this.thread.y >= this.constants.rows * 2) {
+    if (isSpawning) {
+      return [initialRed, initialGreen, initialBlue, initialAlpha];
+    }
+    return state[particleRow + this.constants.rows * 2]![this.thread.x]!;
+  }
+
+  // Lifetime texel: age, lifetime, birth size, reserved.
   if (this.thread.y >= this.constants.rows) {
     if (isSpawning) {
-      return [0, lifetime, initialAlpha, initialSize];
+      return [0, lifetime, initialSize, 0];
     }
     return [
       advanceAge(lifetimeState[0], seconds),

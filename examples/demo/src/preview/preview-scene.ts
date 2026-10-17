@@ -40,6 +40,7 @@ export class PreviewScene {
   setControls(patch: Partial<PreviewControls>): PreviewControls {
     const next = { ...this.settings, ...patch };
     if (
+      next.colorCurve !== this.settings.colorCurve ||
       next.alphaCurve !== this.settings.alphaCurve ||
       next.sizeCurve !== this.settings.sizeCurve ||
       next.capacity !== this.settings.capacity ||
@@ -95,6 +96,9 @@ export class PreviewScene {
   private updateParameters(next: PreviewControls): void {
     const current = this.settings;
     if (
+      next.red === current.red &&
+      next.green === current.green &&
+      next.blue === current.blue &&
       next.alpha === current.alpha &&
       next.size === current.size &&
       next.rate === current.rate &&

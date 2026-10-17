@@ -46,6 +46,35 @@
               "tangent": -1
             }
           ]
+        },
+        "red": 1,
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -1
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": -1
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.5,
+              "tangent": -0.5
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": -0.5
+            }
+          ]
         }
       },
       "initial": {
@@ -54,7 +83,10 @@
         "speed": 220,
         "direction": -1.5707963267948966,
         "spread": 1.0471975511965976,
-        "alpha": 1
+        "alpha": 1,
+        "red": 1,
+        "green": 1,
+        "blue": 1
       },
       "modifiers": {
         "gravity": {

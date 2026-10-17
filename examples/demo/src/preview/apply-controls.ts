@@ -2,6 +2,7 @@ import type { EmitterConfig, EmitterParameters } from '@reparticle/core';
 
 import type { PreviewControls } from '../types/preview';
 import { alphaCurves } from './alpha-curves';
+import { colorCurves } from './color-curves';
 import { sizeCurves } from './size-curves';
 
 /** Maps demo settings onto an emitter definition without modifying the original. */
@@ -13,6 +14,9 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     lifetime: controls.lifetime,
     size: controls.size,
     alpha: controls.alpha,
+    red: controls.red,
+    green: controls.green,
+    blue: controls.blue,
   };
   const gravity = { ...definition.modifiers.gravity, y: controls.gravity };
 
@@ -26,6 +30,9 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     emission,
     initial,
     overLifetime: {
+      ...(controls.colorCurve === 'effect'
+        ? definition.overLifetime
+        : colorCurves[controls.colorCurve]),
       alpha:
         controls.alphaCurve === 'effect'
           ? definition.overLifetime.alpha
@@ -60,6 +67,10 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     sizeCurve: 'effect',
     alpha: definition.initial.alpha,
     alphaCurve: 'effect',
+    red: definition.initial.red,
+    green: definition.initial.green,
+    blue: definition.initial.blue,
+    colorCurve: 'effect',
     paused: false,
     statsVisible: true,
   };
@@ -74,7 +85,14 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
   }
   return {
     emission,
-    initial: { lifetime: controls.lifetime, size: controls.size, alpha: controls.alpha },
+    initial: {
+      lifetime: controls.lifetime,
+      size: controls.size,
+      alpha: controls.alpha,
+      red: controls.red,
+      green: controls.green,
+      blue: controls.blue,
+    },
     modifiers: { gravity: { y: controls.gravity } },
   };
 }

@@ -1,3 +1,7 @@
+import type { EmitterConfig } from '@reparticle/core';
+
+export type ColorCurves = Pick<EmitterConfig['overLifetime'], 'red' | 'green' | 'blue'>;
+
 export type EmitterShape = 'point' | 'circle' | 'box' | 'cone2d';
 
 export type ParticleTextureName = 'star' | 'leaf' | 'spark' | 'procedural';
@@ -13,6 +17,10 @@ export interface PreviewControls {
   width: number;
   height: number;
   texture: ParticleTextureName;
+  red: number;
+  green: number;
+  blue: number;
+  colorCurve: 'effect' | 'constant' | 'fire' | 'blue-to-pink';
   alpha: number;
   alphaCurve: 'effect' | 'constant' | 'fade-out' | 'fade-in-out';
   size: number;

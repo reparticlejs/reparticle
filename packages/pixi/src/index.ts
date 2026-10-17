@@ -1,6 +1,8 @@
 import { Emitter, parseEffectConfig, sampleCurve, CURVE_SEGMENTS } from '@reparticle/core';
 import { RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
 
+import { sampleColorCurves } from './sample-color-curves';
+
 const vertex = `#version 300 es
 precision highp float;
 precision highp int;
@@ -11,9 +13,9 @@ uniform vec2 viewport;
 uniform mat3 transform;
 uniform vec2 particleAspect;
 uniform float sizeCurve[${CURVE_SEGMENTS + 1}];
-uniform float alphaCurve[${CURVE_SEGMENTS + 1}];
+uniform vec4 colorCurve[${CURVE_SEGMENTS + 1}];
 out vec2 uv;
-out float particleAlpha;
+out vec4 particleColor;
 void main() {
   int id = gl_InstanceID;
   ivec2 at = ivec2(id % width, id / width);
@@ -25,16 +27,17 @@ void main() {
   float curvePosition = age * ${CURVE_SEGMENTS}.0;
   int segment = min(int(curvePosition), ${CURVE_SEGMENTS - 1});
   float scale = mix(sizeCurve[segment], sizeCurve[segment + 1], curvePosition - float(segment));
-  float alpha = mix(alphaCurve[segment], alphaCurve[segment + 1], curvePosition - float(segment));
-  particleAlpha = clamp(meta.z * alpha, 0.0, 1.0);
-  vec2 size = particleAspect * meta.w * scale;
+  vec4 birthColor = texelFetch(particles, at + ivec2(0, rows * 2), 0);
+  vec4 colorScale = mix(colorCurve[segment], colorCurve[segment + 1], curvePosition - float(segment));
+  particleColor = clamp(birthColor * colorScale, 0.0, 1.0);
+  vec2 size = particleAspect * meta.z * scale;
   vec2 world = (transform * vec3(p.xy + uv * size * 0.5, 1.0)).xy;
   gl_Position = life > 0.0 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
 }`;
 const fragment = `#version 300 es
 precision highp float;
 in vec2 uv;
-in float particleAlpha;
+in vec4 particleColor;
 uniform float opacity;
 uniform sampler2D artwork;
 uniform bool textured;
@@ -46,12 +49,11 @@ void main() {
     vec2 coords = mix(frame.xy, frame.zw, uv * 0.5 + 0.5);
     vec4 pixel = texture(artwork, coords);
     if (straightAlpha) pixel.rgb *= pixel.a;
-    color = pixel * (opacity * particleAlpha);
+    color = vec4(pixel.rgb * particleColor.rgb, pixel.a) * (opacity * particleColor.a);
     return;
   }
-  float alpha = max(0.0, 1.0 - dot(uv, uv)) * opacity * particleAlpha;
-  vec3 tint = vec3(0.55,1.0,0.85);
-  color = vec4(tint * alpha, alpha);
+  float alpha = max(0.0, 1.0 - dot(uv, uv)) * opacity * particleColor.a;
+  color = vec4(particleColor.rgb * alpha, alpha);
 }`;
 function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
   const program = gl.createProgram();
@@ -111,7 +113,7 @@ export class ParticleView extends RenderContainer {
   constructor(renderer: WebGLRenderer, definition: unknown) {
     const config = parseEffectConfig(definition).emitters[0];
     const sizeCurve = sampleCurve(config.overLifetime.scale);
-    const alphaCurve = sampleCurve(config.overLifetime.alpha);
+    const colorCurve = sampleColorCurves(config.overLifetime);
     super({});
     this.host = renderer;
     const gl = renderer.gl;
@@ -140,12 +142,12 @@ export class ParticleView extends RenderContainer {
             'frame',
             'particleAspect',
             'sizeCurve[0]',
-            'alphaCurve[0]',
+            'colorCurve[0]',
           ].map((name) => [name, gl.getUniformLocation(this.program, name)]),
         );
         gl.useProgram(this.program);
         gl.uniform1fv(this.uniforms['sizeCurve[0]']!, sizeCurve);
-        gl.uniform1fv(this.uniforms['alphaCurve[0]']!, alphaCurve);
+        gl.uniform4fv(this.uniforms['colorCurve[0]']!, colorCurve);
       } catch (error) {
         this.emitter.destroy();
         throw error;

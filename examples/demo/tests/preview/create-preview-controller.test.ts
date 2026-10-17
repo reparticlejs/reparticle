@@ -22,6 +22,10 @@ function setup() {
     sizeCurve: 'effect',
     alpha: 1,
     alphaCurve: 'effect',
+    red: 1,
+    green: 1,
+    blue: 1,
+    colorCurve: 'effect',
     paused: false,
     statsVisible: true,
   };

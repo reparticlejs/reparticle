@@ -57,7 +57,7 @@ export class Emitter {
     ) {
       throw new Error('GPU simulation requires WebGL2 and EXT_color_buffer_float');
     }
-    if (this.rows * 2 > gl.getParameter(gl.MAX_TEXTURE_SIZE)) {
+    if (this.rows * 3 > gl.getParameter(gl.MAX_TEXTURE_SIZE)) {
       throw new RangeError('Capacity exceeds GPU texture limits');
     }
     const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
@@ -76,7 +76,7 @@ export class Emitter {
     gpu.addFunction(functions.spawnBox);
     gpu.addFunction(functions.spawnCone2D);
     const config: IGPUKernelSettings = {
-      output: [this.width, this.rows * 2],
+      output: [this.width, this.rows * 3],
       precision: 'single',
       pipeline: true,
       immutable: false,
@@ -177,6 +177,9 @@ export class Emitter {
       sizeY,
       o.initial.size,
       o.initial.alpha,
+      o.initial.red,
+      o.initial.green,
+      o.initial.blue,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;
@@ -224,7 +227,7 @@ export class Emitter {
     gl.colorMask(true, true, true, true);
     // GPU.js does not declare this WebGL-specific internal field.
     const size = (kernel.kernel as typeof kernel.kernel & { maxTexSize?: number[] }).maxTexSize;
-    gl.viewport(0, 0, size?.[0] ?? this.width, size?.[1] ?? this.rows * 2);
+    gl.viewport(0, 0, size?.[0] ?? this.width, size?.[1] ?? this.rows * 3);
     try {
       const result = kernel(...args);
       if (!isPipelineTexture(result, gl)) {

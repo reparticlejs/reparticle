@@ -78,7 +78,7 @@ The overlay shows FPS, living particle count, frame interval, browser JS heap wh
 
 ## Authoring simulation behavior
 
-Edit ordinary TypeScript functions in `packages/core/src/behaviors/motion.ts` and `spawn.ts`. They have type checking, autocomplete and direct numerical tests. The `src/gpujs/integrate.ts` adapter handles the two-texel particle layout and calls those functions.
+Edit ordinary TypeScript functions in `packages/core/src/behaviors/motion.ts` and `spawn.ts`. They have type checking, autocomplete and direct numerical tests. The `src/gpujs/integrate.ts` adapter handles the three-texel particle layout and calls those functions.
 
 Core uses its normal TypeScript package build. There is no kernel generator or consumer build plugin. The demo imports the built packages in both development and production. `pnpm dev` builds the libraries before starting the demo. After library changes, rebuild them or run `pnpm --filter @reparticle/core exec tsdown --watch` and `pnpm --filter @reparticle/pixi exec tsdown --watch` in separate terminals.
 
@@ -190,7 +190,7 @@ Prewarm has a one-time startup cost proportional to the simulated steps and allo
 
 Points must be ordered with unique times in `[0, 1]`. Each `tangent` is a slope (`dy/dx`, equivalent to Defold's `ty/tx`); omitted tangents default to zero. Interpolation uses cubic Hermite curves. A single point uses its tangent as a line. Values and slopes may be signed; scale is not clamped, matching Defold. Use endpoints at `0` and `1` to define the full life interval explicitly.
 
-Like Defold, curves are baked into 64 linear segments. Pixi uploads the 65 endpoint samples once when creating a view and evaluates the curve in the vertex shader. Birth size occupies the formerly unused fourth lifetime channel: the particle texture stays the same size, with no extra simulation pass or readback. Curve changes require recreation. The demo offers the JSON curve, constant scale, shrink, and grow-then-shrink presets.
+Like Defold, curves are baked into 64 linear segments. Pixi uploads the 65 endpoint samples once when creating a view and evaluates the curve in the vertex shader. Birth size occupies the third lifetime channel, with no extra simulation pass or readback. Curve changes require recreation. The demo offers the JSON curve, constant scale, shrink, and grow-then-shrink presets.
 
 This implements scalar initial size and lifetime scale. Initial-size spread, emitter-time size curves, and automatic animated-frame sizing remain separate features. The former `ParticleView.particleSize` renderer override is replaced by `initial.size` in configuration or `emitter.setParameters`.
 
@@ -202,6 +202,16 @@ References: [Defold particle properties](https://defold.com/manuals/particlefx/#
 
 Initial alpha is captured at birth, so `emitter.setParameters({ initial: { alpha: 0.5 } })` only affects new particles. Lifetime curve changes require recreation. Both textured and procedural particles fade with premultiplied RGB and alpha, avoiding bright fringes. Transparent particles still move, age, and count as alive until their lifetime expires.
 
-The texture remains two RGBA texels per slot: motion `[x, y, vx, vy]` and lifetime `[age, lifetime, birthAlpha, birthSize]`. Positive lifetime now identifies initialized slots, freeing the old flag channel for birth alpha. The curve is uploaded once and sampled in the vertex shader alongside size; no extra simulation pass or GPU readback is added. The demo includes constant, fade-out, and fade-in/out presets.
+The lifetime texel stores `[age, lifetime, birthSize, reserved]`; motion and birth RGBA occupy separate texels. Positive lifetime identifies initialized slots. The curve is uploaded once and sampled in the vertex shader alongside size; no extra simulation pass or GPU readback is added. The demo includes constant, fade-out, and fade-in/out presets.
 
 Reference: [Defold lifetime color evaluation](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L1247-L1270).
+
+### Color over lifetime
+
+`initial.red`, `initial.green`, and `initial.blue` default to `1` (white). `overLifetime.red`, `.green`, and `.blue` each accept a constant or the existing Hermite curve format, defaulting to `1`. As in Defold, every channel is `clamp(birthChannel × lifetimeChannel, 0, 1)`. These are independent RGB multipliers, with no HSV interpolation or extra gamma conversion. Texture RGB is then multiplied by the resulting tint; texture and particle alpha retain correct premultiplied blending. A colored texture still influences the result—use a white texture or procedural circle to see the tint directly.
+
+Initial RGB changes through `setParameters` affect future births only. Existing particles retain their birth values; curve changes require recreation. The procedural circle now uses the configured RGB directly, replacing its old hardcoded mint color. The demo includes initial RGB sliders, yellow-to-red and blue-to-pink presets, and the curves loaded from JSON.
+
+Birth RGB needs an additional RGBA texel per slot: motion, lifetime/size, and `[birthRed, birthGreen, birthBlue, birthAlpha]`. This raises state texture storage and simulation output from 32 to 48 bytes per allocated slot per texture (50% more). The kernel still runs once per step; no extra pass or readback is introduced. RGBA lifetime samples are packed into 65 `vec4` uniforms alongside the size samples and uploaded only at view creation, staying within WebGL2's minimum vertex-uniform budget.
+
+Reference: [Defold per-channel lifetime multiplication and clamp](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L1247-L1270). Initial-color spread and emitter-time color curves remain pending.
