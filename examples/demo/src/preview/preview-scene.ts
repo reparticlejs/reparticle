@@ -1,5 +1,5 @@
 import type { ParticleView } from '@reparticle/pixi';
-import type { Application } from 'pixi.js';
+import type { Application, WebGLRenderer } from 'pixi.js';
 
 import type { PreviewControls } from '../types/preview';
 import type { PreviewAssets } from '../types/preview-scene';
@@ -12,7 +12,7 @@ export class PreviewScene {
   private destroyed = false;
 
   constructor(
-    private readonly app: Application,
+    private readonly app: Application<WebGLRenderer>,
     private readonly host: HTMLDivElement,
     private readonly assets: PreviewAssets,
   ) {

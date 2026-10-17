@@ -8,14 +8,14 @@ import { applyControls } from './apply-controls';
 
 /** Creates a configured view without transferring ownership to the stage. */
 export function createParticleView(
-  app: Application,
+  app: Application<WebGLRenderer>,
   definition: EmitterConfig,
   textures: PreviewAssets['textures'],
   controls: PreviewControls,
 ): ParticleView {
   const emitter = applyControls(definition, controls);
   const effect = { version: 1, emitters: [emitter] };
-  const renderer = app.renderer as WebGLRenderer;
+  const renderer = app.renderer;
   const view = new ParticleView(renderer, effect);
   try {
     view.texture = textures[controls.texture];
@@ -29,7 +29,7 @@ export function createParticleView(
 
 /** Keeps the old view intact until its replacement is ready and attached. */
 export function replaceParticleView(
-  app: Application,
+  app: Application<WebGLRenderer>,
   current: ParticleView,
   textures: PreviewAssets['textures'],
   controls: PreviewControls,

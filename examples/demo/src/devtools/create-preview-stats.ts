@@ -5,8 +5,12 @@ import { createStats } from './index';
 import { LiveParticleCount } from './stats/measurement/live-particle-count';
 
 /** All preview-only counting and stats instrumentation stays in devtools. */
-export function createPreviewStats(app: Application, host: HTMLDivElement, capacity: number) {
-  const renderer = app.renderer as WebGLRenderer;
+export function createPreviewStats(
+  app: Application<WebGLRenderer>,
+  host: HTMLDivElement,
+  capacity: number,
+) {
+  const renderer = app.renderer;
   let particles = new LiveParticleCount(capacity);
   const overlay = createStats({
     container: host,

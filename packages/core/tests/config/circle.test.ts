@@ -3,7 +3,6 @@ import { ZodError } from 'zod';
 
 import { parseEffectConfig } from '#src/config/effect.js';
 import { updateEmitterConfig } from '#src/config/update-emitter.js';
-import type { EmitterParameters } from '#types/effect.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -34,7 +33,7 @@ it('rejects diameter on point emitters and shape type changes through numeric up
     ZodError,
   );
   const current = parseEffectConfig(circle(100)).emitters[0];
-  const patch = { emission: { shape: { type: 'point' } } } as unknown as EmitterParameters;
+  const patch = { emission: { shape: { type: 'point' } } };
   expect(() => updateEmitterConfig(current, patch)).toThrow(ZodError);
   expect(current.emission.shape).toEqual({ type: 'circle', diameter: 100 });
 });

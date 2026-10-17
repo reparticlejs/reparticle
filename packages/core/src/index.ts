@@ -1,10 +1,4 @@
-import {
-  GPU,
-  Texture,
-  type IGPUKernelSettings,
-  type IKernelRunShortcut,
-  type KernelVariable,
-} from 'gpu.js';
+import { GPU, type IGPUKernelSettings, type IKernelRunShortcut, type KernelVariable } from 'gpu.js';
 
 import type { EmitterConfig, EmitterParameters } from '#types/effect.js';
 import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
@@ -12,6 +6,7 @@ import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 import { emitterConfigSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
 import functions from './gpujs/functions.json';
+import { isPipelineTexture } from './gpujs/is-pipeline-texture';
 import { SpawnSchedule } from './spawn-schedule';
 export type { EmitterContext } from '#types/emitter.js';
 
@@ -199,16 +194,10 @@ export class Emitter {
     gl.viewport(0, 0, size?.[0] ?? this.width, size?.[1] ?? this.rows * 2);
     try {
       const result = kernel(...args);
-      if (
-        !(result instanceof Texture) ||
-        !('context' in result) ||
-        result.context !== gl ||
-        !('texture' in result) ||
-        !result.texture
-      ) {
+      if (!isPipelineTexture(result, gl)) {
         throw new Error('GPU.js did not return a shared-context texture');
       }
-      return result as PipelineTexture;
+      return result;
     } finally {
       // GPU.js changes canvas dimensions on first compilation.
       if (this.canvas.width !== width) {

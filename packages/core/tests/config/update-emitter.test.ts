@@ -3,7 +3,6 @@ import { ZodError } from 'zod';
 
 import { parseEffectConfig } from '#src/config/effect.js';
 import { updateEmitterConfig } from '#src/config/update-emitter.js';
-import type { EmitterParameters } from '#types/effect.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -32,6 +31,6 @@ it.each([
   { initial: { speed: NaN } },
 ])('rejects structural, unsupported or invalid updates atomically: %j', (patch) => {
   const current = parseEffectConfig(skeleton).emitters[0];
-  expect(() => updateEmitterConfig(current, patch as EmitterParameters)).toThrow(ZodError);
+  expect(() => updateEmitterConfig(current, patch)).toThrow(ZodError);
   expect(current).toEqual(skeleton.emitters[0]);
 });

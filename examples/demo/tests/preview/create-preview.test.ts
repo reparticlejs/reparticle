@@ -1,3 +1,5 @@
+// @vitest-environment happy-dom
+
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
 import type { Stats } from '#src/devtools/types/stats.js';
@@ -17,7 +19,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('pixi.js', () => ({
   Application: class {
     renderer = { gl: {} };
-    canvas = {};
+    canvas = document.createElement('canvas');
     screen = { width: 800, height: 500 };
     ticker = { add: vi.fn<() => void>(), remove: vi.fn<() => void>(), lastTime: 0 };
     children: { destroy?: () => void }[] = [];
@@ -52,7 +54,13 @@ vi.mock('@reparticle/pixi', () => ({
 vi.mock('#src/devtools/index.ts', () => ({ createStats: mocks.createStats }));
 
 function host() {
-  return { clientWidth: 800, clientHeight: 500, appendChild: vi.fn<() => void>() };
+  const container = document.createElement('div');
+  Object.defineProperties(container, {
+    clientWidth: { value: 800 },
+    clientHeight: { value: 500 },
+  });
+  const appendChild = vi.spyOn(container, 'appendChild');
+  return { element: container, appendChild };
 }
 
 function deferred<T>() {
@@ -65,7 +73,6 @@ function deferred<T>() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal('window', { devicePixelRatio: 1 });
   vi.stubGlobal(
     'fetch',
     vi
@@ -90,13 +97,13 @@ it('destroys an initialization that finishes after React has unmounted', async (
   const pending = deferred<void>();
   mocks.init.mockReturnValue(pending.promise);
   const controller = new AbortController();
-  const container = host();
-  const startup = createPreview(container as unknown as HTMLDivElement, controller.signal);
+  const { element: container, appendChild } = host();
+  const startup = createPreview(container, controller.signal);
   controller.abort();
   pending.resolve();
   expect(await startup).toBeNull();
   expect(mocks.load).not.toHaveBeenCalled();
-  expect(container.appendChild).not.toHaveBeenCalled();
+  expect(appendChild).not.toHaveBeenCalled();
   expect(mocks.destroyApp).toHaveBeenCalledOnce();
 });
 
@@ -104,22 +111,22 @@ it('does not attach a canvas when unmounted during texture loading', async () =>
   const pending = deferred<Record<string, object>>();
   mocks.load.mockReturnValue(pending.promise);
   const controller = new AbortController();
-  const container = host();
-  const startup = createPreview(container as unknown as HTMLDivElement, controller.signal);
+  const { element: container, appendChild } = host();
+  const startup = createPreview(container, controller.signal);
   await vi.waitFor(() => expect(mocks.load).toHaveBeenCalledOnce());
   controller.abort();
   pending.resolve({});
   expect(await startup).toBeNull();
-  expect(container.appendChild).not.toHaveBeenCalled();
+  expect(appendChild).not.toHaveBeenCalled();
   expect(mocks.createStats).not.toHaveBeenCalled();
   expect(mocks.destroyApp).toHaveBeenCalledOnce();
 });
 
 it('releases the renderer if loading assets fails', async () => {
   mocks.load.mockRejectedValue(new Error('asset failure'));
-  await expect(
-    createPreview(host() as unknown as HTMLDivElement, new AbortController().signal),
-  ).rejects.toThrow('asset failure');
+  await expect(createPreview(host().element, new AbortController().signal)).rejects.toThrow(
+    'asset failure',
+  );
   expect(mocks.destroyApp).toHaveBeenCalledOnce();
 });
 
@@ -127,20 +134,17 @@ it('releases the particle view when stats startup fails', async () => {
   mocks.createStats.mockImplementationOnce(() => {
     throw new Error('stats failure');
   });
-  await expect(
-    createPreview(host() as unknown as HTMLDivElement, new AbortController().signal),
-  ).rejects.toThrow('stats failure');
+  await expect(createPreview(host().element, new AbortController().signal)).rejects.toThrow(
+    'stats failure',
+  );
   expect(mocks.destroyView).toHaveBeenCalledOnce();
   expect(mocks.destroyApp).toHaveBeenCalledOnce();
 });
 
 it('destroys stats and the owned scene exactly once', async () => {
-  const container = host();
-  const runtime = await createPreview(
-    container as unknown as HTMLDivElement,
-    new AbortController().signal,
-  );
-  expect(container.appendChild).toHaveBeenCalledOnce();
+  const { element: container, appendChild } = host();
+  const runtime = await createPreview(container, new AbortController().signal);
+  expect(appendChild).toHaveBeenCalledOnce();
   runtime!.destroy();
   runtime!.destroy();
   expect(mocks.destroyStats).toHaveBeenCalledOnce();
@@ -149,10 +153,7 @@ it('destroys stats and the owned scene exactly once', async () => {
 });
 
 it('releases the scene and application even when stats cleanup fails', async () => {
-  const runtime = await createPreview(
-    host() as unknown as HTMLDivElement,
-    new AbortController().signal,
-  );
+  const runtime = await createPreview(host().element, new AbortController().signal);
   mocks.destroyStats.mockImplementationOnce(() => {
     throw new Error('cleanup failure');
   });

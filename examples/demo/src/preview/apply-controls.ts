@@ -58,5 +58,7 @@ function emitterShape(controls: PreviewControls): EmitterConfig['emission']['sha
       return { type: 'box', width: controls.width, height: controls.height };
     case 'point':
       return { type: 'point' };
+    default:
+      throw new Error(`Unsupported emitter shape: ${String(controls.shape satisfies never)}`);
   }
 }

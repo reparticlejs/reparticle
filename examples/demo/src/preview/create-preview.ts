@@ -1,4 +1,4 @@
-import { Application } from 'pixi.js';
+import { Application, type WebGLRenderer } from 'pixi.js';
 
 import { createPreviewStats } from '../devtools/create-preview-stats';
 import type { ParticlePreview, PreviewControls } from '../types/preview';
@@ -12,7 +12,7 @@ export async function createPreview(
   host: HTMLDivElement,
   signal: AbortSignal,
 ): Promise<ParticlePreview | null> {
-  const app = new Application();
+  const app = new Application<WebGLRenderer>();
   let scene: PreviewScene | undefined;
   let stats: ReturnType<typeof createPreviewStats> | undefined;
   let mounted = false;
