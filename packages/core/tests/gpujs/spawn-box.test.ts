@@ -7,12 +7,12 @@ it('fills a centered rectangle uniformly with parallel upward velocity', () => {
   let sumX = 0;
   let sumY = 0;
   for (let id = 0; id < 10000; id++) {
-    const [x, y, vx, vy] = spawnBox(id, 17, 10, 20, 220, 200, 100);
+    const [x, y, velocityX, velocityY] = spawnBox(id, 17, 10, 20, 220, 200, 100);
     expect(x).toBeGreaterThanOrEqual(-90);
     expect(x).toBeLessThanOrEqual(110);
     expect(y).toBeGreaterThanOrEqual(-30);
     expect(y).toBeLessThanOrEqual(70);
-    expect([vx, vy]).toEqual([0, -220]);
+    expect([velocityX, velocityY]).toEqual([0, -220]);
     const quadrant = Number(x >= 10) + 2 * Number(y >= 20);
     quadrants[quadrant]!++;
     sumX += x;

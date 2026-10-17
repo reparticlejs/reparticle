@@ -3,7 +3,7 @@ import { expect, it } from 'vitest';
 import { integrate } from '#src/gpujs/integrate.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
 
-it('maps motion and lifetime texels without changing the behavior math', () => {
+it('maps motion and properties texels without changing the behavior math', () => {
   const state: ParticleTexture = [[[10, 20, 30, -40]], [[0.5, 2, 1, 0]]];
   const context: KernelContext = {
     thread: { x: 0, y: 0 },
@@ -78,7 +78,7 @@ it('reinitializes a recycled slot without applying motion or aging on its birth 
   expect(step()).toEqual([0, 3, 24, 0]);
 });
 
-it('preserves birth lifetime and stops motion at expiry despite new initial parameters', () => {
+it('preserves lifetime captured at spawn and stops motion at expiry despite new initial parameters', () => {
   const state: ParticleTexture = [[[10, 20, 30, -40]], [[2, 2, 1, 0]]];
   const context: KernelContext = {
     thread: { x: 0, y: 0 },
@@ -270,7 +270,7 @@ it('captures size at birth, preserves it when initial size changes, and replaces
   expect(recycled).toEqual([0, 2, 48, 0]);
 });
 
-it('preserves birth alpha until the slot is recycled', () => {
+it('preserves initial alpha until the slot is recycled', () => {
   const state: ParticleTexture = [[[0, 0, 10, 0]], [[0.2, 2, 24, 0]], [[1, 1, 1, 0.25]]];
   const context: KernelContext = {
     thread: { x: 0, y: 2 },
@@ -341,7 +341,7 @@ it('continues simulating transparent particles and keeps unused slots inactive',
   expect(step()).toEqual([0, 0, 0, 0]);
 });
 
-it('captures birth RGB, preserves it, and replaces it when a slot is reused', () => {
+it('captures initial RGB, preserves it, and replaces it when a slot is reused', () => {
   const state: ParticleTexture = [[[0, 0, 0, 0]], [[0.2, 2, 24, 0]], [[0.1, 0.2, 0.3, 0.5]]];
   const context: KernelContext = {
     thread: { x: 0, y: 2 },
@@ -378,7 +378,7 @@ it('captures birth RGB, preserves it, and replaces it when a slot is reused', ()
   expect(step(0)).toEqual([expect.closeTo(0.3), 2, 24, 0]);
 });
 
-it('captures birth rotation and preserves it until slot reuse', () => {
+it('captures initial rotation and preserves it until slot reuse', () => {
   const state: ParticleTexture = [[[0, 0, 0, 0]], [[0.2, 2, 24, -45]], [[1, 1, 1, 1]]];
   const context: KernelContext = {
     thread: { x: 0, y: 1 },

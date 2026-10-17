@@ -40,10 +40,10 @@ export function integrate(
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
   const spawnOffset = (particleId - spawnStart + this.constants.capacity) % this.constants.capacity;
-  const lifetimeState = state[particleRow + this.constants.rows]![this.thread.x]!;
+  const properties = state[particleRow + this.constants.rows]![this.thread.x]!;
   const isSpawning = particleId < this.constants.capacity && spawnOffset < spawnCount;
 
-  // Color texel: birth RGBA.
+  // Color texel: initialRed, initialGreen, initialBlue, initialAlpha.
   if (this.thread.y >= this.constants.rows * 2) {
     if (isSpawning) {
       return [initialRed, initialGreen, initialBlue, initialAlpha];
@@ -51,17 +51,12 @@ export function integrate(
     return state[particleRow + this.constants.rows * 2]![this.thread.x]!;
   }
 
-  // Lifetime texel: age, lifetime, birth size, birth rotation (degrees).
+  // Properties texel: age, lifetime, initialSize, initialRotation (degrees).
   if (this.thread.y >= this.constants.rows) {
     if (isSpawning) {
       return [0, lifetime, initialSize, initialRotation];
     }
-    return [
-      advanceAge(lifetimeState[0], seconds),
-      lifetimeState[1],
-      lifetimeState[2],
-      lifetimeState[3],
-    ];
+    return [advanceAge(properties[0], seconds), properties[1], properties[2], properties[3]];
   }
 
   // Motion texel for a newly emitted particle.
@@ -83,8 +78,8 @@ export function integrate(
   const y = motion[1];
   const velocityX = motion[2];
   const velocityY = motion[3];
-  const age = lifetimeState[0];
-  const particleLifetime = lifetimeState[1];
+  const age = properties[0];
+  const particleLifetime = properties[1];
   if (particleAlive(age, particleLifetime) < 0.5) {
     return [x, y, 0, 0];
   }

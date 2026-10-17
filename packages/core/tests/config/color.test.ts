@@ -44,7 +44,7 @@ it('supports independent constants and curves for each channel', () => {
   expect(config.overLifetime).toEqual({ red, green: -1, blue: 2, alpha: 1, scale: 1, rotation: 0 });
 });
 
-it('updates birth channels independently without resetting unspecified values', () => {
+it('updates initial color channels independently without resetting unspecified values', () => {
   const original = parseEffectConfig(skeleton).emitters[0];
   const changed = updateEmitterConfig(original, { initial: { red: 0.25, green: -1, blue: 2 } });
   const next = updateEmitterConfig(changed, { initial: { alpha: 0.5 } });

@@ -8,15 +8,15 @@ it('fills the triangle uniformly and directs velocity away from the tip', () => 
   let sumHeight = 0;
   let lowerHalf = 0;
   for (let id = 0; id < 10000; id++) {
-    const [x, y, vx, vy] = spawnCone2D(id, 17, 10, 20, 220, 200, 100);
+    const [x, y, velocityX, velocityY] = spawnCone2D(id, 17, 10, 20, 220, 200, 100);
     const offsetX = x - 10;
     const height = 20 - y;
     expect(height).toBeGreaterThanOrEqual(0);
     expect(height).toBeLessThanOrEqual(100);
     expect(Math.abs(offsetX)).toBeLessThanOrEqual(height + 1e-10);
-    expect(Math.hypot(vx, vy)).toBeCloseTo(220);
-    expect(offsetX * vy + height * vx).toBeCloseTo(0);
-    expect(offsetX * vx - height * vy).toBeGreaterThanOrEqual(0);
+    expect(Math.hypot(velocityX, velocityY)).toBeCloseTo(220);
+    expect(offsetX * velocityY + height * velocityX).toBeCloseTo(0);
+    expect(offsetX * velocityX - height * velocityY).toBeGreaterThanOrEqual(0);
     sumX += offsetX;
     sumHeight += height;
     if (height < 50) {

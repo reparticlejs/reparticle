@@ -14,14 +14,14 @@ it('spawns throughout the disk with outward velocity and exact scalar speed', ()
   const quadrants = [0, 0, 0, 0];
   let normalizedRadiusSquared = 0;
   for (let id = 0; id < 10000; id++) {
-    const [x, y, vx, vy] = spawnCircle(id, 17, 25, -10, 220, 100);
+    const [x, y, velocityX, velocityY] = spawnCircle(id, 17, 25, -10, 220, 100);
     const dx = x - 25;
     const dy = y + 10;
     const radiusSquared = dx * dx + dy * dy;
     expect(radiusSquared).toBeLessThanOrEqual(2500);
-    expect(Math.hypot(vx, vy)).toBeCloseTo(220, 8);
-    expect(dx * vy - dy * vx).toBeCloseTo(0, 7);
-    expect(dx * vx + dy * vy).toBeGreaterThanOrEqual(0);
+    expect(Math.hypot(velocityX, velocityY)).toBeCloseTo(220, 8);
+    expect(dx * velocityY - dy * velocityX).toBeCloseTo(0, 7);
+    expect(dx * velocityX + dy * velocityY).toBeGreaterThanOrEqual(0);
     const quadrant = (dx < 0 ? 1 : 0) + (dy < 0 ? 2 : 0);
     quadrants[quadrant]! += 1;
     normalizedRadiusSquared += radiusSquared / 2500;

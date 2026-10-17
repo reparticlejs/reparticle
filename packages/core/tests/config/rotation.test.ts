@@ -40,7 +40,7 @@ it('accepts negative and multi-turn degree values without wrapping', () => {
   expect(samples[64]).toBe(720);
 });
 
-it('updates birth rotation independently and rejects invalid or structural patches', () => {
+it('updates initial rotation independently and rejects invalid or structural patches', () => {
   const original = parseEffectConfig(skeleton).emitters[0];
   const changed = updateEmitterConfig(original, { initial: { rotation: 90 } });
   expect(updateEmitterConfig(changed, { initial: { size: 40 } }).initial.rotation).toBe(90);

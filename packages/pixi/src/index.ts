@@ -20,26 +20,26 @@ out vec4 particleColor;
 void main() {
   int id = gl_InstanceID;
   ivec2 at = ivec2(id % width, id / width);
-  vec4 p = texelFetch(particles, at, 0);
-  vec4 meta = texelFetch(particles, at + ivec2(0, rows), 0);
-  float life = meta.y > 0.0 ? max(0.0, 1.0 - meta.x / meta.y) : 0.0;
+  vec4 motion = texelFetch(particles, at, 0);
+  vec4 properties = texelFetch(particles, at + ivec2(0, rows), 0);
+  float life = properties.y > 0.0 ? max(0.0, 1.0 - properties.x / properties.y) : 0.0;
   uv = vec2(float(gl_VertexID & 1), float(gl_VertexID >> 1)) * 2.0 - 1.0;
-  float age = meta.y > 0.0 ? clamp(meta.x / meta.y, 0.0, 1.0) : 0.0;
-  float curvePosition = age * ${CURVE_SEGMENTS}.0;
+  float normalizedAge = properties.y > 0.0 ? clamp(properties.x / properties.y, 0.0, 1.0) : 0.0;
+  float curvePosition = normalizedAge * ${CURVE_SEGMENTS}.0;
   int segment = min(int(curvePosition), ${CURVE_SEGMENTS - 1});
   float scale = mix(sizeCurve[segment], sizeCurve[segment + 1], curvePosition - float(segment));
-  vec4 birthColor = texelFetch(particles, at + ivec2(0, rows * 2), 0);
+  vec4 initialColor = texelFetch(particles, at + ivec2(0, rows * 2), 0);
   vec4 colorScale = mix(colorCurve[segment], colorCurve[segment + 1], curvePosition - float(segment));
-  particleColor = clamp(birthColor * colorScale, 0.0, 1.0);
-  vec2 size = particleAspect * meta.z * scale;
+  particleColor = clamp(initialColor * colorScale, 0.0, 1.0);
+  vec2 size = particleAspect * properties.z * scale;
   float rotation = mix(rotationCurve[segment], rotationCurve[segment + 1], curvePosition - float(segment));
   // Defold's positive Z rotation is counterclockwise; canvas Y points down.
-  float angle = -radians(meta.w + rotation);
+  float angle = -radians(properties.w + rotation);
   float sine = sin(angle);
   float cosine = cos(angle);
   vec2 corner = uv * size * 0.5;
   vec2 rotated = vec2(cosine * corner.x - sine * corner.y, sine * corner.x + cosine * corner.y);
-  vec2 world = (transform * vec3(p.xy + rotated, 1.0)).xy;
+  vec2 world = (transform * vec3(motion.xy + rotated, 1.0)).xy;
   gl_Position = life > 0.0 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
 }`;
 const fragment = `#version 300 es
