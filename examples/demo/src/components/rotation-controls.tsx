@@ -1,4 +1,5 @@
 import type { ControlSectionProps } from '../types/controls';
+import { orientationOptions } from './orientation-options';
 import { rotationCurveOptions } from './rotation-curve-options';
 import { SelectField } from './select-field';
 import { Slider } from './slider';
@@ -6,6 +7,13 @@ import { Slider } from './slider';
 export function RotationControls({ controls, onChange }: ControlSectionProps) {
   return (
     <>
+      <SelectField
+        id="orientation"
+        label="Orientation"
+        value={controls.orientation}
+        options={orientationOptions}
+        onChange={(orientation) => onChange({ orientation })}
+      />
       <Slider
         id="rotation"
         label="Initial rotation"

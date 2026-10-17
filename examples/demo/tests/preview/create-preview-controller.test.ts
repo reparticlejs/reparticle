@@ -10,6 +10,7 @@ function setup() {
     startOffset: 0,
     startDelay: 0,
     duration: 1,
+    orientation: 'default',
     playMode: 'loop',
     diameter: 100,
     width: 200,

@@ -75,6 +75,7 @@ export class Emitter {
     gpu.addFunction(functions.spawnCircle);
     gpu.addFunction(functions.spawnBox);
     gpu.addFunction(functions.spawnCone2D);
+    gpu.addFunction(functions.spawnRotation);
     const config: IGPUKernelSettings = {
       output: [this.width, this.rows * 3],
       precision: 'single',
@@ -181,6 +182,7 @@ export class Emitter {
       o.initial.green,
       o.initial.blue,
       o.initial.rotation,
+      o.orientation === 'initial-direction' ? 1 : 0,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

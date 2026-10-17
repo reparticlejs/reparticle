@@ -11,6 +11,7 @@ export interface PreviewControls {
   startOffset: number;
   startDelay: number;
   duration: number;
+  orientation: 'default' | 'initial-direction' | 'movement-direction';
   playMode: 'once' | 'loop';
   shape: EmitterShape;
   diameter: number;

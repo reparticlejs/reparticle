@@ -83,7 +83,10 @@ export async function createPreview(
         patch.colorCurve !== undefined && patch.colorCurve !== current.colorCurve;
       const rotationCurveChanged =
         patch.rotationCurve !== undefined && patch.rotationCurve !== current.rotationCurve;
+      const orientationChanged =
+        patch.orientation !== undefined && patch.orientation !== current.orientation;
       const rebuilding =
+        orientationChanged ||
         capacityChanged ||
         shapeChanged ||
         durationChanged ||

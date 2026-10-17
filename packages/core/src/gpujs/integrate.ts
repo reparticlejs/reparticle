@@ -7,6 +7,7 @@ import { spawnBox } from './spawn-box';
 import { spawnCircle } from './spawn-circle';
 import { spawnCone2D } from './spawn-cone2d';
 import { spawnMotion } from './spawn-motion';
+import { spawnRotation } from './spawn-rotation';
 
 /**
  * GPU storage adapter: map this output texel to a particle, then apply its behavior.
@@ -36,6 +37,7 @@ export function integrate(
   initialGreen: number,
   initialBlue: number,
   initialRotation: number,
+  orientToDirection: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -51,26 +53,29 @@ export function integrate(
     return state[particleRow + this.constants.rows * 2]![this.thread.x]!;
   }
 
-  // Properties texel: age, lifetime, initialSize, initialRotation (degrees).
-  if (this.thread.y >= this.constants.rows) {
-    if (isSpawning) {
-      return [0, lifetime, initialSize, initialRotation];
+  if (isSpawning) {
+    // Unit-speed motion preserves the shape direction even when actual speed is zero.
+    let spawned = spawnMotion(particleId, seed, emitterX, emitterY, 1, direction, spread);
+    if (shapeType === 1) {
+      spawned = spawnCircle(particleId, seed, emitterX, emitterY, 1, sizeX);
+    } else if (shapeType === 2) {
+      spawned = spawnBox(particleId, seed, emitterX, emitterY, 1, sizeX, sizeY);
+    } else if (shapeType === 3) {
+      spawned = spawnCone2D(particleId, seed, emitterX, emitterY, 1, sizeX, sizeY);
     }
-    return [advanceAge(properties[0], seconds), properties[1], properties[2], properties[3]];
+    if (this.thread.y >= this.constants.rows) {
+      let rotation = initialRotation;
+      if (orientToDirection > 0.5) {
+        rotation += spawnRotation(spawned[2], spawned[3]);
+      }
+      return [0, lifetime, initialSize, rotation];
+    }
+    return [spawned[0], spawned[1], spawned[2] * speed, spawned[3] * speed];
   }
 
-  // Motion texel for a newly emitted particle.
-  if (isSpawning) {
-    if (shapeType === 1) {
-      return spawnCircle(particleId, seed, emitterX, emitterY, speed, sizeX);
-    }
-    if (shapeType === 2) {
-      return spawnBox(particleId, seed, emitterX, emitterY, speed, sizeX, sizeY);
-    }
-    if (shapeType === 3) {
-      return spawnCone2D(particleId, seed, emitterX, emitterY, speed, sizeX, sizeY);
-    }
-    return spawnMotion(particleId, seed, emitterX, emitterY, speed, direction, spread);
+  // Properties texel: age, lifetime, initialSize, resolved initialRotation (degrees).
+  if (this.thread.y >= this.constants.rows) {
+    return [advanceAge(properties[0], seconds), properties[1], properties[2], properties[3]];
   }
 
   const motion = state[particleRow]![this.thread.x]!;

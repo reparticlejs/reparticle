@@ -84,6 +84,9 @@ export const emitterConfigSchema = strictObject({
   startOffset: number().nonnegative().default(0),
   startDelay: number().nonnegative().default(0),
   duration: number().nonnegative().default(1),
+  orientation: enumSchema(['default', 'initial-direction', 'movement-direction']).default(
+    'default',
+  ),
   playMode: enumSchema(['once', 'loop']).default('loop'),
   emission: emissionSchema,
   initial: initialPropertiesSchema,

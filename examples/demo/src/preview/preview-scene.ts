@@ -40,6 +40,7 @@ export class PreviewScene {
   setControls(patch: Partial<PreviewControls>): PreviewControls {
     const next = { ...this.settings, ...patch };
     if (
+      next.orientation !== this.settings.orientation ||
       next.rotationCurve !== this.settings.rotationCurve ||
       next.colorCurve !== this.settings.colorCurve ||
       next.alphaCurve !== this.settings.alphaCurve ||

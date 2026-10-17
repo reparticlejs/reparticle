@@ -50,3 +50,16 @@ it('updates initial rotation independently and rejects invalid or structural pat
   }
   expect(() => updateEmitterConfig(changed, { overLifetime: { rotation: 90 } })).toThrow(ZodError);
 });
+
+it('defaults orientation and accepts only supported structural modes', () => {
+  const source = skeleton.emitters[0]!;
+  const parse = (orientation: unknown) =>
+    parseEffectConfig({ version: 1, emitters: [{ ...source, orientation }] }).emitters[0];
+  expect(parse(undefined).orientation).toBe('default');
+  expect(parse('initial-direction').orientation).toBe('initial-direction');
+  expect(parse('movement-direction').orientation).toBe('movement-direction');
+  expect(() => parse('unknown')).toThrow(ZodError);
+  expect(() => updateEmitterConfig(parse('default'), { orientation: 'initial-direction' })).toThrow(
+    ZodError,
+  );
+});

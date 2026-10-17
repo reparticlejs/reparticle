@@ -9,4 +9,5 @@ export { integrate } from './integrate';
 export { spawnBox } from './spawn-box';
 export { spawnCircle } from './spawn-circle';
 export { spawnCone2D } from './spawn-cone2d';
+export { spawnRotation } from './spawn-rotation';
 export { spawnMotion } from './spawn-motion';

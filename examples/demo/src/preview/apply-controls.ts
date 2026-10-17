@@ -28,6 +28,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     startOffset: controls.startOffset,
     startDelay: controls.startDelay,
     duration: controls.duration,
+    orientation: controls.orientation,
     playMode: controls.playMode,
     emission,
     initial,
@@ -59,6 +60,7 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     startOffset: definition.startOffset,
     startDelay: definition.startDelay,
     duration: definition.duration,
+    orientation: definition.orientation,
     playMode: definition.playMode,
     shape: definition.emission.shape.type,
     diameter:

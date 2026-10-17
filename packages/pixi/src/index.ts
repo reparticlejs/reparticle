@@ -12,6 +12,7 @@ uniform int rows;
 uniform vec2 viewport;
 uniform mat3 transform;
 uniform vec2 particleAspect;
+uniform bool orientToMovement;
 uniform float sizeCurve[${CURVE_SEGMENTS + 1}];
 uniform float rotationCurve[${CURVE_SEGMENTS + 1}];
 uniform vec4 colorCurve[${CURVE_SEGMENTS + 1}];
@@ -39,6 +40,14 @@ void main() {
   float cosine = cos(angle);
   vec2 corner = uv * size * 0.5;
   vec2 rotated = vec2(cosine * corner.x - sine * corner.y, sine * corner.x + cosine * corner.y);
+  if (orientToMovement && dot(motion.zw, motion.zw) > 0.0001) {
+    vec2 direction = normalize(motion.zw);
+    // Match Defold's near-opposite fallback to a half turn.
+    if (abs(1.0 - direction.y) <= 0.0001) direction = vec2(0.0, 1.0);
+    // Local up is (0, -1): heading cosine = -direction.y, sine = direction.x.
+    rotated = vec2(-direction.y * rotated.x - direction.x * rotated.y,
+                    direction.x * rotated.x - direction.y * rotated.y);
+  }
   vec2 world = (transform * vec3(motion.xy + rotated, 1.0)).xy;
   gl_Position = life > 0.0 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
 }`;
@@ -150,12 +159,17 @@ export class ParticleView extends RenderContainer {
             'straightAlpha',
             'frame',
             'particleAspect',
+            'orientToMovement',
             'sizeCurve[0]',
             'rotationCurve[0]',
             'colorCurve[0]',
           ].map((name) => [name, gl.getUniformLocation(this.program, name)]),
         );
         gl.useProgram(this.program);
+        gl.uniform1i(
+          this.uniforms.orientToMovement!,
+          config.orientation === 'movement-direction' ? 1 : 0,
+        );
         gl.uniform1fv(this.uniforms['sizeCurve[0]']!, sizeCurve);
         gl.uniform1fv(this.uniforms['rotationCurve[0]']!, rotationCurve);
         gl.uniform4fv(this.uniforms['colorCurve[0]']!, colorCurve);
