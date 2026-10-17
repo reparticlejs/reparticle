@@ -1,0 +1,27 @@
+{
+  "name": "reparticle",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @reparticle/demo dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "oxlint .",
+    "format": "oxfmt .",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "oxfmt": "0.63.0",
+    "oxlint": "1.78.0",
+    "tsdown": "0.22.14",
+    "turbo": "2.10.10",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@10.32.1"
+}

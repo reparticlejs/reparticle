@@ -1,0 +1,152 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #080d15;
+  color: #edf4ff;
+  font:
+    15px system-ui,
+    sans-serif;
+}
+main {
+  max-width: 1250px;
+  margin: auto;
+  padding: 48px 32px;
+}
+.badge {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: #70e8cc;
+}
+h1 {
+  font-size: clamp(28px, 4vw, 46px);
+  font-weight: 550;
+  letter-spacing: -1.5px;
+  margin: 16px 0;
+}
+header p {
+  color: #8e9fb6;
+  margin-bottom: 32px;
+}
+.workspace {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  border: 1px solid #243044;
+  border-radius: 16px;
+  overflow: hidden;
+}
+#preview {
+  height: 540px;
+  position: relative;
+  overflow: hidden;
+}
+canvas {
+  display: block;
+}
+.hint {
+  position: absolute;
+  bottom: 20px;
+  left: 24px;
+  color: #71839e;
+  font-size: 12px;
+  pointer-events: none;
+}
+.workspace > aside {
+  background: #101925;
+  padding: 26px;
+  border-left: 1px solid #243044;
+}
+h2 {
+  font-size: 17px;
+  margin: 0 0 30px;
+}
+label {
+  display: block;
+  font-size: 12px;
+  margin: 24px 0;
+  color: #b8c6d9;
+}
+output {
+  float: right;
+  color: #70e8cc;
+}
+input {
+  display: block;
+  width: 100%;
+  margin: 16px 0;
+  accent-color: #70e8cc;
+}
+button {
+  border: 1px solid #35445a;
+  background: #1a293b;
+  color: #edf4ff;
+  padding: 10px 18px;
+  border-radius: 7px;
+  cursor: pointer;
+  margin-right: 6px;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #70e8cc;
+  outline-offset: 4px;
+}
+.workspace > aside p {
+  margin-top: 32px;
+  color: #8e9fb6;
+}
+strong {
+  color: #70e8cc;
+}
+small {
+  line-height: 1.8;
+  color: #71839e;
+}
+#error {
+  color: #ffb8b8;
+}
+@media (max-width: 700px) {
+  main {
+    padding: 28px 16px;
+  }
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  #preview {
+    height: 380px;
+  }
+  .workspace > aside {
+    border-left: 0;
+    border-top: 1px solid #243044;
+  }
+}
+
+#status {
+  color: #70e8cc;
+}
+#validation {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #a4bad4;
+  font-size: 12px;
+}
+
+select {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px;
+  color: #edf4ff;
+  background: #1a293b;
+  border: 1px solid #35445a;
+  border-radius: 6px;
+}
+.workspace > aside label {
+  margin: 16px 0;
+}
+.workspace > aside h2 {
+  margin-bottom: 18px;
+}
+.workspace > aside p {
+  margin-top: 20px;
+}

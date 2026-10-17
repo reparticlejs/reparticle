@@ -1,0 +1,25 @@
+{
+  "name": "@reparticle/pixi",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@reparticle/core": "workspace:*"
+  },
+  "devDependencies": {
+    "pixi.js": "8.20.1"
+  },
+  "peerDependencies": {
+    "pixi.js": "^8.20.1"
+  }
+}

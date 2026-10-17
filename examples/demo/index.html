@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reparticle · Proof of concept</title>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="badge">REPARTICLE / EXPERIMENT 001</span>
+        <h1>Particles, from first principles.</h1>
+        <p>JavaScript behaviors. GPU simulation. A separate PixiJS renderer.</p>
+      </header>
+      <section class="workspace">
+        <div id="preview"><div class="hint">Move the pointer to position the emitter</div></div>
+        <aside>
+          <h2>Emitter</h2>
+          <label for="capacity">Capacity</label>
+          <select id="capacity">
+            <option value="8192">8,192 slots</option>
+            <option value="100000" selected>100,000 slots</option>
+          </select>
+          <label
+            >Particle texture<select id="texture">
+              <option value="star">Gold star</option>
+              <option value="leaf">Leaf</option>
+              <option value="spark">Blue spark</option>
+              <option value="procedural">Soft circle (procedural)</option>
+            </select></label
+          >
+          <label
+            >Size <output id="size-value">24 px</output
+            ><input id="size" type="range" min="4" max="64" value="24"
+          /></label>
+          <label
+            >Emission <output id="rate-value">4000 / s</output
+            ><input id="rate" type="range" min="0" max="50000" value="4000" /></label
+          ><label
+            >Gravity <output id="gravity-value">160</output
+            ><input id="gravity" type="range" min="-200" max="500" value="160" /></label
+          ><label
+            >Lifetime <output id="lifetime-value">2 s</output
+            ><input id="lifetime" type="range" min="0.2" max="5" step="0.1" value="2" /></label
+          ><button id="pause">Pause</button><button id="reset">Reset</button>
+          <p><strong id="count">0</strong> GPU particle slots</p>
+          <small>core → GPU.js simulation<br />pixi → visual output</small>
+        </aside>
+      </section>
+      <p id="capacity-note" aria-live="polite"></p>
+      <p id="status" role="status">Starting GPU simulation…</p>
+      <button id="stats-toggle">Hide stats</button>
+      <button id="validate">Validate GPU residency</button>
+      <pre id="validation" aria-live="polite"></pre>
+      <p id="error" role="alert"></p>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

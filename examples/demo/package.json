@@ -1,0 +1,24 @@
+{
+  "name": "@reparticle/demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@reparticle/core": "workspace:*",
+    "@reparticle/pixi": "workspace:*",
+    "d3-scale": "4.0.2",
+    "d3-shape": "3.2.0",
+    "pixi.js": "8.20.1"
+  },
+  "devDependencies": {
+    "@types/d3-scale": "4.0.9",
+    "@types/d3-shape": "3.1.7",
+    "sass-embedded": "1.103.1"
+  }
+}

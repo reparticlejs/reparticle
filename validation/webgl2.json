@@ -1,0 +1,20 @@
+{
+  "pass": true,
+  "backend": "GPU.js 2.24.1 / WebGL2",
+  "capacity": 100000,
+  "frames": 120,
+  "counters": {
+    "readPixels": 0,
+    "getBufferSubData": 0,
+    "texImage2D": 0,
+    "texSubImage2D": 0,
+    "createTexture": 0,
+    "bufferData": 0,
+    "bufferSubData": 0
+  },
+  "maxError": 0.00006612141926609638,
+  "resetPass": true,
+  "expirationPass": true,
+  "glError": 0,
+  "note": "Six explicit texel reads after measurement validate integration, reset and expiration. No playback readbacks."
+}
