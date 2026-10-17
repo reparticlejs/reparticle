@@ -19,10 +19,18 @@ export interface PreviewControls {
   height: number;
   texture: ParticleTextureName;
   red: number;
+  initialRedCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectRed: EmitterConfig['initial']['red'];
   green: number;
+  initialGreenCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectGreen: EmitterConfig['initial']['green'];
   blue: number;
+  initialBlueCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectBlue: EmitterConfig['initial']['blue'];
   colorCurve: 'effect' | 'constant' | 'fire' | 'blue-to-pink';
   alpha: number;
+  initialAlphaCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectAlpha: EmitterConfig['initial']['alpha'];
   alphaCurve: 'effect' | 'constant' | 'fade-out' | 'fade-in-out';
   rotation: number;
   initialRotationCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';

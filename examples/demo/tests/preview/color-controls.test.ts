@@ -157,3 +157,32 @@ it('keeps emitter rotation separate from particle rotation and preserves authore
       ?.rotation,
   ).toBe(-90);
 });
+
+it('keeps emitter RGBA curves separate from particle curves and numeric patches', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  const controls = {
+    ...initialControls(definition),
+    initialRedCurve: 'ramp-up' as const,
+    initialGreenCurve: 'fade-out' as const,
+    initialBlueCurve: 'ramp-up' as const,
+    initialAlphaCurve: 'fade-out' as const,
+    red: 0.8,
+    green: 0.6,
+    blue: 0.4,
+    alpha: 0.2,
+  };
+  const configured = applyControls(definition, controls);
+  const restored = initialControls(configured);
+  expect(restored.initialRedCurve).toBe('effect');
+  expect(restored.initialAlphaCurve).toBe('effect');
+  expect(applyControls(configured, restored).initial).toEqual(configured.initial);
+  expect(configured.overLifetime).toEqual(definition.overLifetime);
+  const patch = emitterParameters({ ...restored, redSpread: 0.5, alphaSpread: 0.5 });
+  for (const channel of ['red', 'green', 'blue', 'alpha'] as const) {
+    expect(patch.initial?.[channel]).toBeUndefined();
+    expect(typeof configured.initial[channel]).toBe('object');
+  }
+  expect(
+    emitterParameters({ ...restored, initialRedCurve: 'constant', red: 0.3 }).initial?.red,
+  ).toBe(0.3);
+});

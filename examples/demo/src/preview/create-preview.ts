@@ -108,7 +108,41 @@ export async function createPreview(
         current.initialRotationCurve !== 'constant' &&
         patch.rotation !== undefined &&
         patch.rotation !== current.rotation;
+      const initialRedCurveChanged =
+        patch.initialRedCurve !== undefined && patch.initialRedCurve !== current.initialRedCurve;
+      const curveRedChanged =
+        current.initialRedCurve !== 'constant' &&
+        patch.red !== undefined &&
+        patch.red !== current.red;
+      const initialGreenCurveChanged =
+        patch.initialGreenCurve !== undefined &&
+        patch.initialGreenCurve !== current.initialGreenCurve;
+      const curveGreenChanged =
+        current.initialGreenCurve !== 'constant' &&
+        patch.green !== undefined &&
+        patch.green !== current.green;
+      const initialBlueCurveChanged =
+        patch.initialBlueCurve !== undefined && patch.initialBlueCurve !== current.initialBlueCurve;
+      const curveBlueChanged =
+        current.initialBlueCurve !== 'constant' &&
+        patch.blue !== undefined &&
+        patch.blue !== current.blue;
+      const initialAlphaCurveChanged =
+        patch.initialAlphaCurve !== undefined &&
+        patch.initialAlphaCurve !== current.initialAlphaCurve;
+      const curveAlphaChanged =
+        current.initialAlphaCurve !== 'constant' &&
+        patch.alpha !== undefined &&
+        patch.alpha !== current.alpha;
       const rebuilding =
+        initialAlphaCurveChanged ||
+        curveAlphaChanged ||
+        initialBlueCurveChanged ||
+        curveBlueChanged ||
+        initialGreenCurveChanged ||
+        curveGreenChanged ||
+        initialRedCurveChanged ||
+        curveRedChanged ||
         initialRotationCurveChanged ||
         curveRotationChanged ||
         initialSizeCurveChanged ||

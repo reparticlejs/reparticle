@@ -24,6 +24,10 @@ export class Emitter {
   emitting = true;
   private settings: EmitterConfig;
   private readonly schedule: SpawnSchedule;
+  private initialRed: SampledCurve;
+  private initialGreen: SampledCurve;
+  private initialBlue: SampledCurve;
+  private initialAlpha: SampledCurve;
   private initialRotation: SampledCurve;
   private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
@@ -46,6 +50,10 @@ export class Emitter {
     this.initialRotation = new SampledCurve(this.settings.initial.rotation);
     this.initialSize = new SampledCurve(this.settings.initial.size);
     this.initialSpeed = new SampledCurve(this.settings.initial.speed);
+    this.initialRed = new SampledCurve(this.settings.initial.red);
+    this.initialGreen = new SampledCurve(this.settings.initial.green);
+    this.initialBlue = new SampledCurve(this.settings.initial.blue);
+    this.initialAlpha = new SampledCurve(this.settings.initial.alpha);
     this.gl = context.gl;
     this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
@@ -141,7 +149,25 @@ export class Emitter {
       patch.initial?.rotation === undefined
         ? this.initialRotation
         : new SampledCurve(settings.initial.rotation);
+    const initialRed =
+      patch.initial?.red === undefined ? this.initialRed : new SampledCurve(settings.initial.red);
+    const initialGreen =
+      patch.initial?.green === undefined
+        ? this.initialGreen
+        : new SampledCurve(settings.initial.green);
+    const initialBlue =
+      patch.initial?.blue === undefined
+        ? this.initialBlue
+        : new SampledCurve(settings.initial.blue);
+    const initialAlpha =
+      patch.initial?.alpha === undefined
+        ? this.initialAlpha
+        : new SampledCurve(settings.initial.alpha);
     this.settings = settings;
+    this.initialRed = initialRed;
+    this.initialGreen = initialGreen;
+    this.initialBlue = initialBlue;
+    this.initialAlpha = initialAlpha;
     this.initialRotation = initialRotation;
     this.initialSize = initialSize;
     this.initialSpeed = initialSpeed;
@@ -209,10 +235,10 @@ export class Emitter {
       sizeX,
       sizeY,
       this.initialSize.at(this.playback.normalizedAge),
-      o.initial.alpha,
-      o.initial.red,
-      o.initial.green,
-      o.initial.blue,
+      this.initialAlpha.at(this.playback.normalizedAge),
+      this.initialRed.at(this.playback.normalizedAge),
+      this.initialGreen.at(this.playback.normalizedAge),
+      this.initialBlue.at(this.playback.normalizedAge),
       this.initialRotation.at(this.playback.normalizedAge),
       o.orientation === 'initial-direction' ? 1 : 0,
       o.initial.speedSpread,

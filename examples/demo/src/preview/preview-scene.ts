@@ -40,6 +40,14 @@ export class PreviewScene {
   setControls(patch: Partial<PreviewControls>): PreviewControls {
     const next = { ...this.settings, ...patch };
     if (
+      next.initialRedCurve !== this.settings.initialRedCurve ||
+      (next.initialRedCurve !== 'constant' && next.red !== this.settings.red) ||
+      next.initialGreenCurve !== this.settings.initialGreenCurve ||
+      (next.initialGreenCurve !== 'constant' && next.green !== this.settings.green) ||
+      next.initialBlueCurve !== this.settings.initialBlueCurve ||
+      (next.initialBlueCurve !== 'constant' && next.blue !== this.settings.blue) ||
+      next.initialAlphaCurve !== this.settings.initialAlphaCurve ||
+      (next.initialAlphaCurve !== 'constant' && next.alpha !== this.settings.alpha) ||
       next.initialRotationCurve !== this.settings.initialRotationCurve ||
       (next.initialRotationCurve !== 'constant' && next.rotation !== this.settings.rotation) ||
       next.initialSizeCurve !== this.settings.initialSizeCurve ||

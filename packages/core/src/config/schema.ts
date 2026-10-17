@@ -35,15 +35,15 @@ const emissionSchema = strictObject({
 });
 
 const initialPropertiesSchema = strictObject({
-  red: number().default(1),
+  red: scalarPropertySchema.default(1),
   redSpread: number().nonnegative().default(0),
   greenSpread: number().nonnegative().default(0),
   blueSpread: number().nonnegative().default(0),
   alphaSpread: number().nonnegative().default(0),
 
-  green: number().default(1),
-  blue: number().default(1),
-  alpha: number().default(1),
+  green: scalarPropertySchema.default(1),
+  blue: scalarPropertySchema.default(1),
+  alpha: scalarPropertySchema.default(1),
   rotation: scalarPropertySchema.default(0),
   rotationSpread: number().nonnegative().default(0),
   sizeSpread: number().nonnegative().default(0),

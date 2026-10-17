@@ -4,6 +4,10 @@ import type { PreviewControls } from '../types/preview';
 import { alphaCurves } from './alpha-curves';
 import { colorCurves } from './color-curves';
 import { emissionRate } from './emission-rate';
+import { initialAlpha } from './initial-alpha';
+import { initialBlue } from './initial-blue';
+import { initialGreen } from './initial-green';
+import { initialRed } from './initial-red';
 import { initialRotation } from './initial-rotation';
 import { initialSize } from './initial-size';
 import { initialSpeed } from './initial-speed';
@@ -29,10 +33,10 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
 
     rotationSpread: controls.rotationSpread,
     rotation: initialRotation(controls),
-    alpha: controls.alpha,
-    red: controls.red,
-    green: controls.green,
-    blue: controls.blue,
+    alpha: initialAlpha(controls),
+    red: initialRed(controls),
+    green: initialGreen(controls),
+    blue: initialBlue(controls),
   };
   const gravity = { ...definition.modifiers.gravity, y: controls.gravity };
 
@@ -108,11 +112,19 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     initialRotationCurve: typeof definition.initial.rotation === 'number' ? 'constant' : 'effect',
     effectRotation: definition.initial.rotation,
     rotationCurve: 'effect',
-    alpha: definition.initial.alpha,
+    alpha: typeof definition.initial.alpha === 'number' ? definition.initial.alpha : 1,
+    initialAlphaCurve: typeof definition.initial.alpha === 'number' ? 'constant' : 'effect',
+    effectAlpha: definition.initial.alpha,
     alphaCurve: 'effect',
-    red: definition.initial.red,
-    green: definition.initial.green,
-    blue: definition.initial.blue,
+    red: typeof definition.initial.red === 'number' ? definition.initial.red : 1,
+    initialRedCurve: typeof definition.initial.red === 'number' ? 'constant' : 'effect',
+    effectRed: definition.initial.red,
+    green: typeof definition.initial.green === 'number' ? definition.initial.green : 1,
+    initialGreenCurve: typeof definition.initial.green === 'number' ? 'constant' : 'effect',
+    effectGreen: definition.initial.green,
+    blue: typeof definition.initial.blue === 'number' ? definition.initial.blue : 1,
+    initialBlueCurve: typeof definition.initial.blue === 'number' ? 'constant' : 'effect',
+    effectBlue: definition.initial.blue,
     colorCurve: 'effect',
     paused: false,
     statsVisible: true,
@@ -143,10 +155,10 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
 
       rotationSpread: controls.rotationSpread,
       ...(controls.initialRotationCurve === 'constant' ? { rotation: controls.rotation } : {}),
-      alpha: controls.alpha,
-      red: controls.red,
-      green: controls.green,
-      blue: controls.blue,
+      ...(controls.initialAlphaCurve === 'constant' ? { alpha: controls.alpha } : {}),
+      ...(controls.initialRedCurve === 'constant' ? { red: controls.red } : {}),
+      ...(controls.initialGreenCurve === 'constant' ? { green: controls.green } : {}),
+      ...(controls.initialBlueCurve === 'constant' ? { blue: controls.blue } : {}),
     },
     modifiers: { gravity: { y: controls.gravity } },
   };

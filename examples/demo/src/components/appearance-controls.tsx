@@ -2,6 +2,7 @@ import type { ControlSectionProps } from '../types/controls';
 import { alphaCurveOptions } from './alpha-curve-options';
 import { ColorControls } from './color-controls';
 import { textureOptions } from './emitter-control-options';
+import { initialColorCurveOptions } from './initial-color-curve-options';
 import { initialSizeCurveOptions } from './initial-size-curve-options';
 import { RotationControls } from './rotation-controls';
 import { SelectField } from './select-field';
@@ -53,15 +54,24 @@ export function AppearanceControls({ controls, onChange }: ControlSectionProps) 
         options={sizeCurveOptions}
         onChange={(sizeCurve) => onChange({ sizeCurve })}
       />
-      <Slider
-        id="alpha"
-        label="Initial alpha"
-        value={controls.alpha}
-        min={0}
-        max={1}
-        step={0.05}
-        onChange={(alpha) => onChange({ alpha })}
+      <SelectField
+        id="initial-alpha-curve"
+        label="Initial alpha over emitter lifetime"
+        value={controls.initialAlphaCurve}
+        options={initialColorCurveOptions}
+        onChange={(initialAlphaCurve) => onChange({ initialAlphaCurve })}
       />
+      {controls.initialAlphaCurve !== 'effect' && (
+        <Slider
+          id="alpha"
+          label="Initial alpha"
+          value={controls.alpha}
+          min={0}
+          max={1}
+          step={0.05}
+          onChange={(alpha) => onChange({ alpha })}
+        />
+      )}
       <Slider
         id="alpha-spread"
         label="Alpha spread ±"
@@ -73,7 +83,7 @@ export function AppearanceControls({ controls, onChange }: ControlSectionProps) 
       />
       <SelectField
         id="alpha-curve"
-        label="Alpha over lifetime"
+        label="Alpha over particle lifetime"
         value={controls.alphaCurve}
         options={alphaCurveOptions}
         onChange={(alphaCurve) => onChange({ alphaCurve })}
