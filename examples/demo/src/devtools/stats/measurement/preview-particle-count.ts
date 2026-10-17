@@ -1,5 +1,6 @@
-import { EmitterPlayback, prewarm } from '@reparticle/core';
+import { EmitterPlayback, prewarm, SpawnRate } from '@reparticle/core';
 
+import { emissionRate } from '../../../preview/emission-rate';
 import type { PreviewControls } from '../../../types/preview';
 import { LiveParticleCount } from './live-particle-count';
 
@@ -7,6 +8,8 @@ import { LiveParticleCount } from './live-particle-count';
 export class PreviewParticleCount {
   private readonly particles: LiveParticleCount;
   private seed = 1;
+  private controls: PreviewControls | undefined;
+  private spawnRate = new SpawnRate(0);
   private playback: EmitterPlayback | undefined;
 
   constructor(capacity: number) {
@@ -20,6 +23,10 @@ export class PreviewParticleCount {
   advance(seconds: number, controls: PreviewControls, emitting: boolean): void {
     if (seconds === 0) {
       return;
+    }
+    if (controls !== this.controls) {
+      this.spawnRate = new SpawnRate(emissionRate(controls));
+      this.controls = controls;
     }
     if (!this.playback) {
       this.seed = controls.seed;
@@ -37,7 +44,7 @@ export class PreviewParticleCount {
 
   private step(seconds: number, controls: PreviewControls, emitting: boolean): void {
     const active = this.playback?.advance(seconds);
-    const rate = active && emitting ? controls.rate : 0;
+    const rate = active && emitting ? this.spawnRate.at(this.playback!.normalizedAge) : 0;
     const spawned = this.particles.advance(
       seconds,
       rate,

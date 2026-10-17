@@ -11,6 +11,8 @@ const controls: PreviewControls = {
   duration: 1,
   orientation: 'default',
   playMode: 'loop',
+  rateCurve: 'constant',
+  effectRate: 4000,
   speed: 220,
   speedSpread: 0,
   sizeSpread: 0,
@@ -79,4 +81,22 @@ it('uses maximum lifetime for prewarm and repeats spread samples after recreatio
     first.advance(0.1, settings, false);
   }
   expect(first.count).toBe(0);
+});
+
+it('mirrors rate curves on once and loop boundary frames', () => {
+  for (const playMode of ['once', 'loop'] as const) {
+    const counter = new PreviewParticleCount(8192);
+    const settings = {
+      ...controls,
+      startOffset: 0,
+      duration: 0.2,
+      playMode,
+      rate: 100,
+      rateCurve: 'ramp-up' as const,
+    };
+    counter.advance(0.1, settings, true);
+    expect(counter.count).toBe(5);
+    counter.advance(0.1, settings, true);
+    expect(counter.count).toBe(playMode === 'once' ? 15 : 5);
+  }
 });

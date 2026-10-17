@@ -9,6 +9,7 @@ import { EmitterPlayback } from './emitter-playback';
 import functions from './gpujs/functions.json';
 import { isPipelineTexture } from './gpujs/is-pipeline-texture';
 import { prewarm } from './prewarm';
+import { SpawnRate } from './spawn-rate';
 import { SpawnSchedule } from './spawn-schedule';
 export type { EmitterContext } from '#types/emitter.js';
 
@@ -22,6 +23,7 @@ export class Emitter {
   emitting = true;
   private settings: EmitterConfig;
   private readonly schedule: SpawnSchedule;
+  private spawnRate: SpawnRate;
   private readonly playback: EmitterPlayback;
   private readonly kernels: IKernelRunShortcut[] = [];
   private readonly vaos: WebGLVertexArrayObject[] = [];
@@ -36,6 +38,7 @@ export class Emitter {
 
   constructor(context: EmitterContext, definition: EmitterConfig) {
     this.settings = emitterConfigSchema.parse(definition);
+    this.spawnRate = new SpawnRate(this.settings.emission.rate);
     this.gl = context.gl;
     this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
@@ -116,7 +119,11 @@ export class Emitter {
   }
   setParameters(patch: EmitterParameters): void {
     this.assertAlive();
-    this.settings = updateEmitterConfig(this.settings, patch);
+    const settings = updateEmitterConfig(this.settings, patch);
+    const spawnRate =
+      patch.emission?.rate === undefined ? this.spawnRate : new SpawnRate(settings.emission.rate);
+    this.settings = settings;
+    this.spawnRate = spawnRate;
   }
   /** GPU resource handle for renderer adapters. Never calls toArray/readPixels. */
   get texture(): WebGLTexture {
@@ -143,7 +150,7 @@ export class Emitter {
   }
   private step(dt: number): void {
     const active = this.playback.advance(dt);
-    const rate = active && this.emitting ? this.settings.emission.rate : 0;
+    const rate = active && this.emitting ? this.spawnRate.at(this.playback.normalizedAge) : 0;
     const { start, count } = this.schedule.next(rate, dt);
     const o = this.settings;
     const shape = o.emission.shape;
@@ -268,6 +275,7 @@ export type { EffectConfig, EmitterConfig, EmitterParameters } from '#types/effe
 
 export { EmitterPlayback } from './emitter-playback';
 export { propertyVariation } from './behaviors/property-variation';
+export { SpawnRate } from './spawn-rate';
 export { prewarm } from './prewarm';
 
 export { sampleCurve, CURVE_SEGMENTS } from './curves/sample-curve';

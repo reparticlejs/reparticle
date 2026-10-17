@@ -151,3 +151,19 @@ Initial speed/lifetime spread uses `initial.speedSpread` and `initial.lifetimeSp
 Size and rotation spread use `initial.sizeSpread` (pixels) and `initial.rotationSpread` (degrees), nonnegative absolute half-ranges defaulting to zero. Separate property streams sample `base + random(-1, 1) * spread` once at birth, independently of speed/lifetime and shape sampling. As in Defold, sampled size stays signed (negative size inverts both quad axes), and rotation is not clamped or wrapped. The sampled size multiplies the lifetime scale; sampled rotation adds to orientation and lifetime rotation. Runtime changes affect future births only, including recycled slots. Existing properties texture channels store the sampled values; no extra storage or debug tracking is needed.
 
 Color and alpha spread use `initial.redSpread`, `greenSpread`, `blueSpread`, and `alphaSpread`. Each is a nonnegative absolute half-range defaulting to zero, sampled independently as `base + random(-1, 1) * spread` at birth. Samples are stored unmodified in the existing color texel, including negative values and values above one. Matching Defold, each rendered channel is `clamp(sampledInitial * lifetimeCurve, 0, 1)`; clamping at birth would change the result. Runtime spread edits affect future births only. Transparent particles still simulate and remain counted as alive until their lifetime expires.
+
+`emission.rate` accepts a constant or the shared Hermite curve format, with **absolute particles per second** as values. Curve time is normalized emitter age, not particle age. Rates use 64 sampled linear segments, clamp negative evaluated values to zero, and feed the existing fractional spawn accumulator once per frame. Defold timing applies: advance the clock first, wrap looping boundary frames before sampling, sample the endpoint for a once boundary frame, and use time zero for zero duration. Start delay and prewarm use the same clock and rate sampler. Curve edits require recreation; a numeric `setParameters({ emission: { rate } })` replaces the curve with a constant. Unrelated parameter updates preserve it.
+
+Example emission rate ramp over the emitter's configured duration:
+
+```json
+{
+  "rate": {
+    "points": [
+      { "time": 0, "value": 0, "tangent": 4000 },
+      { "time": 1, "value": 4000, "tangent": 4000 }
+    ]
+  },
+  "shape": { "type": "point" }
+}
+```

@@ -27,7 +27,10 @@ const shapeSchema = discriminatedUnion('type', [
 ]);
 
 const emissionSchema = strictObject({
-  rate: number().nonnegative(),
+  rate: scalarPropertySchema.refine(
+    (value) => typeof value !== 'number' || value >= 0,
+    'Constant emission rate must be nonnegative',
+  ),
   shape: shapeSchema,
 });
 

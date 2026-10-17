@@ -16,6 +16,11 @@ export class EmitterPlayback {
     return !this.finished && (!this.waiting || this.delayReached);
   }
 
+  /** Current emitter age after delay and loop handling; zero duration samples the start. */
+  get normalizedAge(): number {
+    return this.waiting || this.duration === 0 ? 0 : this.elapsed / this.duration;
+  }
+
   /** Defold emits the whole boundary frame, then stops or restarts its timer. */
   advance(seconds: number): boolean {
     if (seconds === 0 || this.finished) {

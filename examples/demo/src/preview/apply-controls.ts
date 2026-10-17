@@ -3,13 +3,14 @@ import type { EmitterConfig, EmitterParameters } from '@reparticle/core';
 import type { PreviewControls } from '../types/preview';
 import { alphaCurves } from './alpha-curves';
 import { colorCurves } from './color-curves';
+import { emissionRate } from './emission-rate';
 import { rotationCurves } from './rotation-curves';
 import { sizeCurves } from './size-curves';
 
 /** Maps demo settings onto an emitter definition without modifying the original. */
 export function applyControls(definition: EmitterConfig, controls: PreviewControls): EmitterConfig {
   const shape = emitterShape(controls);
-  const emission = { ...definition.emission, rate: controls.rate, shape };
+  const emission = { ...definition.emission, rate: emissionRate(controls), shape };
   const initial = {
     ...definition.initial,
     lifetime: controls.lifetime,
@@ -77,7 +78,9 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
       definition.emission.shape.type === 'circle' ? definition.emission.shape.diameter : 100,
     width: 'width' in shape ? shape.width : 200,
     height: 'height' in shape ? shape.height : 100,
-    rate: definition.emission.rate,
+    rate: typeof definition.emission.rate === 'number' ? definition.emission.rate : 4000,
+    rateCurve: typeof definition.emission.rate === 'number' ? 'constant' : 'effect',
+    effectRate: definition.emission.rate,
     gravity: definition.modifiers.gravity.y,
     lifetime: definition.initial.lifetime,
     lifetimeSpread: definition.initial.lifetimeSpread,
@@ -108,7 +111,8 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
 }
 
 export function emitterParameters(controls: PreviewControls): EmitterParameters {
-  const emission: EmitterParameters['emission'] = { rate: controls.rate };
+  const emission: EmitterParameters['emission'] =
+    controls.rateCurve === 'constant' ? { rate: controls.rate } : {};
   if (controls.shape === 'circle') {
     emission.shape = { diameter: controls.diameter };
   } else if (controls.shape === 'box' || controls.shape === 'cone2d') {

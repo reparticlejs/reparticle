@@ -12,6 +12,8 @@ function setup() {
     duration: 1,
     orientation: 'default',
     playMode: 'loop',
+    rateCurve: 'constant',
+    effectRate: 4000,
     speed: 220,
     speedSpread: 0,
     sizeSpread: 0,

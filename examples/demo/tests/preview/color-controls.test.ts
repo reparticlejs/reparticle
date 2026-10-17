@@ -69,3 +69,13 @@ it('maps RGBA spreads while retaining lifetime curves', () => {
   expect(initialControls(changed)).toMatchObject(spreads);
   expect(changed.overLifetime).toEqual(definition.overLifetime);
 });
+
+it('preserves an authored emission curve during numeric appearance updates', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  const controls = { ...initialControls(definition), rateCurve: 'ramp-up' as const, rate: 100 };
+  const configured = applyControls(definition, controls);
+  const restored = initialControls(configured);
+  expect(restored.rateCurve).toBe('effect');
+  expect(applyControls(configured, restored).emission.rate).toEqual(configured.emission.rate);
+  expect(emitterParameters({ ...restored, size: 40 }).emission?.rate).toBeUndefined();
+});

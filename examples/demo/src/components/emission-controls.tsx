@@ -1,11 +1,13 @@
 import type { ControlSectionProps } from '../types/controls';
 import { capacityOptions } from './emitter-control-options';
+import { rateCurveOptions } from './rate-curve-options';
 import { SelectField } from './select-field';
 import { ShapeControls } from './shape-controls';
 import { Slider } from './slider';
 
 export function EmissionControls({ controls, onChange }: ControlSectionProps) {
   const exceedsCapacity =
+    controls.rateCurve !== 'effect' &&
     controls.rate * (controls.lifetime + controls.lifetimeSpread) > controls.capacity;
 
   return (
@@ -27,15 +29,24 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
       <p>
         <strong id="count">{controls.capacity.toLocaleString()}</strong> GPU particle slots
       </p>
-      <Slider
-        id="rate"
-        label="Emission"
-        value={controls.rate}
-        min={0}
-        max={50000}
-        unit=" / s"
-        onChange={(rate) => onChange({ rate })}
+      <SelectField
+        id="rate-curve"
+        label="Emission over emitter lifetime"
+        value={controls.rateCurve}
+        options={rateCurveOptions}
+        onChange={(rateCurve) => onChange({ rateCurve })}
       />
+      {controls.rateCurve !== 'effect' && (
+        <Slider
+          id="rate"
+          label="Emission"
+          value={controls.rate}
+          min={0}
+          max={50000}
+          unit=" / s"
+          onChange={(rate) => onChange({ rate })}
+        />
+      )}
       <Slider
         id="gravity"
         label="Gravity"
