@@ -39,7 +39,7 @@ export class PreviewScene {
 
   setControls(patch: Partial<PreviewControls>): PreviewControls {
     const next = { ...this.settings, ...patch };
-    if (next.capacity !== this.settings.capacity) {
+    if (next.capacity !== this.settings.capacity || next.shape !== this.settings.shape) {
       this.view = replaceParticleView(this.app, this.view, this.assets.textures, next);
     } else {
       this.updateParameters(next);
@@ -83,7 +83,8 @@ export class PreviewScene {
     if (
       next.rate === current.rate &&
       next.gravity === current.gravity &&
-      next.lifetime === current.lifetime
+      next.lifetime === current.lifetime &&
+      (next.shape !== 'circle' || next.diameter === current.diameter)
     ) {
       return;
     }

@@ -9,6 +9,7 @@ import {
 import type { EmitterConfig, EmitterParameters } from '#types/effect.js';
 import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 
+import { circleAngle, circleRadius } from './behaviors/circle';
 import { applyGravity } from './behaviors/gravity';
 import { advanceAge, particleAlive } from './behaviors/lifetime';
 import { advancePosition, advanceVelocity } from './behaviors/motion';
@@ -17,6 +18,7 @@ import { emitterConfigSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
 import { initialize } from './gpujs/initialize';
 import { integrate } from './gpujs/integrate';
+import { spawnCircle } from './gpujs/spawn-circle';
 import { spawnMotion } from './gpujs/spawn-motion';
 import { SpawnSchedule } from './spawn-schedule';
 export type { EmitterContext } from '#types/emitter.js';
@@ -72,6 +74,9 @@ export class Emitter {
     gpu.addFunction(spawnVariation);
     gpu.addFunction(spawnDirection);
     gpu.addFunction(spawnMotion);
+    gpu.addFunction(circleAngle);
+    gpu.addFunction(circleRadius);
+    gpu.addFunction(spawnCircle);
     const config: IGPUKernelSettings = {
       output: [this.width, this.rows * 2],
       precision: 'single',
@@ -138,6 +143,8 @@ export class Emitter {
       o.modifiers.gravity.y,
       o.initial.lifetime,
       this.seed,
+      o.emission.shape.type === 'circle' ? 1 : 0,
+      o.emission.shape.type === 'circle' ? o.emission.shape.diameter : 0,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

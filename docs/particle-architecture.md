@@ -36,11 +36,11 @@ Current required fields have no implicit defaults:
 | capacity            | Integer 1 through 1000000; device texture limits are checked at creation                          |
 | seed                | Integer 0 through 65535; reproducibility across different GPU drivers is not promised             |
 | emission.rate       | Finite nonnegative particles per second                                                           |
-| emission.shape.type | Point only at this stage                                                                          |
+| emission.shape.type | `point` or `circle`                                                                               |
 | initial.lifetime    | Finite positive seconds                                                                           |
 | initial.speed       | Finite nonnegative units per second                                                               |
-| initial.direction   | Finite radians                                                                                    |
-| initial.spread      | Finite nonnegative full angular width, centered on direction                                      |
+| initial.direction   | Finite radians; used by point spawning                                                            |
+| initial.spread      | Finite nonnegative angular width for point spawning                                               |
 | modifiers.gravity   | Required object: x must currently be zero; y is finite acceleration in units/second²              |
 
 Simulation coordinates currently use local units, positive X right and positive Y down. Rotation and angular speed use radians and radians/second in Reparticle. Conversion from other formats belongs at import boundaries.
@@ -55,7 +55,8 @@ Reference: [Defold Particle FX manual](https://defold.com/manuals/particlefx/), 
 
 - [ ] Multiple emitters; effect-wide and emitter-local modifiers; IDs and transforms.
 - [ ] Once/loop playback, duration, delay, prewarm, emitter/world space, capacity.
-- [ ] Circle, 2D cone, box, sphere, cone; shape dimensions.
+- [x] Circle: uniform disk births, outward radial velocity, numeric diameter.
+- [ ] 2D cone, box, sphere, cone; remaining shape dimensions.
 - [ ] Initial/default/movement orientation, inherited velocity, velocity-aligned stretch.
 - [ ] Spawn rate, lifetime, speed, size, RGBA, rotation, stretch, angular velocity; emitter-time curves and random spread.
 - [ ] Lifetime scale, RGBA, rotation, stretch, angular velocity curves.
@@ -76,7 +77,7 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 3. **Separate lifecycle and acceleration — implemented.** Built-in lifetime helpers own age/activity, gravity contributes acceleration, and motion integrates each axis once using the constant-acceleration position term. Spawn initializes new particles before these stages. Helpers are registered in one GPU update kernel, not separate passes. The JSON is unchanged: horizontal gravity remains zero; numeric gravity updates affect living particles, while initial-property changes affect future births. GPU.js uses an explicitly numeric activity flag because registered boolean-return helpers are unsupported.
 4. **Value distributions.** Consistent constant/random representations; independent random channels; lifetime and other initial properties sampled once at birth.
 5. **Emitter playback.** Duration, loops, delay, prewarm, stop/drain/reset semantics and state notifications.
-6. **Shapes and transforms.** Implement each documented shape separately; coordinate-space rules and inherited velocity; resolve 3D state/rendering needs before claiming 3D shapes.
+6. **Shapes and transforms — circle implemented.** `circle` takes a finite nonnegative `diameter`; angle is uniform and radius uses square-root sampling. Diameter updates affect future births only; shape type requires recreation. Point direction/spread are point-only. Implement each remaining documented shape separately; coordinate-space rules and inherited velocity; resolve 3D state/rendering needs before claiming 3D shapes.
 7. **Curves and particle appearance.** Shared curve contract, emitter-time evaluation, particle-age evaluation; each size/color/rotation/stretch feature separately. Renderer evaluation may avoid storing values derivable from age.
 8. **Remaining modifiers.** Drag, radial, vortex individually, with clear ordering and influence rules.
 9. **Effect composition.** Multiple emitters, shared modifiers, IDs, ownership and total resource budgets. Never imply an entire multi-emitter effect costs one draw.
@@ -85,11 +86,13 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 
 Dependencies may change the order, but no feature disappears from the coverage inventory. Each larger step is split into individual feature changes. The old flat emitter options API has been replaced by the JSON definition and numeric parameter patches.
 
+Circle implementation reference: [Defold SpawnParticle, circle branch](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L905-L915), reviewed 2026-10-17. We match its disk sampling and radial velocity semantics, not its PRNG sequence, emitter transform system, or newborn time integration. Circle diameter corresponds to Defold's Emitter Size X. The existing Reparticle birth-age convention remains unchanged.
+
 ## Runtime update policy
 
 | Category                                                     | Policy                                                                                |
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| Emission rate                                                | Update scheduling without recompilation                                               |
+| Emission rate and circle diameter                            | Update scheduling without recompilation                                               |
 | Initial properties                                           | Affect subsequent births; do not rewrite existing particle state                      |
 | Modifier numeric parameters                                  | Affect living particles without recompilation where supported                         |
 | Capacity, state layout, behavior structure, simulation space | Explicit rebuild/reset policy; never an implicit expensive hot-path operation         |

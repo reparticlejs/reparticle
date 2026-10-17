@@ -10,7 +10,11 @@ export function updateEmitterConfig(
   const patch = emitterParametersSchema.parse(input);
   return emitterConfigSchema.parse({
     ...current,
-    emission: { ...current.emission, ...patch.emission },
+    emission: {
+      ...current.emission,
+      ...patch.emission,
+      shape: { ...current.emission.shape, ...patch.emission?.shape },
+    },
     initial: { ...current.initial, ...patch.initial },
     modifiers: {
       gravity: { ...current.modifiers.gravity, ...patch.modifiers?.gravity },

@@ -1,8 +1,13 @@
-import { strictObject, number, int, string, literal, tuple } from 'zod';
+import { strictObject, number, int, string, literal, tuple, discriminatedUnion } from 'zod';
+
+const shapeSchema = discriminatedUnion('type', [
+  strictObject({ type: literal('point') }),
+  strictObject({ type: literal('circle'), diameter: number().nonnegative() }),
+]);
 
 const emissionSchema = strictObject({
   rate: number().nonnegative(),
-  shape: strictObject({ type: literal('point') }),
+  shape: shapeSchema,
 });
 
 const initialPropertiesSchema = strictObject({
@@ -15,9 +20,14 @@ const initialPropertiesSchema = strictObject({
 const gravitySchema = strictObject({ x: literal(0), y: number() });
 const modifiersSchema = strictObject({ gravity: gravitySchema });
 
-/** Numeric updates only; shape, identity, capacity and seed require recreation. */
+/** Numeric updates only; shape type, identity, capacity and seed require recreation. */
 export const emitterParametersSchema = strictObject({
-  emission: strictObject({ rate: number().nonnegative() }).partial().optional(),
+  emission: strictObject({
+    rate: number().nonnegative(),
+    shape: strictObject({ diameter: number().nonnegative() }).partial(),
+  })
+    .partial()
+    .optional(),
   initial: initialPropertiesSchema.partial().optional(),
   modifiers: strictObject({ gravity: gravitySchema.partial().optional() }).optional(),
 });

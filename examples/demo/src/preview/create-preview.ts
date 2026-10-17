@@ -66,14 +66,16 @@ export async function createPreview(
     mounted = true;
 
     function setControls(patch: Partial<PreviewControls>): PreviewControls {
-      const capacity = activeScene.controls.capacity;
-      const resizing = patch.capacity !== undefined && patch.capacity !== capacity;
-      if (resizing) {
+      const current = activeScene.controls;
+      const capacityChanged = patch.capacity !== undefined && patch.capacity !== current.capacity;
+      const shapeChanged = patch.shape !== undefined && patch.shape !== current.shape;
+      const rebuilding = capacityChanged || shapeChanged;
+      if (rebuilding) {
         debug.setVisible(false);
       }
       try {
         const controls = activeScene.setControls(patch);
-        if (resizing) {
+        if (rebuilding) {
           debug.reset(controls.capacity);
         }
         return controls;

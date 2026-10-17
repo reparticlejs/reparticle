@@ -1,5 +1,5 @@
 import type { ControlSectionProps } from '../types/controls';
-import { capacityOptions } from './emitter-control-options';
+import { capacityOptions, shapeOptions } from './emitter-control-options';
 import { SelectField } from './select-field';
 import { Slider } from './slider';
 
@@ -9,6 +9,24 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
   return (
     <fieldset>
       <legend>Emission</legend>
+      <SelectField
+        id="shape"
+        label="Shape"
+        value={controls.shape}
+        options={shapeOptions}
+        onChange={(shape) => onChange({ shape })}
+      />
+      {controls.shape === 'circle' && (
+        <Slider
+          id="diameter"
+          label="Diameter"
+          value={controls.diameter}
+          min={0}
+          max={400}
+          unit=" px"
+          onChange={(diameter) => onChange({ diameter })}
+        />
+      )}
       <SelectField
         id="capacity"
         label="Capacity"

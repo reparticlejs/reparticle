@@ -2,6 +2,7 @@ import { applyGravity } from '../behaviors/gravity';
 import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { advancePosition, advanceVelocity } from '../behaviors/motion';
 import type { KernelContext, ParticleTexel, ParticleTexture } from './layout';
+import { spawnCircle } from './spawn-circle';
 import { spawnMotion } from './spawn-motion';
 
 /**
@@ -23,6 +24,8 @@ export function integrate(
   gravity: number,
   lifetime: number,
   seed: number,
+  shapeType: number,
+  diameter: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -40,6 +43,9 @@ export function integrate(
 
   // Motion texel for a newly emitted particle.
   if (isSpawning) {
+    if (shapeType === 1) {
+      return spawnCircle(particleId, seed, emitterX, emitterY, speed, diameter);
+    }
     return spawnMotion(particleId, seed, emitterX, emitterY, speed, direction, spread);
   }
 

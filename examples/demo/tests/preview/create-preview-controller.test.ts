@@ -6,6 +6,8 @@ import type { ParticlePreview, PreviewControls } from '#src/types/preview.js';
 function setup() {
   const controls: PreviewControls = {
     capacity: 8192,
+    shape: 'point',
+    diameter: 100,
     rate: 3000,
     gravity: 160,
     lifetime: 2,

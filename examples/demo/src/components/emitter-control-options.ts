@@ -1,5 +1,5 @@
 import type { SelectOption } from '../types/controls';
-import type { ParticleTextureName } from '../types/preview';
+import type { ParticleTextureName, EmitterShape } from '../types/preview';
 
 export const capacityOptions: SelectOption<number>[] = [
   { value: 8192, label: '8,192 slots' },
@@ -11,4 +11,9 @@ export const textureOptions: SelectOption<ParticleTextureName>[] = [
   { value: 'leaf', label: 'Leaf' },
   { value: 'spark', label: 'Blue spark' },
   { value: 'procedural', label: 'Soft circle (procedural)' },
+];
+
+export const shapeOptions: SelectOption<EmitterShape>[] = [
+  { value: 'point', label: 'Point' },
+  { value: 'circle', label: 'Circle' },
 ];

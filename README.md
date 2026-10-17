@@ -11,7 +11,7 @@ pnpm install --ignore-scripts
 pnpm dev
 ```
 
-Open the local URL printed by Vite. For mobile testing, connect your phone to the same Wi-Fi and open the **Network** URL printed by `pnpm dev`. Both Vite dev and preview servers listen on the local network. Move the pointer across the preview to position the emitter. Adjust emission, gravity, and lifetime; pause or reset the simulation. Choose a gold star, leaf, blue spark, or procedural circle and adjust particle size.
+Open the local URL printed by Vite. For mobile testing, connect your phone to the same Wi-Fi and open the **Network** URL printed by `pnpm dev`. Both Vite dev and preview servers listen on the local network. Press and drag inside the preview to position the emitter. Adjust emission, gravity, and lifetime; pause or reset the simulation. Choose a gold star, leaf, blue spark, or procedural circle and adjust particle size.
 
 Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error; there is no silent CPU fallback.
 
@@ -94,10 +94,28 @@ particles.emitter.setParameters({ initial: { lifetime: 3, speed: 180 } });
 particles.emitter.setParameters({ modifiers: { gravity: { y: 80 } } });
 ```
 
-Updates are validated atomically. Capacity, seed, ID and shape cannot be changed through this method; create a new instance from an updated definition. `emitter.configuration` returns an independent snapshot for that purpose. Position and playback remain runtime controls. Initial values affect new births; gravity affects living particles. Horizontal gravity currently must be zero. Scalar speed is exact; implicit speed variation, shrinking and fading have been removed. Texture selection and particle size remain renderer controls until their JSON fields are implemented. No new API accepts executable particle behavior.
+Updates are validated atomically. Capacity, seed, ID and shape type cannot be changed through this method; create a new instance from an updated definition. `emitter.configuration` returns an independent snapshot for that purpose. Position and playback remain runtime controls. Initial values affect new births; gravity affects living particles. Horizontal gravity currently must be zero. Scalar speed is exact; implicit speed variation, shrinking and fading have been removed. Texture selection and particle size remain renderer controls until their JSON fields are implemented. No new API accepts executable particle behavior.
 
 ## Demo UI
 
 The demo uses React with the official Vite React plugin. `src/app.tsx` owns UI settings and status. `App` creates a shared preview controller. UI event handlers call its setControls/reset commands, and `ParticlePreview` uses `useEmitterDrag` to forward press-and-drag movement to it. `usePreviewRenderer` mounts the renderer, attaches it to the controller, then detaches and destroys it on cleanup. Only `useMountEffect` imports `useEffect`; settings are applied directly from events. `EmitterControls` edits settings, and `PreviewStatus` displays status and errors. `src/preview/create-preview.ts` assembles the Pixi application, scene, ticker, and cleanup. `load-preview-assets.ts` loads JSON and textures; `PreviewScene` manages scene settings and movement; `particle-view.ts` creates and replaces views; `devtools/create-preview-stats.ts` owns stats and debug counting. Types live in `src/types`; tests live in `tests`. React dependencies belong only to the demo.
 
 GPU updates run on Pixi's ticker without React state updates per frame. Controls are disabled until asynchronous initialization succeeds. Unmounting, Strict Mode remounts, failed startup, and hot reload release the owned GPU scene and stats. Shared artwork remains owned by Pixi's asset cache.
+
+### Circle emitter
+
+The demo starts with a circle. Select Point to compare the existing directed emitter.
+
+```json
+"shape": { "type": "circle", "diameter": 100 }
+```
+
+Circle births follow [Defold's circle semantics](https://defold.com/manuals/particlefx/): positions fill the disk uniformly, and velocity points radially outward at the configured speed. Diameter is measured in simulation units; zero collapses positions to the emitter while preserving radial directions. Point-only `initial.direction` and `initial.spread` do not influence circle births.
+
+Update diameter for future births without resetting living particles:
+
+```ts
+emitter.setParameters({ emission: { shape: { diameter: 200 } } });
+```
+
+Changing shape type recreates the emitter and clears particles in the demo. Changing diameter does not. All spawning stays in the existing GPU update pass; no per-particle CPU work or texture readbacks are added.

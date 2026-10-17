@@ -39,12 +39,12 @@ describe('effect JSON boundary', () => {
       ]),
     );
     delete input.emitters[0].modifiers.vortex;
-    input.emitters[0].emission.shape.type = 'circle';
+    input.emitters[0].emission.shape.type = 'box';
     expect(issues(input)).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           path: ['emitters', 0, 'emission', 'shape', 'type'],
-          code: 'invalid_value',
+          code: 'invalid_union',
         }),
       ]),
     );
