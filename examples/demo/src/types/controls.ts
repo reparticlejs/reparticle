@@ -1,6 +1,5 @@
-import type { Ref } from 'react';
-
 import type { PreviewControls } from './preview';
+import type { PreviewController } from './preview-controller';
 
 export interface EmitterControlsProps {
   controls: PreviewControls;
@@ -20,15 +19,8 @@ export interface SliderProps {
   onChange: (value: number) => void;
 }
 
-export interface ParticlePreviewHandle {
-  update: (patch: Partial<PreviewControls>) => PreviewControls | null;
-  reset: () => void;
-}
-
 export interface ParticlePreviewProps {
-  ref: Ref<ParticlePreviewHandle>;
-  onReady: (controls: PreviewControls) => void;
-  onError: (message: string) => void;
+  controller: PreviewController;
 }
 
 export interface PreviewStatusProps {
