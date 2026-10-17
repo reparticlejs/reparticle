@@ -6,10 +6,10 @@
 }
 
 .replayable-stats {
-  position: fixed;
-  left: calc(#{stats-size(8)} + env(safe-area-inset-left, 0px));
-  bottom: calc(#{stats-size(8)} + env(safe-area-inset-bottom, 0px));
-  z-index: 2147483647;
+  position: absolute;
+  right: calc(#{stats-size(8)} + env(safe-area-inset-right, 0px));
+  top: stats-size(8);
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   gap: stats-size(4);

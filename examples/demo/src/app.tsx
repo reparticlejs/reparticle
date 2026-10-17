@@ -15,26 +15,20 @@ export function App() {
   const ready = controls !== null;
 
   return (
-    <main>
-      <header>
-        <h1>Reparticle demo</h1>
-        <p>GPU particle simulation with PixiJS rendering.</p>
-      </header>
-
+    <main aria-label="Reparticle demo">
       <section className="workspace">
         <ParticlePreview controller={controller} />
 
         {controls && (
           <EmitterControls
             controls={controls}
-            disabled={!ready}
             onChange={controller.update}
             onReset={controller.reset}
           />
         )}
       </section>
 
-      <PreviewStatus controls={controls} ready={ready} error={error} />
+      <PreviewStatus ready={ready} error={error} />
     </main>
   );
 }

@@ -8,13 +8,14 @@ export function createStatsShell(
   cardElements: readonly HTMLElement[],
   display: StatsConfig['display'],
   onCycleCard: () => void,
+  container: HTMLElement,
 ): StatsShell {
   const compact = display === 'compact';
   const { root, style } = createStatsShellElements(cardElements, display);
   const updateAccessibility = compact ? updateCompactAccessibility : noop;
 
   document.head.append(style);
-  document.body.append(root);
+  container.append(root);
 
   const removeInteraction = compact ? installDevtoolsInteraction(root, onCycleCard) : undefined;
 

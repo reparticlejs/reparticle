@@ -1,6 +1,6 @@
 import { parseEffectConfig } from '@reparticle/core';
 import { ParticleView } from '@reparticle/pixi';
-import { Application, Assets, Graphics, type Texture, type WebGLRenderer } from 'pixi.js';
+import { Application, Assets, type Texture, type WebGLRenderer } from 'pixi.js';
 
 import { createStats } from '../devtools';
 import type { ParticlePreview, ParticleTextureName, PreviewControls } from '../types/preview';
@@ -77,8 +77,9 @@ export async function createPreview(
     view.particleSize = controls.size;
     view.emitter.x = host.clientWidth / 2;
     view.emitter.y = host.clientHeight * 0.7;
-    app.stage.addChild(new Graphics().roundRect(16, 16, 104, 5, 2).fill(0x70e8cc));
     stats = createStats({
+      container: host,
+      display: 'compact',
       gl: renderer.gl,
       subscribePostRender(listener) {
         const callback = () => listener(app.ticker.lastTime);

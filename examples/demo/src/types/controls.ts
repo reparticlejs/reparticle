@@ -1,10 +1,12 @@
 import type { PreviewControls } from './preview';
 import type { PreviewController } from './preview-controller';
 
-export interface EmitterControlsProps {
+export interface ControlSectionProps {
   controls: PreviewControls;
-  disabled: boolean;
   onChange: (patch: Partial<PreviewControls>) => void;
+}
+
+export interface EmitterControlsProps extends ControlSectionProps {
   onReset: () => void;
 }
 
@@ -24,7 +26,19 @@ export interface ParticlePreviewProps {
 }
 
 export interface PreviewStatusProps {
-  controls: PreviewControls | null;
   ready: boolean;
   error: string;
+}
+
+export interface SelectOption<Value extends string | number> {
+  value: Value;
+  label: string;
+}
+
+export interface SelectFieldProps<Value extends string | number> {
+  id: string;
+  label: string;
+  value: Value;
+  options: readonly SelectOption<Value>[];
+  onChange: (value: Value) => void;
 }

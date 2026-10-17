@@ -10,13 +10,17 @@ import type { Stats } from './types/stats';
 
 /** Local source adaptation of Replayable stats, independent of its runtime. */
 export function createStats(
-  host: StatsHost & { gl: WebGL2RenderingContext; display?: StatsConfig['display'] },
+  host: StatsHost & {
+    container: HTMLElement;
+    gl: WebGL2RenderingContext;
+    display?: StatsConfig['display'];
+  },
 ): Stats {
   const release = registerWebglContext(host.gl);
   try {
     const stats = createStatsLifecycle(
       createStatsSampler(STATS_METRICS),
-      createStatsView(STATS_METRICS, host.display ?? 'expanded'),
+      createStatsView(STATS_METRICS, host.display ?? 'expanded', host.container),
       host,
     );
     let destroyed = false;

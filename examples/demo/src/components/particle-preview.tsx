@@ -10,8 +10,13 @@ export function ParticlePreview({ controller }: ParticlePreviewProps) {
     controller.movePointer(event.clientX, event.clientY);
   }
 
+  function centerEmitter(event: PointerEvent<HTMLDivElement>) {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    controller.movePointer(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+  }
+
   return (
-    <div id="preview" ref={host} onPointerMove={moveEmitter}>
+    <div id="preview" ref={host} onPointerMove={moveEmitter} onPointerLeave={centerEmitter}>
       <div className="hint">Move the pointer to position the emitter</div>
     </div>
   );

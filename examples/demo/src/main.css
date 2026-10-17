@@ -10,34 +10,20 @@ body {
     sans-serif;
 }
 main {
-  max-width: 1250px;
-  margin: auto;
-  padding: 48px 32px;
-}
-.badge {
-  font-size: 11px;
-  letter-spacing: 3px;
-  color: #70e8cc;
-}
-h1 {
-  font-size: clamp(28px, 4vw, 46px);
-  font-weight: 550;
-  letter-spacing: -1.5px;
-  margin: 16px 0;
-}
-header p {
-  color: #8e9fb6;
-  margin-bottom: 32px;
+  padding: 12px;
 }
 .workspace {
   display: grid;
-  grid-template-columns: 1fr 240px;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  height: calc(100dvh - 64px);
+  min-height: 360px;
   border: 1px solid #243044;
   border-radius: 16px;
   overflow: hidden;
 }
 #preview {
-  height: 540px;
+  isolation: isolate;
+  height: 100%;
   position: relative;
   overflow: hidden;
 }
@@ -53,6 +39,7 @@ canvas {
   pointer-events: none;
 }
 .workspace > aside {
+  overflow-y: auto;
   background: #101925;
   padding: 26px;
   border-left: 1px solid #243044;
@@ -107,10 +94,11 @@ small {
 }
 @media (max-width: 700px) {
   main {
-    padding: 28px 16px;
+    padding: 8px;
   }
   .workspace {
     grid-template-columns: 1fr;
+    height: auto;
   }
   #preview {
     height: 380px;
@@ -122,6 +110,7 @@ small {
 }
 
 #status {
+  float: none;
   display: block;
   margin: 1em 0;
   color: #70e8cc;
@@ -153,10 +142,28 @@ fieldset {
   padding: 0;
   min-width: 0;
 }
-button:disabled,
-fieldset:disabled {
-  opacity: 0.5;
+fieldset + fieldset {
+  margin-top: 24px;
+  border-top: 1px solid #243044;
+  padding-top: 16px;
 }
-button:disabled {
-  cursor: default;
+legend {
+  padding: 0 8px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #edf4ff;
+}
+.workspace > aside #capacity-note {
+  margin: 8px 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.playback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.playback-actions button {
+  margin: 0;
 }

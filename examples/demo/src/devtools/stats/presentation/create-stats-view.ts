@@ -9,9 +9,10 @@ import { createStatsShell } from './create-stats-shell.js';
 export function createStatsView(
   definitions: readonly StatsMetricDefinition[],
   display: StatsConfig['display'],
+  container: HTMLElement,
 ): StatsView {
   const cards = createStatsCards(definitions, display);
-  const shell = createStatsShell(cards.elements, display, cycleCard);
+  const shell = createStatsShell(cards.elements, display, cycleCard, container);
   render();
 
   return { update, clearHistory, show: shell.show, hide: shell.hide, destroy };
