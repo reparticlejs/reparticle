@@ -202,7 +202,7 @@ References: [Defold particle properties](https://defold.com/manuals/particlefx/#
 
 Initial alpha is captured at birth, so `emitter.setParameters({ initial: { alpha: 0.5 } })` only affects new particles. Lifetime curve changes require recreation. Both textured and procedural particles fade with premultiplied RGB and alpha, avoiding bright fringes. Transparent particles still move, age, and count as alive until their lifetime expires.
 
-The lifetime texel stores `[age, lifetime, birthSize, reserved]`; motion and birth RGBA occupy separate texels. Positive lifetime identifies initialized slots. The curve is uploaded once and sampled in the vertex shader alongside size; no extra simulation pass or GPU readback is added. The demo includes constant, fade-out, and fade-in/out presets.
+The lifetime texel stores `[age, lifetime, birthSize, birthRotation]`; motion and birth RGBA occupy separate texels. Positive lifetime identifies initialized slots. The curve is uploaded once and sampled in the vertex shader alongside size; no extra simulation pass or GPU readback is added. The demo includes constant, fade-out, and fade-in/out presets.
 
 Reference: [Defold lifetime color evaluation](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L1247-L1270).
 
@@ -215,3 +215,13 @@ Initial RGB changes through `setParameters` affect future births only. Existing 
 Birth RGB needs an additional RGBA texel per slot: motion, lifetime/size, and `[birthRed, birthGreen, birthBlue, birthAlpha]`. This raises state texture storage and simulation output from 32 to 48 bytes per allocated slot per texture (50% more). The kernel still runs once per step; no extra pass or readback is introduced. RGBA lifetime samples are packed into 65 `vec4` uniforms alongside the size samples and uploaded only at view creation, staying within WebGL2's minimum vertex-uniform budget.
 
 Reference: [Defold per-channel lifetime multiplication and clamp](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L1247-L1270). Initial-color spread and emitter-time color curves remain pending.
+
+### Rotation over lifetime
+
+`initial.rotation` is captured at birth in degrees, defaulting to `0`. `overLifetime.rotation` is a constant or Hermite curve of additional degrees over normalized particle age, also defaulting to `0`. Defold combines these as **birth rotation + lifetime rotation**, not a multiplier or accumulated angular velocity. Values are not wrapped or clamped, so negative angles and multiple turns work.
+
+Positive angles rotate counterclockwise, matching Defold's positive Z rotation; the shader accounts for canvas Y pointing downward. It rotates the sized, aspect-correct quad around the particle center before applying the Pixi object's transform. It does not rotate the particle's velocity. Initial rotation updates affect future births only; curve changes require recreation. The demo provides initial degrees and clockwise/counterclockwise full-turn presets.
+
+Birth rotation occupies the fourth lifetime channel, so storage remains three texels per particle. Curves upload once, and rotation is evaluated in the vertex shader without another simulation pass or readback. This implements Defold's default particle orientation; initial/movement-direction alignment, angular velocity, rotation spread, and emitter transforms remain separate features.
+
+References: [Defold birth rotation](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L991-L1012) and [lifetime rotation](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L1301-L1308).

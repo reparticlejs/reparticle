@@ -180,6 +180,7 @@ export class Emitter {
       o.initial.red,
       o.initial.green,
       o.initial.blue,
+      o.initial.rotation,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

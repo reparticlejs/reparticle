@@ -35,6 +35,7 @@ export function integrate(
   initialRed: number,
   initialGreen: number,
   initialBlue: number,
+  initialRotation: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -50,10 +51,10 @@ export function integrate(
     return state[particleRow + this.constants.rows * 2]![this.thread.x]!;
   }
 
-  // Lifetime texel: age, lifetime, birth size, reserved.
+  // Lifetime texel: age, lifetime, birth size, birth rotation (degrees).
   if (this.thread.y >= this.constants.rows) {
     if (isSpawning) {
-      return [0, lifetime, initialSize, 0];
+      return [0, lifetime, initialSize, initialRotation];
     }
     return [
       advanceAge(lifetimeState[0], seconds),

@@ -23,6 +23,8 @@ export interface PreviewControls {
   colorCurve: 'effect' | 'constant' | 'fire' | 'blue-to-pink';
   alpha: number;
   alphaCurve: 'effect' | 'constant' | 'fade-out' | 'fade-in-out';
+  rotation: number;
+  rotationCurve: 'effect' | 'constant' | 'full-turn' | 'reverse-turn';
   size: number;
   sizeCurve: 'effect' | 'constant' | 'shrink' | 'grow-shrink';
   rate: number;

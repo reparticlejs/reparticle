@@ -81,6 +81,8 @@ export async function createPreview(
         patch.alphaCurve !== undefined && patch.alphaCurve !== current.alphaCurve;
       const colorCurveChanged =
         patch.colorCurve !== undefined && patch.colorCurve !== current.colorCurve;
+      const rotationCurveChanged =
+        patch.rotationCurve !== undefined && patch.rotationCurve !== current.rotationCurve;
       const rebuilding =
         capacityChanged ||
         shapeChanged ||
@@ -90,7 +92,8 @@ export async function createPreview(
         offsetChanged ||
         curveChanged ||
         alphaCurveChanged ||
-        colorCurveChanged;
+        colorCurveChanged ||
+        rotationCurveChanged;
       if (rebuilding) {
         debug.setVisible(false);
       }

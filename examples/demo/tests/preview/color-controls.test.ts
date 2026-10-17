@@ -24,3 +24,24 @@ it('passes birth RGB changes through numeric parameters and preserves independen
     definition.overLifetime,
   );
 });
+
+it('maps birth rotation and restores the JSON lifetime rotation independently', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  const controls = {
+    ...initialControls(definition),
+    rotation: 45,
+    rotationCurve: 'full-turn' as const,
+  };
+  expect(emitterParameters(controls).initial?.rotation).toBe(45);
+  const changed = applyControls(definition, controls);
+  expect(changed.initial.rotation).toBe(45);
+  expect(changed.overLifetime.rotation).toEqual({
+    points: [
+      { time: 0, value: 0, tangent: 360 },
+      { time: 1, value: 360, tangent: 360 },
+    ],
+  });
+  expect(applyControls(definition, { ...controls, rotationCurve: 'effect' }).overLifetime).toEqual(
+    definition.overLifetime,
+  );
+});

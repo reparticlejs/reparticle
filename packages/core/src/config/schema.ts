@@ -36,6 +36,7 @@ const initialPropertiesSchema = strictObject({
   green: number().default(1),
   blue: number().default(1),
   alpha: number().default(1),
+  rotation: number().default(0),
   size: number().nonnegative().default(24),
   lifetime: number().positive(),
   speed: number().nonnegative(),
@@ -60,6 +61,7 @@ export const emitterParametersSchema = strictObject({
     .optional(),
   initial: initialPropertiesSchema
     .extend({
+      rotation: number(),
       size: number().nonnegative(),
       alpha: number(),
       red: number(),
@@ -87,12 +89,13 @@ export const emitterConfigSchema = strictObject({
   initial: initialPropertiesSchema,
   modifiers: modifiersSchema,
   overLifetime: strictObject({
+    rotation: scalarPropertySchema.default(0),
     scale: scalarPropertySchema.default(1),
     alpha: scalarPropertySchema.default(1),
     red: scalarPropertySchema.default(1),
     green: scalarPropertySchema.default(1),
     blue: scalarPropertySchema.default(1),
-  }).default({ scale: 1, alpha: 1, red: 1, green: 1, blue: 1 }),
+  }).default({ scale: 1, alpha: 1, red: 1, green: 1, blue: 1, rotation: 0 }),
 });
 
 /** Only implemented configuration features are accepted. */

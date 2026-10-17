@@ -67,7 +67,8 @@ Reference: [Defold Particle FX manual](https://defold.com/manuals/particlefx/), 
 - [x] Lifetime scale: Hermite curves sampled into 64 linear segments.
 - [x] Initial alpha and lifetime alpha (clamp their product to [0, 1]).
 - [x] Initial RGB and lifetime RGB curves.
-- [ ] Lifetime rotation, stretch, angular velocity curves.
+- [x] Initial rotation and lifetime rotation (additive degrees, default orientation).
+- [ ] Lifetime stretch and angular velocity curves.
 - [ ] Acceleration, drag, radial, vortex; transforms, magnitude, influence distance.
 - [ ] Images, atlases, animation, automatic/manual sizing, materials, tint constants.
 - [ ] Alpha, additive, multiply, screen blending.
@@ -139,3 +140,5 @@ Size over lifetime is implemented as `initial.size` (default 24, captured at bir
 Alpha over lifetime: `initial.alpha` and `overLifetime.alpha` default to 1. The latter uses the shared constant/Hermite curve schema and 64-segment sampling. Following Defold, clamp only the product of captured birth alpha and lifetime alpha to [0, 1], before multiplying texture and object opacity. Pixi scales premultiplied RGB and alpha together for both textured and procedural rendering. Birth alpha shares the color texel with birth RGB; positive birth lifetime identifies active storage. Transparent particles remain simulated and counted. Initial alpha is a numeric parameter for future births; lifetime curves remain structural. No texture growth, readback, extra pass, or per-frame curve upload.
 
 Color over lifetime: initial red/green/blue and lifetime red/green/blue default to 1. Each channel follows Defold's clamp(birth × lifetime, 0, 1), then tints texture RGB without additional color-space conversion. Initial numeric updates affect new births, lifetime curves require recreation. Captured RGB occupies a third RGBA texel `[birthRed, birthGreen, birthBlue, birthAlpha]`, raising texture storage and update output by 50% (32 to 48 bytes per slot per texture), still in one simulation pass. GPU texture-height validation now accounts for all three row bands. RGBA curves share one array of 65 vec4 samples to stay within minimum WebGL2 vertex-uniform limits; samples upload once. The procedural circle has a white base, so its color comes entirely from configured RGB. Initial color spread and emitter-time color curves remain pending.
+
+Rotation uses `initial.rotation` plus `overLifetime.rotation`, both degrees and default zero. Birth rotation is stored in the fourth lifetime channel, making the band `[age, lifetime, birthSize, birthRotation]`; texture storage is unchanged. Lifetime rotation uses the shared 64-segment Hermite sampling and is an absolute additive offset, not angular velocity. Positive angles rotate counterclockwise after accounting for downward canvas Y. Pixi rotates the aspect-correct quad around its center before applying the object transform, leaving simulation velocity unchanged. Initial degree updates affect future births, curve edits require recreation. Default orientation only; velocity alignment, angular velocity, rotation spread and emitter transforms remain pending.

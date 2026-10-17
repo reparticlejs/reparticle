@@ -13,6 +13,7 @@ uniform vec2 viewport;
 uniform mat3 transform;
 uniform vec2 particleAspect;
 uniform float sizeCurve[${CURVE_SEGMENTS + 1}];
+uniform float rotationCurve[${CURVE_SEGMENTS + 1}];
 uniform vec4 colorCurve[${CURVE_SEGMENTS + 1}];
 out vec2 uv;
 out vec4 particleColor;
@@ -31,7 +32,14 @@ void main() {
   vec4 colorScale = mix(colorCurve[segment], colorCurve[segment + 1], curvePosition - float(segment));
   particleColor = clamp(birthColor * colorScale, 0.0, 1.0);
   vec2 size = particleAspect * meta.z * scale;
-  vec2 world = (transform * vec3(p.xy + uv * size * 0.5, 1.0)).xy;
+  float rotation = mix(rotationCurve[segment], rotationCurve[segment + 1], curvePosition - float(segment));
+  // Defold's positive Z rotation is counterclockwise; canvas Y points down.
+  float angle = -radians(meta.w + rotation);
+  float sine = sin(angle);
+  float cosine = cos(angle);
+  vec2 corner = uv * size * 0.5;
+  vec2 rotated = vec2(cosine * corner.x - sine * corner.y, sine * corner.x + cosine * corner.y);
+  vec2 world = (transform * vec3(p.xy + rotated, 1.0)).xy;
   gl_Position = life > 0.0 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
 }`;
 const fragment = `#version 300 es
@@ -113,6 +121,7 @@ export class ParticleView extends RenderContainer {
   constructor(renderer: WebGLRenderer, definition: unknown) {
     const config = parseEffectConfig(definition).emitters[0];
     const sizeCurve = sampleCurve(config.overLifetime.scale);
+    const rotationCurve = sampleCurve(config.overLifetime.rotation);
     const colorCurve = sampleColorCurves(config.overLifetime);
     super({});
     this.host = renderer;
@@ -142,11 +151,13 @@ export class ParticleView extends RenderContainer {
             'frame',
             'particleAspect',
             'sizeCurve[0]',
+            'rotationCurve[0]',
             'colorCurve[0]',
           ].map((name) => [name, gl.getUniformLocation(this.program, name)]),
         );
         gl.useProgram(this.program);
         gl.uniform1fv(this.uniforms['sizeCurve[0]']!, sizeCurve);
+        gl.uniform1fv(this.uniforms['rotationCurve[0]']!, rotationCurve);
         gl.uniform4fv(this.uniforms['colorCurve[0]']!, colorCurve);
       } catch (error) {
         this.emitter.destroy();

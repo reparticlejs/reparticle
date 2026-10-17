@@ -2,6 +2,7 @@ import type { ControlSectionProps } from '../types/controls';
 import { alphaCurveOptions } from './alpha-curve-options';
 import { ColorControls } from './color-controls';
 import { textureOptions } from './emitter-control-options';
+import { RotationControls } from './rotation-controls';
 import { SelectField } from './select-field';
 import { sizeCurveOptions } from './size-curve-options';
 import { Slider } from './slider';
@@ -49,9 +50,11 @@ export function AppearanceControls({ controls, onChange }: ControlSectionProps) 
         options={alphaCurveOptions}
         onChange={(alphaCurve) => onChange({ alphaCurve })}
       />
+      <RotationControls controls={controls} onChange={onChange} />
       <ColorControls controls={controls} onChange={onChange} />
       <p>
-        Initial size, color and alpha affect new particles. Changing a curve restarts the effect.
+        Initial size, rotation, color and alpha affect new particles. Changing a curve restarts the
+        effect.
       </p>
     </fieldset>
   );

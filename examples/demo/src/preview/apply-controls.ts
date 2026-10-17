@@ -3,6 +3,7 @@ import type { EmitterConfig, EmitterParameters } from '@reparticle/core';
 import type { PreviewControls } from '../types/preview';
 import { alphaCurves } from './alpha-curves';
 import { colorCurves } from './color-curves';
+import { rotationCurves } from './rotation-curves';
 import { sizeCurves } from './size-curves';
 
 /** Maps demo settings onto an emitter definition without modifying the original. */
@@ -13,6 +14,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     ...definition.initial,
     lifetime: controls.lifetime,
     size: controls.size,
+    rotation: controls.rotation,
     alpha: controls.alpha,
     red: controls.red,
     green: controls.green,
@@ -33,6 +35,10 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
       ...(controls.colorCurve === 'effect'
         ? definition.overLifetime
         : colorCurves[controls.colorCurve]),
+      rotation:
+        controls.rotationCurve === 'effect'
+          ? definition.overLifetime.rotation
+          : rotationCurves[controls.rotationCurve],
       alpha:
         controls.alphaCurve === 'effect'
           ? definition.overLifetime.alpha
@@ -65,6 +71,8 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     texture: 'star',
     size: definition.initial.size,
     sizeCurve: 'effect',
+    rotation: definition.initial.rotation,
+    rotationCurve: 'effect',
     alpha: definition.initial.alpha,
     alphaCurve: 'effect',
     red: definition.initial.red,
@@ -88,6 +96,7 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
     initial: {
       lifetime: controls.lifetime,
       size: controls.size,
+      rotation: controls.rotation,
       alpha: controls.alpha,
       red: controls.red,
       green: controls.green,

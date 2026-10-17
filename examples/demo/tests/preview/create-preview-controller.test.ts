@@ -20,6 +20,8 @@ function setup() {
     texture: 'star',
     size: 24,
     sizeCurve: 'effect',
+    rotation: 0,
+    rotationCurve: 'effect',
     alpha: 1,
     alphaCurve: 'effect',
     red: 1,

@@ -75,6 +75,20 @@
               "tangent": -0.5
             }
           ]
+        },
+        "rotation": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 180
+            },
+            {
+              "time": 1,
+              "value": 180,
+              "tangent": 180
+            }
+          ]
         }
       },
       "initial": {
@@ -86,7 +100,8 @@
         "alpha": 1,
         "red": 1,
         "green": 1,
-        "blue": 1
+        "blue": 1,
+        "rotation": 0
       },
       "modifiers": {
         "gravity": {
