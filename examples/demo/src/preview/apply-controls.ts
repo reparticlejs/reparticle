@@ -79,6 +79,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
           : sizeCurves[controls.sizeCurve],
     },
     modifiers: { ...definition.modifiers, gravity },
+    inheritVelocity: controls.inheritVelocity,
   };
 }
 
@@ -112,6 +113,7 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     rateCurve: typeof definition.emission.rate === 'number' ? 'constant' : 'effect',
     effectRate: definition.emission.rate,
     gravity: definition.modifiers.gravity.y,
+    inheritVelocity: definition.inheritVelocity,
     lifetime: typeof definition.initial.lifetime === 'number' ? definition.initial.lifetime : 2,
     initialLifetimeCurve: typeof definition.initial.lifetime === 'number' ? 'constant' : 'effect',
     effectLifetime: definition.initial.lifetime,
@@ -194,6 +196,7 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
       ...(controls.initialBlueCurve === 'constant' ? { blue: controls.blue } : {}),
     },
     modifiers: { gravity: { y: controls.gravity } },
+    inheritVelocity: controls.inheritVelocity,
   };
 }
 

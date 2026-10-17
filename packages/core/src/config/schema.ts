@@ -70,6 +70,7 @@ const modifiersSchema = strictObject({ gravity: gravitySchema });
 
 /** Numeric updates only; shape type, identity, capacity and seed require recreation. */
 export const emitterParametersSchema = strictObject({
+  inheritVelocity: number().optional(),
   emission: strictObject({
     rate: number().nonnegative(),
     shape: strictObject({
@@ -113,6 +114,7 @@ export const emitterParametersSchema = strictObject({
 });
 
 export const emitterConfigSchema = strictObject({
+  inheritVelocity: number().default(0),
   id: string().refine((value) => value.trim().length > 0, 'Expected a nonempty identifier'),
   capacity: int().min(1).max(1_000_000),
   seed: int().min(0).max(65535),

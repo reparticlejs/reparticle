@@ -44,6 +44,8 @@ it('maps motion and properties texels without changing the behavior math', () =>
       0,
       0,
       0,
+      0,
+      0,
     );
   expect(step()).toEqual([13, 16.5, 30, -30]);
   context.thread.y = 1;
@@ -82,6 +84,8 @@ it('reinitializes a recycled slot without applying motion or aging on its birth 
       1,
       1,
       1,
+      0,
+      0,
       0,
       0,
       0,
@@ -141,6 +145,8 @@ it('preserves lifetime captured at spawn and stops motion at expiry despite new 
       0,
       0,
       0,
+      0,
+      0,
     );
   expect(step()).toEqual([10, 20, 0, 0]);
   context.thread.y = 1;
@@ -175,6 +181,8 @@ it('uses radial circle spawning independently of point direction and spread', ()
     1,
     1,
     1,
+    0,
+    0,
     0,
     0,
     0,
@@ -222,6 +230,8 @@ it('uses radial circle spawning independently of point direction and spread', ()
     0,
     0,
     0,
+    0,
+    0,
   );
   expect(changedPointDirection).toEqual(first);
   expect(Math.hypot(first[0] - 5, first[1] - 6)).toBeLessThanOrEqual(50);
@@ -257,6 +267,8 @@ it('spawns a cone independently of point direction and keeps birth age at zero',
       1,
       1,
       1,
+      0,
+      0,
       0,
       0,
       0,
@@ -318,6 +330,8 @@ it('captures size at birth, preserves it when initial size changes, and replaces
     0,
     0,
     0,
+    0,
+    0,
   );
   expect(retained[2]).toBe(12);
   const recycled = integrate.call(
@@ -342,6 +356,8 @@ it('captures size at birth, preserves it when initial size changes, and replaces
     1,
     1,
     1,
+    0,
+    0,
     0,
     0,
     0,
@@ -398,6 +414,8 @@ it('preserves initial alpha until the slot is recycled', () => {
     0,
     0,
     0,
+    0,
+    0,
   );
   expect(retained[3]).toBe(0.25);
   const recycled = integrate.call(
@@ -422,6 +440,8 @@ it('preserves initial alpha until the slot is recycled', () => {
     1,
     1,
     1,
+    0,
+    0,
     0,
     0,
     0,
@@ -479,6 +499,8 @@ it('continues simulating transparent particles and keeps unused slots inactive',
       0,
       0,
       0,
+      0,
+      0,
     );
   expect(step()).toEqual([1, 0, 10, 0]);
   state[1]![0] = [0, 0, 0, 0];
@@ -514,6 +536,8 @@ it('captures initial RGB, preserves it, and replaces it when a slot is reused', 
       0.7,
       0.8,
       0.9,
+      0,
+      0,
       0,
       0,
       0,
@@ -574,6 +598,8 @@ it('captures initial rotation and preserves it until slot reuse', () => {
       0,
       0,
       0,
+      0,
+      0,
     );
   expect(step(0)[3]).toBe(-45);
   expect(step(1)).toEqual([0, 2, 24, 450]);
@@ -610,6 +636,8 @@ it('captures alignment at zero speed, adds initial rotation, and retains it unde
       1,
       30,
       1,
+      0,
+      0,
       0,
       0,
       0,

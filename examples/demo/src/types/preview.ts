@@ -63,6 +63,7 @@ export interface PreviewControls {
   rateCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectRate: EmitterConfig['emission']['rate'];
   gravity: number;
+  inheritVelocity: number;
   lifetime: number;
   initialLifetimeCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectLifetime: EmitterConfig['initial']['lifetime'];

@@ -49,6 +49,8 @@ export function integrate(
   alphaSpread: number,
   emitterSizeSpreadX: number,
   emitterSizeSpreadY: number,
+  inheritedVelocityX: number,
+  inheritedVelocityY: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -91,7 +93,12 @@ export function integrate(
       return [0, sampledLifetime, sampledSize, rotation];
     }
     const sampledSpeed = speed + propertyVariation(particleId, seed, 1) * speedSpread;
-    return [spawned[0], spawned[1], spawned[2] * sampledSpeed, spawned[3] * sampledSpeed];
+    return [
+      spawned[0],
+      spawned[1],
+      spawned[2] * sampledSpeed + inheritedVelocityX,
+      spawned[3] * sampledSpeed + inheritedVelocityY,
+    ];
   }
 
   // Properties texel: age, lifetime, initialSize, resolved initialRotation (degrees).

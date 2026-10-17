@@ -8,6 +8,7 @@ import { updateEmitterConfig } from './config/update-emitter';
 import { SampledCurve } from './curves/sampled-curve';
 import { SampledShape } from './curves/sampled-shape';
 import { EmitterPlayback } from './emitter-playback';
+import { EmitterVelocity } from './emitter-velocity';
 import functions from './gpujs/functions.json';
 import { isPipelineTexture } from './gpujs/is-pipeline-texture';
 import { prewarm } from './prewarm';
@@ -24,6 +25,7 @@ export class Emitter {
   y = 0;
   emitting = true;
   private settings: EmitterConfig;
+  private readonly velocity = new EmitterVelocity();
   private readonly schedule: SpawnSchedule;
   private initialRed: SampledCurve;
   private initialGreen: SampledCurve;
@@ -214,6 +216,7 @@ export class Emitter {
         (seconds) => this.step(seconds),
       );
     }
+    this.velocity.update(this.x, this.y, dt);
     this.step(dt);
   }
   private step(dt: number): void {
@@ -255,6 +258,8 @@ export class Emitter {
       o.initial.alphaSpread,
       this.shape.spreadX,
       this.shape.spreadY,
+      this.velocity.x * o.inheritVelocity,
+      this.velocity.y * o.inheritVelocity,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;
@@ -266,6 +271,7 @@ export class Emitter {
     this.output = this.run(0);
     this.schedule.reset();
     this.playback.reset();
+    this.velocity.reset();
     this.needsPrewarm = true;
     this.nextKernel = 1;
     this.seed = this.initialSeed;

@@ -57,6 +57,7 @@ function setup() {
     height: 100,
     rateSpread: 0,
     rate: 3000,
+    inheritVelocity: 0,
     gravity: 160,
     lifetime: 2,
     texture: 'star',

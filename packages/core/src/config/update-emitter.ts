@@ -7,6 +7,7 @@ export function updateEmitterConfig(current: EmitterConfig, input: unknown): Emi
   const patch = emitterParametersSchema.parse(input);
   return emitterConfigSchema.parse({
     ...current,
+    inheritVelocity: patch.inheritVelocity ?? current.inheritVelocity,
     emission: {
       ...current.emission,
       ...patch.emission,

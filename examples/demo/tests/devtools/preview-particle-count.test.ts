@@ -57,6 +57,7 @@ const controls: PreviewControls = {
   height: 100,
   rate: 60,
   rateSpread: 0,
+  inheritVelocity: 0,
   gravity: 0,
   lifetime: 1,
   texture: 'star',

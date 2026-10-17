@@ -62,6 +62,15 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
       />
       <p>Spread is sampled once per emitter. Changing it restarts the effect.</p>
       <Slider
+        id="inherit-velocity"
+        label="Inherit velocity"
+        value={controls.inheritVelocity}
+        min={0}
+        max={2}
+        step={0.1}
+        onChange={(inheritVelocity) => onChange({ inheritVelocity })}
+      />
+      <Slider
         id="gravity"
         label="Gravity"
         value={controls.gravity}
