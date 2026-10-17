@@ -9,7 +9,9 @@ import {
 import type { EmitterConfig, EmitterParameters } from '#types/effect.js';
 import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 
-import { advancePosition, advancePositionWithGravity, advanceVelocity } from './behaviors/motion';
+import { applyGravity } from './behaviors/gravity';
+import { advanceAge, particleAlive } from './behaviors/lifetime';
+import { advancePosition, advanceVelocity } from './behaviors/motion';
 import { spawnVariation, spawnDirection } from './behaviors/spawn';
 import { emitterConfigSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
@@ -62,7 +64,10 @@ export class Emitter {
     }
     const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
     gpu.addFunction(advancePosition);
-    gpu.addFunction(advancePositionWithGravity);
+    gpu.addFunction(applyGravity);
+    gpu.addFunction(advanceAge);
+    // Keep minified conditional returns numeric in GPU.js's type inference.
+    gpu.addFunction(particleAlive, { returnType: 'Number' });
     gpu.addFunction(advanceVelocity);
     gpu.addFunction(spawnVariation);
     gpu.addFunction(spawnDirection);

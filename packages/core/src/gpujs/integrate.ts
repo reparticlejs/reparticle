@@ -1,4 +1,6 @@
-import { advancePosition, advancePositionWithGravity, advanceVelocity } from '../behaviors/motion';
+import { applyGravity } from '../behaviors/gravity';
+import { advanceAge, particleAlive } from '../behaviors/lifetime';
+import { advancePosition, advanceVelocity } from '../behaviors/motion';
 import type { KernelContext, ParticleTexel, ParticleTexture } from './layout';
 import { spawnMotion } from './spawn-motion';
 
@@ -33,7 +35,7 @@ export function integrate(
     if (isSpawning) {
       return [0, lifetime, 1, 0];
     }
-    return [lifetimeState[0] + seconds, lifetimeState[1], lifetimeState[2], 0];
+    return [advanceAge(lifetimeState[0], seconds), lifetimeState[1], lifetimeState[2], 0];
   }
 
   // Motion texel for a newly emitted particle.
@@ -49,14 +51,17 @@ export function integrate(
   const age = lifetimeState[0];
   const particleLifetime = lifetimeState[1];
   const initialized = lifetimeState[2];
-  if (initialized < 0.5 || age >= particleLifetime) {
+  if (particleAlive(initialized, age, particleLifetime) < 0.5) {
     return [x, y, 0, 0];
   }
 
+  // Accumulate modifiers first, then integrate each axis exactly once.
+  const accelerationX = applyGravity(0, 0);
+  const accelerationY = applyGravity(0, gravity);
   return [
-    advancePosition(x, velocityX, seconds),
-    advancePositionWithGravity(y, velocityY, gravity, seconds),
-    velocityX,
-    advanceVelocity(velocityY, gravity, seconds),
+    advancePosition(x, velocityX, accelerationX, seconds),
+    advancePosition(y, velocityY, accelerationY, seconds),
+    advanceVelocity(velocityX, accelerationX, seconds),
+    advanceVelocity(velocityY, accelerationY, seconds),
   ];
 }
