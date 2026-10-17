@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 
 import { createPreview } from '../preview/create-preview';
-import { createPreviewHost } from '../preview/create-preview-host';
 import type { ParticlePreview } from '../types/preview';
 import type { PreviewController } from '../types/preview-controller';
 import { useMountEffect } from './use-mount-effect';
@@ -16,7 +15,7 @@ export function usePreviewRenderer(controller: PreviewController) {
 
     async function mount() {
       try {
-        instance = await createPreview(createPreviewHost(host.current!), abort.signal);
+        instance = await createPreview(host.current!, abort.signal);
         if (abort.signal.aborted) {
           instance?.destroy();
           return;
