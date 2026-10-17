@@ -51,6 +51,8 @@ export function integrate(
   emitterSizeSpreadY: number,
   inheritedVelocityX: number,
   inheritedVelocityY: number,
+  emitterCosine: number,
+  emitterSine: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -75,13 +77,13 @@ export function integrate(
     const sampledX = sizeX + propertyVariation(particleId, seed, 12) * emitterSizeSpreadX;
     const sampledY = sizeY + propertyVariation(particleId, seed, 13) * emitterSizeSpreadY;
     // Unit-speed motion preserves the shape direction even when actual speed is zero.
-    let spawned = spawnMotion(particleId, seed, emitterX, emitterY, 1, direction, spread);
+    let spawned = spawnMotion(particleId, seed, 0, 0, 1, direction, spread);
     if (shapeType === 1) {
-      spawned = spawnCircle(particleId, seed, emitterX, emitterY, 1, sampledX);
+      spawned = spawnCircle(particleId, seed, 0, 0, 1, sampledX);
     } else if (shapeType === 2) {
-      spawned = spawnBox(particleId, seed, emitterX, emitterY, 1, sampledX, sampledY);
+      spawned = spawnBox(particleId, seed, 0, 0, 1, sampledX, sampledY);
     } else if (shapeType === 3) {
-      spawned = spawnCone2D(particleId, seed, emitterX, emitterY, 1, sampledX, sampledY);
+      spawned = spawnCone2D(particleId, seed, 0, 0, 1, sampledX, sampledY);
     }
     if (this.thread.y >= this.constants.rows) {
       let rotation = initialRotation + propertyVariation(particleId, seed, 4) * rotationSpread;
@@ -94,10 +96,10 @@ export function integrate(
     }
     const sampledSpeed = speed + propertyVariation(particleId, seed, 1) * speedSpread;
     return [
-      spawned[0],
-      spawned[1],
-      spawned[2] * sampledSpeed + inheritedVelocityX,
-      spawned[3] * sampledSpeed + inheritedVelocityY,
+      emitterX + emitterCosine * spawned[0] - emitterSine * spawned[1],
+      emitterY + emitterSine * spawned[0] + emitterCosine * spawned[1],
+      (emitterCosine * spawned[2] - emitterSine * spawned[3]) * sampledSpeed + inheritedVelocityX,
+      (emitterSine * spawned[2] + emitterCosine * spawned[3]) * sampledSpeed + inheritedVelocityY,
     ];
   }
 

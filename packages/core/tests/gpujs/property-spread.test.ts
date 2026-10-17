@@ -46,6 +46,8 @@ it('samples independent signed speed and lifetime offsets once per birth', () =>
       0,
       0,
       0,
+      1,
+      0,
     );
   const speeds: number[] = [];
   const lifetimes: number[] = [];
@@ -118,6 +120,8 @@ it('captures signed size and rotation independently, adds orientation, and resam
       0,
       0,
       0,
+      1,
+      0,
     );
   expect(run(1, 1, 0, 0, 0)).toEqual([0, 1, 10, 30]);
   const sizes: number[] = [];
@@ -182,6 +186,8 @@ it('samples RGBA independently without birth clamping and retains values until r
       0,
       0,
       0,
+      0,
+      1,
       0,
     );
   expect(run(1, 1, 0)).toEqual([0.5, 0.5, 0.5, 0.5]);

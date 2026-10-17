@@ -119,6 +119,7 @@
           "y": 160
         }
       },
+      "rotation": 0,
       "space": "world",
       "inheritVelocity": 0,
       "startOffset": 0,

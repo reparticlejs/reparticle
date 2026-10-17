@@ -62,6 +62,8 @@ it.each([1, 2, 3])(
           80,
           0,
           0,
+          1,
+          0,
         );
       context.thread.y = 0;
       expect(run(1)).toEqual(expected);

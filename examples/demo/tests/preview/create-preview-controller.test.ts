@@ -58,6 +58,7 @@ function setup() {
     rateSpread: 0,
     rate: 3000,
     inheritVelocity: 0,
+    emitterRotation: 0,
     space: 'world',
     gravity: 160,
     lifetime: 2,

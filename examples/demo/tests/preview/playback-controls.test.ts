@@ -44,3 +44,13 @@ it('loads emission space and passes space changes to recreated effects', () => {
   expect(controls.space).toBe('local');
   expect(applyControls(definition, { ...controls, space: 'world' }).space).toBe('world');
 });
+
+it('maps emitter rotation independently of initial particle rotation', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.rotation = 45;
+  const controls = initialControls(definition);
+  expect(controls.emitterRotation).toBe(45);
+  const changed = applyControls(definition, { ...controls, emitterRotation: 90 });
+  expect(changed.rotation).toBe(90);
+  expect(changed.initial.rotation).toEqual(definition.initial.rotation);
+});

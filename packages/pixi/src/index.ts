@@ -11,6 +11,7 @@ uniform int width;
 uniform int rows;
 uniform vec2 viewport;
 uniform vec2 emitterOffset;
+uniform vec2 emitterRotation;
 uniform mat3 transform;
 uniform vec2 particleAspect;
 uniform bool orientToMovement;
@@ -49,7 +50,10 @@ void main() {
     rotated = vec2(-direction.y * rotated.x - direction.x * rotated.y,
                     direction.x * rotated.x - direction.y * rotated.y);
   }
-  vec2 world = (transform * vec3(motion.xy + emitterOffset + rotated, 1.0)).xy;
+  vec2 position = motion.xy + rotated;
+  position = vec2(emitterRotation.x * position.x - emitterRotation.y * position.y,
+                  emitterRotation.y * position.x + emitterRotation.x * position.y);
+  vec2 world = (transform * vec3(position + emitterOffset, 1.0)).xy;
   gl_Position = life > 0.0 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
 }`;
 const fragment = `#version 300 es
@@ -154,6 +158,7 @@ export class ParticleView extends RenderContainer {
             'rows',
             'viewport',
             'emitterOffset',
+            'emitterRotation',
             'transform',
             'opacity',
             'artwork',
@@ -231,6 +236,8 @@ export class ParticleView extends RenderContainer {
     gl.uniform1i(u.rows!, this.emitter.rows);
     gl.uniform2f(u.viewport!, r.screen.width, r.screen.height);
     const localSpace = this.emitter.space === 'local';
+    const radians = localSpace ? (-this.emitter.rotation * Math.PI) / 180 : 0;
+    gl.uniform2f(u.emitterRotation!, Math.cos(radians), Math.sin(radians));
     gl.uniform2f(
       u.emitterOffset!,
       localSpace ? this.emitter.x : 0,

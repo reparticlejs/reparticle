@@ -140,6 +140,15 @@ export class Emitter {
   get id(): string {
     return this.settings.id;
   }
+  /** Emitter rotation in degrees, counterclockwise like Defold. */
+  get rotation(): number {
+    return this.settings.rotation;
+  }
+
+  set rotation(value: number) {
+    this.setParameters({ rotation: value });
+  }
+
   get space(): EmitterConfig['space'] {
     return this.settings.space;
   }
@@ -229,6 +238,11 @@ export class Emitter {
     const { start, count } = this.schedule.next(rate, dt);
     const o = this.settings;
     const worldSpace = o.space === 'world';
+    const rotation = worldSpace ? o.rotation : 0;
+    const radians = (-rotation * Math.PI) / 180;
+    const initialRotation = this.initialRotation.at(this.playback.normalizedAge);
+    const particleRotation =
+      o.orientation === 'movement-direction' ? initialRotation : initialRotation + rotation;
     this.output = this.run(
       this.nextKernel,
       this.output,
@@ -251,7 +265,7 @@ export class Emitter {
       this.initialRed.at(this.playback.normalizedAge),
       this.initialGreen.at(this.playback.normalizedAge),
       this.initialBlue.at(this.playback.normalizedAge),
-      this.initialRotation.at(this.playback.normalizedAge),
+      particleRotation,
       o.orientation === 'initial-direction' ? 1 : 0,
       o.initial.speedSpread,
       o.initial.lifetimeSpread,
@@ -265,6 +279,8 @@ export class Emitter {
       this.shape.spreadY,
       worldSpace ? this.velocity.x * o.inheritVelocity : 0,
       worldSpace ? this.velocity.y * o.inheritVelocity : 0,
+      Math.cos(radians),
+      Math.sin(radians),
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

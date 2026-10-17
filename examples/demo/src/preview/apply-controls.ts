@@ -80,6 +80,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     },
     modifiers: { ...definition.modifiers, gravity },
     inheritVelocity: controls.inheritVelocity,
+    rotation: controls.emitterRotation,
     space: controls.space,
   };
 }
@@ -115,6 +116,7 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     effectRate: definition.emission.rate,
     gravity: definition.modifiers.gravity.y,
     inheritVelocity: definition.inheritVelocity,
+    emitterRotation: definition.rotation,
     space: definition.space,
     lifetime: typeof definition.initial.lifetime === 'number' ? definition.initial.lifetime : 2,
     initialLifetimeCurve: typeof definition.initial.lifetime === 'number' ? 'constant' : 'effect',
@@ -199,6 +201,7 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
     },
     modifiers: { gravity: { y: controls.gravity } },
     inheritVelocity: controls.inheritVelocity,
+    rotation: controls.emitterRotation,
   };
 }
 

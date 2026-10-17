@@ -14,6 +14,15 @@ export function ShapeControls({ controls, onChange }: ControlSectionProps) {
         options={shapeOptions}
         onChange={(shape) => onChange({ shape })}
       />
+      <Slider
+        id="emitter-rotation"
+        label="Emitter rotation"
+        value={controls.emitterRotation}
+        min={-180}
+        max={180}
+        unit="°"
+        onChange={(emitterRotation) => onChange({ emitterRotation })}
+      />
       {controls.shape === 'circle' && (
         <>
           <SelectField

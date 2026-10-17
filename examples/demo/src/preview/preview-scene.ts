@@ -131,6 +131,11 @@ export class PreviewScene {
       next.blue === current.blue &&
       next.alpha === current.alpha &&
       next.rotation === current.rotation &&
+      next.emitterRotation === current.emitterRotation &&
+      next.inheritVelocity === current.inheritVelocity &&
+      next.diameterSpread === current.diameterSpread &&
+      next.widthSpread === current.widthSpread &&
+      next.heightSpread === current.heightSpread &&
       next.sizeSpread === current.sizeSpread &&
       next.redSpread === current.redSpread &&
       next.greenSpread === current.greenSpread &&

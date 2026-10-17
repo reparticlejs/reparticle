@@ -64,6 +64,7 @@ export interface PreviewControls {
   effectRate: EmitterConfig['emission']['rate'];
   gravity: number;
   inheritVelocity: number;
+  emitterRotation: number;
   space: 'world' | 'local';
   lifetime: number;
   initialLifetimeCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
