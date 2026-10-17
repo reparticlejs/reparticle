@@ -4,5 +4,5 @@ export interface KernelContext {
   constants: { width: number; rows: number; capacity: number };
 }
 export type ParticleTexel = [number, number, number, number];
-/** Top half: [x, y, vx, vy]. Bottom half: [age, lifetime, initialized, birthSize]. */
+/** Top half: [x, y, vx, vy]. Bottom half: [age, lifetime, birthAlpha, birthSize]. */
 export type ParticleTexture = ParticleTexel[][];

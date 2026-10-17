@@ -94,7 +94,7 @@ particles.emitter.setParameters({ initial: { lifetime: 3, speed: 180 } });
 particles.emitter.setParameters({ modifiers: { gravity: { y: 80 } } });
 ```
 
-Updates are validated atomically. Capacity, seed, ID and shape type cannot be changed through this method; create a new instance from an updated definition. `emitter.configuration` returns an independent snapshot for that purpose. Position and playback remain runtime controls. Initial values affect new births; gravity affects living particles. Horizontal gravity currently must be zero. Scalar speed is exact; implicit speed variation, shrinking and fading have been removed. Texture selection and particle size remain renderer controls until their JSON fields are implemented. No new API accepts executable particle behavior.
+Updates are validated atomically. Capacity, seed, ID and shape type cannot be changed through this method; create a new instance from an updated definition. `emitter.configuration` returns an independent snapshot for that purpose. Position and playback remain runtime controls. Initial values affect new births; gravity affects living particles. Horizontal gravity currently must be zero. Scalar speed is exact; implicit speed variation, shrinking and fading have been removed. Texture selection remains a renderer control; initial size, initial alpha, and their lifetime curves are configured in JSON. No new API accepts executable particle behavior.
 
 ## Demo UI
 
@@ -195,3 +195,13 @@ Like Defold, curves are baked into 64 linear segments. Pixi uploads the 65 endpo
 This implements scalar initial size and lifetime scale. Initial-size spread, emitter-time size curves, and automatic animated-frame sizing remain separate features. The former `ParticleView.particleSize` renderer override is replaced by `initial.size` in configuration or `emitter.setParameters`.
 
 References: [Defold particle properties](https://defold.com/manuals/particlefx/#keyable-emitter-properties), [Hermite curve sampling](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L120-L175), and [64-segment resolution](https://github.com/defold/defold/blob/dev/engine/particle/src/particle_private.h#L27).
+
+### Alpha over lifetime
+
+`initial.alpha` and `overLifetime.alpha` both default to `1`. Alpha uses the same constant-or-Hermite-curve JSON format as lifetime scale. Following Defold, particle alpha is `clamp(birthAlpha × lifetimeAlpha, 0, 1)`: factors may be signed or exceed one; clamp occurs after multiplication. Texture alpha and the Pixi object's opacity then multiply this result.
+
+Initial alpha is captured at birth, so `emitter.setParameters({ initial: { alpha: 0.5 } })` only affects new particles. Lifetime curve changes require recreation. Both textured and procedural particles fade with premultiplied RGB and alpha, avoiding bright fringes. Transparent particles still move, age, and count as alive until their lifetime expires.
+
+The texture remains two RGBA texels per slot: motion `[x, y, vx, vy]` and lifetime `[age, lifetime, birthAlpha, birthSize]`. Positive lifetime now identifies initialized slots, freeing the old flag channel for birth alpha. The curve is uploaded once and sampled in the vertex shader alongside size; no extra simulation pass or GPU readback is added. The demo includes constant, fade-out, and fade-in/out presets.
+
+Reference: [Defold lifetime color evaluation](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L1247-L1270).

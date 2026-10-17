@@ -11,19 +11,22 @@ uniform vec2 viewport;
 uniform mat3 transform;
 uniform vec2 particleAspect;
 uniform float sizeCurve[${CURVE_SEGMENTS + 1}];
+uniform float alphaCurve[${CURVE_SEGMENTS + 1}];
 out vec2 uv;
-out float life;
+out float particleAlpha;
 void main() {
   int id = gl_InstanceID;
   ivec2 at = ivec2(id % width, id / width);
   vec4 p = texelFetch(particles, at, 0);
   vec4 meta = texelFetch(particles, at + ivec2(0, rows), 0);
-  life = meta.z > 0.5 && meta.y > 0.0 ? max(0.0, 1.0 - meta.x / meta.y) : 0.0;
+  float life = meta.y > 0.0 ? max(0.0, 1.0 - meta.x / meta.y) : 0.0;
   uv = vec2(float(gl_VertexID & 1), float(gl_VertexID >> 1)) * 2.0 - 1.0;
   float age = meta.y > 0.0 ? clamp(meta.x / meta.y, 0.0, 1.0) : 0.0;
   float curvePosition = age * ${CURVE_SEGMENTS}.0;
   int segment = min(int(curvePosition), ${CURVE_SEGMENTS - 1});
   float scale = mix(sizeCurve[segment], sizeCurve[segment + 1], curvePosition - float(segment));
+  float alpha = mix(alphaCurve[segment], alphaCurve[segment + 1], curvePosition - float(segment));
+  particleAlpha = clamp(meta.z * alpha, 0.0, 1.0);
   vec2 size = particleAspect * meta.w * scale;
   vec2 world = (transform * vec3(p.xy + uv * size * 0.5, 1.0)).xy;
   gl_Position = life > 0.0 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
@@ -31,7 +34,7 @@ void main() {
 const fragment = `#version 300 es
 precision highp float;
 in vec2 uv;
-in float life;
+in float particleAlpha;
 uniform float opacity;
 uniform sampler2D artwork;
 uniform bool textured;
@@ -43,10 +46,10 @@ void main() {
     vec2 coords = mix(frame.xy, frame.zw, uv * 0.5 + 0.5);
     vec4 pixel = texture(artwork, coords);
     if (straightAlpha) pixel.rgb *= pixel.a;
-    color = pixel * opacity;
+    color = pixel * (opacity * particleAlpha);
     return;
   }
-  float alpha = max(0.0, 1.0 - dot(uv, uv)) * opacity;
+  float alpha = max(0.0, 1.0 - dot(uv, uv)) * opacity * particleAlpha;
   vec3 tint = vec3(0.55,1.0,0.85);
   color = vec4(tint * alpha, alpha);
 }`;
@@ -108,6 +111,7 @@ export class ParticleView extends RenderContainer {
   constructor(renderer: WebGLRenderer, definition: unknown) {
     const config = parseEffectConfig(definition).emitters[0];
     const sizeCurve = sampleCurve(config.overLifetime.scale);
+    const alphaCurve = sampleCurve(config.overLifetime.alpha);
     super({});
     this.host = renderer;
     const gl = renderer.gl;
@@ -136,10 +140,12 @@ export class ParticleView extends RenderContainer {
             'frame',
             'particleAspect',
             'sizeCurve[0]',
+            'alphaCurve[0]',
           ].map((name) => [name, gl.getUniformLocation(this.program, name)]),
         );
         gl.useProgram(this.program);
         gl.uniform1fv(this.uniforms['sizeCurve[0]']!, sizeCurve);
+        gl.uniform1fv(this.uniforms['alphaCurve[0]']!, alphaCurve);
       } catch (error) {
         this.emitter.destroy();
         throw error;

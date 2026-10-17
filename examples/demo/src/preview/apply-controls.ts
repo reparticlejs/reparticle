@@ -1,13 +1,19 @@
 import type { EmitterConfig, EmitterParameters } from '@reparticle/core';
 
 import type { PreviewControls } from '../types/preview';
+import { alphaCurves } from './alpha-curves';
 import { sizeCurves } from './size-curves';
 
 /** Maps demo settings onto an emitter definition without modifying the original. */
 export function applyControls(definition: EmitterConfig, controls: PreviewControls): EmitterConfig {
   const shape = emitterShape(controls);
   const emission = { ...definition.emission, rate: controls.rate, shape };
-  const initial = { ...definition.initial, lifetime: controls.lifetime, size: controls.size };
+  const initial = {
+    ...definition.initial,
+    lifetime: controls.lifetime,
+    size: controls.size,
+    alpha: controls.alpha,
+  };
   const gravity = { ...definition.modifiers.gravity, y: controls.gravity };
 
   return {
@@ -20,6 +26,10 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     emission,
     initial,
     overLifetime: {
+      alpha:
+        controls.alphaCurve === 'effect'
+          ? definition.overLifetime.alpha
+          : alphaCurves[controls.alphaCurve],
       scale:
         controls.sizeCurve === 'effect'
           ? definition.overLifetime.scale
@@ -48,6 +58,8 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     texture: 'star',
     size: definition.initial.size,
     sizeCurve: 'effect',
+    alpha: definition.initial.alpha,
+    alphaCurve: 'effect',
     paused: false,
     statsVisible: true,
   };
@@ -62,7 +74,7 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
   }
   return {
     emission,
-    initial: { lifetime: controls.lifetime, size: controls.size },
+    initial: { lifetime: controls.lifetime, size: controls.size, alpha: controls.alpha },
     modifiers: { gravity: { y: controls.gravity } },
   };
 }

@@ -1,4 +1,5 @@
 import type { ControlSectionProps } from '../types/controls';
+import { alphaCurveOptions } from './alpha-curve-options';
 import { textureOptions } from './emitter-control-options';
 import { SelectField } from './select-field';
 import { sizeCurveOptions } from './size-curve-options';
@@ -31,7 +32,23 @@ export function AppearanceControls({ controls, onChange }: ControlSectionProps) 
         options={sizeCurveOptions}
         onChange={(sizeCurve) => onChange({ sizeCurve })}
       />
-      <p>Initial size affects new particles. Changing the curve restarts the effect.</p>
+      <Slider
+        id="alpha"
+        label="Initial alpha"
+        value={controls.alpha}
+        min={0}
+        max={1}
+        step={0.05}
+        onChange={(alpha) => onChange({ alpha })}
+      />
+      <SelectField
+        id="alpha-curve"
+        label="Alpha over lifetime"
+        value={controls.alphaCurve}
+        options={alphaCurveOptions}
+        onChange={(alphaCurve) => onChange({ alphaCurve })}
+      />
+      <p>Initial size and alpha affect new particles. Changing a curve restarts the effect.</p>
     </fieldset>
   );
 }

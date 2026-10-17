@@ -77,6 +77,8 @@ export async function createPreview(
       const offsetChanged =
         patch.startOffset !== undefined && patch.startOffset !== current.startOffset;
       const curveChanged = patch.sizeCurve !== undefined && patch.sizeCurve !== current.sizeCurve;
+      const alphaCurveChanged =
+        patch.alphaCurve !== undefined && patch.alphaCurve !== current.alphaCurve;
       const rebuilding =
         capacityChanged ||
         shapeChanged ||
@@ -84,7 +86,8 @@ export async function createPreview(
         modeChanged ||
         delayChanged ||
         offsetChanged ||
-        curveChanged;
+        curveChanged ||
+        alphaCurveChanged;
       if (rebuilding) {
         debug.setVisible(false);
       }

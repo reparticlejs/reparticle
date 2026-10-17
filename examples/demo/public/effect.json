@@ -32,6 +32,20 @@
               "tangent": 0
             }
           ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -1
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": -1
+            }
+          ]
         }
       },
       "initial": {
@@ -39,7 +53,8 @@
         "lifetime": 2,
         "speed": 220,
         "direction": -1.5707963267948966,
-        "spread": 1.0471975511965976
+        "spread": 1.0471975511965976,
+        "alpha": 1
       },
       "modifiers": {
         "gravity": {

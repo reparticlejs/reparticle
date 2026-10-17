@@ -20,6 +20,8 @@ function setup() {
     texture: 'star',
     size: 24,
     sizeCurve: 'effect',
+    alpha: 1,
+    alphaCurve: 'effect',
     paused: false,
     statsVisible: true,
   };

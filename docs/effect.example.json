@@ -11,13 +11,17 @@
           "type": "point"
         }
       },
-      "overLifetime": { "scale": 1 },
+      "overLifetime": {
+        "scale": 1,
+        "alpha": 1
+      },
       "initial": {
         "size": 24,
         "lifetime": 2,
         "speed": 220,
         "direction": -1.5707963267948966,
-        "spread": 1.0471975511965976
+        "spread": 1.0471975511965976,
+        "alpha": 1
       },
       "modifiers": {
         "gravity": {

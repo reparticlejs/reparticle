@@ -31,6 +31,7 @@ export function integrate(
   sizeX: number,
   sizeY: number,
   initialSize: number,
+  initialAlpha: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -38,10 +39,10 @@ export function integrate(
   const lifetimeState = state[particleRow + this.constants.rows]![this.thread.x]!;
   const isSpawning = particleId < this.constants.capacity && spawnOffset < spawnCount;
 
-  // Lifetime texel: age, lifetime, initialized, birth size.
+  // Lifetime texel: age, lifetime, birth alpha, birth size.
   if (this.thread.y >= this.constants.rows) {
     if (isSpawning) {
-      return [0, lifetime, 1, initialSize];
+      return [0, lifetime, initialAlpha, initialSize];
     }
     return [
       advanceAge(lifetimeState[0], seconds),
@@ -72,8 +73,7 @@ export function integrate(
   const velocityY = motion[3];
   const age = lifetimeState[0];
   const particleLifetime = lifetimeState[1];
-  const initialized = lifetimeState[2];
-  if (particleAlive(initialized, age, particleLifetime) < 0.5) {
+  if (particleAlive(age, particleLifetime) < 0.5) {
     return [x, y, 0, 0];
   }
 

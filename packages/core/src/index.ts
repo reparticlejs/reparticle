@@ -176,6 +176,7 @@ export class Emitter {
       sizeX,
       sizeY,
       o.initial.size,
+      o.initial.alpha,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

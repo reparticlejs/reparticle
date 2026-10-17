@@ -47,7 +47,7 @@ Simulation coordinates currently use local units, positive X right and positive 
 
 Version 1 is an unpublished initial contract. Add validated fields as their semantics and execution become available. Once published, incompatible semantic changes require a new version and migration rules. Do not predeclare fields that silently have no effect.
 
-Scalar speed is exact. The prototype's implicit speed variation, shrinking, and fading have been removed. Lifetime scale now uses an explicit curve; randomized values remain pending. Initial size belongs to the effect definition; texture remains a renderer control.
+Scalar speed is exact. The prototype's implicit speed variation, shrinking, and fading have been removed. Lifetime scale and alpha now use explicit curves; randomized values remain pending. Initial size belongs to the effect definition; texture remains a renderer control.
 
 ## Coverage inventory
 
@@ -65,7 +65,8 @@ Reference: [Defold Particle FX manual](https://defold.com/manuals/particlefx/), 
 - [ ] Initial/default/movement orientation, inherited velocity, velocity-aligned stretch.
 - [ ] Spawn rate, lifetime, speed, size, RGBA, rotation, stretch, angular velocity; emitter-time curves and random spread.
 - [x] Lifetime scale: Hermite curves sampled into 64 linear segments.
-- [ ] Lifetime RGBA, rotation, stretch, angular velocity curves.
+- [x] Initial alpha and lifetime alpha (clamp their product to [0, 1]).
+- [ ] Lifetime RGB, rotation, stretch, angular velocity curves.
 - [ ] Acceleration, drag, radial, vortex; transforms, magnitude, influence distance.
 - [ ] Images, atlases, animation, automatic/manual sizing, materials, tint constants.
 - [ ] Alpha, additive, multiply, screen blending.
@@ -133,3 +134,5 @@ Start delay: `startDelay` is finite and nonnegative, defaults to zero, and is st
 Start offset: `startOffset` is a finite nonnegative structural setting, default zero. Match Defold StartInstance: ignore offsets below 0.0001 and clamp simulated time to maximum particle lifetime (currently scalar `initial.lifetime`). Fast-forward in full float32 1/60-second steps with float32 elapsed accumulation, including delay and once/loop transitions. The last step is not shortened. Reparticle defers this work until the first positive update so consumers can position an emitter before its world-space particles are born. Reset queues it again; zero-time kernel warmup does not consume it. The debug overlay replays the shared timing utilities independently, keeping counting out of core. Reference: [Defold StartInstance](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L407-L429) and [FastForwardEmitter](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L313-L324).
 
 Size over lifetime is implemented as `initial.size` (default 24, captured at birth) multiplied by `overLifetime.scale` (default 1). Scale accepts a constant or `{ points: [{ time, value, tangent }] }`. Tangents are slopes equivalent to Defold ty/tx; Hermite interpolation is sampled into 64 linear segments, matching Defold PROPERTY_SAMPLE_COUNT. Time is normalized particle age, not emitter time. Core owns schema and curve math, and stores birth size in the lifetime texel's fourth channel. Pixi uploads the sampled curve once and evaluates it in its vertex shader, retaining texture aspect ratio. No texture expansion, extra simulation kernel, CPU particle state, or per-frame curve upload is required. Runtime initial-size updates affect future births only; curve edits require recreation. Initial-size spread, emitter-time size curves and automatic animated-frame sizing remain pending.
+
+Alpha over lifetime: `initial.alpha` and `overLifetime.alpha` default to 1. The latter uses the shared constant/Hermite curve schema and 64-segment sampling. Following Defold, clamp only the product of captured birth alpha and lifetime alpha to [0, 1], before multiplying texture and object opacity. Pixi scales premultiplied RGB and alpha together for both textured and procedural rendering. Birth alpha replaces the redundant initialized flag in the lifetime texel; positive birth lifetime identifies active storage. Transparent particles remain simulated and counted. Initial alpha is a numeric parameter for future births; lifetime curves remain structural. No texture growth, readback, extra pass, or per-frame curve upload.

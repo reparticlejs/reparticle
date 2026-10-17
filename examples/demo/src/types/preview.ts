@@ -13,6 +13,8 @@ export interface PreviewControls {
   width: number;
   height: number;
   texture: ParticleTextureName;
+  alpha: number;
+  alphaCurve: 'effect' | 'constant' | 'fade-out' | 'fade-in-out';
   size: number;
   sizeCurve: 'effect' | 'constant' | 'shrink' | 'grow-shrink';
   rate: number;

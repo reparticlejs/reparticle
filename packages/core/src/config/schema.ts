@@ -32,6 +32,7 @@ const emissionSchema = strictObject({
 });
 
 const initialPropertiesSchema = strictObject({
+  alpha: number().default(1),
   size: number().nonnegative().default(24),
   lifetime: number().positive(),
   speed: number().nonnegative(),
@@ -55,7 +56,7 @@ export const emitterParametersSchema = strictObject({
     .partial()
     .optional(),
   initial: initialPropertiesSchema
-    .extend({ size: number().nonnegative() })
+    .extend({ size: number().nonnegative(), alpha: number() })
     .partial()
     .refine(
       (patch) => Object.values(patch).every((value) => value !== undefined),
@@ -76,7 +77,10 @@ export const emitterConfigSchema = strictObject({
   emission: emissionSchema,
   initial: initialPropertiesSchema,
   modifiers: modifiersSchema,
-  overLifetime: strictObject({ scale: scalarPropertySchema.default(1) }).default({ scale: 1 }),
+  overLifetime: strictObject({
+    scale: scalarPropertySchema.default(1),
+    alpha: scalarPropertySchema.default(1),
+  }).default({ scale: 1, alpha: 1 }),
 });
 
 /** Only implemented configuration features are accepted. */
