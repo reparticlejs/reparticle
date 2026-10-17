@@ -100,3 +100,32 @@ it('restores authored speed curves and leaves them intact during unrelated numer
     50,
   );
 });
+
+it('keeps emitter-time size separate from particle-lifetime scale', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  const controls = {
+    ...initialControls(definition),
+    initialSizeCurve: 'ramp-up' as const,
+    size: 40,
+    sizeCurve: 'shrink' as const,
+  };
+  const configured = applyControls(definition, controls);
+  expect(configured.initial.size).toEqual({
+    points: [
+      { time: 0, value: 0, tangent: 40 },
+      { time: 1, value: 40, tangent: 40 },
+    ],
+  });
+  const restored = initialControls(configured);
+  expect(restored.initialSizeCurve).toBe('effect');
+  expect(applyControls(configured, restored).initial.size).toEqual(configured.initial.size);
+  expect(applyControls(configured, restored).overLifetime.scale).toEqual(
+    configured.overLifetime.scale,
+  );
+  expect(
+    emitterParameters({ ...restored, sizeSpread: 10, gravity: 50 }).initial?.size,
+  ).toBeUndefined();
+  expect(
+    emitterParameters({ ...restored, initialSizeCurve: 'constant', size: 20 }).initial?.size,
+  ).toBe(20);
+});

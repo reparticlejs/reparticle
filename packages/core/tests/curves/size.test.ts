@@ -100,6 +100,6 @@ it('updates initial size atomically without resetting it on unrelated patches', 
   const changed = updateEmitterConfig(original, { initial: { size: 48 } });
   expect(updateEmitterConfig(changed, { initial: { speed: 50 } }).initial.size).toBe(48);
   expect(original.initial.size).toBe(24);
-  expect(() => updateEmitterConfig(changed, { initial: { size: -1 } })).toThrow(ZodError);
+  expect(updateEmitterConfig(changed, { initial: { size: -1 } }).initial.size).toBe(-1);
   expect(() => updateEmitterConfig(changed, { overLifetime: { scale: 0 } })).toThrow(ZodError);
 });

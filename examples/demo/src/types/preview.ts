@@ -27,6 +27,8 @@ export interface PreviewControls {
   rotation: number;
   rotationCurve: 'effect' | 'constant' | 'full-turn' | 'reverse-turn';
   size: number;
+  initialSizeCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectSize: EmitterConfig['initial']['size'];
   sizeSpread: number;
   redSpread: number;
   greenSpread: number;

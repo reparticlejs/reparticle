@@ -24,6 +24,7 @@ export class Emitter {
   emitting = true;
   private settings: EmitterConfig;
   private readonly schedule: SpawnSchedule;
+  private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
   private spawnRate: SpawnRate;
   private readonly playback: EmitterPlayback;
@@ -41,6 +42,7 @@ export class Emitter {
   constructor(context: EmitterContext, definition: EmitterConfig) {
     this.settings = emitterConfigSchema.parse(definition);
     this.spawnRate = new SpawnRate(this.settings.emission.rate);
+    this.initialSize = new SampledCurve(this.settings.initial.size);
     this.initialSpeed = new SampledCurve(this.settings.initial.speed);
     this.gl = context.gl;
     this.canvas = context.canvas;
@@ -129,7 +131,12 @@ export class Emitter {
       patch.initial?.speed === undefined
         ? this.initialSpeed
         : new SampledCurve(settings.initial.speed);
+    const initialSize =
+      patch.initial?.size === undefined
+        ? this.initialSize
+        : new SampledCurve(settings.initial.size);
     this.settings = settings;
+    this.initialSize = initialSize;
     this.initialSpeed = initialSpeed;
     this.spawnRate = spawnRate;
   }
@@ -194,7 +201,7 @@ export class Emitter {
       shapeType,
       sizeX,
       sizeY,
-      o.initial.size,
+      this.initialSize.at(this.playback.normalizedAge),
       o.initial.alpha,
       o.initial.red,
       o.initial.green,

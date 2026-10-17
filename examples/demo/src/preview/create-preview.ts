@@ -95,7 +95,15 @@ export async function createPreview(
         current.speedCurve !== 'constant' &&
         patch.speed !== undefined &&
         patch.speed !== current.speed;
+      const initialSizeCurveChanged =
+        patch.initialSizeCurve !== undefined && patch.initialSizeCurve !== current.initialSizeCurve;
+      const curveSizeChanged =
+        current.initialSizeCurve !== 'constant' &&
+        patch.size !== undefined &&
+        patch.size !== current.size;
       const rebuilding =
+        initialSizeCurveChanged ||
+        curveSizeChanged ||
         speedCurveChanged ||
         curveSpeedChanged ||
         rateCurveChanged ||

@@ -14,6 +14,8 @@ function setup() {
     playMode: 'loop',
     rateCurve: 'constant',
     speedCurve: 'constant',
+    initialSizeCurve: 'constant',
+    effectSize: 24,
     effectSpeed: 220,
     effectRate: 4000,
     speed: 220,

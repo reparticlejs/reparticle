@@ -2,6 +2,7 @@ import type { ControlSectionProps } from '../types/controls';
 import { alphaCurveOptions } from './alpha-curve-options';
 import { ColorControls } from './color-controls';
 import { textureOptions } from './emitter-control-options';
+import { initialSizeCurveOptions } from './initial-size-curve-options';
 import { RotationControls } from './rotation-controls';
 import { SelectField } from './select-field';
 import { sizeCurveOptions } from './size-curve-options';
@@ -18,15 +19,24 @@ export function AppearanceControls({ controls, onChange }: ControlSectionProps) 
         options={textureOptions}
         onChange={(texture) => onChange({ texture })}
       />
-      <Slider
-        id="size"
-        label="Initial size"
-        value={controls.size}
-        min={0}
-        max={64}
-        unit=" px"
-        onChange={(size) => onChange({ size })}
+      <SelectField
+        id="initial-size-curve"
+        label="Initial size over emitter lifetime"
+        value={controls.initialSizeCurve}
+        options={initialSizeCurveOptions}
+        onChange={(initialSizeCurve) => onChange({ initialSizeCurve })}
       />
+      {controls.initialSizeCurve !== 'effect' && (
+        <Slider
+          id="size"
+          label="Initial size"
+          value={controls.size}
+          min={0}
+          max={64}
+          unit=" px"
+          onChange={(size) => onChange({ size })}
+        />
+      )}
       <Slider
         id="size-spread"
         label="Size spread ±"
@@ -38,7 +48,7 @@ export function AppearanceControls({ controls, onChange }: ControlSectionProps) 
       />
       <SelectField
         id="size-curve"
-        label="Size over lifetime"
+        label="Size over particle lifetime"
         value={controls.sizeCurve}
         options={sizeCurveOptions}
         onChange={(sizeCurve) => onChange({ sizeCurve })}
