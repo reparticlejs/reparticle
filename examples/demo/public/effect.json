@@ -130,6 +130,14 @@
           "x": 0,
           "y": 0,
           "maxDistance": 100
+        },
+        "vortex": {
+          "magnitude": 0,
+          "spread": 0,
+          "x": 0,
+          "y": 0,
+          "maxDistance": 100,
+          "rotation": 0
         }
       },
       "rotation": 0,

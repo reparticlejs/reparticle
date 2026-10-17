@@ -131,3 +131,31 @@ it('preserves radial curves while changing the center, cutoff, and spread', () =
     spread: 40,
   });
 });
+
+it('preserves vortex curves while changing the center, cutoff, and spread', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.modifiers.vortex.magnitude = {
+    points: [
+      { time: 0, value: 0, tangent: 100 },
+      { time: 1, value: 100, tangent: 100 },
+    ],
+  };
+  const controls = initialControls(definition);
+  expect(controls.vortexCurve).toBe('effect');
+  expect(
+    applyControls(definition, {
+      ...controls,
+      vortexX: 20,
+      vortexY: -30,
+      vortexMaxDistance: 200,
+      vortexSpread: 40,
+    }).modifiers.vortex,
+  ).toEqual({
+    magnitude: definition.modifiers.vortex.magnitude,
+    x: 20,
+    y: -30,
+    maxDistance: 200,
+    spread: 40,
+    rotation: 0,
+  });
+});

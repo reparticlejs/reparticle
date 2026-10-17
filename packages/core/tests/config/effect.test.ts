@@ -32,13 +32,13 @@ describe('effect JSON boundary', () => {
 
   it('rejects unsupported features rather than dropping them', () => {
     const input = example();
-    input.emitters[0].modifiers.vortex = {};
+    input.emitters[0].modifiers.unknownForce = {};
     expect(issues(input)).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ path: ['emitters', 0, 'modifiers'], code: 'unrecognized_keys' }),
       ]),
     );
-    delete input.emitters[0].modifiers.vortex;
+    delete input.emitters[0].modifiers.unknownForce;
     input.emitters[0].emission.shape.type = 'sphere';
     expect(issues(input)).toEqual(
       expect.arrayContaining([

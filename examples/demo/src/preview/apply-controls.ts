@@ -20,6 +20,7 @@ import { initialSpeed } from './initial-speed';
 import { radialMagnitude } from './radial-magnitude';
 import { rotationCurves } from './rotation-curves';
 import { sizeCurves } from './size-curves';
+import { vortexMagnitude } from './vortex-magnitude';
 
 /** Maps demo settings onto an emitter definition without modifying the original. */
 export function applyControls(definition: EmitterConfig, controls: PreviewControls): EmitterConfig {
@@ -88,6 +89,14 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     modifiers: {
       ...definition.modifiers,
       acceleration,
+      vortex: {
+        rotation: controls.vortexRotation,
+        magnitude: vortexMagnitude(controls),
+        spread: controls.vortexSpread,
+        x: controls.vortexX,
+        y: controls.vortexY,
+        maxDistance: controls.vortexMaxDistance,
+      },
       radial: {
         magnitude: radialMagnitude(controls),
         spread: controls.radialSpread,
@@ -138,6 +147,17 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     rate: typeof definition.emission.rate === 'number' ? definition.emission.rate : 4000,
     rateCurve: typeof definition.emission.rate === 'number' ? 'constant' : 'effect',
     effectRate: definition.emission.rate,
+    vortexRotation: definition.modifiers.vortex.rotation,
+    vortex:
+      typeof definition.modifiers.vortex.magnitude === 'number'
+        ? definition.modifiers.vortex.magnitude
+        : 160,
+    vortexCurve: typeof definition.modifiers.vortex.magnitude === 'number' ? 'constant' : 'effect',
+    effectVortex: definition.modifiers.vortex.magnitude,
+    vortexSpread: definition.modifiers.vortex.spread,
+    vortexX: definition.modifiers.vortex.x,
+    vortexY: definition.modifiers.vortex.y,
+    vortexMaxDistance: definition.modifiers.vortex.maxDistance,
     radial:
       typeof definition.modifiers.radial.magnitude === 'number'
         ? definition.modifiers.radial.magnitude
@@ -252,6 +272,14 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
       ...(controls.initialBlueCurve === 'constant' ? { blue: controls.blue } : {}),
     },
     modifiers: {
+      vortex: {
+        rotation: controls.vortexRotation,
+        ...(controls.vortexCurve === 'constant' ? { magnitude: controls.vortex } : {}),
+        spread: controls.vortexSpread,
+        x: controls.vortexX,
+        y: controls.vortexY,
+        maxDistance: controls.vortexMaxDistance,
+      },
       radial: {
         ...(controls.radialCurve === 'constant' ? { magnitude: controls.radial } : {}),
         spread: controls.radialSpread,

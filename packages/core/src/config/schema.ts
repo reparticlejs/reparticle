@@ -71,6 +71,14 @@ const accelerationSchema = strictObject({
   spread: number().nonnegative().default(0),
   rotation: number().default(0),
 });
+const vortexSchema = strictObject({
+  rotation: number().default(0),
+  magnitude: scalarPropertySchema.default(0),
+  spread: number().nonnegative().default(0),
+  x: number().default(0),
+  y: number().default(0),
+  maxDistance: number().nonnegative().default(100),
+});
 const radialSchema = strictObject({
   magnitude: scalarPropertySchema.default(0),
   spread: number().nonnegative().default(0),
@@ -85,6 +93,14 @@ const dragSchema = strictObject({
   rotation: number().default(0),
 });
 const modifiersSchema = strictObject({
+  vortex: vortexSchema.default({
+    magnitude: 0,
+    spread: 0,
+    x: 0,
+    y: 0,
+    maxDistance: 100,
+    rotation: 0,
+  }),
   radial: radialSchema.default({ magnitude: 0, spread: 0, x: 0, y: 0, maxDistance: 100 }),
   acceleration: accelerationSchema.default({ magnitude: 0, spread: 0, rotation: 0 }),
   drag: dragSchema.default({ magnitude: 0, spread: 0, useDirection: false, rotation: 0 }),
@@ -135,6 +151,16 @@ export const emitterParametersSchema = strictObject({
     )
     .optional(),
   modifiers: strictObject({
+    vortex: strictObject({
+      rotation: number(),
+      magnitude: number(),
+      spread: number().nonnegative(),
+      x: number(),
+      y: number(),
+      maxDistance: number().nonnegative(),
+    })
+      .partial()
+      .optional(),
     radial: strictObject({
       magnitude: number(),
       spread: number().nonnegative(),

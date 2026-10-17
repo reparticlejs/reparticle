@@ -6,6 +6,7 @@ import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { advancePosition, advanceVelocity } from '../behaviors/motion';
 import { propertyVariation } from '../behaviors/property-variation';
 import { applyRadial } from '../behaviors/radial';
+import { applyVortex } from '../behaviors/vortex';
 import { particleHeading } from './particle-heading';
 import { spawnBox } from './spawn-box';
 import { spawnCircle } from './spawn-circle';
@@ -72,6 +73,13 @@ export function integrate(
   radialMaxDistance: number,
   rotationCurve: Float32Array,
   orientToMovement: number,
+  vortexMagnitude: number,
+  vortexSpread: number,
+  vortexX: number,
+  vortexY: number,
+  vortexMaxDistance: number,
+  vortexStartX: number,
+  vortexStartY: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -174,6 +182,21 @@ export function integrate(
         radialMaxDistance,
       );
     }
+    let birthVortex = [0, 0];
+    if (vortexMagnitude !== 0 || vortexSpread !== 0) {
+      birthVortex = applyVortex(
+        positionX,
+        positionY,
+        vortexX,
+        vortexY,
+        vortexStartX,
+        vortexStartY,
+        vortexMagnitude,
+        vortexSpread,
+        birthFactor,
+        vortexMaxDistance,
+      );
+    }
     const birthProjection = birthX * dragX + birthY * dragY;
     return [
       positionX,
@@ -186,7 +209,7 @@ export function integrate(
         birthFactor,
         seconds,
       ) +
-        birthRadial[0]! * seconds,
+        (birthRadial[0]! + birthVortex[0]!) * seconds,
       applyDrag(
         birthY,
         dragDirectional > 0.5 ? birthProjection * dragY : birthY,
@@ -195,7 +218,7 @@ export function integrate(
         birthFactor,
         seconds,
       ) +
-        birthRadial[1]! * seconds,
+        (birthRadial[1]! + birthVortex[1]!) * seconds,
     ];
   }
 
@@ -217,7 +240,7 @@ export function integrate(
 
   // Acceleration precedes drag; both modifiers share the particle's birth spread factor.
   let modifierState = [0, 0, 0, 0];
-  if (dragSpread !== 0 || accelerationSpread !== 0 || radialSpread !== 0) {
+  if (dragSpread !== 0 || accelerationSpread !== 0 || radialSpread !== 0 || vortexSpread !== 0) {
     modifierState = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
   }
   const factor = modifierState[0]!;
@@ -260,6 +283,21 @@ export function integrate(
       radialMaxDistance,
     );
   }
+  let vortex = [0, 0];
+  if (vortexMagnitude !== 0 || vortexSpread !== 0) {
+    vortex = applyVortex(
+      x,
+      y,
+      vortexX,
+      vortexY,
+      vortexStartX,
+      vortexStartY,
+      vortexMagnitude,
+      vortexSpread,
+      factor,
+      vortexMaxDistance,
+    );
+  }
   const acceleratedX = advanceVelocity(velocityX, accelerationX, seconds);
   const acceleratedY = advanceVelocity(velocityY, accelerationY, seconds);
   const projection = acceleratedX * dragX + acceleratedY * dragY;
@@ -281,10 +319,10 @@ export function integrate(
   );
   return [
     advancePosition(x, velocityX, accelerationX, seconds) +
-      (dampedX - acceleratedX + radial[0]! * seconds) * seconds,
+      (dampedX - acceleratedX + (radial[0]! + vortex[0]!) * seconds) * seconds,
     advancePosition(y, velocityY, accelerationY, seconds) +
-      (dampedY - acceleratedY + radial[1]! * seconds) * seconds,
-    dampedX + radial[0]! * seconds,
-    dampedY + radial[1]! * seconds,
+      (dampedY - acceleratedY + (radial[1]! + vortex[1]!) * seconds) * seconds,
+    dampedX + (radial[0]! + vortex[0]!) * seconds,
+    dampedY + (radial[1]! + vortex[1]!) * seconds,
   ];
 }

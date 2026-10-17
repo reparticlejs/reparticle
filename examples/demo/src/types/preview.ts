@@ -62,6 +62,14 @@ export interface PreviewControls {
   rateSpread: number;
   rateCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectRate: EmitterConfig['emission']['rate'];
+  vortexRotation: number;
+  vortex: number;
+  vortexSpread: number;
+  vortexX: number;
+  vortexY: number;
+  vortexMaxDistance: number;
+  vortexCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectVortex: ScalarProperty;
   radial: number;
   radialSpread: number;
   radialX: number;

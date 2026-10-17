@@ -92,6 +92,11 @@ export async function createPreview(
         (current.heightCurve !== 'constant' &&
           patch.height !== undefined &&
           patch.height !== current.height);
+      const vortexChanged =
+        (patch.vortexCurve !== undefined && patch.vortexCurve !== current.vortexCurve) ||
+        (current.vortexCurve !== 'constant' &&
+          patch.vortex !== undefined &&
+          patch.vortex !== current.vortex);
       const radialChanged =
         (patch.radialCurve !== undefined && patch.radialCurve !== current.radialCurve) ||
         (current.radialCurve !== 'constant' &&
@@ -204,6 +209,7 @@ export async function createPreview(
         diameterCurveChanged ||
         widthCurveChanged ||
         heightCurveChanged ||
+        vortexChanged ||
         radialChanged ||
         accelerationChanged ||
         dragChanged ||

@@ -73,6 +73,8 @@ export class PreviewScene {
       (next.widthCurve !== 'constant' && next.width !== this.settings.width) ||
       next.heightCurve !== this.settings.heightCurve ||
       (next.heightCurve !== 'constant' && next.height !== this.settings.height) ||
+      next.vortexCurve !== this.settings.vortexCurve ||
+      (next.vortexCurve !== 'constant' && next.vortex !== this.settings.vortex) ||
       next.radialCurve !== this.settings.radialCurve ||
       (next.radialCurve !== 'constant' && next.radial !== this.settings.radial) ||
       next.accelerationCurve !== this.settings.accelerationCurve ||
@@ -151,6 +153,12 @@ export class PreviewScene {
       next.rotationSpread === current.rotationSpread &&
       next.size === current.size &&
       next.rate === current.rate &&
+      next.vortexRotation === current.vortexRotation &&
+      next.vortex === current.vortex &&
+      next.vortexSpread === current.vortexSpread &&
+      next.vortexX === current.vortexX &&
+      next.vortexY === current.vortexY &&
+      next.vortexMaxDistance === current.vortexMaxDistance &&
       next.radial === current.radial &&
       next.radialSpread === current.radialSpread &&
       next.radialX === current.radialX &&

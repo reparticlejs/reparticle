@@ -1,3 +1,4 @@
+export { applyVortex } from '../behaviors/vortex';
 export { applyRadial } from '../behaviors/radial';
 export { particleHeading } from './particle-heading';
 export { applyDrag } from '../behaviors/drag';

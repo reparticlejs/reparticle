@@ -17,6 +17,7 @@ export function updateEmitterConfig(current: EmitterConfig, input: unknown): Emi
     },
     initial: { ...current.initial, ...patch.initial },
     modifiers: {
+      vortex: { ...current.modifiers.vortex, ...patch.modifiers?.vortex },
       radial: { ...current.modifiers.radial, ...patch.modifiers?.radial },
       drag: { ...current.modifiers.drag, ...patch.modifiers?.drag },
       acceleration: { ...current.modifiers.acceleration, ...patch.modifiers?.acceleration },

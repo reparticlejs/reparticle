@@ -36,6 +36,7 @@ export class Emitter {
   private initialRotation: SampledCurve;
   private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
+  private vortexMagnitude: SampledCurve;
   private radialMagnitude: SampledCurve;
   private readonly rotationSamples: Float32Array;
   private accelerationMagnitude: SampledCurve;
@@ -70,6 +71,7 @@ export class Emitter {
     this.initialAlpha = new SampledCurve(this.settings.initial.alpha);
     this.initialLifetime = new SampledCurve(this.settings.initial.lifetime);
     this.dragMagnitude = new SampledCurve(this.settings.modifiers.drag.magnitude);
+    this.vortexMagnitude = new SampledCurve(this.settings.modifiers.vortex.magnitude);
     this.radialMagnitude = new SampledCurve(this.settings.modifiers.radial.magnitude);
     this.rotationSamples = sampleCurve(this.settings.overLifetime.rotation);
     this.accelerationMagnitude = new SampledCurve(this.settings.modifiers.acceleration.magnitude);
@@ -103,6 +105,7 @@ export class Emitter {
     gpu.addFunction(functions.advancePosition);
     gpu.addFunction(functions.applyAcceleration);
     gpu.addFunction(functions.applyRadial);
+    gpu.addFunction(functions.applyVortex);
     gpu.addFunction(functions.particleHeading);
     gpu.addFunction(functions.advanceAge);
     // The alive flag is numeric in GPU storage.
@@ -181,6 +184,10 @@ export class Emitter {
   setParameters(patch: EmitterParameters): void {
     this.assertAlive();
     const settings = updateEmitterConfig(this.settings, patch);
+    const vortexMagnitude =
+      patch.modifiers?.vortex?.magnitude === undefined
+        ? this.vortexMagnitude
+        : new SampledCurve(settings.modifiers.vortex.magnitude);
     const radialMagnitude =
       patch.modifiers?.radial?.magnitude === undefined
         ? this.radialMagnitude
@@ -230,6 +237,7 @@ export class Emitter {
         ? this.initialLifetime
         : new SampledCurve(settings.initial.lifetime);
     this.settings = settings;
+    this.vortexMagnitude = vortexMagnitude;
     this.radialMagnitude = radialMagnitude;
     this.accelerationMagnitude = accelerationMagnitude;
     this.dragMagnitude = dragMagnitude;
@@ -279,6 +287,14 @@ export class Emitter {
     const radians = (-rotation * Math.PI) / 180;
     const accelerationRadians = -((rotation + o.modifiers.acceleration.rotation) * Math.PI) / 180;
     const dragRadians = -((rotation + o.modifiers.drag.rotation) * Math.PI) / 180;
+    const vortex = o.modifiers.vortex;
+    const vortexRadians = -((rotation + vortex.rotation) * Math.PI) / 180;
+    const vortexX =
+      (worldSpace ? this.x : 0) +
+      (Math.cos(radians) * vortex.x - Math.sin(radians) * vortex.y) * scale;
+    const vortexY =
+      (worldSpace ? this.y : 0) +
+      (Math.sin(radians) * vortex.x + Math.cos(radians) * vortex.y) * scale;
     const radial = o.modifiers.radial;
     const radialX =
       (worldSpace ? this.x : 0) +
@@ -343,6 +359,13 @@ export class Emitter {
       radial.maxDistance * scale,
       this.rotationSamples,
       o.orientation === 'movement-direction' ? 1 : 0,
+      this.vortexMagnitude.at(this.playback.normalizedAge) * scale,
+      vortex.spread * scale,
+      vortexX,
+      vortexY,
+      vortex.maxDistance * scale,
+      -Math.cos(vortexRadians),
+      -Math.sin(vortexRadians),
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

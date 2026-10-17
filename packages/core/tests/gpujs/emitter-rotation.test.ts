@@ -66,6 +66,13 @@ it.each([0, 1, 2, 3])(
         0,
         new Float32Array(65),
         0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
       );
     const base = run(1, 0, 0);
     const rotated = run(0, -1, 100);
