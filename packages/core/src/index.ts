@@ -5,7 +5,11 @@ import {
   type IKernelRunShortcut,
   type KernelVariable,
 } from "gpu.js";
-import { initialize, integrate } from "./gpujs/kernels";
+import { initialize } from "./gpujs/initialize";
+import { spawnMotion } from "./gpujs/spawn-motion";
+import { integrate } from "./gpujs/integrate";
+import { advancePosition, advancePositionWithGravity, advanceVelocity } from "./behaviors/motion";
+import { spawnVariation, spawnDirection, spawnSpeed } from "./behaviors/spawn";
 import { defaults, SpawnSchedule, validateOptions, type EmitterOptions } from "./options";
 export type { EmitterOptions } from "./options";
 
@@ -59,6 +63,13 @@ export class Emitter {
     if (this.rows * 2 > gl.getParameter(gl.MAX_TEXTURE_SIZE))
       throw new RangeError("Capacity exceeds GPU texture limits");
     const gpu = new GPU({ mode: "webgl2", canvas: this.canvas, context: gl });
+    gpu.addFunction(advancePosition);
+    gpu.addFunction(advancePositionWithGravity);
+    gpu.addFunction(advanceVelocity);
+    gpu.addFunction(spawnVariation);
+    gpu.addFunction(spawnDirection);
+    gpu.addFunction(spawnSpeed);
+    gpu.addFunction(spawnMotion);
     const config: IGPUKernelSettings = {
       output: [this.width, this.rows * 2],
       precision: "single",

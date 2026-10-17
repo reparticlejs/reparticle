@@ -18,7 +18,7 @@ Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error;
 ## Structure
 
 - `packages/core`: GPU.js 2.24.1 simulation, mathematical behaviors, bounded spawn scheduling. No Pixi dependency. Takes a host WebGL2 context; this GPU backend is browser-based, not a headless CPU implementation.
-- `packages/core/src/gpujs`: internal JavaScript kernels. The standard GPU.js package import uses its published types and Vite resolves its browser entry. Kernel source strings survive production minification unchanged.
+- `packages/core/src/gpujs`: typed GPU storage adapters. Readable motion and spawning math lives in `src/behaviors`. GPU.js receives ordinary functions directly through `createKernel` and `addFunction`, using its published types.
 - `packages/pixi`: shares Pixi's WebGL2 context and renders directly from the simulation texture with one instanced draw. No Sprite per particle or CPU particle array.
 - `examples/demo`: TypeScript/Vite preview and explicit GPU diagnostics.
 
@@ -72,3 +72,11 @@ Untrimmed, unrotated atlas frames are supported through their UV rectangle. Trim
 The demo uses a source copy of Replayable's stats module in `examples/demo/src/devtools`, with its MIT license retained. It has no Replayable dependency and is not included in the core or Pixi library packages. D3 supplies the copied history graphs; Sass compiles their stylesheet.
 
 The overlay shows FPS, frame interval, browser JS heap when available, and WebGL draw calls, texture binds, and program uses. Sampling runs after Pixi renders. Draw counts include GPU.js simulation draws, particle rendering, and any other Pixi scene objects; they are API submissions, not GPU execution timings. Hide stats suspends sampling and removes instrumentation. The explicit GPU validation temporarily suspends stats and restores the user's visibility choice afterward.
+
+## Authoring simulation behavior
+
+Edit ordinary TypeScript functions in `packages/core/src/behaviors/motion.ts` and `spawn.ts`. They have type checking, autocomplete and direct numerical tests. The `src/gpujs/integrate.ts` adapter handles the two-texel particle layout and calls those functions.
+
+Core uses its normal TypeScript package build. There is no kernel generator or consumer build plugin. The demo imports the built packages in both development and production. `pnpm dev` builds the libraries before starting the demo. After library changes, rebuild them or run `pnpm --filter @reparticle/core exec tsdown --watch` and `pnpm --filter @reparticle/pixi exec tsdown --watch` in separate terminals.
+
+GPU.js compiles the JavaScript function bodies at runtime, so they must stay within its supported numeric subset. Keep spawn locals in the separate `src/gpujs/spawn-motion.ts` helper: GPU.js can misidentify block-local variables when a minifier gives them the same name as a parameter. The current functions were checked under default Rolldown and Terser minification in a plain HTML page, including nonzero spawn velocity, gravity, reset, expiration, and playback GPU residency. New kernel changes should be checked in a minified browser build as well as unit tests.
