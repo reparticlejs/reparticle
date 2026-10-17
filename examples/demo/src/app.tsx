@@ -22,7 +22,7 @@ export function App() {
         {controls && (
           <EmitterControls
             controls={controls}
-            onChange={controller.update}
+            onChange={controller.setControls}
             onReset={controller.reset}
           />
         )}

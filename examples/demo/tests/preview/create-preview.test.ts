@@ -21,7 +21,12 @@ vi.mock('pixi.js', () => ({
     screen = { width: 800, height: 500 };
     ticker = { add: vi.fn<() => void>(), remove: vi.fn<() => void>(), lastTime: 0 };
     children: { destroy?: () => void }[] = [];
-    stage = { addChild: (child: { destroy?: () => void }) => this.children.push(child) };
+    stage = {
+      addChild: (child: { destroy?: () => void }) => this.children.push(child),
+      removeChild: (child: { destroy?: () => void }) => {
+        this.children = this.children.filter((entry) => entry !== child);
+      },
+    };
     init = mocks.init;
     destroy() {
       mocks.destroyApp();
@@ -140,5 +145,20 @@ it('destroys stats and the owned scene exactly once', async () => {
   runtime!.destroy();
   expect(mocks.destroyStats).toHaveBeenCalledOnce();
   expect(mocks.destroyView).toHaveBeenCalledOnce();
+  expect(mocks.destroyApp).toHaveBeenCalledOnce();
+});
+
+it('releases the scene and application even when stats cleanup fails', async () => {
+  const runtime = await createPreview(
+    host() as unknown as HTMLDivElement,
+    new AbortController().signal,
+  );
+  mocks.destroyStats.mockImplementationOnce(() => {
+    throw new Error('cleanup failure');
+  });
+  expect(() => runtime!.destroy()).toThrow('cleanup failure');
+  expect(mocks.destroyView).toHaveBeenCalledOnce();
+  expect(mocks.destroyApp).toHaveBeenCalledOnce();
+  runtime!.destroy();
   expect(mocks.destroyApp).toHaveBeenCalledOnce();
 });

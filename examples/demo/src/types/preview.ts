@@ -13,7 +13,7 @@ export interface PreviewControls {
 
 export interface ParticlePreview {
   readonly controls: PreviewControls;
-  update(patch: Partial<PreviewControls>): PreviewControls;
+  setControls(patch: Partial<PreviewControls>): PreviewControls;
   movePointer(clientX: number, clientY: number): void;
   reset(): void;
   destroy(): void;

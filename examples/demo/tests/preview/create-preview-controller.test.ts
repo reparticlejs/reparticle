@@ -16,7 +16,7 @@ function setup() {
   };
   const runtime = {
     controls,
-    update: vi.fn<(patch: Partial<PreviewControls>) => PreviewControls>((patch) => ({
+    setControls: vi.fn<(patch: Partial<PreviewControls>) => PreviewControls>((patch) => ({
       ...controls,
       ...patch,
     })),
@@ -34,13 +34,13 @@ function setup() {
 it('publishes applied settings and reports a failed update without changing UI settings', () => {
   const { runtime, events, controller } = setup();
   controller.attach(runtime);
-  controller.update({ rate: 4000 });
+  controller.setControls({ rate: 4000 });
   expect(events.onChange).toHaveBeenLastCalledWith({ ...runtime.controls, rate: 4000 });
-  vi.mocked(runtime.update).mockImplementationOnce(() => {
+  vi.mocked(runtime.setControls).mockImplementationOnce(() => {
     throw new Error('update failed');
   });
   events.onChange.mockClear();
-  controller.update({ rate: -1 });
+  controller.setControls({ rate: -1 });
   expect(events.onChange).not.toHaveBeenCalled();
   expect(events.onError).toHaveBeenLastCalledWith('Error: update failed');
 });

@@ -1,195 +1,105 @@
-import { parseEffectConfig } from '@reparticle/core';
-import { ParticleView } from '@reparticle/pixi';
-import { Application, Assets, type Texture, type WebGLRenderer } from 'pixi.js';
+import { Application } from "pixi.js";
 
-import { createStats } from '../devtools';
-import { LiveParticleCount } from '../devtools/stats/measurement/live-particle-count';
-import type { ParticlePreview, ParticleTextureName, PreviewControls } from '../types/preview';
+import { createPreviewStats } from "../devtools/create-preview-stats";
+import type { ParticlePreview } from "../types/preview";
+import { runCleanup } from "../utils/run-cleanup";
+import { destroyApplication } from "./destroy-application";
+import { loadPreviewAssets } from "./load-preview-assets";
+import { PreviewScene } from "./preview-scene";
 
-/** Owns imperative GPU resources; React owns the surrounding UI. */
+/** Connects the scene, ticker, and debug overlay to a mounted canvas host. */
 export async function createPreview(
   host: HTMLDivElement,
   signal: AbortSignal,
 ): Promise<ParticlePreview | null> {
   const app = new Application();
-  let stats: ReturnType<typeof createStats> | undefined;
-  let transferred = false;
-  const cleanup = () => {
-    try {
-      stats?.destroy();
-    } finally {
-      if (app.renderer) {
-        app.destroy(true, { children: true });
-      } else {
-        app.stage.destroy({ children: true });
-      }
+  let scene: PreviewScene | undefined;
+  let stats: ReturnType<typeof createPreviewStats> | undefined;
+  let mounted = false;
+  let destroyed = false;
+
+  function destroy() {
+    if (destroyed) {
+      return;
     }
-  };
+    destroyed = true;
+    runCleanup([
+      () => stats?.destroy(),
+      () => scene?.destroy(),
+      () => destroyApplication(app),
+    ]);
+  }
+
   try {
     await app.init({
       resizeTo: host,
-      background: '#0a111c',
+      background: "#0a111c",
       antialias: false,
-      preference: 'webgl',
+      preference: "webgl",
       preferWebGLVersion: 2,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
     });
+
     if (signal.aborted) {
       return null;
     }
-    const response = await fetch(`${import.meta.env.BASE_URL}effect.json`, { signal });
-    if (!response.ok) {
-      throw new Error(`Unable to load effect.json: ${response.status}`);
-    }
-    const effect = parseEffectConfig(await response.json());
-    if (signal.aborted) {
+
+    const assets = await loadPreviewAssets(signal);
+
+    if (!assets) {
       return null;
     }
-    const textures = await Assets.load<Texture>([
-      '/textures/star.svg',
-      '/textures/leaf.svg',
-      '/textures/spark.svg',
-    ]);
-    if (signal.aborted) {
-      return null;
-    }
-    const choices: Record<ParticleTextureName, Texture | null> = {
-      star: textures['/textures/star.svg']!,
-      leaf: textures['/textures/leaf.svg']!,
-      spark: textures['/textures/spark.svg']!,
-      procedural: null,
-    };
-    const renderer = app.renderer as WebGLRenderer;
-    const emitterDefinition = effect.emitters[0];
-    let controls: PreviewControls = {
-      capacity: emitterDefinition.capacity,
-      rate: emitterDefinition.emission.rate,
-      gravity: emitterDefinition.modifiers.gravity.y,
-      lifetime: emitterDefinition.initial.lifetime,
-      texture: 'star',
-      size: 24,
-      paused: false,
-      statsVisible: true,
-    };
-    let liveParticles = new LiveParticleCount(controls.capacity);
-    let view = new ParticleView(renderer, effect);
-    app.stage.addChild(view);
-    view.texture = choices[controls.texture];
-    view.particleSize = controls.size;
-    view.emitter.x = host.clientWidth / 2;
-    view.emitter.y = host.clientHeight * 0.7;
-    stats = createStats({
-      container: host,
-      display: 'compact',
-      getParticleCount: () => liveParticles.count,
-      gl: renderer.gl,
-      subscribePostRender(listener) {
-        const callback = () => listener(app.ticker.lastTime);
-        app.ticker.add(callback, undefined, -100);
-        return () => app.ticker.remove(callback);
-      },
-    });
-    const overlay = stats;
-    app.ticker.add((ticker) => {
-      if (!controls.paused) {
-        const seconds = Math.min(ticker.deltaMS / 1000, 0.05);
-        view.update(seconds);
-        liveParticles.advance(
-          seconds,
-          view.emitter.emitting ? controls.rate : 0,
-          controls.lifetime,
-        );
+
+    const activeScene = new PreviewScene(app, host, assets);
+    scene = activeScene;
+    const debug = createPreviewStats(app, host, activeScene.controls.capacity);
+    stats = debug;
+
+    function advance(elapsedSeconds: number) {
+      const controls = activeScene.controls;
+      if (controls.paused) {
+        return;
       }
-    });
+      activeScene.advance(elapsedSeconds);
+      debug.advance(elapsedSeconds, controls, activeScene.emitting);
+    }
+
+    app.ticker.add(({ deltaMS }) => advance(deltaMS / 1000));
     host.appendChild(app.canvas);
-    let destroyed = false;
-    const preview: ParticlePreview = {
+    mounted = true;
+
+    return {
       get controls() {
-        return { ...controls };
+        return { ...activeScene.controls };
       },
-      update(patch) {
-        const next = { ...controls, ...patch };
-        const parameters = {
-          emission: { rate: next.rate },
-          initial: { lifetime: next.lifetime },
-          modifiers: { gravity: { y: next.gravity } },
-        };
-        if (next.capacity !== controls.capacity) {
-          overlay.hide();
-          try {
-            const current = view.emitter.configuration;
-            const replacement = new ParticleView(renderer, {
-              version: 1,
-              emitters: [
-                {
-                  ...current,
-                  capacity: next.capacity,
-                  emission: { ...current.emission, ...parameters.emission },
-                  initial: { ...current.initial, ...parameters.initial },
-                  modifiers: {
-                    gravity: { ...current.modifiers.gravity, ...parameters.modifiers.gravity },
-                  },
-                },
-              ],
-            });
-            replacement.texture = choices[next.texture];
-            replacement.particleSize = next.size;
-            replacement.emitter.x = view.emitter.x;
-            replacement.emitter.y = view.emitter.y;
-            replacement.emitter.emitting = view.emitter.emitting;
-            app.stage.addChildAt(replacement, app.stage.getChildIndex(view));
-            app.stage.removeChild(view);
-            view.destroy();
-            view = replacement;
-            liveParticles = new LiveParticleCount(next.capacity);
-          } finally {
-            if (controls.statsVisible) {
-              overlay.show();
-            }
+      setControls(patch) {
+        const capacity = activeScene.controls.capacity;
+        const resizing =
+          patch.capacity !== undefined && patch.capacity !== capacity;
+        if (resizing) {
+          debug.setVisible(false);
+        }
+        try {
+          const controls = activeScene.setControls(patch);
+          if (resizing) {
+            debug.reset(controls.capacity);
           }
-        } else if (
-          next.rate !== controls.rate ||
-          next.gravity !== controls.gravity ||
-          next.lifetime !== controls.lifetime
-        ) {
-          view.emitter.setParameters(parameters);
+          return controls;
+        } finally {
+          debug.setVisible(activeScene.controls.statsVisible);
         }
-        view.texture = choices[next.texture];
-        view.particleSize = next.size;
-        if (next.statsVisible) {
-          overlay.show();
-        } else {
-          overlay.hide();
-        }
-        controls = next;
-        return { ...controls };
       },
-      movePointer(clientX, clientY) {
-        const rect = host.getBoundingClientRect();
-        if (!rect.width || !rect.height) {
-          return;
-        }
-        view.emitter.x = ((clientX - rect.left) * app.screen.width) / rect.width;
-        view.emitter.y = ((clientY - rect.top) * app.screen.height) / rect.height;
-      },
+      movePointer: (x, y) => activeScene.movePointer(x, y),
       reset() {
-        view.reset();
-        liveParticles.reset();
+        activeScene.reset();
+        debug.reset(activeScene.controls.capacity);
       },
-      destroy() {
-        if (destroyed) {
-          return;
-        }
-        destroyed = true;
-        cleanup();
-      },
+      destroy,
     };
-    transferred = true;
-    return preview;
   } finally {
-    if (!transferred) {
-      cleanup();
+    if (!mounted) {
+      destroy();
     }
   }
 }

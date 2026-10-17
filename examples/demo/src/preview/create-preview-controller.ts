@@ -27,8 +27,8 @@ export function createPreviewController(events: PreviewControllerEvents): Previe
         }
       };
     },
-    update(patch) {
-      run((preview) => events.onChange(preview.update(patch)));
+    setControls(patch) {
+      run((preview) => events.onChange(preview.setControls(patch)));
     },
     reset() {
       run((preview) => preview.reset());

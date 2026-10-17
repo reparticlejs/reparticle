@@ -7,7 +7,7 @@ export interface PreviewControllerEvents {
 
 export interface PreviewController {
   attach: (preview: ParticlePreview) => () => void;
-  update: (patch: Partial<PreviewControls>) => void;
+  setControls: (patch: Partial<PreviewControls>) => void;
   reset: () => void;
   movePointer: (x: number, y: number) => void;
   reportError: (message: string) => void;
