@@ -2,7 +2,7 @@ import type { Application, WebGLRenderer } from 'pixi.js';
 
 import type { PreviewControls } from '../types/preview';
 import { createStats } from './index';
-import { LiveParticleCount } from './stats/measurement/live-particle-count';
+import { PreviewParticleCount } from './stats/measurement/preview-particle-count';
 
 /** All preview-only counting and stats instrumentation stays in devtools. */
 export function createPreviewStats(
@@ -11,7 +11,7 @@ export function createPreviewStats(
   capacity: number,
 ) {
   const renderer = app.renderer;
-  let particles = new LiveParticleCount(capacity);
+  let particles = new PreviewParticleCount(capacity);
   const overlay = createStats({
     container: host,
     display: 'compact',
@@ -26,11 +26,10 @@ export function createPreviewStats(
 
   return {
     advance(seconds: number, controls: PreviewControls, emitting: boolean) {
-      const rate = emitting ? controls.rate : 0;
-      particles.advance(seconds, rate, controls.lifetime);
+      particles.advance(seconds, controls, emitting);
     },
     reset(nextCapacity: number) {
-      particles = new LiveParticleCount(nextCapacity);
+      particles = new PreviewParticleCount(nextCapacity);
     },
     setVisible(visible: boolean) {
       if (visible) {

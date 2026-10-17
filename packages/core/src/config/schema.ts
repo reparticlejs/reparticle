@@ -59,6 +59,7 @@ export const emitterConfigSchema = strictObject({
   id: string().refine((value) => value.trim().length > 0, 'Expected a nonempty identifier'),
   capacity: int().min(1).max(1_000_000),
   seed: int().min(0).max(65535),
+  startOffset: number().nonnegative().default(0),
   startDelay: number().nonnegative().default(0),
   duration: number().nonnegative().default(1),
   playMode: enumSchema(['once', 'loop']).default('loop'),

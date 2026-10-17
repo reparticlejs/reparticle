@@ -34,7 +34,7 @@ export class PreviewScene {
   }
 
   get emitting(): boolean {
-    return this.view.emitter.isEmitting;
+    return this.view.emitter.emitting;
   }
 
   setControls(patch: Partial<PreviewControls>): PreviewControls {
@@ -42,6 +42,7 @@ export class PreviewScene {
     if (
       next.capacity !== this.settings.capacity ||
       next.shape !== this.settings.shape ||
+      next.startOffset !== this.settings.startOffset ||
       next.startDelay !== this.settings.startDelay ||
       next.duration !== this.settings.duration ||
       next.playMode !== this.settings.playMode

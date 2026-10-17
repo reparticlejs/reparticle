@@ -23,6 +23,7 @@
           "y": 160
         }
       },
+      "startOffset": 0,
       "startDelay": 0,
       "duration": 1,
       "playMode": "loop"

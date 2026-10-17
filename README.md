@@ -156,6 +156,16 @@ Each emitter accepts `"duration": 1` (seconds) and `"playMode": "once"` or `"loo
 
 Following [Defold's emitter timing](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844), once emits through the entire update that reaches duration, then stops spawning. Existing particles continue moving and aging. Loops restart the emitter timer without clearing particles, fractional emission, or the random sequence. Zero-duration once emits for one positive update; zero-duration loop emits continuously. Zero-time warm-up updates do not consume playback.
 
-`emitter.isEmitting` reports whether the next positive update may emit. The existing `emitter.emitting` boolean remains a manual emission gate; turning it off does not pause the clock or restart a completed effect. Pause by skipping updates. `reset()` clears particles and restarts the timer, spawn schedule, and seed. Duration/mode changes require recreation; the demo restarts the effect when either control changes. Start delay and prewarming remain pending.
+`emitter.isEmitting` reports emission eligibility at the current playback clock; pending prewarm has not yet advanced that clock. The existing `emitter.emitting` boolean remains a manual emission gate; turning it off does not pause the clock or restart a completed effect. Pause by skipping updates. `reset()` clears particles and restarts the timer, spawn schedule, and seed. Duration/mode changes require recreation; the demo restarts the effect when either control changes.
 
 `startDelay` defaults to `0` seconds. Following Defold, the delay is checked before advancing each frame: the frame reaching the delay still waits, and the next frame emits. Delay overshoot contributes to the duration clock. Loops do not repeat the delay; reset does. Changing start delay in the demo restarts the effect. Like duration, it is a structural setting rather than a runtime parameter patch.
+
+### Start offset / prewarm
+
+`startOffset` defaults to `0` seconds. Following [Defold StartInstance and FastForwardEmitter](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L313-L324), prewarm runs full 1/60-second steps, capped at the maximum particle lifetime (`initial.lifetime` for our current scalar configuration). Offsets below 0.0001 seconds are ignored. The last step is not shortened, and the prewarm timer uses float32 accumulation like Defold.
+
+Prewarm includes start delay and normal once/loop timing. A once emitter can finish emission during prewarm, leaving only its surviving particles. The simulation advances on the GPU, including position, velocity, age, spawn carry, and random sequence; there is no particle readback.
+
+Reparticle applies prewarm before the first positive `update`, after you have set the emitter position. `update(0)` does not consume it. `reset()` clears the simulation and schedules prewarm again at the current position. The normal update runs after the prewarm steps. Changing start offset requires recreation; the demo does this automatically and includes prewarmed particles in its stats.
+
+Prewarm has a one-time startup cost proportional to the simulated steps and allocated capacity. `EmitterPlayback` and `prewarm` expose the shared timing logic; the demo uses them for its separate debug counter, without putting particle counting into the runtime.

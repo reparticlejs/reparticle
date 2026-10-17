@@ -8,6 +8,7 @@ import { updateEmitterConfig } from './config/update-emitter';
 import { EmitterPlayback } from './emitter-playback';
 import functions from './gpujs/functions.json';
 import { isPipelineTexture } from './gpujs/is-pipeline-texture';
+import { prewarm } from './prewarm';
 import { SpawnSchedule } from './spawn-schedule';
 export type { EmitterContext } from '#types/emitter.js';
 
@@ -27,6 +28,7 @@ export class Emitter {
   private output!: PipelineTexture;
   private nextKernel = 1;
   private disposed = false;
+  private needsPrewarm = true;
   private seed: number;
   private readonly initialSeed: number;
   readonly gl: WebGL2RenderingContext;
@@ -99,7 +101,7 @@ export class Emitter {
       throw error;
     }
   }
-  /** Whether the next positive step can emit, including the manual emission gate. */
+  /** Emission eligibility at the current clock, before any pending prewarm. */
   get isEmitting(): boolean {
     return this.emitting && this.playback.emitting;
   }
@@ -127,6 +129,15 @@ export class Emitter {
     if (!Number.isFinite(dt) || dt < 0 || dt > 0.1) {
       throw new RangeError('Step must be between 0 and 0.1 seconds');
     }
+    if (dt > 0 && this.needsPrewarm) {
+      this.needsPrewarm = false;
+      prewarm(this.settings.startOffset, this.settings.initial.lifetime, (seconds) =>
+        this.step(seconds),
+      );
+    }
+    this.step(dt);
+  }
+  private step(dt: number): void {
     const active = this.playback.advance(dt);
     const rate = active && this.emitting ? this.settings.emission.rate : 0;
     const { start, count } = this.schedule.next(rate, dt);
@@ -175,6 +186,7 @@ export class Emitter {
     this.output = this.run(0);
     this.schedule.reset();
     this.playback.reset();
+    this.needsPrewarm = true;
     this.nextKernel = 1;
     this.seed = this.initialSeed;
   }
@@ -234,3 +246,6 @@ export class Emitter {
 export { parseEffectConfig } from './config/effect';
 export { effectConfigSchema, emitterConfigSchema } from './config/schema';
 export type { EffectConfig, EmitterConfig, EmitterParameters } from '#types/effect.js';
+
+export { EmitterPlayback } from './emitter-playback';
+export { prewarm } from './prewarm';

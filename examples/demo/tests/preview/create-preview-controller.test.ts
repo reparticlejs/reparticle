@@ -7,6 +7,7 @@ function setup() {
   const controls: PreviewControls = {
     capacity: 8192,
     shape: 'point',
+    startOffset: 0,
     startDelay: 0,
     duration: 1,
     playMode: 'loop',

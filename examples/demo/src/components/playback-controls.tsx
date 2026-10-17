@@ -42,8 +42,19 @@ export function PlaybackControls({ controls, onChange, onReset }: EmitterControl
         unit=" s"
         onChange={(startDelay) => onChange({ startDelay })}
       />
+      <Slider
+        id="start-offset"
+        label="Start offset"
+        value={controls.startOffset}
+        min={0}
+        max={5}
+        step={0.1}
+        unit=" s"
+        onChange={(startOffset) => onChange({ startOffset })}
+      />
+      <p>Start offset prewarms the simulation, capped at particle lifetime.</p>
       <p>
-        Changing delay, duration or mode restarts the effect. Once stops emission; existing
+        Changing delay, offset, duration or mode restarts the effect. Once stops emission; existing
         particles finish their lifetime.
       </p>
       <div className="playback-actions">

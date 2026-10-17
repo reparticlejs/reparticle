@@ -32,7 +32,7 @@ it.each(['repeat', 'Once', '', 1, null])('rejects invalid play mode %s', (playMo
   expect(() => parseEffectConfig(effect(1, playMode))).toThrow(ZodError);
 });
 
-it.each([{ duration: 2 }, { playMode: 'once' }, { startDelay: 1 }])(
+it.each([{ duration: 2 }, { playMode: 'once' }, { startDelay: 1 }, { startOffset: 1 }])(
   'rejects structural playback updates: %j',
   (patch) => {
     const original = parseEffectConfig(effect(1, 'loop')).emitters[0];
@@ -57,6 +57,25 @@ it.each([-1, NaN, Infinity, '1', null])('rejects invalid start delay %s', (start
     parseEffectConfig({
       ...input,
       emitters: [{ ...input.emitters[0], startDelay }],
+    }),
+  ).toThrow(ZodError);
+});
+
+it.each([undefined, 0, 0.1, 5])('accepts start offset %s and defaults to zero', (startOffset) => {
+  const input = effect(1, 'once');
+  const emitter = parseEffectConfig({
+    ...input,
+    emitters: [{ ...input.emitters[0], startOffset }],
+  }).emitters[0];
+  expect(emitter.startOffset).toBe(startOffset ?? 0);
+});
+
+it.each([-1, NaN, Infinity, '1', null])('rejects invalid start offset %s', (startOffset) => {
+  const input = effect(1, 'once');
+  expect(() =>
+    parseEffectConfig({
+      ...input,
+      emitters: [{ ...input.emitters[0], startOffset }],
     }),
   ).toThrow(ZodError);
 });
