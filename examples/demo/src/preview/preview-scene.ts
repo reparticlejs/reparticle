@@ -106,6 +106,9 @@ export class PreviewScene {
       next.size === current.size &&
       next.rate === current.rate &&
       next.gravity === current.gravity &&
+      next.speed === current.speed &&
+      next.speedSpread === current.speedSpread &&
+      next.lifetimeSpread === current.lifetimeSpread &&
       next.lifetime === current.lifetime &&
       (next.shape !== 'circle' || next.diameter === current.diameter) &&
       ((next.shape !== 'box' && next.shape !== 'cone2d') ||

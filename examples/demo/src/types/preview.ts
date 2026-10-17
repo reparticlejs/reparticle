@@ -31,6 +31,10 @@ export interface PreviewControls {
   rate: number;
   gravity: number;
   lifetime: number;
+  speed: number;
+  speedSpread: number;
+  lifetimeSpread: number;
+  seed: number;
   paused: boolean;
   statsVisible: boolean;
 }

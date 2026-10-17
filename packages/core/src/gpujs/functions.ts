@@ -1,3 +1,4 @@
+export { propertyVariation } from '../behaviors/property-variation';
 // Build input only. The runtime imports the generated source strings instead.
 export { circleAngle, circleRadius } from '../behaviors/circle';
 export { applyGravity } from '../behaviors/gravity';

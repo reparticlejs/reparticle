@@ -5,7 +5,8 @@ import { ShapeControls } from './shape-controls';
 import { Slider } from './slider';
 
 export function EmissionControls({ controls, onChange }: ControlSectionProps) {
-  const exceedsCapacity = controls.rate * controls.lifetime > controls.capacity;
+  const exceedsCapacity =
+    controls.rate * (controls.lifetime + controls.lifetimeSpread) > controls.capacity;
 
   return (
     <fieldset>
@@ -20,7 +21,7 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
       />
       <p id="capacity-note" aria-live="polite">
         {exceedsCapacity
-          ? 'Emission × lifetime exceeds capacity: older particles will be replaced early.'
+          ? 'Emission × maximum lifetime exceeds capacity: older particles will be replaced early.'
           : 'Switching clears particles. Wait one lifetime before comparing FPS.'}
       </p>
       <p>
@@ -52,6 +53,34 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
         step={0.1}
         unit=" s"
         onChange={(lifetime) => onChange({ lifetime })}
+      />
+      <Slider
+        id="lifetime-spread"
+        label="Lifetime spread ±"
+        value={controls.lifetimeSpread}
+        min={0}
+        max={5}
+        step={0.1}
+        unit=" s"
+        onChange={(lifetimeSpread) => onChange({ lifetimeSpread })}
+      />
+      <Slider
+        id="speed"
+        label="Speed"
+        value={controls.speed}
+        min={0}
+        max={1000}
+        unit=" px/s"
+        onChange={(speed) => onChange({ speed })}
+      />
+      <Slider
+        id="speed-spread"
+        label="Speed spread ±"
+        value={controls.speedSpread}
+        min={0}
+        max={1000}
+        unit=" px/s"
+        onChange={(speedSpread) => onChange({ speedSpread })}
       />
     </fieldset>
   );

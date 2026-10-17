@@ -94,6 +94,8 @@
       "initial": {
         "size": 24,
         "lifetime": 2,
+        "speedSpread": 0,
+        "lifetimeSpread": 0,
         "speed": 220,
         "direction": -1.5707963267948966,
         "spread": 1.0471975511965976,

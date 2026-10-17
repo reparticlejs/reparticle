@@ -11,6 +11,10 @@ const controls: PreviewControls = {
   duration: 1,
   orientation: 'default',
   playMode: 'loop',
+  speed: 220,
+  speedSpread: 0,
+  lifetimeSpread: 0,
+  seed: 1,
   diameter: 100,
   width: 100,
   height: 100,
@@ -54,4 +58,18 @@ it('respects the manual emission gate during prewarm', () => {
   const count = new PreviewParticleCount(8192);
   count.advance(1 / 60, controls, false);
   expect(count.count).toBe(0);
+});
+
+it('uses maximum lifetime for prewarm and repeats spread samples after recreation', () => {
+  const settings = { ...controls, startOffset: 2, lifetime: 0.1, lifetimeSpread: 0.4, rate: 600 };
+  const first = new PreviewParticleCount(8192);
+  const second = new PreviewParticleCount(8192);
+  first.advance(0.1, settings, true);
+  second.advance(0.1, settings, true);
+  expect(first.count).toBe(second.count);
+  expect(first.count).toBeGreaterThan(0);
+  for (let index = 0; index < 6; index++) {
+    first.advance(0.1, settings, false);
+  }
+  expect(first.count).toBe(0);
 });

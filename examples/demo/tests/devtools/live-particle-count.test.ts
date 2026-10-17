@@ -58,3 +58,20 @@ it('preserves fractional spawn carry across rate changes and clears it on reset'
   tracker.advance(0.1, 1000, 10);
   expect(tracker.count).toBe(10);
 });
+
+it('expires varied lifetimes and replaces slots without retaining old births', () => {
+  const count = new LiveParticleCount(8);
+  count.recordStep(0.1, 8, 0.2, 0.4, 1);
+  expect(count.count).toBeGreaterThan(0);
+  expect(count.count).toBeLessThanOrEqual(8);
+  count.recordStep(0.1, 8, 1, 0, 2);
+  expect(count.count).toBe(8);
+  for (let index = 0; index < 6; index++) {
+    count.recordStep(0.1, 0, 0.01, 5, 3);
+  }
+  expect(count.count).toBe(8);
+  for (let index = 0; index < 5; index++) {
+    count.recordStep(0.1, 0, 1);
+  }
+  expect(count.count).toBe(0);
+});

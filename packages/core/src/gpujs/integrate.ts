@@ -3,6 +3,7 @@ import type { KernelContext, ParticleTexel, ParticleTexture } from '#types/layou
 import { applyGravity } from '../behaviors/gravity';
 import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { advancePosition, advanceVelocity } from '../behaviors/motion';
+import { propertyVariation } from '../behaviors/property-variation';
 import { spawnBox } from './spawn-box';
 import { spawnCircle } from './spawn-circle';
 import { spawnCone2D } from './spawn-cone2d';
@@ -38,6 +39,8 @@ export function integrate(
   initialBlue: number,
   initialRotation: number,
   orientToDirection: number,
+  speedSpread: number,
+  lifetimeSpread: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -68,9 +71,11 @@ export function integrate(
       if (orientToDirection > 0.5) {
         rotation += spawnRotation(spawned[2], spawned[3]);
       }
-      return [0, lifetime, initialSize, rotation];
+      const sampledLifetime = lifetime + propertyVariation(particleId, seed, 2) * lifetimeSpread;
+      return [0, sampledLifetime, initialSize, rotation];
     }
-    return [spawned[0], spawned[1], spawned[2] * speed, spawned[3] * speed];
+    const sampledSpeed = speed + propertyVariation(particleId, seed, 1) * speedSpread;
+    return [spawned[0], spawned[1], spawned[2] * sampledSpeed, spawned[3] * sampledSpeed];
   }
 
   // Properties texel: age, lifetime, initialSize, resolved initialRotation (degrees).

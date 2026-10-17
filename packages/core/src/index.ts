@@ -76,6 +76,7 @@ export class Emitter {
     gpu.addFunction(functions.spawnBox);
     gpu.addFunction(functions.spawnCone2D);
     gpu.addFunction(functions.spawnRotation);
+    gpu.addFunction(functions.propertyVariation);
     const config: IGPUKernelSettings = {
       output: [this.width, this.rows * 3],
       precision: 'single',
@@ -132,8 +133,10 @@ export class Emitter {
     }
     if (dt > 0 && this.needsPrewarm) {
       this.needsPrewarm = false;
-      prewarm(this.settings.startOffset, this.settings.initial.lifetime, (seconds) =>
-        this.step(seconds),
+      prewarm(
+        this.settings.startOffset,
+        this.settings.initial.lifetime + this.settings.initial.lifetimeSpread,
+        (seconds) => this.step(seconds),
       );
     }
     this.step(dt);
@@ -183,6 +186,8 @@ export class Emitter {
       o.initial.blue,
       o.initial.rotation,
       o.orientation === 'initial-direction' ? 1 : 0,
+      o.initial.speedSpread,
+      o.initial.lifetimeSpread,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;
@@ -256,6 +261,7 @@ export { effectConfigSchema, emitterConfigSchema } from './config/schema';
 export type { EffectConfig, EmitterConfig, EmitterParameters } from '#types/effect.js';
 
 export { EmitterPlayback } from './emitter-playback';
+export { propertyVariation } from './behaviors/property-variation';
 export { prewarm } from './prewarm';
 
 export { sampleCurve, CURVE_SEGMENTS } from './curves/sample-curve';
