@@ -1,6 +1,7 @@
+import type { ParticleTexel } from '#types/layout.js';
+
 import { circleAngle, circleRadius } from '../behaviors/circle';
 import { spawnVariation } from '../behaviors/spawn';
-import type { ParticleTexel } from './layout';
 
 /** Defold circle semantics: interior position and outward radial velocity. */
 export function spawnCircle(

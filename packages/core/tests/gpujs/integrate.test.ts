@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 
 import { integrate } from '#src/gpujs/integrate.js';
-import type { KernelContext, ParticleTexture } from '#src/gpujs/layout.js';
+import type { KernelContext, ParticleTexture } from '#types/layout.js';
 
 it('maps motion and lifetime texels without changing the behavior math', () => {
   const state: ParticleTexture = [[[10, 20, 30, -40]], [[0.5, 2, 1, 0]]];

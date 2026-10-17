@@ -27,6 +27,8 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "sass-embedded": "catalog:"
+    "sass-embedded": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }

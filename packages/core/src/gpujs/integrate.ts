@@ -1,7 +1,8 @@
+import type { KernelContext, ParticleTexel, ParticleTexture } from '#types/layout.js';
+
 import { applyGravity } from '../behaviors/gravity';
 import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { advancePosition, advanceVelocity } from '../behaviors/motion';
-import type { KernelContext, ParticleTexel, ParticleTexture } from './layout';
 import { spawnBox } from './spawn-box';
 import { spawnCircle } from './spawn-circle';
 import { spawnMotion } from './spawn-motion';

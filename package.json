@@ -13,6 +13,7 @@
     "format:check": "oxfmt --check ."
   },
   "devDependencies": {
+    "eslint-plugin-import-x": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",

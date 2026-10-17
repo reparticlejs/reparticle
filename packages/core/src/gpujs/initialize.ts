@@ -1,4 +1,4 @@
-import type { ParticleTexel } from './layout';
+import type { ParticleTexel } from '#types/layout.js';
 
 /** Clear every slot. An initialized flag of zero prevents unused particles from rendering. */
 export function initialize(): ParticleTexel {

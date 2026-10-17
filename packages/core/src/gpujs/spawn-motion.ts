@@ -1,5 +1,6 @@
+import type { ParticleTexel } from '#types/layout.js';
+
 import { spawnDirection, spawnVariation } from '../behaviors/spawn';
-import type { ParticleTexel } from './layout';
 
 // Keep spawn locals in their own function: GPU.js misreads block locals when
 // minifiers rename them to match a kernel parameter.

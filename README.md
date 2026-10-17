@@ -131,3 +131,9 @@ The demo starts with a box:
 Following [Defold box behavior](https://defold.com/manuals/particlefx/), births fill the rectangle uniformly and initial velocity points upward at `initial.speed`. Width and height are full dimensions, centered on the emitter. Our canvas has downward-positive Y, so upward velocity is negative Y. Point direction/spread do not apply. Zero dimensions are allowed.
 
 Numeric width/height updates affect future births without recompiling or clearing particles. This implements Defold's zero-depth box; 3D depth and emitter rotation remain pending.
+
+### GPU function build
+
+Core's package build compiles the typed GPU functions and kernels into JavaScript source strings before minification. The generated strings are bundled into `dist/index.js`; GPU.js compiles them on the device. Consumers do not need a build plugin or minifier settings. There is no runtime source rewriting.
+
+Edit the TypeScript behaviors and kernels, then rebuild core. `src/gpujs/functions.ts` lists the build inputs; `src/gpujs/functions.json` is committed so fresh checkouts have valid imports. Regenerate it rather than editing it by hand, and include its changes when committing kernel changes. Core's build, typecheck, and test commands generate it automatically.

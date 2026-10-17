@@ -5,13 +5,22 @@ export default defineConfig({
     correctness: 'error',
     suspicious: 'warn',
   },
-  ignorePatterns: ['**/dist/**', '**/coverage/**', '.pnpm-store/**', '.generated/**', '.turbo/**'],
+  ignorePatterns: [
+    '**/dist/**',
+    '**/coverage/**',
+    '.pnpm-store/**',
+    '.generated/**',
+    'packages/core/src/gpujs/functions.json',
+    '.turbo/**',
+  ],
   options: {
     typeAware: true,
   },
   plugins: ['typescript', 'vitest', 'promise', 'node', 'import'],
+  jsPlugins: [{ name: 'import-js', specifier: 'eslint-plugin-import-x' }],
   rules: {
     curly: 'error',
+    'import-js/no-extraneous-dependencies': ['error', { includeTypes: true }],
     'no-restricted-imports': [
       'error',
       {

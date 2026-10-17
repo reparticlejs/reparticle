@@ -9,19 +9,9 @@ import {
 import type { EmitterConfig, EmitterParameters } from '#types/effect.js';
 import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 
-import { circleAngle, circleRadius } from './behaviors/circle';
-import { applyGravity } from './behaviors/gravity';
-import { advanceAge, particleAlive } from './behaviors/lifetime';
-import { advancePosition, advanceVelocity } from './behaviors/motion';
-import { spawnVariation, spawnDirection } from './behaviors/spawn';
 import { emitterConfigSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
-import { initialize } from './gpujs/initialize';
-import { integrate } from './gpujs/integrate';
-import { kernelSource } from './gpujs/kernel-source';
-import { spawnBox } from './gpujs/spawn-box';
-import { spawnCircle } from './gpujs/spawn-circle';
-import { spawnMotion } from './gpujs/spawn-motion';
+import functions from './gpujs/functions.json';
 import { SpawnSchedule } from './spawn-schedule';
 export type { EmitterContext } from '#types/emitter.js';
 
@@ -67,19 +57,19 @@ export class Emitter {
       throw new RangeError('Capacity exceeds GPU texture limits');
     }
     const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
-    gpu.addFunction(kernelSource(advancePosition));
-    gpu.addFunction(kernelSource(applyGravity));
-    gpu.addFunction(kernelSource(advanceAge));
-    // Keep minified conditional returns numeric in GPU.js's type inference.
-    gpu.addFunction(kernelSource(particleAlive), { returnType: 'Number' });
-    gpu.addFunction(kernelSource(advanceVelocity));
-    gpu.addFunction(kernelSource(spawnVariation));
-    gpu.addFunction(kernelSource(spawnDirection));
-    gpu.addFunction(kernelSource(spawnMotion));
-    gpu.addFunction(kernelSource(circleAngle));
-    gpu.addFunction(kernelSource(circleRadius));
-    gpu.addFunction(kernelSource(spawnCircle));
-    gpu.addFunction(kernelSource(spawnBox));
+    gpu.addFunction(functions.advancePosition);
+    gpu.addFunction(functions.applyGravity);
+    gpu.addFunction(functions.advanceAge);
+    // The alive flag is numeric in GPU storage.
+    gpu.addFunction(functions.particleAlive, { returnType: 'Number' });
+    gpu.addFunction(functions.advanceVelocity);
+    gpu.addFunction(functions.spawnVariation);
+    gpu.addFunction(functions.spawnDirection);
+    gpu.addFunction(functions.spawnMotion);
+    gpu.addFunction(functions.circleAngle);
+    gpu.addFunction(functions.circleRadius);
+    gpu.addFunction(functions.spawnCircle);
+    gpu.addFunction(functions.spawnBox);
     const config: IGPUKernelSettings = {
       output: [this.width, this.rows * 2],
       precision: 'single',
@@ -88,8 +78,8 @@ export class Emitter {
       constants: { width: this.width, rows: this.rows, capacity: this.capacity },
     };
     try {
-      for (const source of [initialize, integrate, integrate]) {
-        this.kernels.push(gpu.createKernel(kernelSource(source), config));
+      for (const source of [functions.initialize, functions.integrate, functions.integrate]) {
+        this.kernels.push(gpu.createKernel(source, config));
         const vao = gl.createVertexArray();
         if (!vao) {
           throw new Error('Unable to allocate simulation VAO');

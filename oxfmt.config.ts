@@ -6,6 +6,7 @@ export default defineConfig({
     '**/coverage/**',
     '.pnpm-store/**',
     '.generated/**',
+    '**/gpujs/functions.json',
     '.turbo/**',
     'pnpm-lock.yaml',
   ],

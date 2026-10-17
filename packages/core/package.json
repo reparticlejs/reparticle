@@ -14,12 +14,17 @@
     }
   },
   "scripts": {
-    "build": "tsdown",
-    "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run tests"
+    "build": "pnpm build:functions && tsdown",
+    "typecheck": "pnpm build:functions && tsc -p tsconfig.json",
+    "test": "pnpm build:functions && vitest run tests",
+    "build:functions": "node scripts/build-functions.ts"
   },
   "dependencies": {
     "gpu.js": "catalog:",
     "zod": "catalog:"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "vitest": "catalog:"
   }
 }
