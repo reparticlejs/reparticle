@@ -17,4 +17,5 @@ export const shapeOptions: SelectOption<EmitterShape>[] = [
   { value: 'point', label: 'Point' },
   { value: 'circle', label: 'Circle' },
   { value: 'box', label: 'Box' },
+  { value: 'cone2d', label: '2D cone' },
 ];

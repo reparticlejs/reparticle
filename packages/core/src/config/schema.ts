@@ -8,6 +8,11 @@ const shapeSchema = discriminatedUnion('type', [
     width: number().nonnegative(),
     height: number().nonnegative(),
   }),
+  strictObject({
+    type: literal('cone2d'),
+    width: number().nonnegative(),
+    height: number().nonnegative(),
+  }),
 ]);
 
 const emissionSchema = strictObject({

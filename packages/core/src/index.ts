@@ -65,6 +65,7 @@ export class Emitter {
     gpu.addFunction(functions.circleRadius);
     gpu.addFunction(functions.spawnCircle);
     gpu.addFunction(functions.spawnBox);
+    gpu.addFunction(functions.spawnCone2D);
     const config: IGPUKernelSettings = {
       output: [this.width, this.rows * 2],
       precision: 'single',
@@ -126,6 +127,10 @@ export class Emitter {
       sizeX = shape.diameter;
     } else if (shape.type === 'box') {
       shapeType = 2;
+      sizeX = shape.width;
+      sizeY = shape.height;
+    } else if (shape.type === 'cone2d') {
+      shapeType = 3;
       sizeX = shape.width;
       sizeY = shape.height;
     }

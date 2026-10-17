@@ -104,7 +104,7 @@ GPU updates run on Pixi's ticker without React state updates per frame. Controls
 
 ### Circle emitter
 
-The demo offers Point, Circle, and Box shapes.
+The demo offers Point, Circle, Box, and 2D Cone shapes.
 
 ```json
 "shape": { "type": "circle", "diameter": 100 }
@@ -122,7 +122,7 @@ Changing shape type recreates the emitter and clears particles in the demo. Chan
 
 ### Box emitter
 
-The demo starts with a box:
+A box uses full width and height:
 
 ```json
 "shape": { "type": "box", "width": 200, "height": 100 }
@@ -137,3 +137,15 @@ Numeric width/height updates affect future births without recompiling or clearin
 Core's package build compiles the typed GPU functions and kernels into JavaScript source strings before minification. The generated strings are bundled into `dist/index.js`; GPU.js compiles them on the device. Consumers do not need a build plugin or minifier settings. There is no runtime source rewriting.
 
 Edit the TypeScript behaviors and kernels, then rebuild core. `src/gpujs/functions.ts` lists the build inputs; `src/gpujs/functions.json` is committed so fresh checkouts have valid imports. Regenerate it rather than editing it by hand, and include its changes when committing kernel changes. Core's build command regenerates it automatically; typecheck and tests use the committed file.
+
+### 2D cone emitter
+
+The demo starts with a 2D cone:
+
+```json
+"shape": { "type": "cone2d", "width": 200, "height": 100 }
+```
+
+Following [Defold's 2D cone behavior](https://defold.com/manuals/particlefx/), positions fill a triangle uniformly. The emitter is its tip; the opposite edge is one height above it, with the full configured width. Initial velocity points away from the tip through the birth position at `initial.speed`. Upward is negative Y in our canvas coordinates. Point direction/spread do not apply.
+
+Width and height can change at runtime and affect only future births. Both may be zero: width zero collapses to a vertical line, height zero to a horizontal line, and both zero to the tip with upward velocity. This is a flat triangle, not the pending 3D cone.

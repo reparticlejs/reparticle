@@ -24,7 +24,7 @@ export function ShapeControls({ controls, onChange }: ControlSectionProps) {
           onChange={(diameter) => onChange({ diameter })}
         />
       )}
-      {controls.shape === 'box' && (
+      {(controls.shape === 'box' || controls.shape === 'cone2d') && (
         <>
           <Slider
             id="width"

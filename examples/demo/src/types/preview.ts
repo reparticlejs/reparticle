@@ -1,4 +1,4 @@
-export type EmitterShape = 'point' | 'circle' | 'box';
+export type EmitterShape = 'point' | 'circle' | 'box' | 'cone2d';
 
 export type ParticleTextureName = 'star' | 'leaf' | 'spark' | 'procedural';
 

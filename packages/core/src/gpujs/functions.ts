@@ -8,4 +8,5 @@ export { initialize } from './initialize';
 export { integrate } from './integrate';
 export { spawnBox } from './spawn-box';
 export { spawnCircle } from './spawn-circle';
+export { spawnCone2D } from './spawn-cone2d';
 export { spawnMotion } from './spawn-motion';

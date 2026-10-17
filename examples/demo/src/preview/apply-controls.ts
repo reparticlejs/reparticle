@@ -19,13 +19,14 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
 }
 
 export function initialControls(definition: EmitterConfig): PreviewControls {
+  const shape = definition.emission.shape;
   return {
     capacity: definition.capacity,
     shape: definition.emission.shape.type,
     diameter:
       definition.emission.shape.type === 'circle' ? definition.emission.shape.diameter : 100,
-    width: definition.emission.shape.type === 'box' ? definition.emission.shape.width : 200,
-    height: definition.emission.shape.type === 'box' ? definition.emission.shape.height : 100,
+    width: 'width' in shape ? shape.width : 200,
+    height: 'height' in shape ? shape.height : 100,
     rate: definition.emission.rate,
     gravity: definition.modifiers.gravity.y,
     lifetime: definition.initial.lifetime,
@@ -40,7 +41,7 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
   const emission: EmitterParameters['emission'] = { rate: controls.rate };
   if (controls.shape === 'circle') {
     emission.shape = { diameter: controls.diameter };
-  } else if (controls.shape === 'box') {
+  } else if (controls.shape === 'box' || controls.shape === 'cone2d') {
     emission.shape = { width: controls.width, height: controls.height };
   }
   return {
@@ -56,6 +57,8 @@ function emitterShape(controls: PreviewControls): EmitterConfig['emission']['sha
       return { type: 'circle', diameter: controls.diameter };
     case 'box':
       return { type: 'box', width: controls.width, height: controls.height };
+    case 'cone2d':
+      return { type: 'cone2d', width: controls.width, height: controls.height };
     case 'point':
       return { type: 'point' };
     default:

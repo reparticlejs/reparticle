@@ -8,7 +8,7 @@
       "emission": {
         "rate": 4000,
         "shape": {
-          "type": "box",
+          "type": "cone2d",
           "width": 200,
           "height": 100
         }

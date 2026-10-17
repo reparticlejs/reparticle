@@ -5,6 +5,7 @@ import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { advancePosition, advanceVelocity } from '../behaviors/motion';
 import { spawnBox } from './spawn-box';
 import { spawnCircle } from './spawn-circle';
+import { spawnCone2D } from './spawn-cone2d';
 import { spawnMotion } from './spawn-motion';
 
 /**
@@ -51,6 +52,9 @@ export function integrate(
     }
     if (shapeType === 2) {
       return spawnBox(particleId, seed, emitterX, emitterY, speed, sizeX, sizeY);
+    }
+    if (shapeType === 3) {
+      return spawnCone2D(particleId, seed, emitterX, emitterY, speed, sizeX, sizeY);
     }
     return spawnMotion(particleId, seed, emitterX, emitterY, speed, direction, spread);
   }
