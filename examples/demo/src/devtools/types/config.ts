@@ -1,3 +1,5 @@
+import type { StatsHost } from './host';
+
 /** Explicit display and panel settings after project configuration shorthand is resolved. */
 export interface StatsConfig {
   /** Expanded shows all panels; compact presents one panel at a time. */
@@ -13,4 +15,12 @@ export interface StatsConfig {
   readonly textureBinds: boolean;
   /** WebGL useProgram calls per frame, including repeated and null uses. */
   readonly programUses: boolean;
+}
+
+/** Host resources and display options needed to create the overlay. */
+export interface StatsOptions extends StatsHost {
+  container: HTMLElement;
+  getParticleCount: () => number;
+  gl: WebGL2RenderingContext;
+  display?: StatsConfig['display'];
 }

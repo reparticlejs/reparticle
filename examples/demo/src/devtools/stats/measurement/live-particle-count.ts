@@ -16,12 +16,13 @@ export class LiveParticleCount {
   /** Mirrors the demo emitter's spawn schedule without changing core instrumentation. */
   advance(seconds: number, rate: number, lifetime: number): void {
     const total = this.carry + rate * seconds;
-    const whole = Math.floor(total + 1e-9);
-    this.carry = Math.max(0, total - whole);
-    this.update(seconds, Math.min(whole, this.capacity), lifetime);
+    const requested = Math.floor(total + 1e-9);
+    const spawned = Math.min(requested, this.capacity);
+    this.carry = Math.max(0, total - requested);
+    this.recordStep(seconds, spawned, lifetime);
   }
 
-  update(seconds: number, spawned: number, lifetime: number): void {
+  recordStep(seconds: number, spawned: number, lifetime: number): void {
     const end = this.emitted + spawned;
     const oldestSlot = end - this.capacity;
     const step = Math.fround(seconds);
@@ -32,19 +33,22 @@ export class LiveParticleCount {
       // Match the float32 age accumulation used by the simulation texture.
       batch.age = Math.fround(batch.age + step);
       batch.start = Math.max(batch.start, oldestSlot);
-      if (batch.age < batch.lifetime && batch.start < batch.end) {
-        this.batches[retained++] = batch;
-        alive += batch.end - batch.start;
+      const expired = batch.age >= batch.lifetime;
+      const overwritten = batch.start >= batch.end;
+      if (expired || overwritten) {
+        continue;
       }
+      this.batches[retained] = batch;
+      retained += 1;
+      alive += batch.end - batch.start;
     }
     this.batches.length = retained;
 
-    if (spawned > 0) {
-      const particleLifetime = Math.fround(lifetime);
-      if (particleLifetime > 0) {
-        this.batches.push({ start: this.emitted, end, age: 0, lifetime: particleLifetime });
-        alive += spawned;
-      }
+    const particleLifetime = Math.fround(lifetime);
+    if (spawned > 0 && particleLifetime > 0) {
+      const newborns = { start: this.emitted, end, age: 0, lifetime: particleLifetime };
+      this.batches.push(newborns);
+      alive += spawned;
     }
     this.emitted = end;
     this.alive = alive;

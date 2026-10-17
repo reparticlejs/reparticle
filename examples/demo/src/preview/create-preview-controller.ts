@@ -28,7 +28,10 @@ export function createPreviewController(events: PreviewControllerEvents): Previe
       };
     },
     setControls(patch) {
-      run((preview) => events.onChange(preview.setControls(patch)));
+      run((preview) => {
+        const controls = preview.setControls(patch);
+        events.onChange(controls);
+      });
     },
     reset() {
       run((preview) => preview.reset());

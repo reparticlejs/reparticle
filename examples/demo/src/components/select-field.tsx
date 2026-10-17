@@ -10,7 +10,8 @@ export function SelectField<Value extends string | number>({
   onChange,
 }: SelectFieldProps<Value>) {
   function handleChange(event: ChangeEvent<HTMLSelectElement>) {
-    const selected = options.find((option) => String(option.value) === event.currentTarget.value);
+    const selectedValue = event.currentTarget.value;
+    const selected = options.find((option) => String(option.value) === selectedValue);
     if (selected) {
       onChange(selected.value);
     }

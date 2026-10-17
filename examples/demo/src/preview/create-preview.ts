@@ -1,11 +1,11 @@
-import { Application } from "pixi.js";
+import { Application } from 'pixi.js';
 
-import { createPreviewStats } from "../devtools/create-preview-stats";
-import type { ParticlePreview } from "../types/preview";
-import { runCleanup } from "../utils/run-cleanup";
-import { destroyApplication } from "./destroy-application";
-import { loadPreviewAssets } from "./load-preview-assets";
-import { PreviewScene } from "./preview-scene";
+import { createPreviewStats } from '../devtools/create-preview-stats';
+import type { ParticlePreview, PreviewControls } from '../types/preview';
+import { runCleanup } from '../utils/run-cleanup';
+import { destroyApplication } from './destroy-application';
+import { loadPreviewAssets } from './load-preview-assets';
+import { PreviewScene } from './preview-scene';
 
 /** Connects the scene, ticker, and debug overlay to a mounted canvas host. */
 export async function createPreview(
@@ -23,19 +23,15 @@ export async function createPreview(
       return;
     }
     destroyed = true;
-    runCleanup([
-      () => stats?.destroy(),
-      () => scene?.destroy(),
-      () => destroyApplication(app),
-    ]);
+    runCleanup([() => stats?.destroy(), () => scene?.destroy(), () => destroyApplication(app)]);
   }
 
   try {
     await app.init({
       resizeTo: host,
-      background: "#0a111c",
+      background: '#0a111c',
       antialias: false,
-      preference: "webgl",
+      preference: 'webgl',
       preferWebGLVersion: 2,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
@@ -69,32 +65,35 @@ export async function createPreview(
     host.appendChild(app.canvas);
     mounted = true;
 
+    function setControls(patch: Partial<PreviewControls>): PreviewControls {
+      const capacity = activeScene.controls.capacity;
+      const resizing = patch.capacity !== undefined && patch.capacity !== capacity;
+      if (resizing) {
+        debug.setVisible(false);
+      }
+      try {
+        const controls = activeScene.setControls(patch);
+        if (resizing) {
+          debug.reset(controls.capacity);
+        }
+        return controls;
+      } finally {
+        debug.setVisible(activeScene.controls.statsVisible);
+      }
+    }
+
+    function reset() {
+      activeScene.reset();
+      debug.reset(activeScene.controls.capacity);
+    }
+
     return {
       get controls() {
         return { ...activeScene.controls };
       },
-      setControls(patch) {
-        const capacity = activeScene.controls.capacity;
-        const resizing =
-          patch.capacity !== undefined && patch.capacity !== capacity;
-        if (resizing) {
-          debug.setVisible(false);
-        }
-        try {
-          const controls = activeScene.setControls(patch);
-          if (resizing) {
-            debug.reset(controls.capacity);
-          }
-          return controls;
-        } finally {
-          debug.setVisible(activeScene.controls.statsVisible);
-        }
-      },
+      setControls,
       movePointer: (x, y) => activeScene.movePointer(x, y),
-      reset() {
-        activeScene.reset();
-        debug.reset(activeScene.controls.capacity);
-      },
+      reset,
       destroy,
     };
   } finally {

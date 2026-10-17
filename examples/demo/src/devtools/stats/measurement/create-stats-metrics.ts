@@ -25,7 +25,14 @@ export function createStatsMetrics(definitions: readonly StatsMetricDefinition[]
 
   /** Release sources before discarding a partial window; lifetime ranges survive. */
   function stop(): void {
-    runStatsCleanup(metrics.flatMap(({ metric }) => [() => metric.stop(), () => metric.reset()]));
+    const cleanup: (() => void)[] = [];
+    for (const { metric } of metrics) {
+      cleanup.push(
+        () => metric.stop(),
+        () => metric.reset(),
+      );
+    }
+    runStatsCleanup(cleanup);
   }
 
   /** Delegates window cleanup; the collection does not own individual metric state. */

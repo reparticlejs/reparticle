@@ -4,10 +4,10 @@ import { LiveParticleCount } from '#src/devtools/stats/measurement/live-particle
 
 it('starts newborns at age zero and expires them at their original lifetime', () => {
   const tracker = new LiveParticleCount(100);
-  tracker.update(0.1, 10, 0.2);
-  tracker.update(0.1, 5, 1);
+  tracker.recordStep(0.1, 10, 0.2);
+  tracker.recordStep(0.1, 5, 1);
   expect(tracker.count).toBe(15);
-  tracker.update(0.1, 0, 10);
+  tracker.recordStep(0.1, 0, 10);
   expect(tracker.count).toBe(5);
   tracker.reset();
   expect(tracker.count).toBe(0);
@@ -29,18 +29,18 @@ it('matches individual float32 slots through wraparound, lifetime changes and re
       slots[cursor] = { age: 0, lifetime: Math.fround(lifetime) };
       cursor = (cursor + 1) % capacity;
     }
-    tracker.update(seconds, spawned, lifetime);
+    tracker.recordStep(seconds, spawned, lifetime);
     expect(tracker.count).toBe(slots.filter((slot) => slot.age < slot.lifetime).length);
   }
 });
 
 it('does not count expired slots again when older batches are overwritten', () => {
   const tracker = new LiveParticleCount(10);
-  tracker.update(0, 5, 0.1);
-  tracker.update(0, 5, 10);
-  tracker.update(0.1, 3, 1);
+  tracker.recordStep(0, 5, 0.1);
+  tracker.recordStep(0, 5, 10);
+  tracker.recordStep(0.1, 3, 1);
   expect(tracker.count).toBe(8);
-  tracker.update(0, 4, 1);
+  tracker.recordStep(0, 4, 1);
   expect(tracker.count).toBe(10);
 });
 

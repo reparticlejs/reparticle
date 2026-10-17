@@ -6,12 +6,13 @@ import { LiveParticleCount } from './stats/measurement/live-particle-count';
 
 /** All preview-only counting and stats instrumentation stays in devtools. */
 export function createPreviewStats(app: Application, host: HTMLDivElement, capacity: number) {
+  const renderer = app.renderer as WebGLRenderer;
   let particles = new LiveParticleCount(capacity);
   const overlay = createStats({
     container: host,
     display: 'compact',
     getParticleCount: () => particles.count,
-    gl: (app.renderer as WebGLRenderer).gl,
+    gl: renderer.gl,
     subscribePostRender(listener) {
       const callback = () => listener(app.ticker.lastTime);
       app.ticker.add(callback, undefined, -100);
@@ -21,7 +22,8 @@ export function createPreviewStats(app: Application, host: HTMLDivElement, capac
 
   return {
     advance(seconds: number, controls: PreviewControls, emitting: boolean) {
-      particles.advance(seconds, emitting ? controls.rate : 0, controls.lifetime);
+      const rate = emitting ? controls.rate : 0;
+      particles.advance(seconds, rate, controls.lifetime);
     },
     reset(nextCapacity: number) {
       particles = new LiveParticleCount(nextCapacity);

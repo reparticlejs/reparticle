@@ -3,6 +3,7 @@ import type { Application } from 'pixi.js';
 
 import type { PreviewControls } from '../types/preview';
 import type { PreviewAssets } from '../types/preview-scene';
+import { initialControls, emitterParameters } from './apply-controls';
 import { createParticleView, replaceParticleView } from './particle-view';
 
 export class PreviewScene {
@@ -16,16 +17,7 @@ export class PreviewScene {
     private readonly assets: PreviewAssets,
   ) {
     const definition = assets.effect.emitters[0];
-    this.settings = {
-      capacity: definition.capacity,
-      rate: definition.emission.rate,
-      gravity: definition.modifiers.gravity.y,
-      lifetime: definition.initial.lifetime,
-      texture: 'star',
-      size: 24,
-      paused: false,
-      statsVisible: true,
-    };
+    this.settings = initialControls(definition);
     this.view = createParticleView(app, definition, assets.textures, this.settings);
     try {
       this.view.emitter.x = host.clientWidth / 2;
@@ -67,8 +59,10 @@ export class PreviewScene {
     if (!bounds.width || !bounds.height) {
       return;
     }
-    this.view.emitter.x = ((clientX - bounds.left) * this.app.screen.width) / bounds.width;
-    this.view.emitter.y = ((clientY - bounds.top) * this.app.screen.height) / bounds.height;
+    const relativeX = (clientX - bounds.left) / bounds.width;
+    const relativeY = (clientY - bounds.top) / bounds.height;
+    this.view.emitter.x = relativeX * this.app.screen.width;
+    this.view.emitter.y = relativeY * this.app.screen.height;
   }
 
   reset(): void {
@@ -93,10 +87,6 @@ export class PreviewScene {
     ) {
       return;
     }
-    this.view.emitter.setParameters({
-      emission: { rate: next.rate },
-      initial: { lifetime: next.lifetime },
-      modifiers: { gravity: { y: next.gravity } },
-    });
+    this.view.emitter.setParameters(emitterParameters(next));
   }
 }
