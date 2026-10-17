@@ -11,7 +11,8 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
   const exceedsCapacity =
     controls.rateCurve !== 'effect' &&
     controls.initialLifetimeCurve !== 'effect' &&
-    controls.rate * (controls.lifetime + controls.lifetimeSpread) > controls.capacity;
+    (controls.rate + controls.rateSpread) * (controls.lifetime + controls.lifetimeSpread) >
+      controls.capacity;
 
   return (
     <fieldset>
@@ -26,7 +27,7 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
       />
       <p id="capacity-note" aria-live="polite">
         {exceedsCapacity
-          ? 'Emission × maximum lifetime exceeds capacity: older particles will be replaced early.'
+          ? 'Maximum emission × lifetime exceeds capacity: older particles will be replaced early.'
           : 'Switching clears particles. Wait one lifetime before comparing FPS.'}
       </p>
       <p>
@@ -50,6 +51,16 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
           onChange={(rate) => onChange({ rate })}
         />
       )}
+      <Slider
+        id="rate-spread"
+        label="Emission spread ±"
+        value={controls.rateSpread}
+        min={0}
+        max={50000}
+        unit=" / s"
+        onChange={(rateSpread) => onChange({ rateSpread })}
+      />
+      <p>Spread is sampled once per emitter. Changing it restarts the effect.</p>
       <Slider
         id="gravity"
         label="Gravity"

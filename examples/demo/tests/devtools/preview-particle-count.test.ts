@@ -47,6 +47,7 @@ const controls: PreviewControls = {
   width: 100,
   height: 100,
   rate: 60,
+  rateSpread: 0,
   gravity: 0,
   lifetime: 1,
   texture: 'star',
@@ -166,6 +167,33 @@ it.each(['once', 'loop'] as const)(
         varied.startDelay + propertyVariation(0, varied.seed, 10) * varied.startDelaySpread,
       durationSpread: 0,
       startDelaySpread: 0,
+    };
+    const actual = new PreviewParticleCount(controls.capacity);
+    const expected = new PreviewParticleCount(controls.capacity);
+    for (let frame = 0; frame < 60; frame++) {
+      actual.advance(1 / 60, varied, true);
+      expected.advance(1 / 60, resolved, true);
+      expect(actual.count).toBe(expected.count);
+    }
+  },
+);
+
+it.each(['once', 'loop'] as const)(
+  'includes spawn-rate spread in prewarm and %s playback',
+  (playMode) => {
+    const varied = {
+      ...controls,
+      playMode,
+      seed: 42,
+      rate: 100,
+      rateSpread: 50,
+      duration: 0.3,
+      startOffset: 0.5,
+    };
+    const resolved = {
+      ...varied,
+      rate: Math.max(0, varied.rate + propertyVariation(0, varied.seed, 11) * varied.rateSpread),
+      rateSpread: 0,
     };
     const actual = new PreviewParticleCount(controls.capacity);
     const expected = new PreviewParticleCount(controls.capacity);

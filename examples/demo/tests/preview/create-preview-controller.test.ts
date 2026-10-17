@@ -46,6 +46,7 @@ function setup() {
     diameter: 100,
     width: 200,
     height: 100,
+    rateSpread: 0,
     rate: 3000,
     gravity: 160,
     lifetime: 2,

@@ -47,7 +47,11 @@ export class Emitter {
 
   constructor(context: EmitterContext, definition: EmitterConfig) {
     this.settings = emitterConfigSchema.parse(definition);
-    this.spawnRate = new SpawnRate(this.settings.emission.rate);
+    this.spawnRate = new SpawnRate(
+      this.settings.emission.rate,
+      this.settings.emission.rateSpread,
+      this.settings.seed,
+    );
     this.initialRotation = new SampledCurve(this.settings.initial.rotation);
     this.initialSize = new SampledCurve(this.settings.initial.size);
     this.initialSpeed = new SampledCurve(this.settings.initial.speed);
@@ -139,7 +143,9 @@ export class Emitter {
     this.assertAlive();
     const settings = updateEmitterConfig(this.settings, patch);
     const spawnRate =
-      patch.emission?.rate === undefined ? this.spawnRate : new SpawnRate(settings.emission.rate);
+      patch.emission?.rate === undefined
+        ? this.spawnRate
+        : new SpawnRate(settings.emission.rate, settings.emission.rateSpread, settings.seed);
     const initialSpeed =
       patch.initial?.speed === undefined
         ? this.initialSpeed

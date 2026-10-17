@@ -13,7 +13,7 @@ it('merges only supplied parameters and leaves the original definition independe
     initial: { speed: 50 },
     modifiers: { gravity: { y: -20 } },
   });
-  expect(next.emission).toEqual({ rate: 123, shape: { type: 'point' } });
+  expect(next.emission).toEqual({ rate: 123, rateSpread: 0, shape: { type: 'point' } });
   expect(next.initial).toEqual({ ...current.initial, speed: 50 });
   expect(next.modifiers.gravity).toEqual({ x: 0, y: -20 });
   next.initial.direction = 0;

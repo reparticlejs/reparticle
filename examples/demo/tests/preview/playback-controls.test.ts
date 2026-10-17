@@ -20,3 +20,11 @@ it('preserves authored timing spreads and applies demo edits', () => {
   expect(changed.durationSpread).toBe(1);
   expect(changed.startDelaySpread).toBe(0.4);
 });
+
+it('preserves authored emission spread and applies demo edits', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.emission.rateSpread = 100;
+  const controls = initialControls(definition);
+  expect(controls.rateSpread).toBe(100);
+  expect(applyControls(definition, { ...controls, rateSpread: 200 }).emission.rateSpread).toBe(200);
+});

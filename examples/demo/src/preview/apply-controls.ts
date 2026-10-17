@@ -18,7 +18,12 @@ import { sizeCurves } from './size-curves';
 /** Maps demo settings onto an emitter definition without modifying the original. */
 export function applyControls(definition: EmitterConfig, controls: PreviewControls): EmitterConfig {
   const shape = emitterShape(controls);
-  const emission = { ...definition.emission, rate: emissionRate(controls), shape };
+  const emission = {
+    ...definition.emission,
+    rate: emissionRate(controls),
+    rateSpread: controls.rateSpread,
+    shape,
+  };
   const initial = {
     ...definition.initial,
     lifetime: initialLifetime(controls),
@@ -90,6 +95,7 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
       definition.emission.shape.type === 'circle' ? definition.emission.shape.diameter : 100,
     width: 'width' in shape ? shape.width : 200,
     height: 'height' in shape ? shape.height : 100,
+    rateSpread: definition.emission.rateSpread,
     rate: typeof definition.emission.rate === 'number' ? definition.emission.rate : 4000,
     rateCurve: typeof definition.emission.rate === 'number' ? 'constant' : 'effect',
     effectRate: definition.emission.rate,

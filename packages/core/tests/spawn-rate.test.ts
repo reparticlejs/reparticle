@@ -1,5 +1,7 @@
 import { expect, it } from 'vitest';
+import { ZodError } from 'zod';
 
+import { propertyVariation } from '#src/behaviors/property-variation.js';
 import { parseEffectConfig } from '#src/config/effect.js';
 import { updateEmitterConfig } from '#src/config/update-emitter.js';
 import { EmitterPlayback } from '#src/emitter-playback.js';
@@ -68,4 +70,39 @@ it('accepts rate curves, preserves them during unrelated updates, and allows num
   }).emitters[0];
   expect(updateEmitterConfig(config, { initial: { size: 40 } }).emission.rate).toEqual(ramp);
   expect(updateEmitterConfig(config, { emission: { rate: 25 } }).emission.rate).toBe(25);
+});
+
+it('adds one seeded offset before clamping, including negative curve values', () => {
+  for (const seed of [0, 1, 42, 65535]) {
+    const offset = propertyVariation(0, seed, 11) * 100;
+    const rate = new SpawnRate(ramp, 100, seed);
+    for (const age of [0, 0.25, 0.5, 1, 0, 1]) {
+      expect(rate.at(age)).toBeCloseTo(Math.max(0, age * 100 + offset));
+    }
+    expect(new SpawnRate(-10, 100, seed).at(0)).toBe(Math.max(0, -10 + offset));
+    expect(new SpawnRate(25, 100, seed).at(0.5)).toBe(Math.max(0, 25 + offset));
+  }
+});
+
+it('validates rate spread, defaults to zero, and requires recreation to change it', () => {
+  const source = skeleton.emitters[0]!;
+  for (const rateSpread of [undefined, 0, 50]) {
+    const config = parseEffectConfig({
+      version: 1,
+      emitters: [{ ...source, emission: { ...source.emission, rateSpread } }],
+    }).emitters[0];
+    expect(config.emission.rateSpread).toBe(rateSpread ?? 0);
+    expect(updateEmitterConfig(config, { emission: { rate: 10 } }).emission.rateSpread).toBe(
+      rateSpread ?? 0,
+    );
+    expect(() => updateEmitterConfig(config, { emission: { rateSpread: 10 } })).toThrow(ZodError);
+  }
+  for (const rateSpread of [-1, NaN, Infinity, '1', null]) {
+    expect(() =>
+      parseEffectConfig({
+        version: 1,
+        emitters: [{ ...source, emission: { ...source.emission, rateSpread } }],
+      }),
+    ).toThrow(ZodError);
+  }
 });

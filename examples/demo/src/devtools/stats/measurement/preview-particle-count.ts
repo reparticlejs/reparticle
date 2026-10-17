@@ -27,7 +27,7 @@ export class PreviewParticleCount {
       return;
     }
     if (controls !== this.controls) {
-      this.spawnRate = new SpawnRate(emissionRate(controls));
+      this.spawnRate = new SpawnRate(emissionRate(controls), controls.rateSpread, controls.seed);
       this.lifetime = new SampledCurve(initialLifetime(controls));
       this.controls = controls;
     }

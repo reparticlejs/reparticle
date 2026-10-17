@@ -67,6 +67,7 @@ export class PreviewScene {
       next.shape !== this.settings.shape ||
       next.startOffset !== this.settings.startOffset ||
       next.startDelay !== this.settings.startDelay ||
+      next.rateSpread !== this.settings.rateSpread ||
       next.duration !== this.settings.duration ||
       next.durationSpread !== this.settings.durationSpread ||
       next.startDelaySpread !== this.settings.startDelaySpread ||

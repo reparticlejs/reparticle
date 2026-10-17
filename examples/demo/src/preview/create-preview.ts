@@ -75,6 +75,8 @@ export async function createPreview(
         patch.durationSpread !== undefined && patch.durationSpread !== current.durationSpread;
       const delaySpreadChanged =
         patch.startDelaySpread !== undefined && patch.startDelaySpread !== current.startDelaySpread;
+      const rateSpreadChanged =
+        patch.rateSpread !== undefined && patch.rateSpread !== current.rateSpread;
       const modeChanged = patch.playMode !== undefined && patch.playMode !== current.playMode;
       const delayChanged =
         patch.startDelay !== undefined && patch.startDelay !== current.startDelay;
@@ -167,6 +169,7 @@ export async function createPreview(
         orientationChanged ||
         capacityChanged ||
         shapeChanged ||
+        rateSpreadChanged ||
         durationChanged ||
         durationSpreadChanged ||
         delaySpreadChanged ||

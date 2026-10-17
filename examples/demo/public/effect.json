@@ -6,6 +6,7 @@
       "capacity": 100000,
       "seed": 1,
       "emission": {
+        "rateSpread": 0,
         "rate": 4000,
         "shape": {
           "type": "cone2d",

@@ -50,6 +50,7 @@ export interface PreviewControls {
   rotationSpread: number;
   sizeCurve: 'effect' | 'constant' | 'shrink' | 'grow-shrink';
   rate: number;
+  rateSpread: number;
   rateCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectRate: EmitterConfig['emission']['rate'];
   gravity: number;
