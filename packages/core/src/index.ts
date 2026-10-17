@@ -184,3 +184,7 @@ export class Emitter {
     }
   }
 }
+
+export { parseEffectConfig } from "./config/effect";
+export { effectConfigSchema, emitterConfigSchema } from "./config/schema";
+export type { EffectConfig, EmitterConfig } from "#types/effect.js";

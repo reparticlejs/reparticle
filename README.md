@@ -15,6 +15,10 @@ Open the local URL printed by Vite. For mobile testing, connect your phone to th
 
 Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error; there is no silent CPU fallback.
 
+## Architecture roadmap
+
+[Particle architecture and implementation roadmap](docs/particle-architecture.md) records the full Defold feature target, JSON contract, current status, and implementation order. The first configuration validator is implemented; connecting definitions to runtime creation is next.
+
 ## Structure
 
 - `packages/core`: GPU.js 2.24.1 simulation, mathematical behaviors, bounded spawn scheduling. No Pixi dependency. Takes a host WebGL2 context; this GPU backend is browser-based, not a headless CPU implementation.

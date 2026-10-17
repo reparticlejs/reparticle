@@ -48,6 +48,9 @@ catalogs:
     vitest:
       specifier: 4.1.10
       version: 4.1.10
+    zod:
+      specifier: 4.4.3
+      version: 4.4.3
 
 importers:
 
@@ -108,6 +111,9 @@ importers:
       gpu.js:
         specifier: 'catalog:'
         version: 2.24.1
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
 
   packages/pixi:
     dependencies:
@@ -2080,6 +2086,9 @@ packages:
   yuku-parser@0.8.7:
     resolution: {integrity: sha512-vRD9nwt4L3aYpxNqeSC4WqLv58xrXef0Ong1Mc45CTXTIpvLafx7JO05sczmQZwdLEZvywrLOGdNC5+Rp5N1BQ==}
 
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+
 snapshots:
 
   '@bufbuild/protobuf@2.16.0': {}
@@ -3789,3 +3798,5 @@ snapshots:
       '@yuku-parser/binding-linux-x64-musl': 0.8.7
       '@yuku-parser/binding-win32-arm64': 0.8.7
       '@yuku-parser/binding-win32-x64': 0.8.7
+
+  zod@4.4.3: {}

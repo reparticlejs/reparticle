@@ -15,9 +15,11 @@
     "test": "vitest run tests"
   },
   "dependencies": {
-    "gpu.js": "catalog:"
+    "gpu.js": "catalog:",
+    "zod": "catalog:"
   },
   "imports": {
-    "#src/*": "./src/*"
+    "#src/*": "./src/*",
+    "#types/*": "./src/types/*"
   }
 }
