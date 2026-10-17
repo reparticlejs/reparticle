@@ -14,6 +14,8 @@ function setup() {
     playMode: 'loop',
     speed: 220,
     speedSpread: 0,
+    sizeSpread: 0,
+    rotationSpread: 0,
     lifetimeSpread: 0,
     seed: 1,
     diameter: 100,

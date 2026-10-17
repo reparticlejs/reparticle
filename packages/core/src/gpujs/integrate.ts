@@ -41,6 +41,8 @@ export function integrate(
   orientToDirection: number,
   speedSpread: number,
   lifetimeSpread: number,
+  sizeSpread: number,
+  rotationSpread: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -67,12 +69,13 @@ export function integrate(
       spawned = spawnCone2D(particleId, seed, emitterX, emitterY, 1, sizeX, sizeY);
     }
     if (this.thread.y >= this.constants.rows) {
-      let rotation = initialRotation;
+      let rotation = initialRotation + propertyVariation(particleId, seed, 4) * rotationSpread;
       if (orientToDirection > 0.5) {
         rotation += spawnRotation(spawned[2], spawned[3]);
       }
       const sampledLifetime = lifetime + propertyVariation(particleId, seed, 2) * lifetimeSpread;
-      return [0, sampledLifetime, initialSize, rotation];
+      const sampledSize = initialSize + propertyVariation(particleId, seed, 3) * sizeSpread;
+      return [0, sampledLifetime, sampledSize, rotation];
     }
     const sampledSpeed = speed + propertyVariation(particleId, seed, 1) * speedSpread;
     return [spawned[0], spawned[1], spawned[2] * sampledSpeed, spawned[3] * sampledSpeed];

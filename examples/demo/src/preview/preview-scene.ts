@@ -103,6 +103,8 @@ export class PreviewScene {
       next.blue === current.blue &&
       next.alpha === current.alpha &&
       next.rotation === current.rotation &&
+      next.sizeSpread === current.sizeSpread &&
+      next.rotationSpread === current.rotationSpread &&
       next.size === current.size &&
       next.rate === current.rate &&
       next.gravity === current.gravity &&

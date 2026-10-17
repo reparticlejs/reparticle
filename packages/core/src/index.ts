@@ -188,6 +188,8 @@ export class Emitter {
       o.orientation === 'initial-direction' ? 1 : 0,
       o.initial.speedSpread,
       o.initial.lifetimeSpread,
+      o.initial.sizeSpread,
+      o.initial.rotationSpread,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

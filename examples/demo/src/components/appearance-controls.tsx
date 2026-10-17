@@ -27,6 +27,15 @@ export function AppearanceControls({ controls, onChange }: ControlSectionProps) 
         unit=" px"
         onChange={(size) => onChange({ size })}
       />
+      <Slider
+        id="size-spread"
+        label="Size spread ±"
+        value={controls.sizeSpread}
+        min={0}
+        max={64}
+        unit=" px"
+        onChange={(sizeSpread) => onChange({ sizeSpread })}
+      />
       <SelectField
         id="size-curve"
         label="Size over lifetime"

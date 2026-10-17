@@ -45,3 +45,16 @@ it('maps birth rotation and restores the JSON lifetime rotation independently', 
     definition.overLifetime,
   );
 });
+
+it('maps size and rotation spreads without replacing lifetime curves', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  const controls = { ...initialControls(definition), sizeSpread: 12, rotationSpread: 180 };
+  const changed = applyControls(definition, controls);
+  expect(changed.initial).toMatchObject({ sizeSpread: 12, rotationSpread: 180 });
+  expect(emitterParameters(controls).initial).toMatchObject({
+    sizeSpread: 12,
+    rotationSpread: 180,
+  });
+  expect(initialControls(changed)).toMatchObject({ sizeSpread: 12, rotationSpread: 180 });
+  expect(changed.overLifetime).toEqual(definition.overLifetime);
+});

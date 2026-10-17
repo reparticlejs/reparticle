@@ -36,6 +36,8 @@ it('samples independent signed speed and lifetime offsets once per birth', () =>
       0,
       speedSpread,
       lifetimeSpread,
+      0,
+      0,
     );
   const speeds: number[] = [];
   const lifetimes: number[] = [];
@@ -57,4 +59,67 @@ it('samples independent signed speed and lifetime offsets once per birth', () =>
   expect(
     lifetimes.some((value, index) => Math.abs((speeds[index]! - 10) / 20 - (value - 1) / 2) > 0.1),
   ).toBe(true);
+});
+
+it('captures signed size and rotation independently, adds orientation, and resamples on reuse', () => {
+  const state: ParticleTexture = [[[0, 0, 0, 0]], [[0, 0, 0, 0]]];
+  const context: KernelContext = {
+    thread: { x: 0, y: 1 },
+    constants: { width: 1, rows: 1, capacity: 1 },
+  };
+  const run = (
+    seed: number,
+    spawn: number,
+    orient: number,
+    sizeSpread: number,
+    rotationSpread: number,
+  ) =>
+    integrate.call(
+      context,
+      state,
+      0.1,
+      0,
+      spawn,
+      0,
+      0,
+      10,
+      0,
+      0,
+      0,
+      1,
+      seed,
+      0,
+      0,
+      0,
+      10,
+      1,
+      1,
+      1,
+      1,
+      30,
+      orient,
+      0,
+      0,
+      sizeSpread,
+      rotationSpread,
+    );
+  expect(run(1, 1, 0, 0, 0)).toEqual([0, 1, 10, 30]);
+  const sizes: number[] = [];
+  const rotations: number[] = [];
+  for (let seed = 0; seed < 100; seed++) {
+    const born = run(seed, 1, 0, 20, 720);
+    sizes.push(born[2]);
+    rotations.push(born[3]);
+    expect(run(seed, 1, 1, 20, 720)[3]).toBeCloseTo(born[3] - 90);
+    state[1]![0] = born;
+    expect(run(seed + 1, 0, 0, 0, 0).slice(2)).toEqual(born.slice(2));
+  }
+  expect(Math.min(...sizes)).toBeLessThan(0);
+  expect(Math.max(...sizes)).toBeLessThanOrEqual(30);
+  expect(Math.min(...rotations)).toBeLessThan(-360);
+  expect(Math.max(...rotations)).toBeGreaterThan(360);
+  expect(
+    sizes.some((size, index) => Math.abs((size - 10) / 20 - (rotations[index]! - 30) / 720) > 0.1),
+  ).toBe(true);
+  expect(run(1, 1, 0, 20, 720)).not.toEqual(run(2, 1, 0, 20, 720));
 });

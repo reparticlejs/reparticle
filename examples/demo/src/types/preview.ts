@@ -27,6 +27,8 @@ export interface PreviewControls {
   rotation: number;
   rotationCurve: 'effect' | 'constant' | 'full-turn' | 'reverse-turn';
   size: number;
+  sizeSpread: number;
+  rotationSpread: number;
   sizeCurve: 'effect' | 'constant' | 'shrink' | 'grow-shrink';
   rate: number;
   gravity: number;

@@ -24,6 +24,15 @@ export function RotationControls({ controls, onChange }: ControlSectionProps) {
         unit="°"
         onChange={(rotation) => onChange({ rotation })}
       />
+      <Slider
+        id="rotation-spread"
+        label="Rotation spread ±"
+        value={controls.rotationSpread}
+        min={0}
+        max={360}
+        unit="°"
+        onChange={(rotationSpread) => onChange({ rotationSpread })}
+      />
       <SelectField
         id="rotation-curve"
         label="Rotation over lifetime"
