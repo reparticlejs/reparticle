@@ -2,6 +2,7 @@ import type { ParticleView } from '@reparticle/pixi';
 import type { Application, WebGLRenderer } from 'pixi.js';
 
 import type { PreviewControls } from '../types/preview';
+import type { PreviewHost } from '../types/preview-host';
 import type { PreviewAssets } from '../types/preview-scene';
 import { initialControls, emitterParameters } from './apply-controls';
 import { createParticleView, replaceParticleView } from './particle-view';
@@ -13,15 +14,15 @@ export class PreviewScene {
 
   constructor(
     private readonly app: Application<WebGLRenderer>,
-    private readonly host: HTMLDivElement,
+    private readonly host: PreviewHost,
     private readonly assets: PreviewAssets,
   ) {
     const definition = assets.effect.emitters[0];
     this.settings = initialControls(definition);
     this.view = createParticleView(app, definition, assets.textures, this.settings);
     try {
-      this.view.emitter.x = host.clientWidth / 2;
-      this.view.emitter.y = host.clientHeight * 0.7;
+      this.view.emitter.x = app.screen.width / 2;
+      this.view.emitter.y = app.screen.height * 0.7;
       app.stage.addChild(this.view);
     } catch (error) {
       this.view.destroy();
@@ -55,7 +56,7 @@ export class PreviewScene {
   }
 
   movePointer(clientX: number, clientY: number): void {
-    const bounds = this.host.getBoundingClientRect();
+    const bounds = this.host.getBounds();
     if (!bounds.width || !bounds.height) {
       return;
     }

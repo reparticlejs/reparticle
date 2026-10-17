@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
-import type { Stats } from '#src/devtools/types/stats.js';
 import { createPreview } from '#src/preview/create-preview.js';
+import type { PreviewHost } from '#src/types/preview-host.js';
 
 import effect from '../../public/effect.json';
 
@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   load: vi.fn<() => Promise<Record<string, object>>>(),
   destroyApp: vi.fn<() => void>(),
   destroyView: vi.fn<() => void>(),
-  createStats: vi.fn<() => Stats>(),
+  createStats: vi.fn<PreviewHost['createStats']>(),
   destroyStats: vi.fn<() => void>(),
 }));
 
@@ -49,18 +49,16 @@ vi.mock('@reparticle/pixi', () => ({
     destroy = mocks.destroyView;
   },
 }));
-vi.mock('#src/devtools/index.ts', () => ({ createStats: mocks.createStats }));
 
 function host() {
-  const appendChild = vi.fn<HTMLDivElement['appendChild']>();
-  const element = { clientWidth: 800, clientHeight: 500, appendChild };
-  return { element, appendChild };
-}
-
-function createTestPreview(container: ReturnType<typeof host>['element'], signal: AbortSignal) {
-  // Pixi and stats are mocked; these lifecycle tests only use the host members above.
-  // @ts-expect-error The test double deliberately omits unused DOM members.
-  return createPreview(container, signal);
+  const appendCanvas = vi.fn<PreviewHost['appendCanvas']>();
+  const element: PreviewHost = {
+    initialize: mocks.init,
+    createStats: mocks.createStats,
+    appendCanvas,
+    getBounds: () => ({ left: 0, top: 0, width: 800, height: 500 }),
+  };
+  return { element, appendCanvas };
 }
 
 function deferred<T>() {
@@ -73,7 +71,6 @@ function deferred<T>() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal('window', { devicePixelRatio: 1 });
   vi.stubGlobal(
     'fetch',
     vi
@@ -87,8 +84,9 @@ beforeEach(() => {
     '/textures/spark.svg': {},
   });
   mocks.createStats.mockReturnValue({
-    show: vi.fn<() => void>(),
-    hide: vi.fn<() => void>(),
+    advance: vi.fn<ReturnType<PreviewHost['createStats']>['advance']>(),
+    reset: vi.fn<ReturnType<PreviewHost['createStats']>['reset']>(),
+    setVisible: vi.fn<ReturnType<PreviewHost['createStats']>['setVisible']>(),
     destroy: mocks.destroyStats,
   });
 });
@@ -98,13 +96,13 @@ it('destroys an initialization that finishes after React has unmounted', async (
   const pending = deferred<void>();
   mocks.init.mockReturnValue(pending.promise);
   const controller = new AbortController();
-  const { element: container, appendChild } = host();
-  const startup = createTestPreview(container, controller.signal);
+  const { element: container, appendCanvas } = host();
+  const startup = createPreview(container, controller.signal);
   controller.abort();
   pending.resolve();
   expect(await startup).toBeNull();
   expect(mocks.load).not.toHaveBeenCalled();
-  expect(appendChild).not.toHaveBeenCalled();
+  expect(appendCanvas).not.toHaveBeenCalled();
   expect(mocks.destroyApp).toHaveBeenCalledOnce();
 });
 
@@ -112,20 +110,20 @@ it('does not attach a canvas when unmounted during texture loading', async () =>
   const pending = deferred<Record<string, object>>();
   mocks.load.mockReturnValue(pending.promise);
   const controller = new AbortController();
-  const { element: container, appendChild } = host();
-  const startup = createTestPreview(container, controller.signal);
+  const { element: container, appendCanvas } = host();
+  const startup = createPreview(container, controller.signal);
   await vi.waitFor(() => expect(mocks.load).toHaveBeenCalledOnce());
   controller.abort();
   pending.resolve({});
   expect(await startup).toBeNull();
-  expect(appendChild).not.toHaveBeenCalled();
+  expect(appendCanvas).not.toHaveBeenCalled();
   expect(mocks.createStats).not.toHaveBeenCalled();
   expect(mocks.destroyApp).toHaveBeenCalledOnce();
 });
 
 it('releases the renderer if loading assets fails', async () => {
   mocks.load.mockRejectedValue(new Error('asset failure'));
-  await expect(createTestPreview(host().element, new AbortController().signal)).rejects.toThrow(
+  await expect(createPreview(host().element, new AbortController().signal)).rejects.toThrow(
     'asset failure',
   );
   expect(mocks.destroyApp).toHaveBeenCalledOnce();
@@ -135,7 +133,7 @@ it('releases the particle view when stats startup fails', async () => {
   mocks.createStats.mockImplementationOnce(() => {
     throw new Error('stats failure');
   });
-  await expect(createTestPreview(host().element, new AbortController().signal)).rejects.toThrow(
+  await expect(createPreview(host().element, new AbortController().signal)).rejects.toThrow(
     'stats failure',
   );
   expect(mocks.destroyView).toHaveBeenCalledOnce();
@@ -143,9 +141,9 @@ it('releases the particle view when stats startup fails', async () => {
 });
 
 it('destroys stats and the owned scene exactly once', async () => {
-  const { element: container, appendChild } = host();
-  const runtime = await createTestPreview(container, new AbortController().signal);
-  expect(appendChild).toHaveBeenCalledOnce();
+  const { element: container, appendCanvas } = host();
+  const runtime = await createPreview(container, new AbortController().signal);
+  expect(appendCanvas).toHaveBeenCalledOnce();
   runtime!.destroy();
   runtime!.destroy();
   expect(mocks.destroyStats).toHaveBeenCalledOnce();
@@ -154,7 +152,7 @@ it('destroys stats and the owned scene exactly once', async () => {
 });
 
 it('releases the scene and application even when stats cleanup fails', async () => {
-  const runtime = await createTestPreview(host().element, new AbortController().signal);
+  const runtime = await createPreview(host().element, new AbortController().signal);
   mocks.destroyStats.mockImplementationOnce(() => {
     throw new Error('cleanup failure');
   });
