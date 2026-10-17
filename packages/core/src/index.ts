@@ -38,7 +38,11 @@ export class Emitter {
     this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
     this.schedule = new SpawnSchedule(this.capacity);
-    this.playback = new EmitterPlayback(this.settings.duration, this.settings.playMode);
+    this.playback = new EmitterPlayback(
+      this.settings.duration,
+      this.settings.playMode,
+      this.settings.startDelay,
+    );
     this.rows = Math.ceil(this.capacity / this.width);
     this.seed = this.initialSeed = this.settings.seed;
     if (!Number.isFinite(this.seed)) {

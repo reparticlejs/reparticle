@@ -72,7 +72,10 @@ export async function createPreview(
       const shapeChanged = patch.shape !== undefined && patch.shape !== current.shape;
       const durationChanged = patch.duration !== undefined && patch.duration !== current.duration;
       const modeChanged = patch.playMode !== undefined && patch.playMode !== current.playMode;
-      const rebuilding = capacityChanged || shapeChanged || durationChanged || modeChanged;
+      const delayChanged =
+        patch.startDelay !== undefined && patch.startDelay !== current.startDelay;
+      const rebuilding =
+        capacityChanged || shapeChanged || durationChanged || modeChanged || delayChanged;
       if (rebuilding) {
         debug.setVisible(false);
       }

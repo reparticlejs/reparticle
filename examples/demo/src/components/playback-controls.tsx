@@ -32,9 +32,19 @@ export function PlaybackControls({ controls, onChange, onReset }: EmitterControl
         unit=" s"
         onChange={(duration) => onChange({ duration })}
       />
+      <Slider
+        id="start-delay"
+        label="Start delay"
+        value={controls.startDelay}
+        min={0}
+        max={5}
+        step={0.1}
+        unit=" s"
+        onChange={(startDelay) => onChange({ startDelay })}
+      />
       <p>
-        Changing duration or mode restarts the effect. Once stops emission; existing particles
-        finish their lifetime.
+        Changing delay, duration or mode restarts the effect. Once stops emission; existing
+        particles finish their lifetime.
       </p>
       <div className="playback-actions">
         <button id="pause" onClick={togglePlayback}>

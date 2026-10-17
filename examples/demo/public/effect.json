@@ -25,6 +25,7 @@
           "y": 160
         }
       },
+      "startDelay": 0,
       "duration": 1,
       "playMode": "loop"
     }

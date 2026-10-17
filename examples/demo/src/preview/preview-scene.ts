@@ -42,6 +42,7 @@ export class PreviewScene {
     if (
       next.capacity !== this.settings.capacity ||
       next.shape !== this.settings.shape ||
+      next.startDelay !== this.settings.startDelay ||
       next.duration !== this.settings.duration ||
       next.playMode !== this.settings.playMode
     ) {

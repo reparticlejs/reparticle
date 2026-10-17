@@ -12,6 +12,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
   return {
     ...definition,
     capacity: controls.capacity,
+    startDelay: controls.startDelay,
     duration: controls.duration,
     playMode: controls.playMode,
     emission,
@@ -24,6 +25,7 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
   const shape = definition.emission.shape;
   return {
     capacity: definition.capacity,
+    startDelay: definition.startDelay,
     duration: definition.duration,
     playMode: definition.playMode,
     shape: definition.emission.shape.type,

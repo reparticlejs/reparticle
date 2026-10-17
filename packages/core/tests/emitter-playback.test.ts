@@ -57,3 +57,54 @@ it('reset restarts a completed once effect', () => {
   expect(playback.advance(0.05)).toBe(true);
   expect(playback.emitting).toBe(false);
 });
+
+it('waits through the delay boundary and emits on the following frame', () => {
+  const playback = new EmitterPlayback(0.2, 'once', 0.2);
+  const schedule = new SpawnSchedule(100);
+  const counts = Array.from({ length: 5 }, () => {
+    const eligible = playback.emitting;
+    const emitting = playback.advance(0.1);
+    expect(emitting).toBe(eligible);
+    return schedule.next(emitting ? 100 : 0, 0.1).count;
+  });
+  expect(counts).toEqual([0, 0, 10, 10, 0]);
+});
+
+it('carries delay overshoot into duration without emitting during the waiting frame', () => {
+  const playback = new EmitterPlayback(0.15, 'once', 0.05);
+  expect(playback.advance(0.1)).toBe(false);
+  expect(playback.advance(0.1)).toBe(true);
+  expect(playback.emitting).toBe(false);
+});
+
+it('applies delay only once across loops and reapplies it after reset', () => {
+  const playback = new EmitterPlayback(0.1, 'loop', 0.2);
+  expect(playback.advance(0.1)).toBe(false);
+  expect(playback.advance(0.1)).toBe(false);
+  for (let frame = 0; frame < 5; frame++) {
+    expect(playback.advance(0.1)).toBe(true);
+  }
+  playback.reset();
+  expect(playback.emitting).toBe(false);
+  expect(playback.advance(0.1)).toBe(false);
+  expect(playback.advance(0.1)).toBe(false);
+  expect(playback.advance(0.1)).toBe(true);
+});
+
+it('does not advance delay on zero-time updates', () => {
+  const playback = new EmitterPlayback(0, 'once', 0.1);
+  expect(playback.advance(0)).toBe(false);
+  expect(playback.advance(0.1)).toBe(false);
+  expect(playback.advance(0)).toBe(false);
+  expect(playback.advance(0.1)).toBe(true);
+  expect(playback.advance(0.1)).toBe(false);
+});
+
+it('avoids an extra waiting frame at a decimal delay boundary', () => {
+  const playback = new EmitterPlayback(1, 'once', 1);
+  for (let frame = 0; frame < 10; frame++) {
+    expect(playback.advance(0.1)).toBe(false);
+  }
+  expect(playback.emitting).toBe(true);
+  expect(playback.advance(0.1)).toBe(true);
+});
