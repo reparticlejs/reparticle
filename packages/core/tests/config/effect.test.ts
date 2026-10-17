@@ -18,7 +18,7 @@ describe('effect JSON boundary', () => {
     const parsed = parseEffectConfig(input);
     expect(parsed).toEqual(input);
     input.emitters[0].initial.speed = 0;
-    input.emitters[0].emission.shape.type = 'box';
+    input.emitters[0].emission.shape.type = 'sphere';
     expect(parsed.emitters[0].initial.speed).toBe(220);
     expect(parsed.emitters[0].emission.shape.type).toBe('point');
   });
@@ -39,7 +39,7 @@ describe('effect JSON boundary', () => {
       ]),
     );
     delete input.emitters[0].modifiers.vortex;
-    input.emitters[0].emission.shape.type = 'box';
+    input.emitters[0].emission.shape.type = 'sphere';
     expect(issues(input)).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

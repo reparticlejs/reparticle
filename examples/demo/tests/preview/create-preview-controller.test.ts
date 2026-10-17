@@ -8,6 +8,8 @@ function setup() {
     capacity: 8192,
     shape: 'point',
     diameter: 100,
+    width: 200,
+    height: 100,
     rate: 3000,
     gravity: 160,
     lifetime: 2,

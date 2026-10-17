@@ -8,8 +8,9 @@
       "emission": {
         "rate": 4000,
         "shape": {
-          "type": "circle",
-          "diameter": 100
+          "type": "box",
+          "width": 200,
+          "height": 100
         }
       },
       "initial": {

@@ -18,6 +18,8 @@ import { emitterConfigSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
 import { initialize } from './gpujs/initialize';
 import { integrate } from './gpujs/integrate';
+import { kernelSource } from './gpujs/kernel-source';
+import { spawnBox } from './gpujs/spawn-box';
 import { spawnCircle } from './gpujs/spawn-circle';
 import { spawnMotion } from './gpujs/spawn-motion';
 import { SpawnSchedule } from './spawn-schedule';
@@ -65,18 +67,19 @@ export class Emitter {
       throw new RangeError('Capacity exceeds GPU texture limits');
     }
     const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
-    gpu.addFunction(advancePosition);
-    gpu.addFunction(applyGravity);
-    gpu.addFunction(advanceAge);
+    gpu.addFunction(kernelSource(advancePosition));
+    gpu.addFunction(kernelSource(applyGravity));
+    gpu.addFunction(kernelSource(advanceAge));
     // Keep minified conditional returns numeric in GPU.js's type inference.
-    gpu.addFunction(particleAlive, { returnType: 'Number' });
-    gpu.addFunction(advanceVelocity);
-    gpu.addFunction(spawnVariation);
-    gpu.addFunction(spawnDirection);
-    gpu.addFunction(spawnMotion);
-    gpu.addFunction(circleAngle);
-    gpu.addFunction(circleRadius);
-    gpu.addFunction(spawnCircle);
+    gpu.addFunction(kernelSource(particleAlive), { returnType: 'Number' });
+    gpu.addFunction(kernelSource(advanceVelocity));
+    gpu.addFunction(kernelSource(spawnVariation));
+    gpu.addFunction(kernelSource(spawnDirection));
+    gpu.addFunction(kernelSource(spawnMotion));
+    gpu.addFunction(kernelSource(circleAngle));
+    gpu.addFunction(kernelSource(circleRadius));
+    gpu.addFunction(kernelSource(spawnCircle));
+    gpu.addFunction(kernelSource(spawnBox));
     const config: IGPUKernelSettings = {
       output: [this.width, this.rows * 2],
       precision: 'single',
@@ -86,7 +89,7 @@ export class Emitter {
     };
     try {
       for (const source of [initialize, integrate, integrate]) {
-        this.kernels.push(gpu.createKernel(source, config));
+        this.kernels.push(gpu.createKernel(kernelSource(source), config));
         const vao = gl.createVertexArray();
         if (!vao) {
           throw new Error('Unable to allocate simulation VAO');
@@ -129,6 +132,18 @@ export class Emitter {
       dt,
     );
     const o = this.settings;
+    const shape = o.emission.shape;
+    let shapeType = 0;
+    let sizeX = 0;
+    let sizeY = 0;
+    if (shape.type === 'circle') {
+      shapeType = 1;
+      sizeX = shape.diameter;
+    } else if (shape.type === 'box') {
+      shapeType = 2;
+      sizeX = shape.width;
+      sizeY = shape.height;
+    }
     this.output = this.run(
       this.nextKernel,
       this.output,
@@ -143,8 +158,9 @@ export class Emitter {
       o.modifiers.gravity.y,
       o.initial.lifetime,
       this.seed,
-      o.emission.shape.type === 'circle' ? 1 : 0,
-      o.emission.shape.type === 'circle' ? o.emission.shape.diameter : 0,
+      shapeType,
+      sizeX,
+      sizeY,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

@@ -16,4 +16,5 @@ export const textureOptions: SelectOption<ParticleTextureName>[] = [
 export const shapeOptions: SelectOption<EmitterShape>[] = [
   { value: 'point', label: 'Point' },
   { value: 'circle', label: 'Circle' },
+  { value: 'box', label: 'Box' },
 ];

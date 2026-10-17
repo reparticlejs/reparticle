@@ -3,6 +3,11 @@ import { strictObject, number, int, string, literal, tuple, discriminatedUnion }
 const shapeSchema = discriminatedUnion('type', [
   strictObject({ type: literal('point') }),
   strictObject({ type: literal('circle'), diameter: number().nonnegative() }),
+  strictObject({
+    type: literal('box'),
+    width: number().nonnegative(),
+    height: number().nonnegative(),
+  }),
 ]);
 
 const emissionSchema = strictObject({
@@ -24,7 +29,11 @@ const modifiersSchema = strictObject({ gravity: gravitySchema });
 export const emitterParametersSchema = strictObject({
   emission: strictObject({
     rate: number().nonnegative(),
-    shape: strictObject({ diameter: number().nonnegative() }).partial(),
+    shape: strictObject({
+      diameter: number().nonnegative(),
+      width: number().nonnegative(),
+      height: number().nonnegative(),
+    }).partial(),
   })
     .partial()
     .optional(),

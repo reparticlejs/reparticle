@@ -84,7 +84,8 @@ export class PreviewScene {
       next.rate === current.rate &&
       next.gravity === current.gravity &&
       next.lifetime === current.lifetime &&
-      (next.shape !== 'circle' || next.diameter === current.diameter)
+      (next.shape !== 'circle' || next.diameter === current.diameter) &&
+      (next.shape !== 'box' || (next.width === current.width && next.height === current.height))
     ) {
       return;
     }

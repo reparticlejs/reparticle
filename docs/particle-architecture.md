@@ -36,7 +36,7 @@ Current required fields have no implicit defaults:
 | capacity            | Integer 1 through 1000000; device texture limits are checked at creation                          |
 | seed                | Integer 0 through 65535; reproducibility across different GPU drivers is not promised             |
 | emission.rate       | Finite nonnegative particles per second                                                           |
-| emission.shape.type | `point` or `circle`                                                                               |
+| emission.shape.type | `point`, `circle`, or `box`                                                                       |
 | initial.lifetime    | Finite positive seconds                                                                           |
 | initial.speed       | Finite nonnegative units per second                                                               |
 | initial.direction   | Finite radians; used by point spawning                                                            |
@@ -56,7 +56,8 @@ Reference: [Defold Particle FX manual](https://defold.com/manuals/particlefx/), 
 - [ ] Multiple emitters; effect-wide and emitter-local modifiers; IDs and transforms.
 - [ ] Once/loop playback, duration, delay, prewarm, emitter/world space, capacity.
 - [x] Circle: uniform disk births, outward radial velocity, numeric diameter.
-- [ ] 2D cone, box, sphere, cone; remaining shape dimensions.
+- [x] Box in 2D: uniform rectangle births, upward velocity, full width/height.
+- [ ] 2D cone, sphere, cone; box depth and remaining shape dimensions.
 - [ ] Initial/default/movement orientation, inherited velocity, velocity-aligned stretch.
 - [ ] Spawn rate, lifetime, speed, size, RGBA, rotation, stretch, angular velocity; emitter-time curves and random spread.
 - [ ] Lifetime scale, RGBA, rotation, stretch, angular velocity curves.
@@ -77,7 +78,7 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 3. **Separate lifecycle and acceleration — implemented.** Built-in lifetime helpers own age/activity, gravity contributes acceleration, and motion integrates each axis once using the constant-acceleration position term. Spawn initializes new particles before these stages. Helpers are registered in one GPU update kernel, not separate passes. The JSON is unchanged: horizontal gravity remains zero; numeric gravity updates affect living particles, while initial-property changes affect future births. GPU.js uses an explicitly numeric activity flag because registered boolean-return helpers are unsupported.
 4. **Value distributions.** Consistent constant/random representations; independent random channels; lifetime and other initial properties sampled once at birth.
 5. **Emitter playback.** Duration, loops, delay, prewarm, stop/drain/reset semantics and state notifications.
-6. **Shapes and transforms — circle implemented.** `circle` takes a finite nonnegative `diameter`; angle is uniform and radius uses square-root sampling. Diameter updates affect future births only; shape type requires recreation. Point direction/spread are point-only. Implement each remaining documented shape separately; coordinate-space rules and inherited velocity; resolve 3D state/rendering needs before claiming 3D shapes.
+6. **Shapes and transforms — circle and 2D box implemented.** `circle` takes a finite nonnegative `diameter`; angle is uniform and radius uses square-root sampling. Diameter updates affect future births only; shape type requires recreation. Point direction/spread are point-only. Implement each remaining documented shape separately; coordinate-space rules and inherited velocity; resolve 3D state/rendering needs before claiming 3D shapes.
 7. **Curves and particle appearance.** Shared curve contract, emitter-time evaluation, particle-age evaluation; each size/color/rotation/stretch feature separately. Renderer evaluation may avoid storing values derivable from age.
 8. **Remaining modifiers.** Drag, radial, vortex individually, with clear ordering and influence rules.
 9. **Effect composition.** Multiple emitters, shared modifiers, IDs, ownership and total resource budgets. Never imply an entire multi-emitter effect costs one draw.
@@ -92,7 +93,7 @@ Circle implementation reference: [Defold SpawnParticle, circle branch](https://g
 
 | Category                                                     | Policy                                                                                |
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| Emission rate and circle diameter                            | Update scheduling without recompilation                                               |
+| Emission rate, circle diameter, and box dimensions           | Update scheduling without recompilation                                               |
 | Initial properties                                           | Affect subsequent births; do not rewrite existing particle state                      |
 | Modifier numeric parameters                                  | Affect living particles without recompilation where supported                         |
 | Capacity, state layout, behavior structure, simulation space | Explicit rebuild/reset policy; never an implicit expensive hot-path operation         |
@@ -107,3 +108,5 @@ Every feature needs documented JSON semantics, units, defaults, limits, and runt
 GPU changes additionally require minified browser execution, shared-context correctness, and no playback particle readbacks/uploads. Measure representative mobile workloads when the workload changes; record capacity, emission rate, lifetime, texture, resolution, and device. Do not infer performance from feature parity or unit tests. Plain HTML plus more than one minifier is the portability check for changes to GPU function structure.
 
 Update this roadmap after each completed feature. Temporary diagnostics belong outside the repository; lasting regression coverage belongs in tests.
+
+Box reference: [Defold SpawnParticle box branch](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L973-L984). `width`/`height` correspond to Size X/Y with Z zero. Both are finite and nonnegative; samples cover centered full extents. Velocity is local upward, mapped to negative Y in the current canvas coordinate system. Dimensions affect future births only. Emitter transforms and 3D depth are not implemented.

@@ -104,7 +104,7 @@ GPU updates run on Pixi's ticker without React state updates per frame. Controls
 
 ### Circle emitter
 
-The demo starts with a circle. Select Point to compare the existing directed emitter.
+The demo offers Point, Circle, and Box shapes.
 
 ```json
 "shape": { "type": "circle", "diameter": 100 }
@@ -119,3 +119,15 @@ emitter.setParameters({ emission: { shape: { diameter: 200 } } });
 ```
 
 Changing shape type recreates the emitter and clears particles in the demo. Changing diameter does not. All spawning stays in the existing GPU update pass; no per-particle CPU work or texture readbacks are added.
+
+### Box emitter
+
+The demo starts with a box:
+
+```json
+"shape": { "type": "box", "width": 200, "height": 100 }
+```
+
+Following [Defold box behavior](https://defold.com/manuals/particlefx/), births fill the rectangle uniformly and initial velocity points upward at `initial.speed`. Width and height are full dimensions, centered on the emitter. Our canvas has downward-positive Y, so upward velocity is negative Y. Point direction/spread do not apply. Zero dimensions are allowed.
+
+Numeric width/height updates affect future births without recompiling or clearing particles. This implements Defold's zero-depth box; 3D depth and emitter rotation remain pending.
