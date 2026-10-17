@@ -57,8 +57,9 @@ export async function createPreview(
       if (controls.paused) {
         return;
       }
+      const emitting = activeScene.emitting;
       activeScene.advance(elapsedSeconds);
-      debug.advance(elapsedSeconds, controls, activeScene.emitting);
+      debug.advance(elapsedSeconds, controls, emitting);
     }
 
     app.ticker.add(({ deltaMS }) => advance(deltaMS / 1000));
@@ -69,7 +70,9 @@ export async function createPreview(
       const current = activeScene.controls;
       const capacityChanged = patch.capacity !== undefined && patch.capacity !== current.capacity;
       const shapeChanged = patch.shape !== undefined && patch.shape !== current.shape;
-      const rebuilding = capacityChanged || shapeChanged;
+      const durationChanged = patch.duration !== undefined && patch.duration !== current.duration;
+      const modeChanged = patch.playMode !== undefined && patch.playMode !== current.playMode;
+      const rebuilding = capacityChanged || shapeChanged || durationChanged || modeChanged;
       if (rebuilding) {
         debug.setVisible(false);
       }

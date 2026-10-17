@@ -54,7 +54,8 @@ Scalar speed is exact. The prototype's implicit speed variation, shrinking, and 
 Reference: [Defold Particle FX manual](https://defold.com/manuals/particlefx/), reviewed 2026-10-17. The following feature groups are the coverage target; every unchecked group remains planned.
 
 - [ ] Multiple emitters; effect-wide and emitter-local modifiers; IDs and transforms.
-- [ ] Once/loop playback, duration, delay, prewarm, emitter/world space, capacity.
+- [x] Once/loop playback, duration, draining particles, reset, capacity.
+- [ ] Delay, prewarm, emitter/world space.
 - [x] Circle: uniform disk births, outward radial velocity, numeric diameter.
 - [x] Box in 2D: uniform rectangle births, upward velocity, full width/height.
 - [x] 2D cone: uniform triangle births, velocity away from the tip, full width/height.
@@ -78,7 +79,7 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 2. **Connect one emitter — implemented.** The demo creates from JSON. `setParameters` validates atomic numeric patches, and `configuration` returns an independent snapshot. IDs, capacity and seed reach the runtime; scalar speed is exact. Flat prototype options and implicit visual changes are removed. Texture/size configuration remains in the rendering backlog.
 3. **Separate lifecycle and acceleration — implemented.** Built-in lifetime helpers own age/activity, gravity contributes acceleration, and motion integrates each axis once using the constant-acceleration position term. Spawn initializes new particles before these stages. Helpers are registered in one GPU update kernel, not separate passes. The JSON is unchanged: horizontal gravity remains zero; numeric gravity updates affect living particles, while initial-property changes affect future births. GPU.js uses an explicitly numeric activity flag because registered boolean-return helpers are unsupported.
 4. **Value distributions.** Consistent constant/random representations; independent random channels; lifetime and other initial properties sampled once at birth.
-5. **Emitter playback.** Duration, loops, delay, prewarm, stop/drain/reset semantics and state notifications.
+5. **Emitter playback — duration and once/loop implemented.** Remaining: delay, prewarm, explicit stop/retire APIs and state notifications.
 6. **Shapes and transforms — circle, 2D box, and 2D cone implemented.** `circle` takes a finite nonnegative `diameter`; angle is uniform and radius uses square-root sampling. Diameter updates affect future births only; shape type requires recreation. Point direction/spread are point-only. Implement each remaining documented shape separately; coordinate-space rules and inherited velocity; resolve 3D state/rendering needs before claiming 3D shapes.
 7. **Curves and particle appearance.** Shared curve contract, emitter-time evaluation, particle-age evaluation; each size/color/rotation/stretch feature separately. Renderer evaluation may avoid storing values derivable from age.
 8. **Remaining modifiers.** Drag, radial, vortex individually, with clear ordering and influence rules.
@@ -113,3 +114,13 @@ Update this roadmap after each completed feature. Temporary diagnostics belong o
 Box reference: [Defold SpawnParticle box branch](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L973-L984). `width`/`height` correspond to Size X/Y with Z zero. Both are finite and nonnegative; samples cover centered full extents. Velocity is local upward, mapped to negative Y in the current canvas coordinate system. Dimensions affect future births only. Emitter transforms and 3D depth are not implemented.
 
 2D cone reference: [Defold SpawnParticle 2D cone branch](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L941-L971), reviewed 2026-10-17. `cone2d.width`/`height` correspond to Size X/Y. Two uniform samples form a parallelogram; folding its far half creates uniform triangle coverage. Velocity is normalized from the tip to the birth point, with upward fallback at the tip. We map Y to downward-positive canvas coordinates. Zero dimensions follow the same sampling and fallback. Numeric dimension updates affect future births; point direction/spread have no effect. PRNG sequences, emitter transforms, and birth-step aging are not claimed to match Defold.
+
+### Implemented emitter playback
+
+Emitter-level `duration` is finite, nonnegative seconds (default 1); `playMode` is `once` or `loop` (default loop). These are structural settings, not numeric uniform patches. The demo recreates the effect and resets debug counting when they change.
+
+The emitter clock is independent of particle lifetime. Once stops after emitting the duration boundary frame; it does not kill particles. Loop resets its clock at the boundary without clearing particles or resetting emission carry/seed. Zero-duration once runs one positive step; loop continues. Zero-time initialization is deliberately inert. A tiny floating-point tolerance avoids an extra boundary frame from accumulation error. This matches Defold's frame-based playback policy, not bit-identical timer arithmetic or its newborn aging convention.
+
+`emitting` is a manual gate, `isEmitting` combines that gate with the playback state, and reset restarts playback. The manual gate does not freeze elapsed time. Pausing the demo skips both simulation and counting; debug uses emission eligibility captured before the update so the final once frame is counted correctly. No per-particle CPU tracking is added to core.
+
+Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844). Start delay, start offset/prewarming, duration spread, timeline curves, and lifecycle callbacks remain pending.

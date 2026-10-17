@@ -4,6 +4,8 @@ export type ParticleTextureName = 'star' | 'leaf' | 'spark' | 'procedural';
 
 export interface PreviewControls {
   capacity: number;
+  duration: number;
+  playMode: 'once' | 'loop';
   shape: EmitterShape;
   diameter: number;
   width: number;

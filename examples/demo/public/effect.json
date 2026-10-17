@@ -24,7 +24,9 @@
           "x": 0,
           "y": 160
         }
-      }
+      },
+      "duration": 1,
+      "playMode": "loop"
     }
   ]
 }

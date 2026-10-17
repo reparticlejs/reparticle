@@ -5,6 +5,7 @@ import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 
 import { emitterConfigSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
+import { EmitterPlayback } from './emitter-playback';
 import functions from './gpujs/functions.json';
 import { isPipelineTexture } from './gpujs/is-pipeline-texture';
 import { SpawnSchedule } from './spawn-schedule';
@@ -20,6 +21,7 @@ export class Emitter {
   emitting = true;
   private settings: EmitterConfig;
   private readonly schedule: SpawnSchedule;
+  private readonly playback: EmitterPlayback;
   private readonly kernels: IKernelRunShortcut[] = [];
   private readonly vaos: WebGLVertexArrayObject[] = [];
   private output!: PipelineTexture;
@@ -36,6 +38,7 @@ export class Emitter {
     this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
     this.schedule = new SpawnSchedule(this.capacity);
+    this.playback = new EmitterPlayback(this.settings.duration, this.settings.playMode);
     this.rows = Math.ceil(this.capacity / this.width);
     this.seed = this.initialSeed = this.settings.seed;
     if (!Number.isFinite(this.seed)) {
@@ -92,6 +95,10 @@ export class Emitter {
       throw error;
     }
   }
+  /** Whether the next positive step can emit, including the manual emission gate. */
+  get isEmitting(): boolean {
+    return this.emitting && this.playback.emitting;
+  }
   get id(): string {
     return this.settings.id;
   }
@@ -113,10 +120,12 @@ export class Emitter {
     if (!Number.isFinite(this.x) || !Number.isFinite(this.y)) {
       throw new RangeError('Emitter position must be finite');
     }
-    const { start, count } = this.schedule.next(
-      this.emitting ? this.settings.emission.rate : 0,
-      dt,
-    );
+    if (!Number.isFinite(dt) || dt < 0 || dt > 0.1) {
+      throw new RangeError('Step must be between 0 and 0.1 seconds');
+    }
+    const active = this.playback.advance(dt);
+    const rate = active && this.emitting ? this.settings.emission.rate : 0;
+    const { start, count } = this.schedule.next(rate, dt);
     const o = this.settings;
     const shape = o.emission.shape;
     let shapeType = 0;
@@ -161,6 +170,7 @@ export class Emitter {
     this.assertAlive();
     this.output = this.run(0);
     this.schedule.reset();
+    this.playback.reset();
     this.nextKernel = 1;
     this.seed = this.initialSeed;
   }

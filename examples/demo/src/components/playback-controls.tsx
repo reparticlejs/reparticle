@@ -1,4 +1,7 @@
 import type { EmitterControlsProps } from '../types/controls';
+import { playModeOptions } from './emitter-control-options';
+import { SelectField } from './select-field';
+import { Slider } from './slider';
 
 export function PlaybackControls({ controls, onChange, onReset }: EmitterControlsProps) {
   function togglePlayback() {
@@ -12,6 +15,27 @@ export function PlaybackControls({ controls, onChange, onReset }: EmitterControl
   return (
     <fieldset>
       <legend>Playback</legend>
+      <SelectField
+        id="play-mode"
+        label="Play mode"
+        value={controls.playMode}
+        options={playModeOptions}
+        onChange={(playMode) => onChange({ playMode })}
+      />
+      <Slider
+        id="duration"
+        label="Duration"
+        value={controls.duration}
+        min={0}
+        max={5}
+        step={0.1}
+        unit=" s"
+        onChange={(duration) => onChange({ duration })}
+      />
+      <p>
+        Changing duration or mode restarts the effect. Once stops emission; existing particles
+        finish their lifetime.
+      </p>
       <div className="playback-actions">
         <button id="pause" onClick={togglePlayback}>
           {controls.paused ? 'Resume' : 'Pause'}

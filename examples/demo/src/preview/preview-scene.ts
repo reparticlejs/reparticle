@@ -34,12 +34,17 @@ export class PreviewScene {
   }
 
   get emitting(): boolean {
-    return this.view.emitter.emitting;
+    return this.view.emitter.isEmitting;
   }
 
   setControls(patch: Partial<PreviewControls>): PreviewControls {
     const next = { ...this.settings, ...patch };
-    if (next.capacity !== this.settings.capacity || next.shape !== this.settings.shape) {
+    if (
+      next.capacity !== this.settings.capacity ||
+      next.shape !== this.settings.shape ||
+      next.duration !== this.settings.duration ||
+      next.playMode !== this.settings.playMode
+    ) {
       this.view = replaceParticleView(this.app, this.view, this.assets.textures, next);
     } else {
       this.updateParameters(next);

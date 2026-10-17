@@ -149,3 +149,11 @@ The demo starts with a 2D cone:
 Following [Defold's 2D cone behavior](https://defold.com/manuals/particlefx/), positions fill a triangle uniformly. The emitter is its tip; the opposite edge is one height above it, with the full configured width. Initial velocity points away from the tip through the birth position at `initial.speed`. Upward is negative Y in our canvas coordinates. Point direction/spread do not apply.
 
 Width and height can change at runtime and affect only future births. Both may be zero: width zero collapses to a vertical line, height zero to a horizontal line, and both zero to the tip with upward velocity. This is a flat triangle, not the pending 3D cone.
+
+### Duration and playback
+
+Each emitter accepts `"duration": 1` (seconds) and `"playMode": "once"` or `"loop"`. Omitted settings default to a one-second loop, retaining continuous emission for older effects.
+
+Following [Defold's emitter timing](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844), once emits through the entire update that reaches duration, then stops spawning. Existing particles continue moving and aging. Loops restart the emitter timer without clearing particles, fractional emission, or the random sequence. Zero-duration once emits for one positive update; zero-duration loop emits continuously. Zero-time warm-up updates do not consume playback.
+
+`emitter.isEmitting` reports whether the next positive update may emit. The existing `emitter.emitting` boolean remains a manual emission gate; turning it off does not pause the clock or restart a completed effect. Pause by skipping updates. `reset()` clears particles and restarts the timer, spawn schedule, and seed. Duration/mode changes require recreation; the demo restarts the effect when either control changes. Start delay and prewarming remain pending.

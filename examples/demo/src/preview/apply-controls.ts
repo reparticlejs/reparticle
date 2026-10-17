@@ -12,6 +12,8 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
   return {
     ...definition,
     capacity: controls.capacity,
+    duration: controls.duration,
+    playMode: controls.playMode,
     emission,
     initial,
     modifiers: { ...definition.modifiers, gravity },
@@ -22,6 +24,8 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
   const shape = definition.emission.shape;
   return {
     capacity: definition.capacity,
+    duration: definition.duration,
+    playMode: definition.playMode,
     shape: definition.emission.shape.type,
     diameter:
       definition.emission.shape.type === 'circle' ? definition.emission.shape.diameter : 100,

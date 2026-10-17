@@ -1,4 +1,13 @@
-import { strictObject, number, int, string, literal, tuple, discriminatedUnion } from 'zod';
+import {
+  strictObject,
+  number,
+  int,
+  string,
+  literal,
+  tuple,
+  discriminatedUnion,
+  enum as enumSchema,
+} from 'zod';
 
 const shapeSchema = discriminatedUnion('type', [
   strictObject({ type: literal('point') }),
@@ -50,6 +59,8 @@ export const emitterConfigSchema = strictObject({
   id: string().refine((value) => value.trim().length > 0, 'Expected a nonempty identifier'),
   capacity: int().min(1).max(1_000_000),
   seed: int().min(0).max(65535),
+  duration: number().nonnegative().default(1),
+  playMode: enumSchema(['once', 'loop']).default('loop'),
   emission: emissionSchema,
   initial: initialPropertiesSchema,
   modifiers: modifiersSchema,
