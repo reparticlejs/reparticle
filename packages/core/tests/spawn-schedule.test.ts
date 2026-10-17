@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SpawnSchedule, defaults, validateOptions } from "#src/options.js";
+import { SpawnSchedule } from "#src/spawn-schedule.js";
 describe("spawn scheduling", () => {
   it("retains fractional emission across frames", () => {
     const schedule = new SpawnSchedule(1000);
@@ -25,7 +25,5 @@ describe("spawn scheduling", () => {
     const schedule = new SpawnSchedule(10);
     for (const dt of [-1, NaN, Infinity, 0.2])
       expect(() => schedule.next(10, dt)).toThrow(RangeError);
-    expect(() => validateOptions({ ...defaults, lifetime: 0 })).toThrow(RangeError);
-    expect(() => validateOptions({ ...defaults, gravity: NaN })).toThrow(RangeError);
   });
 });

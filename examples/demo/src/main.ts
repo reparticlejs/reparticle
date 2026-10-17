@@ -1,3 +1,4 @@
+import effect from "./effect.json";
 import { ParticleView } from "@reparticle/pixi";
 import { Application, Assets, Graphics, type Texture, type WebGLRenderer } from "pixi.js";
 import { createStats } from "./devtools";
@@ -16,7 +17,7 @@ try {
     autoDensity: true,
   });
   host.appendChild(app.canvas);
-  let view = new ParticleView(app.renderer as WebGLRenderer, { rate: 4000 });
+  let view = new ParticleView(app.renderer as WebGLRenderer, effect);
   const textures = await Assets.load<Texture>([
     "/textures/star.svg",
     "/textures/leaf.svg",
@@ -65,8 +66,9 @@ try {
       : "Show stats";
   });
   const capacity = document.querySelector<HTMLSelectElement>("#capacity")!;
+  capacity.value = String(emitter.capacity);
   function updateCapacityNote(): void {
-    const target = emitter.options.rate * emitter.options.lifetime;
+    const target = emitter.configuration.emission.rate * emitter.configuration.initial.lifetime;
     document.querySelector("#capacity-note")!.textContent =
       target > emitter.capacity
         ? "Emission × lifetime exceeds capacity: older particles will be replaced early."
@@ -76,11 +78,10 @@ try {
     const previous = view;
     stats.hide();
     try {
-      const next = new ParticleView(
-        app.renderer as WebGLRenderer,
-        emitter.options,
-        Number(capacity.value),
-      );
+      const next = new ParticleView(app.renderer as WebGLRenderer, {
+        version: 1,
+        emitters: [{ ...emitter.configuration, capacity: Number(capacity.value) }],
+      });
       next.texture = previous.texture;
       next.particleSize = previous.particleSize;
       next.emitter.x = emitter.x;
@@ -115,8 +116,24 @@ try {
   });
   for (const key of ["rate", "gravity", "lifetime"] as const) {
     const input = document.querySelector<HTMLInputElement>(`#${key}`)!;
+    const config = emitter.configuration;
+    input.value = String(
+      key === "rate"
+        ? config.emission.rate
+        : key === "gravity"
+          ? config.modifiers.gravity.y
+          : config.initial.lifetime,
+    );
+    document.querySelector(`#${key}-value`)!.textContent =
+      input.value + (key === "rate" ? " / s" : key === "lifetime" ? " s" : "");
     input.addEventListener("input", () => {
-      emitter.setOptions({ [key]: input.valueAsNumber });
+      emitter.setParameters(
+        key === "rate"
+          ? { emission: { rate: input.valueAsNumber } }
+          : key === "gravity"
+            ? { modifiers: { gravity: { y: input.valueAsNumber } } }
+            : { initial: { lifetime: input.valueAsNumber } },
+      );
       updateCapacityNote();
       document.querySelector(`#${key}-value`)!.textContent =
         input.value + (key === "rate" ? " / s" : key === "lifetime" ? " s" : "");

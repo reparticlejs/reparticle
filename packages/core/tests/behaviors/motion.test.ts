@@ -4,7 +4,8 @@ import {
   advancePositionWithGravity,
   advanceVelocity,
 } from "#src/behaviors/motion.js";
-import { spawnDirection, spawnSpeed, spawnVariation } from "#src/behaviors/spawn.js";
+import { spawnDirection, spawnVariation } from "#src/behaviors/spawn.js";
+import { spawnMotion } from "#src/gpujs/spawn-motion.js";
 import { integrate } from "#src/gpujs/integrate.js";
 import type { KernelContext, ParticleTexture } from "#src/gpujs/layout.js";
 
@@ -19,7 +20,7 @@ it("integrates gravity equivalently over one step and ten smaller steps", () => 
   expect(velocity).toBeCloseTo(20, 10);
   expect(advancePosition(10, -30, 0.5)).toBe(-5);
 });
-it("keeps spawn direction and speed within their configured ranges", () => {
+it("keeps spawn direction within its range and scalar speed exact", () => {
   for (let id = 0; id < 100; id++) {
     const variation = spawnVariation(id, 1);
     expect(variation).toBeGreaterThanOrEqual(0);
@@ -27,8 +28,8 @@ it("keeps spawn direction and speed within their configured ranges", () => {
     expect(spawnVariation(id, 1)).toBe(variation);
     expect(spawnDirection(0, 2, variation)).toBeGreaterThanOrEqual(-1);
     expect(spawnDirection(0, 2, variation)).toBeLessThan(1);
-    expect(spawnSpeed(100, variation)).toBeGreaterThanOrEqual(70);
-    expect(spawnSpeed(100, variation)).toBeLessThan(100);
+    const [, , vx, vy] = spawnMotion(id, 1, 0, 0, 100, 0, 2);
+    expect(Math.hypot(vx, vy)).toBeCloseTo(100, 10);
   }
 });
 it("maps motion and lifetime texels without changing the behavior math", () => {

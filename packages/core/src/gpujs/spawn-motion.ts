@@ -1,4 +1,4 @@
-import { spawnDirection, spawnSpeed, spawnVariation } from "../behaviors/spawn";
+import { spawnDirection, spawnVariation } from "../behaviors/spawn";
 import type { ParticleTexel } from "./layout";
 
 // Keep spawn locals in their own function: GPU.js misreads block locals when
@@ -14,6 +14,5 @@ export function spawnMotion(
 ): ParticleTexel {
   const variation = spawnVariation(particleId, seed);
   const angle = spawnDirection(direction, spread, variation);
-  const initialSpeed = spawnSpeed(speed, variation);
-  return [emitterX, emitterY, Math.cos(angle) * initialSpeed, Math.sin(angle) * initialSpeed];
+  return [emitterX, emitterY, Math.cos(angle) * speed, Math.sin(angle) * speed];
 }

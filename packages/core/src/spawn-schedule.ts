@@ -1,27 +1,3 @@
-export interface EmitterOptions {
-  rate: number;
-  lifetime: number;
-  speed: number;
-  spread: number;
-  angle: number;
-  gravity: number;
-}
-export const defaults: Readonly<EmitterOptions> = {
-  rate: 140,
-  lifetime: 2,
-  speed: 220,
-  spread: Math.PI / 3,
-  angle: -Math.PI / 2,
-  gravity: 160,
-};
-export function validateOptions(options: EmitterOptions): void {
-  for (const [key, value] of Object.entries(options)) {
-    if (!Number.isFinite(value)) throw new RangeError(`${key} must be finite`);
-  }
-  if (options.rate < 0 || options.speed < 0 || options.spread < 0 || options.lifetime <= 0) {
-    throw new RangeError("Rate, speed and spread must be nonnegative; lifetime must be positive");
-  }
-}
 /** Constant-size CPU bookkeeping. No per-particle state or loops. */
 export class SpawnSchedule {
   private carry = 0;

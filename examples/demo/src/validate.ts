@@ -7,7 +7,7 @@ export function validateGPU(app: Application, view: ParticleView): object {
   const gl = renderer.gl as WebGL2RenderingContext;
   const emitter = view.emitter;
   const saved = {
-    options: emitter.options,
+    configuration: emitter.configuration,
     x: emitter.x,
     y: emitter.y,
     emitting: emitter.emitting,
@@ -47,7 +47,11 @@ export function validateGPU(app: Application, view: ParticleView): object {
     }
   };
   try {
-    emitter.setOptions({ rate: 120, lifetime: 2, speed: 0, gravity: 100 });
+    emitter.setParameters({
+      emission: { rate: 120 },
+      initial: { lifetime: 2, speed: 0 },
+      modifiers: { gravity: { y: 100 } },
+    });
     emitter.x = 0;
     emitter.y = 0;
     emitter.emitting = true;
@@ -67,6 +71,9 @@ export function validateGPU(app: Application, view: ParticleView): object {
       );
     }
     for (let i = 0; i < 120; i++) {
+      if (i === 60) {
+        emitter.setParameters({ emission: { rate: 0 }, initial: { speed: 220, lifetime: 3 } });
+      }
       view.update(1 / 120);
       app.render();
     }
@@ -79,15 +86,43 @@ export function validateGPU(app: Application, view: ParticleView): object {
     const residencyPass = Object.values(counters).every((value) => value === 0);
     view.reset();
     const resetPass = readFirst().every((value) => value === 0);
-    emitter.setOptions({ rate: 10, lifetime: 0.05 });
+    emitter.setParameters({ emission: { rate: 10 }, initial: { lifetime: 0.05 } });
     view.update(0.1);
     emitter.emitting = false;
     view.update(0.1);
     const expired = readFirst();
     const expirationPass = expired[4]! >= expired[5]!;
+    view.reset();
+    emitter.emitting = true;
+    emitter.setParameters({
+      emission: { rate: 10 },
+      initial: { speed: 220, direction: 0, spread: 0, lifetime: 2 },
+      modifiers: { gravity: { y: 0 } },
+    });
+    view.update(0.1);
+    const spawned = readFirst();
+    const exactSpeedPass = Math.abs(spawned[2]! - 220) < 0.02 && Math.abs(spawned[3]!) < 0.02;
+    emitter.setParameters({
+      emission: { rate: 0 },
+      initial: { speed: 999, lifetime: 5 },
+      modifiers: { gravity: { y: 100 } },
+    });
+    view.update(0.1);
+    const moved = readFirst();
+    const expectedMoved = [22, 0.5, 220, 10, 0.1, 2, 1, 0];
+    const parameterUpdatePass = moved.every(
+      (value, i) => Math.abs(value - expectedMoved[i]!) < 0.02,
+    );
     const glError = gl.getError();
     return {
-      pass: residencyPass && maxError < 0.02 && resetPass && expirationPass && glError === 0,
+      pass:
+        residencyPass &&
+        maxError < 0.02 &&
+        resetPass &&
+        expirationPass &&
+        exactSpeedPass &&
+        parameterUpdatePass &&
+        glError === 0,
       backend: "GPU.js 2.24.1 / WebGL2",
       capacity: emitter.capacity,
       frames: 120,
@@ -95,12 +130,18 @@ export function validateGPU(app: Application, view: ParticleView): object {
       maxError,
       resetPass,
       expirationPass,
+      exactSpeedPass,
+      parameterUpdatePass,
       glError,
-      note: "Six explicit texel reads after measurement validate integration, reset and expiration. No playback readbacks.",
+      note: "Ten explicit texel reads after measurement validate integration, reset, expiration, exact speed and runtime parameter semantics. No playback readbacks.",
     };
   } finally {
     for (const fn of restore) fn();
-    emitter.setOptions(saved.options);
+    emitter.setParameters({
+      emission: { rate: saved.configuration.emission.rate },
+      initial: saved.configuration.initial,
+      modifiers: saved.configuration.modifiers,
+    });
     emitter.x = saved.x;
     emitter.y = saved.y;
     emitter.emitting = saved.emitting;

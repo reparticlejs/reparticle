@@ -1,5 +1,5 @@
 import { RenderContainer, type Texture, type WebGLRenderer } from "pixi.js";
-import { Emitter, type EmitterOptions } from "@reparticle/core";
+import { Emitter, parseEffectConfig } from "@reparticle/core";
 
 const vertex = `#version 300 es
 precision highp float;
@@ -19,7 +19,7 @@ void main() {
   vec4 meta = texelFetch(particles, at + ivec2(0, rows), 0);
   life = meta.z > 0.5 && meta.y > 0.0 ? max(0.0, 1.0 - meta.x / meta.y) : 0.0;
   uv = vec2(float(gl_VertexID & 1), float(gl_VertexID >> 1)) * 2.0 - 1.0;
-  vec2 world = (transform * vec3(p.xy + uv * particleSize * (0.3 + life * 0.7) * 0.5, 1.0)).xy;
+  vec2 world = (transform * vec3(p.xy + uv * particleSize * 0.5, 1.0)).xy;
   gl_Position = life > 0.0 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
 }`;
 const fragment = `#version 300 es
@@ -37,11 +37,11 @@ void main() {
     vec2 coords = mix(frame.xy, frame.zw, uv * 0.5 + 0.5);
     vec4 pixel = texture(artwork, coords);
     if (straightAlpha) pixel.rgb *= pixel.a;
-    color = pixel * life * opacity;
+    color = pixel * opacity;
     return;
   }
-  float alpha = max(0.0, 1.0 - dot(uv, uv)) * life * opacity;
-  vec3 tint = mix(vec3(0.43,0.46,1.0), vec3(0.55,1.0,0.85), life);
+  float alpha = max(0.0, 1.0 - dot(uv, uv)) * opacity;
+  vec3 tint = vec3(0.55,1.0,0.85);
   color = vec4(tint * alpha, alpha);
 }`;
 function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
@@ -95,13 +95,14 @@ export class ParticleView extends RenderContainer {
       throw new Error("Trimmed or rotated particle textures are not supported yet");
     this.artwork = value;
   }
-  constructor(renderer: WebGLRenderer, options: Partial<EmitterOptions> = {}, capacity = 100_000) {
+  constructor(renderer: WebGLRenderer, definition: unknown) {
+    const config = parseEffectConfig(definition).emitters[0];
     super({});
     this.host = renderer;
     const gl = renderer.gl as WebGL2RenderingContext;
     this.gl = gl;
     try {
-      this.emitter = new Emitter({ gl, canvas: renderer.canvas, capacity }, options);
+      this.emitter = new Emitter({ gl, canvas: renderer.canvas }, config);
       try {
         this.program = createProgram(gl);
         const vao = gl.createVertexArray();

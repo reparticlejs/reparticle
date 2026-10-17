@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "sparks",
+      "capacity": 100000,
+      "seed": 1,
+      "emission": {
+        "rate": 4000,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 2,
+        "speed": 220,
+        "direction": -1.5707963267948966,
+        "spread": 1.0471975511965976
+      },
+      "modifiers": {
+        "gravity": {
+          "x": 0,
+          "y": 160
+        }
+      }
+    }
+  ]
+}

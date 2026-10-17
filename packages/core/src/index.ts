@@ -9,20 +9,14 @@ import { initialize } from "./gpujs/initialize";
 import { spawnMotion } from "./gpujs/spawn-motion";
 import { integrate } from "./gpujs/integrate";
 import { advancePosition, advancePositionWithGravity, advanceVelocity } from "./behaviors/motion";
-import { spawnVariation, spawnDirection, spawnSpeed } from "./behaviors/spawn";
-import { defaults, SpawnSchedule, validateOptions, type EmitterOptions } from "./options";
-export type { EmitterOptions } from "./options";
+import { spawnVariation, spawnDirection } from "./behaviors/spawn";
+import { SpawnSchedule } from "./spawn-schedule";
+import { emitterConfigSchema } from "./config/schema";
+import { updateEmitterConfig } from "./config/update-emitter";
+import type { EmitterConfig, EmitterParameters } from "#types/effect.js";
+import type { EmitterContext, PipelineTexture } from "#types/emitter.js";
+export type { EmitterContext } from "#types/emitter.js";
 
-interface PipelineTexture extends Texture {
-  texture: WebGLTexture;
-  context: WebGL2RenderingContext;
-}
-export interface EmitterContext {
-  gl: WebGL2RenderingContext;
-  canvas: HTMLCanvasElement;
-  capacity?: number;
-  seed?: number;
-}
 /** GPU.js simulation, independent of any renderer. No particle arrays or CPU fallback. */
 export class Emitter {
   readonly width = 256;
@@ -31,7 +25,7 @@ export class Emitter {
   x = 0;
   y = 0;
   emitting = true;
-  private settings: EmitterOptions;
+  private settings: EmitterConfig;
   private readonly schedule: SpawnSchedule;
   private readonly kernels: IKernelRunShortcut[] = [];
   private readonly vaos: WebGLVertexArrayObject[] = [];
@@ -43,15 +37,14 @@ export class Emitter {
   readonly gl: WebGL2RenderingContext;
   private readonly canvas: HTMLCanvasElement;
 
-  constructor(context: EmitterContext, options: Partial<EmitterOptions> = {}) {
+  constructor(context: EmitterContext, definition: EmitterConfig) {
+    this.settings = emitterConfigSchema.parse(definition);
     this.gl = context.gl;
     this.canvas = context.canvas;
-    this.capacity = context.capacity ?? 100_000;
+    this.capacity = this.settings.capacity;
     this.schedule = new SpawnSchedule(this.capacity);
     this.rows = Math.ceil(this.capacity / this.width);
-    this.settings = { ...defaults, ...options };
-    validateOptions(this.settings);
-    this.seed = this.initialSeed = context.seed ?? 1;
+    this.seed = this.initialSeed = this.settings.seed;
     if (!Number.isFinite(this.seed)) throw new RangeError("Seed must be finite");
     const gl = this.gl;
     if (
@@ -68,7 +61,6 @@ export class Emitter {
     gpu.addFunction(advanceVelocity);
     gpu.addFunction(spawnVariation);
     gpu.addFunction(spawnDirection);
-    gpu.addFunction(spawnSpeed);
     gpu.addFunction(spawnMotion);
     const config: IGPUKernelSettings = {
       output: [this.width, this.rows * 2],
@@ -94,14 +86,16 @@ export class Emitter {
       throw error;
     }
   }
-  get options(): Readonly<EmitterOptions> {
-    return { ...this.settings };
+  get id(): string {
+    return this.settings.id;
   }
-  setOptions(patch: Partial<EmitterOptions>): void {
+  /** Owned snapshot for serialization or explicit recreation. */
+  get configuration(): EmitterConfig {
+    return emitterConfigSchema.parse(this.settings);
+  }
+  setParameters(patch: EmitterParameters): void {
     this.assertAlive();
-    const next = { ...this.settings, ...patch };
-    validateOptions(next);
-    this.settings = next;
+    this.settings = updateEmitterConfig(this.settings, patch);
   }
   /** GPU resource handle for renderer adapters. Never calls toArray/readPixels. */
   get texture(): WebGLTexture {
@@ -112,7 +106,10 @@ export class Emitter {
     this.assertAlive();
     if (!Number.isFinite(this.x) || !Number.isFinite(this.y))
       throw new RangeError("Emitter position must be finite");
-    const { start, count } = this.schedule.next(this.emitting ? this.settings.rate : 0, dt);
+    const { start, count } = this.schedule.next(
+      this.emitting ? this.settings.emission.rate : 0,
+      dt,
+    );
     const o = this.settings;
     this.output = this.run(
       this.nextKernel,
@@ -122,11 +119,11 @@ export class Emitter {
       count,
       this.x,
       this.y,
-      o.speed,
-      o.angle,
-      o.spread,
-      o.gravity,
-      o.lifetime,
+      o.initial.speed,
+      o.initial.direction,
+      o.initial.spread,
+      o.modifiers.gravity.y,
+      o.initial.lifetime,
       this.seed,
     );
     if (count) this.seed = (this.seed + 1) % 65536;
@@ -187,4 +184,4 @@ export class Emitter {
 
 export { parseEffectConfig } from "./config/effect";
 export { effectConfigSchema, emitterConfigSchema } from "./config/schema";
-export type { EffectConfig, EmitterConfig } from "#types/effect.js";
+export type { EffectConfig, EmitterConfig, EmitterParameters } from "#types/effect.js";

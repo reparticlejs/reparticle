@@ -24,7 +24,7 @@ Two timelines are distinct: emitter elapsed time controls emission and the initi
 
 Modifiers accumulate acceleration before movement integration. The integration policy must be documented and tested as each modifier arrives. Preserve the current constant-acceleration position term when extracting gravity. Multiple modifiers must not accidentally integrate position multiple times.
 
-The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and is deliberately limited to the implemented configuration boundary. It is not yet a loadable effect for the GPU runtime. Unsupported fields, shapes, versions, and multiple emitters fail explicitly.
+The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and loads through `ParticleView(renderer, definition)` or the core `Emitter` constructor after parsing. Unsupported fields, shapes, versions, and multiple emitters fail explicitly.
 
 Current required fields have no implicit defaults:
 
@@ -41,12 +41,13 @@ Current required fields have no implicit defaults:
 | initial.speed | Finite nonnegative units per second |
 | initial.direction | Finite radians |
 | initial.spread | Finite nonnegative full angular width, centered on direction |
+| modifiers.gravity | Required object: x must currently be zero; y is finite acceleration in units/second² |
 
 Simulation coordinates currently use local units, positive X right and positive Y down. Rotation and angular speed use radians and radians/second in Reparticle. Conversion from other formats belongs at import boundaries.
 
 Version 1 is an unpublished initial contract. Add validated fields as their semantics and execution become available. Once published, incompatible semantic changes require a new version and migration rules. Do not predeclare fields that silently have no effect.
 
-The current PoC implicitly varies speed from 70% to 100%, shrinks particles with age, and fades them out. These are existing prototype behaviors, not yet configurable features. Connecting the new definition must remove or explicitly represent them; a scalar initial speed must mean that exact speed. Curves and randomized values need shared representations with explicit sampling and interpolation rules before implementation.
+Scalar speed is exact. The prototype's implicit speed variation, shrinking, and fading have been removed. Lifetime curves and randomized values will use explicit configuration. Texture and size remain renderer controls until their definition fields are implemented.
 
 ## Coverage inventory
 
@@ -71,7 +72,7 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 ## Implementation sequence
 
 1. **Configuration boundary — implemented.** Typed versioned definition, strict validation, independent output data, documented JSON fixture, tests outside source using package aliases. No GPU resources are created by parsing.
-2. **Connect one emitter — next.** Create the runtime from validated JSON; map named runtime updates; define exact constant speed; preserve existing prototype visuals only through explicit configuration. Remove reliance on flat prototype options from the consumer path.
+2. **Connect one emitter — implemented.** The demo creates from JSON. `setParameters` validates atomic numeric patches, and `configuration` returns an independent snapshot. IDs, capacity and seed reach the runtime; scalar speed is exact. Flat prototype options and implicit visual changes are removed. Texture/size configuration remains in the rendering backlog.
 3. **Separate lifecycle and acceleration.** Extract age/expiry and vector acceleration while preserving analytical integration. Numeric updates affect existing particles; initial-property changes affect future births.
 4. **Value distributions.** Consistent constant/random representations; independent random channels; lifetime and other initial properties sampled once at birth.
 5. **Emitter playback.** Duration, loops, delay, prewarm, stop/drain/reset semantics and state notifications.
@@ -82,7 +83,7 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 10. **Rendering coverage.** Blend modes, orientation, stretch, atlases/animation, sizing, tint and material equivalents, each separately.
 11. **Editor.** Defold-inspired workflow backed by the same validated definition. Only expose supported features. No editor-specific simulation logic.
 
-Dependencies may change the order, but no feature disappears from the coverage inventory. Each larger step is split into individual feature changes. The current flat emitter API remains transitional until the JSON runtime path replaces it.
+Dependencies may change the order, but no feature disappears from the coverage inventory. Each larger step is split into individual feature changes. The old flat emitter options API has been replaced by the JSON definition and numeric parameter patches.
 
 ## Runtime update policy
 

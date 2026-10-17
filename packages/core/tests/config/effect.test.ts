@@ -36,9 +36,9 @@ describe("effect JSON boundary", () => {
 
   it("rejects unsupported features rather than dropping them", () => {
     const input = example();
-    input.emitters[0].modifiers = [{ type: "vortex" }];
-    expectIssue(input, ["emitters", 0], "unrecognized_keys");
-    delete input.emitters[0].modifiers;
+    input.emitters[0].modifiers.vortex = {};
+    expectIssue(input, ["emitters", 0, "modifiers"], "unrecognized_keys");
+    delete input.emitters[0].modifiers.vortex;
     input.emitters[0].emission.shape.type = "circle";
     expectIssue(input, ["emitters", 0, "emission", "shape", "type"], "invalid_value");
     input.emitters.push(input.emitters[0]);
