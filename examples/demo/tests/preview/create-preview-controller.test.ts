@@ -15,6 +15,8 @@ function setup() {
     rateCurve: 'constant',
     speedCurve: 'constant',
     initialSizeCurve: 'constant',
+    initialLifetimeCurve: 'constant',
+    effectLifetime: 2,
     initialRotationCurve: 'constant',
     initialAlphaCurve: 'constant',
     effectAlpha: 1,

@@ -186,3 +186,17 @@ it('keeps emitter RGBA curves separate from particle curves and numeric patches'
     emitterParameters({ ...restored, initialRedCurve: 'constant', red: 0.3 }).initial?.red,
   ).toBe(0.3);
 });
+
+it('preserves authored lifetime curves during unrelated numeric edits', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  const controls = {
+    ...initialControls(definition),
+    initialLifetimeCurve: 'ramp-up' as const,
+    lifetime: 2,
+  };
+  const configured = applyControls(definition, controls);
+  const restored = initialControls(configured);
+  expect(restored.initialLifetimeCurve).toBe('effect');
+  expect(applyControls(configured, restored).initial.lifetime).toEqual(configured.initial.lifetime);
+  expect(emitterParameters({ ...restored, lifetimeSpread: 0.5 }).initial?.lifetime).toBeUndefined();
+});

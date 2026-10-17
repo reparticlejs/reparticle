@@ -1,12 +1,14 @@
-import { EmitterPlayback, prewarm, SpawnRate } from '@reparticle/core';
+import { EmitterPlayback, prewarm, SpawnRate, SampledCurve } from '@reparticle/core';
 
 import { emissionRate } from '../../../preview/emission-rate';
+import { initialLifetime } from '../../../preview/initial-lifetime';
 import type { PreviewControls } from '../../../types/preview';
 import { LiveParticleCount } from './live-particle-count';
 
 /** Replays emitter timing for the overlay, without reading particle textures. */
 export class PreviewParticleCount {
   private readonly particles: LiveParticleCount;
+  private lifetime = new SampledCurve(0);
   private seed = 1;
   private controls: PreviewControls | undefined;
   private spawnRate = new SpawnRate(0);
@@ -26,6 +28,7 @@ export class PreviewParticleCount {
     }
     if (controls !== this.controls) {
       this.spawnRate = new SpawnRate(emissionRate(controls));
+      this.lifetime = new SampledCurve(initialLifetime(controls));
       this.controls = controls;
     }
     if (!this.playback) {
@@ -35,7 +38,7 @@ export class PreviewParticleCount {
         controls.playMode,
         controls.startDelay,
       );
-      prewarm(controls.startOffset, controls.lifetime + controls.lifetimeSpread, (step) =>
+      prewarm(controls.startOffset, this.lifetime.maximum + controls.lifetimeSpread, (step) =>
         this.step(step, controls, emitting),
       );
     }
@@ -48,7 +51,7 @@ export class PreviewParticleCount {
     const spawned = this.particles.advance(
       seconds,
       rate,
-      controls.lifetime,
+      this.lifetime.at(this.playback!.normalizedAge),
       controls.lifetimeSpread,
       this.seed,
     );

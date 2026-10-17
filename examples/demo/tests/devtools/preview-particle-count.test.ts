@@ -14,6 +14,8 @@ const controls: PreviewControls = {
   rateCurve: 'constant',
   speedCurve: 'constant',
   initialSizeCurve: 'constant',
+  initialLifetimeCurve: 'constant',
+  effectLifetime: 2,
   initialRotationCurve: 'constant',
   initialAlphaCurve: 'constant',
   effectAlpha: 1,
@@ -113,4 +115,27 @@ it('mirrors rate curves on once and loop boundary frames', () => {
     counter.advance(0.1, settings, true);
     expect(counter.count).toBe(playMode === 'once' ? 15 : 5);
   }
+});
+
+it('expires each birth batch using its captured emitter-time lifetime', () => {
+  const counter = new PreviewParticleCount(8192);
+  const settings = {
+    ...controls,
+    startOffset: 0,
+    duration: 0.2,
+    playMode: 'once' as const,
+    rate: 10,
+    lifetime: 0.4,
+    initialLifetimeCurve: 'ramp-up' as const,
+  };
+  counter.advance(0.1, settings, true);
+  expect(counter.count).toBe(1);
+  counter.advance(0.1, settings, true);
+  expect(counter.count).toBe(2);
+  counter.advance(0.1, { ...settings, initialLifetimeCurve: 'constant', lifetime: 10 }, false);
+  expect(counter.count).toBe(1);
+  for (let i = 0; i < 4; i++) {
+    counter.advance(0.1, settings, false);
+  }
+  expect(counter.count).toBe(0);
 });

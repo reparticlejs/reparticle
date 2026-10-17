@@ -25,7 +25,7 @@ it.each([
   { seed: 42 },
   { id: 'other' },
   { emission: { shape: { type: 'point' } } },
-  { emission: { rate: 100 }, initial: { lifetime: 0 } },
+  { emission: { rate: 100 }, initial: { lifetime: NaN } },
   { modifiers: { gravity: { x: 1 } } },
   { initial: { speed: undefined } },
   { initial: { size: undefined } },

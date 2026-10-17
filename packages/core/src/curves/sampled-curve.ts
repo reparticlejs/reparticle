@@ -10,6 +10,10 @@ export class SampledCurve {
     this.samples = sampleCurve(property);
   }
 
+  get maximum(): number {
+    return Math.max(...this.samples);
+  }
+
   at(normalizedAge: number): number {
     const position = Math.max(0, Math.min(1, normalizedAge)) * CURVE_SEGMENTS;
     const segment = Math.min(Math.floor(position), CURVE_SEGMENTS - 1);

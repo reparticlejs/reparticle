@@ -1,5 +1,6 @@
 import type { ControlSectionProps } from '../types/controls';
 import { capacityOptions } from './emitter-control-options';
+import { initialLifetimeCurveOptions } from './initial-lifetime-curve-options';
 import { rateCurveOptions } from './rate-curve-options';
 import { SelectField } from './select-field';
 import { ShapeControls } from './shape-controls';
@@ -9,6 +10,7 @@ import { speedCurveOptions } from './speed-curve-options';
 export function EmissionControls({ controls, onChange }: ControlSectionProps) {
   const exceedsCapacity =
     controls.rateCurve !== 'effect' &&
+    controls.initialLifetimeCurve !== 'effect' &&
     controls.rate * (controls.lifetime + controls.lifetimeSpread) > controls.capacity;
 
   return (
@@ -56,16 +58,25 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
         max={500}
         onChange={(gravity) => onChange({ gravity })}
       />
-      <Slider
-        id="lifetime"
-        label="Lifetime"
-        value={controls.lifetime}
-        min={0.2}
-        max={5}
-        step={0.1}
-        unit=" s"
-        onChange={(lifetime) => onChange({ lifetime })}
+      <SelectField
+        id="initial-lifetime-curve"
+        label="Initial lifetime over emitter lifetime"
+        value={controls.initialLifetimeCurve}
+        options={initialLifetimeCurveOptions}
+        onChange={(initialLifetimeCurve) => onChange({ initialLifetimeCurve })}
       />
+      {controls.initialLifetimeCurve !== 'effect' && (
+        <Slider
+          id="lifetime"
+          label="Lifetime"
+          value={controls.lifetime}
+          min={0.2}
+          max={5}
+          step={0.1}
+          unit=" s"
+          onChange={(lifetime) => onChange({ lifetime })}
+        />
+      )}
       <Slider
         id="lifetime-spread"
         label="Lifetime spread ±"

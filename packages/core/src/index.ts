@@ -28,6 +28,7 @@ export class Emitter {
   private initialGreen: SampledCurve;
   private initialBlue: SampledCurve;
   private initialAlpha: SampledCurve;
+  private initialLifetime: SampledCurve;
   private initialRotation: SampledCurve;
   private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
@@ -54,6 +55,7 @@ export class Emitter {
     this.initialGreen = new SampledCurve(this.settings.initial.green);
     this.initialBlue = new SampledCurve(this.settings.initial.blue);
     this.initialAlpha = new SampledCurve(this.settings.initial.alpha);
+    this.initialLifetime = new SampledCurve(this.settings.initial.lifetime);
     this.gl = context.gl;
     this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
@@ -163,7 +165,12 @@ export class Emitter {
       patch.initial?.alpha === undefined
         ? this.initialAlpha
         : new SampledCurve(settings.initial.alpha);
+    const initialLifetime =
+      patch.initial?.lifetime === undefined
+        ? this.initialLifetime
+        : new SampledCurve(settings.initial.lifetime);
     this.settings = settings;
+    this.initialLifetime = initialLifetime;
     this.initialRed = initialRed;
     this.initialGreen = initialGreen;
     this.initialBlue = initialBlue;
@@ -190,7 +197,7 @@ export class Emitter {
       this.needsPrewarm = false;
       prewarm(
         this.settings.startOffset,
-        this.settings.initial.lifetime + this.settings.initial.lifetimeSpread,
+        this.initialLifetime.maximum + this.settings.initial.lifetimeSpread,
         (seconds) => this.step(seconds),
       );
     }
@@ -229,7 +236,7 @@ export class Emitter {
       o.initial.direction,
       o.initial.spread,
       o.modifiers.gravity.y,
-      o.initial.lifetime,
+      this.initialLifetime.at(this.playback.normalizedAge),
       this.seed,
       shapeType,
       sizeX,
@@ -323,6 +330,7 @@ export type { EffectConfig, EmitterConfig, EmitterParameters } from '#types/effe
 
 export { EmitterPlayback } from './emitter-playback';
 export { propertyVariation } from './behaviors/property-variation';
+export { SampledCurve } from './curves/sampled-curve';
 export { SpawnRate } from './spawn-rate';
 export { prewarm } from './prewarm';
 

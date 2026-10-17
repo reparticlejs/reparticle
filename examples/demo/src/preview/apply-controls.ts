@@ -7,6 +7,7 @@ import { emissionRate } from './emission-rate';
 import { initialAlpha } from './initial-alpha';
 import { initialBlue } from './initial-blue';
 import { initialGreen } from './initial-green';
+import { initialLifetime } from './initial-lifetime';
 import { initialRed } from './initial-red';
 import { initialRotation } from './initial-rotation';
 import { initialSize } from './initial-size';
@@ -20,7 +21,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
   const emission = { ...definition.emission, rate: emissionRate(controls), shape };
   const initial = {
     ...definition.initial,
-    lifetime: controls.lifetime,
+    lifetime: initialLifetime(controls),
     lifetimeSpread: controls.lifetimeSpread,
     speed: initialSpeed(controls),
     speedSpread: controls.speedSpread,
@@ -89,7 +90,9 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     rateCurve: typeof definition.emission.rate === 'number' ? 'constant' : 'effect',
     effectRate: definition.emission.rate,
     gravity: definition.modifiers.gravity.y,
-    lifetime: definition.initial.lifetime,
+    lifetime: typeof definition.initial.lifetime === 'number' ? definition.initial.lifetime : 2,
+    initialLifetimeCurve: typeof definition.initial.lifetime === 'number' ? 'constant' : 'effect',
+    effectLifetime: definition.initial.lifetime,
     lifetimeSpread: definition.initial.lifetimeSpread,
     speed: typeof definition.initial.speed === 'number' ? definition.initial.speed : 220,
     speedCurve: typeof definition.initial.speed === 'number' ? 'constant' : 'effect',
@@ -142,7 +145,7 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
   return {
     emission,
     initial: {
-      lifetime: controls.lifetime,
+      ...(controls.initialLifetimeCurve === 'constant' ? { lifetime: controls.lifetime } : {}),
       lifetimeSpread: controls.lifetimeSpread,
       ...(controls.speedCurve === 'constant' ? { speed: controls.speed } : {}),
       speedSpread: controls.speedSpread,

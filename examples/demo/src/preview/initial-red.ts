@@ -23,4 +23,6 @@ export function initialRed(controls: PreviewControls): ScalarProperty {
         ],
       };
   }
+
+  throw new Error('Unsupported emitter curve mode');
 }

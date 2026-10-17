@@ -50,6 +50,8 @@ export class PreviewScene {
       (next.initialAlphaCurve !== 'constant' && next.alpha !== this.settings.alpha) ||
       next.initialRotationCurve !== this.settings.initialRotationCurve ||
       (next.initialRotationCurve !== 'constant' && next.rotation !== this.settings.rotation) ||
+      next.initialLifetimeCurve !== this.settings.initialLifetimeCurve ||
+      (next.initialLifetimeCurve !== 'constant' && next.lifetime !== this.settings.lifetime) ||
       next.initialSizeCurve !== this.settings.initialSizeCurve ||
       (next.initialSizeCurve !== 'constant' && next.size !== this.settings.size) ||
       next.speedCurve !== this.settings.speedCurve ||

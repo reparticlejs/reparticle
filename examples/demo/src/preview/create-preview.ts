@@ -134,7 +134,16 @@ export async function createPreview(
         current.initialAlphaCurve !== 'constant' &&
         patch.alpha !== undefined &&
         patch.alpha !== current.alpha;
+      const initialLifetimeCurveChanged =
+        patch.initialLifetimeCurve !== undefined &&
+        patch.initialLifetimeCurve !== current.initialLifetimeCurve;
+      const curveLifetimeChanged =
+        current.initialLifetimeCurve !== 'constant' &&
+        patch.lifetime !== undefined &&
+        patch.lifetime !== current.lifetime;
       const rebuilding =
+        initialLifetimeCurveChanged ||
+        curveLifetimeChanged ||
         initialAlphaCurveChanged ||
         curveAlphaChanged ||
         initialBlueCurveChanged ||
