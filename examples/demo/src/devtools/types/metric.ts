@@ -28,6 +28,7 @@ export interface StatsMetricDefinition {
   readonly label: string;
   readonly description: string;
   readonly ceiling: number;
+  readonly decimals?: number;
   readonly initiallyAvailable: boolean;
   create(): StatsMetric;
 }

@@ -3,6 +3,7 @@ import { ParticleView } from '@reparticle/pixi';
 import { Application, Assets, type Texture, type WebGLRenderer } from 'pixi.js';
 
 import { createStats } from '../devtools';
+import { LiveParticleCount } from '../devtools/stats/measurement/live-particle-count';
 import type { ParticlePreview, ParticleTextureName, PreviewControls } from '../types/preview';
 
 /** Owns imperative GPU resources; React owns the surrounding UI. */
@@ -71,6 +72,7 @@ export async function createPreview(
       paused: false,
       statsVisible: true,
     };
+    let liveParticles = new LiveParticleCount(controls.capacity);
     let view = new ParticleView(renderer, effect);
     app.stage.addChild(view);
     view.texture = choices[controls.texture];
@@ -80,6 +82,7 @@ export async function createPreview(
     stats = createStats({
       container: host,
       display: 'compact',
+      getParticleCount: () => liveParticles.count,
       gl: renderer.gl,
       subscribePostRender(listener) {
         const callback = () => listener(app.ticker.lastTime);
@@ -90,7 +93,13 @@ export async function createPreview(
     const overlay = stats;
     app.ticker.add((ticker) => {
       if (!controls.paused) {
-        view.update(Math.min(ticker.deltaMS / 1000, 0.05));
+        const seconds = Math.min(ticker.deltaMS / 1000, 0.05);
+        view.update(seconds);
+        liveParticles.advance(
+          seconds,
+          view.emitter.emitting ? controls.rate : 0,
+          controls.lifetime,
+        );
       }
     });
     host.appendChild(app.canvas);
@@ -133,6 +142,7 @@ export async function createPreview(
             app.stage.removeChild(view);
             view.destroy();
             view = replacement;
+            liveParticles = new LiveParticleCount(next.capacity);
           } finally {
             if (controls.statsVisible) {
               overlay.show();
@@ -165,6 +175,7 @@ export async function createPreview(
       },
       reset() {
         view.reset();
+        liveParticles.reset();
       },
       destroy() {
         if (destroyed) {

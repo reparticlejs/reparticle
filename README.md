@@ -26,7 +26,7 @@ Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error;
 - `packages/pixi`: shares Pixi's WebGL2 context and renders directly from the simulation texture with one instanced draw. No Sprite per particle or CPU particle array.
 - `examples/demo`: React/TypeScript UI with a Pixi preview. React owns controls and status; Pixi owns the animation loop.
 
-GPU state contains position, velocity, age, and lifetime. Two mutable update kernels alternate output textures; both are allocated and warmed before playback. The CPU sends only time, emitter parameters, and a spawn range. The fixed-capacity ring recycles the oldest slots when full; dead particles are hidden in the vertex shader. The UI displays capacity, not a fabricated live-particle count.
+GPU state contains position, velocity, age, and lifetime. Two mutable update kernels alternate output textures; both are allocated and warmed before playback. The CPU sends only time, emitter parameters, and a spawn range. The fixed-capacity ring recycles the oldest slots when full; dead particles are hidden in the vertex shader. The UI displays capacity separately from the live count. The demo’s devtools tracker mirrors the spawn schedule and tracks batches with float32 age accumulation, expiration, and ring overwrites without GPU readbacks. Core has no debug counter or tracking overhead. Demo bookkeeping scales with live birth batches rather than allocated slots; future lifetime distributions or death behaviors must extend this tracker.
 
 Core owns simulation resources; the Pixi view owns its core emitter and drawing resources. Destroy the view before destroying the renderer. Core never destroys the host GL context. GPU.js canvas-size changes during compilation and GL-state restoration are handled at the integration boundary.
 
@@ -74,7 +74,7 @@ Untrimmed, unrotated atlas frames are supported through their UV rectangle. Trim
 
 The demo uses a source copy of Replayable's stats module in `examples/demo/src/devtools`, with its MIT license retained. It has no Replayable dependency and is not included in the core or Pixi library packages. D3 supplies the copied history graphs; Sass compiles their stylesheet.
 
-The overlay shows FPS, frame interval, browser JS heap when available, and WebGL draw calls, texture binds, and program uses. Sampling runs after Pixi renders. Draw counts include GPU.js simulation draws, particle rendering, and any other Pixi scene objects; they are API submissions, not GPU execution timings. Hide stats suspends sampling and removes instrumentation.
+The overlay shows FPS, living particle count, frame interval, browser JS heap when available, and WebGL draw calls, texture binds, and program uses. Sampling runs after Pixi renders. Draw counts include GPU.js simulation draws, particle rendering, and any other Pixi scene objects; they are API submissions, not GPU execution timings. Hide stats suspends sampling and removes instrumentation.
 
 ## Authoring simulation behavior
 

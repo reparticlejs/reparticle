@@ -46,7 +46,7 @@ export function createStatsCard(metric: StatsMetricDefinition): StatsCard {
 
   /** Draws stored values and history without recording another observation. */
   function render(): void {
-    elements.value.textContent = currentValue?.toFixed(1) ?? '—';
+    elements.value.textContent = currentValue?.toFixed(metric.decimals ?? 1) ?? '—';
     elements.range.hidden = currentRange === undefined;
     elements.range.textContent = formatRange(currentRange);
     graph.render(history);
