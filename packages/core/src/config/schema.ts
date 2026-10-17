@@ -70,6 +70,7 @@ const modifiersSchema = strictObject({ gravity: gravitySchema });
 
 /** Numeric updates only; shape type, identity, capacity and seed require recreation. */
 export const emitterParametersSchema = strictObject({
+  scale: number().optional(),
   rotation: number().optional(),
   inheritVelocity: number().optional(),
   emission: strictObject({
@@ -115,6 +116,7 @@ export const emitterParametersSchema = strictObject({
 });
 
 export const emitterConfigSchema = strictObject({
+  scale: number().default(1),
   rotation: number().default(0),
   space: enumSchema(['world', 'local']).default('world'),
   inheritVelocity: number().default(0),

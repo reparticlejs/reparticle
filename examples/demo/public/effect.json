@@ -120,6 +120,7 @@
         }
       },
       "rotation": 0,
+      "scale": 1,
       "space": "world",
       "inheritVelocity": 0,
       "startOffset": 0,

@@ -23,6 +23,16 @@ export function ShapeControls({ controls, onChange }: ControlSectionProps) {
         unit="°"
         onChange={(emitterRotation) => onChange({ emitterRotation })}
       />
+      <Slider
+        id="emitter-scale"
+        label="Emitter scale"
+        value={controls.emitterScale}
+        min={0}
+        max={4}
+        step={0.1}
+        unit="×"
+        onChange={(emitterScale) => onChange({ emitterScale })}
+      />
       {controls.shape === 'circle' && (
         <>
           <SelectField

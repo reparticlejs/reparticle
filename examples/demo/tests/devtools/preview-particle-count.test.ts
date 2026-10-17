@@ -59,6 +59,7 @@ const controls: PreviewControls = {
   rateSpread: 0,
   inheritVelocity: 0,
   emitterRotation: 0,
+  emitterScale: 1,
   space: 'world',
   gravity: 0,
   lifetime: 1,

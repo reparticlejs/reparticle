@@ -54,3 +54,13 @@ it('maps emitter rotation independently of initial particle rotation', () => {
   expect(changed.rotation).toBe(90);
   expect(changed.initial.rotation).toEqual(definition.initial.rotation);
 });
+
+it('maps emitter scale independently of initial particle size', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.scale = 0.5;
+  const controls = initialControls(definition);
+  expect(controls.emitterScale).toBe(0.5);
+  const changed = applyControls(definition, { ...controls, emitterScale: 2 });
+  expect(changed.scale).toBe(2);
+  expect(changed.initial.size).toEqual(definition.initial.size);
+});

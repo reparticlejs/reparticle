@@ -59,6 +59,7 @@ function setup() {
     rate: 3000,
     inheritVelocity: 0,
     emitterRotation: 0,
+    emitterScale: 1,
     space: 'world',
     gravity: 160,
     lifetime: 2,

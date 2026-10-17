@@ -53,6 +53,7 @@ export function integrate(
   inheritedVelocityY: number,
   emitterCosine: number,
   emitterSine: number,
+  emitterScale: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -92,12 +93,13 @@ export function integrate(
       }
       const sampledLifetime = lifetime + propertyVariation(particleId, seed, 2) * lifetimeSpread;
       const sampledSize = initialSize + propertyVariation(particleId, seed, 3) * sizeSpread;
-      return [0, sampledLifetime, sampledSize, rotation];
+      return [0, sampledLifetime, sampledSize * emitterScale, rotation];
     }
-    const sampledSpeed = speed + propertyVariation(particleId, seed, 1) * speedSpread;
+    const sampledSpeed =
+      (speed + propertyVariation(particleId, seed, 1) * speedSpread) * emitterScale;
     return [
-      emitterX + emitterCosine * spawned[0] - emitterSine * spawned[1],
-      emitterY + emitterSine * spawned[0] + emitterCosine * spawned[1],
+      emitterX + (emitterCosine * spawned[0] - emitterSine * spawned[1]) * emitterScale,
+      emitterY + (emitterSine * spawned[0] + emitterCosine * spawned[1]) * emitterScale,
       (emitterCosine * spawned[2] - emitterSine * spawned[3]) * sampledSpeed + inheritedVelocityX,
       (emitterSine * spawned[2] + emitterCosine * spawned[3]) * sampledSpeed + inheritedVelocityY,
     ];

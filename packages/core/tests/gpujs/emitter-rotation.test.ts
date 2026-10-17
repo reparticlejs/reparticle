@@ -50,6 +50,7 @@ it.each([0, 1, 2, 3])(
         0,
         cosine,
         sine,
+        1,
       );
     const base = run(1, 0, 0);
     const rotated = run(0, -1, 100);

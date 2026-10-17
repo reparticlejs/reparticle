@@ -140,6 +140,15 @@ export class Emitter {
   get id(): string {
     return this.settings.id;
   }
+  /** Uniform emitter scale; independent of particle size curves. */
+  get scale(): number {
+    return this.settings.scale;
+  }
+
+  set scale(value: number) {
+    this.setParameters({ scale: value });
+  }
+
   /** Emitter rotation in degrees, counterclockwise like Defold. */
   get rotation(): number {
     return this.settings.rotation;
@@ -238,6 +247,7 @@ export class Emitter {
     const { start, count } = this.schedule.next(rate, dt);
     const o = this.settings;
     const worldSpace = o.space === 'world';
+    const scale = worldSpace ? o.scale : 1;
     const rotation = worldSpace ? o.rotation : 0;
     const radians = (-rotation * Math.PI) / 180;
     const initialRotation = this.initialRotation.at(this.playback.normalizedAge);
@@ -254,7 +264,7 @@ export class Emitter {
       this.initialSpeed.at(this.playback.normalizedAge),
       o.initial.direction,
       o.initial.spread,
-      o.modifiers.gravity.y,
+      o.modifiers.gravity.y * scale,
       this.initialLifetime.at(this.playback.normalizedAge),
       this.seed,
       this.shape.type,
@@ -281,6 +291,7 @@ export class Emitter {
       worldSpace ? this.velocity.y * o.inheritVelocity : 0,
       Math.cos(radians),
       Math.sin(radians),
+      scale,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

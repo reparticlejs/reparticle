@@ -65,6 +65,7 @@ export interface PreviewControls {
   gravity: number;
   inheritVelocity: number;
   emitterRotation: number;
+  emitterScale: number;
   space: 'world' | 'local';
   lifetime: number;
   initialLifetimeCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
