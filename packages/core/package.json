@@ -15,6 +15,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "gpu.js": "2.24.1"
+    "gpu.js": "catalog:"
   }
 }

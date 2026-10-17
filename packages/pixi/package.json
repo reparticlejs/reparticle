@@ -17,7 +17,7 @@
     "@reparticle/core": "workspace:*"
   },
   "devDependencies": {
-    "pixi.js": "8.20.1"
+    "pixi.js": "catalog:"
   },
   "peerDependencies": {
     "pixi.js": "^8.20.1"
