@@ -28,6 +28,11 @@ export interface PreviewControls {
   rotationCurve: 'effect' | 'constant' | 'full-turn' | 'reverse-turn';
   size: number;
   sizeSpread: number;
+  redSpread: number;
+  greenSpread: number;
+  blueSpread: number;
+  alphaSpread: number;
+
   rotationSpread: number;
   sizeCurve: 'effect' | 'constant' | 'shrink' | 'grow-shrink';
   rate: number;

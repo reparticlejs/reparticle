@@ -14,6 +14,11 @@ const controls: PreviewControls = {
   speed: 220,
   speedSpread: 0,
   sizeSpread: 0,
+  redSpread: 0,
+  greenSpread: 0,
+  blueSpread: 0,
+  alphaSpread: 0,
+
   rotationSpread: 0,
   lifetimeSpread: 0,
   seed: 1,

@@ -190,6 +190,10 @@ export class Emitter {
       o.initial.lifetimeSpread,
       o.initial.sizeSpread,
       o.initial.rotationSpread,
+      o.initial.redSpread,
+      o.initial.greenSpread,
+      o.initial.blueSpread,
+      o.initial.alphaSpread,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

@@ -38,6 +38,10 @@ it('samples independent signed speed and lifetime offsets once per birth', () =>
       lifetimeSpread,
       0,
       0,
+      0,
+      0,
+      0,
+      0,
     );
   const speeds: number[] = [];
   const lifetimes: number[] = [];
@@ -102,6 +106,10 @@ it('captures signed size and rotation independently, adds orientation, and resam
       0,
       sizeSpread,
       rotationSpread,
+      0,
+      0,
+      0,
+      0,
     );
   expect(run(1, 1, 0, 0, 0)).toEqual([0, 1, 10, 30]);
   const sizes: number[] = [];
@@ -122,4 +130,60 @@ it('captures signed size and rotation independently, adds orientation, and resam
     sizes.some((size, index) => Math.abs((size - 10) / 20 - (rotations[index]! - 30) / 720) > 0.1),
   ).toBe(true);
   expect(run(1, 1, 0, 20, 720)).not.toEqual(run(2, 1, 0, 20, 720));
+});
+
+it('samples RGBA independently without birth clamping and retains values until reuse', () => {
+  const state: ParticleTexture = [[[0, 0, 0, 0]], [[0, 1, 24, 0]], [[0, 0, 0, 0]]];
+  const context: KernelContext = {
+    thread: { x: 0, y: 2 },
+    constants: { width: 1, rows: 1, capacity: 1 },
+  };
+  const run = (seed: number, spawn: number, spread: number) =>
+    integrate.call(
+      context,
+      state,
+      0.1,
+      0,
+      spawn,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      seed,
+      0,
+      0,
+      0,
+      24,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      spread,
+      spread,
+      spread,
+      spread,
+    );
+  expect(run(1, 1, 0)).toEqual([0.5, 0.5, 0.5, 0.5]);
+  const samples = Array.from({ length: 100 }, (_, seed) => run(seed, 1, 1));
+  for (let channel = 0; channel < 4; channel++) {
+    const values = samples.map((sample) => sample[channel]!);
+    expect(Math.min(...values)).toBeLessThan(0);
+    expect(Math.max(...values)).toBeGreaterThan(1);
+    expect(Math.min(...values)).toBeGreaterThanOrEqual(-0.5);
+    expect(Math.max(...values)).toBeLessThanOrEqual(1.5);
+  }
+  expect(new Set(samples[0]).size).toBe(4);
+  state[2]![0] = samples[0]!;
+  expect(run(1, 0, 0)).toEqual(samples[0]);
+  expect(run(0, 1, 1)).toEqual(samples[0]);
+  expect(run(1, 1, 1)).not.toEqual(samples[0]);
 });

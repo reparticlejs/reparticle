@@ -52,6 +52,15 @@ export function AppearanceControls({ controls, onChange }: ControlSectionProps) 
         step={0.05}
         onChange={(alpha) => onChange({ alpha })}
       />
+      <Slider
+        id="alpha-spread"
+        label="Alpha spread ±"
+        value={controls.alphaSpread}
+        min={0}
+        max={1}
+        step={0.05}
+        onChange={(alphaSpread) => onChange({ alphaSpread })}
+      />
       <SelectField
         id="alpha-curve"
         label="Alpha over lifetime"

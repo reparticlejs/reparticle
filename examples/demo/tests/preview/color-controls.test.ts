@@ -58,3 +58,14 @@ it('maps size and rotation spreads without replacing lifetime curves', () => {
   expect(initialControls(changed)).toMatchObject({ sizeSpread: 12, rotationSpread: 180 });
   expect(changed.overLifetime).toEqual(definition.overLifetime);
 });
+
+it('maps RGBA spreads while retaining lifetime curves', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  const spreads = { redSpread: 0.1, greenSpread: 0.2, blueSpread: 0.3, alphaSpread: 0.4 };
+  const controls = { ...initialControls(definition), ...spreads };
+  const changed = applyControls(definition, controls);
+  expect(changed.initial).toMatchObject(spreads);
+  expect(emitterParameters(controls).initial).toMatchObject(spreads);
+  expect(initialControls(changed)).toMatchObject(spreads);
+  expect(changed.overLifetime).toEqual(definition.overLifetime);
+});

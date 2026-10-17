@@ -33,6 +33,11 @@ const emissionSchema = strictObject({
 
 const initialPropertiesSchema = strictObject({
   red: number().default(1),
+  redSpread: number().nonnegative().default(0),
+  greenSpread: number().nonnegative().default(0),
+  blueSpread: number().nonnegative().default(0),
+  alphaSpread: number().nonnegative().default(0),
+
   green: number().default(1),
   blue: number().default(1),
   alpha: number().default(1),
@@ -73,6 +78,11 @@ export const emitterParametersSchema = strictObject({
       size: number().nonnegative(),
       alpha: number(),
       red: number(),
+      redSpread: number().nonnegative(),
+      greenSpread: number().nonnegative(),
+      blueSpread: number().nonnegative(),
+      alphaSpread: number().nonnegative(),
+
       green: number(),
       blue: number(),
     })

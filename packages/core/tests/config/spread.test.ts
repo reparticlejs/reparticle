@@ -56,3 +56,31 @@ it('defaults size and rotation spreads and preserves independent numeric updates
     );
   }
 });
+
+it('defaults RGBA spreads, accepts absolute half-ranges, and rejects invalid patches', () => {
+  const source = skeleton.emitters[0]!;
+  const config = parseEffectConfig({
+    version: 1,
+    emitters: [
+      {
+        ...source,
+        initial: {
+          ...source.initial,
+          redSpread: undefined,
+          greenSpread: undefined,
+          blueSpread: undefined,
+          alphaSpread: undefined,
+        },
+      },
+    ],
+  }).emitters[0];
+  const spreads = ['redSpread', 'greenSpread', 'blueSpread', 'alphaSpread'] as const;
+  for (const key of spreads) {
+    expect(config.initial[key]).toBe(0);
+    const changed = updateEmitterConfig(config, { initial: { [key]: 2 } });
+    expect(updateEmitterConfig(changed, { initial: { red: 0.5 } }).initial[key]).toBe(2);
+    for (const value of [-1, Infinity, NaN, undefined]) {
+      expect(() => updateEmitterConfig(config, { initial: { [key]: value } })).toThrow(ZodError);
+    }
+  }
+});

@@ -43,6 +43,10 @@ export function integrate(
   lifetimeSpread: number,
   sizeSpread: number,
   rotationSpread: number,
+  redSpread: number,
+  greenSpread: number,
+  blueSpread: number,
+  alphaSpread: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -53,7 +57,12 @@ export function integrate(
   // Color texel: initialRed, initialGreen, initialBlue, initialAlpha.
   if (this.thread.y >= this.constants.rows * 2) {
     if (isSpawning) {
-      return [initialRed, initialGreen, initialBlue, initialAlpha];
+      return [
+        initialRed + propertyVariation(particleId, seed, 5) * redSpread,
+        initialGreen + propertyVariation(particleId, seed, 6) * greenSpread,
+        initialBlue + propertyVariation(particleId, seed, 7) * blueSpread,
+        initialAlpha + propertyVariation(particleId, seed, 8) * alphaSpread,
+      ];
     }
     return state[particleRow + this.constants.rows * 2]![this.thread.x]!;
   }
