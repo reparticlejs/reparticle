@@ -114,6 +114,7 @@ export const emitterParametersSchema = strictObject({
 });
 
 export const emitterConfigSchema = strictObject({
+  space: enumSchema(['world', 'local']).default('world'),
   inheritVelocity: number().default(0),
   id: string().refine((value) => value.trim().length > 0, 'Expected a nonempty identifier'),
   capacity: int().min(1).max(1_000_000),

@@ -1,4 +1,5 @@
 import type { ControlSectionProps } from '../types/controls';
+import { emissionSpaceOptions } from './emission-space-options';
 import { capacityOptions } from './emitter-control-options';
 import { initialLifetimeCurveOptions } from './initial-lifetime-curve-options';
 import { rateCurveOptions } from './rate-curve-options';
@@ -17,6 +18,14 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
   return (
     <fieldset>
       <legend>Emission</legend>
+      <SelectField
+        id="emission-space"
+        label="Emission space"
+        value={controls.space}
+        options={emissionSpaceOptions}
+        onChange={(space) => onChange({ space })}
+      />
+      <p>Local particles follow the emitter. Changing space restarts the effect.</p>
       <ShapeControls controls={controls} onChange={onChange} />
       <SelectField
         id="capacity"
@@ -61,15 +70,17 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
         onChange={(rateSpread) => onChange({ rateSpread })}
       />
       <p>Spread is sampled once per emitter. Changing it restarts the effect.</p>
-      <Slider
-        id="inherit-velocity"
-        label="Inherit velocity"
-        value={controls.inheritVelocity}
-        min={0}
-        max={2}
-        step={0.1}
-        onChange={(inheritVelocity) => onChange({ inheritVelocity })}
-      />
+      {controls.space === 'world' && (
+        <Slider
+          id="inherit-velocity"
+          label="Inherit velocity"
+          value={controls.inheritVelocity}
+          min={0}
+          max={2}
+          step={0.1}
+          onChange={(inheritVelocity) => onChange({ inheritVelocity })}
+        />
+      )}
       <Slider
         id="gravity"
         label="Gravity"

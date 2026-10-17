@@ -140,6 +140,10 @@ export class Emitter {
   get id(): string {
     return this.settings.id;
   }
+  get space(): EmitterConfig['space'] {
+    return this.settings.space;
+  }
+
   /** Owned snapshot for serialization or explicit recreation. */
   get configuration(): EmitterConfig {
     return emitterConfigSchema.parse(this.settings);
@@ -224,14 +228,15 @@ export class Emitter {
     const rate = active && this.emitting ? this.spawnRate.at(this.playback.normalizedAge) : 0;
     const { start, count } = this.schedule.next(rate, dt);
     const o = this.settings;
+    const worldSpace = o.space === 'world';
     this.output = this.run(
       this.nextKernel,
       this.output,
       dt,
       start,
       count,
-      this.x,
-      this.y,
+      worldSpace ? this.x : 0,
+      worldSpace ? this.y : 0,
       this.initialSpeed.at(this.playback.normalizedAge),
       o.initial.direction,
       o.initial.spread,
@@ -258,8 +263,8 @@ export class Emitter {
       o.initial.alphaSpread,
       this.shape.spreadX,
       this.shape.spreadY,
-      this.velocity.x * o.inheritVelocity,
-      this.velocity.y * o.inheritVelocity,
+      worldSpace ? this.velocity.x * o.inheritVelocity : 0,
+      worldSpace ? this.velocity.y * o.inheritVelocity : 0,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

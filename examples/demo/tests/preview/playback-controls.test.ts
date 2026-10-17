@@ -36,3 +36,11 @@ it('loads and updates velocity inheritance without recreating the effect', () =>
   expect(controls.inheritVelocity).toBe(0.5);
   expect(applyControls(definition, { ...controls, inheritVelocity: 1 }).inheritVelocity).toBe(1);
 });
+
+it('loads emission space and passes space changes to recreated effects', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.space = 'local';
+  const controls = initialControls(definition);
+  expect(controls.space).toBe('local');
+  expect(applyControls(definition, { ...controls, space: 'world' }).space).toBe('world');
+});
