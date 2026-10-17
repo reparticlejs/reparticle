@@ -28,20 +28,20 @@ The first JSON skeleton is [effect.example.json](effect.example.json). It is acc
 
 Current required fields have no implicit defaults:
 
-| Field | Meaning and constraints |
-| --- | --- |
-| version | Exactly 1 for this initial contract |
-| emitters | Exactly one entry until orchestration is implemented; the document shape supports later expansion |
-| id | Nonempty string; future multiple-emitter definitions must have unique IDs |
-| capacity | Integer 1 through 1000000; device texture limits are checked at creation |
-| seed | Integer 0 through 65535; reproducibility across different GPU drivers is not promised |
-| emission.rate | Finite nonnegative particles per second |
-| emission.shape.type | Point only at this stage |
-| initial.lifetime | Finite positive seconds |
-| initial.speed | Finite nonnegative units per second |
-| initial.direction | Finite radians |
-| initial.spread | Finite nonnegative full angular width, centered on direction |
-| modifiers.gravity | Required object: x must currently be zero; y is finite acceleration in units/second² |
+| Field               | Meaning and constraints                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| version             | Exactly 1 for this initial contract                                                               |
+| emitters            | Exactly one entry until orchestration is implemented; the document shape supports later expansion |
+| id                  | Nonempty string; future multiple-emitter definitions must have unique IDs                         |
+| capacity            | Integer 1 through 1000000; device texture limits are checked at creation                          |
+| seed                | Integer 0 through 65535; reproducibility across different GPU drivers is not promised             |
+| emission.rate       | Finite nonnegative particles per second                                                           |
+| emission.shape.type | Point only at this stage                                                                          |
+| initial.lifetime    | Finite positive seconds                                                                           |
+| initial.speed       | Finite nonnegative units per second                                                               |
+| initial.direction   | Finite radians                                                                                    |
+| initial.spread      | Finite nonnegative full angular width, centered on direction                                      |
+| modifiers.gravity   | Required object: x must currently be zero; y is finite acceleration in units/second²              |
 
 Simulation coordinates currently use local units, positive X right and positive Y down. Rotation and angular speed use radians and radians/second in Reparticle. Conversion from other formats belongs at import boundaries.
 
@@ -87,13 +87,13 @@ Dependencies may change the order, but no feature disappears from the coverage i
 
 ## Runtime update policy
 
-| Category | Policy |
-| --- | --- |
-| Emission rate | Update scheduling without recompilation |
-| Initial properties | Affect subsequent births; do not rewrite existing particle state |
-| Modifier numeric parameters | Affect living particles without recompilation where supported |
-| Capacity, state layout, behavior structure, simulation space | Explicit rebuild/reset policy; never an implicit expensive hot-path operation |
-| Asset changes | Renderer resolves/rebinds resources; texture upload may occur outside steady playback |
+| Category                                                     | Policy                                                                                |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| Emission rate                                                | Update scheduling without recompilation                                               |
+| Initial properties                                           | Affect subsequent births; do not rewrite existing particle state                      |
+| Modifier numeric parameters                                  | Affect living particles without recompilation where supported                         |
+| Capacity, state layout, behavior structure, simulation space | Explicit rebuild/reset policy; never an implicit expensive hot-path operation         |
+| Asset changes                                                | Renderer resolves/rebinds resources; texture upload may occur outside steady playback |
 
 Validate patches atomically. Reject unknown or structural fields on the numeric update API. Changes to configuration do not mutate existing instances by reference.
 

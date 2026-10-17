@@ -1,4 +1,4 @@
-import type { Texture } from "gpu.js";
+import type { Texture } from 'gpu.js';
 
 export interface EmitterContext {
   gl: WebGL2RenderingContext;

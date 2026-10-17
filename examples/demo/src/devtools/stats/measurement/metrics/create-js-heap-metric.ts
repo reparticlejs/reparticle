@@ -1,6 +1,5 @@
-import type { StatsMetric, StatsReading } from "../../../types/metric.js";
-
-import { createStatsRange } from "../create-stats-range.js";
+import type { StatsMetric, StatsReading } from '../../../types/metric.js';
+import { createStatsRange } from '../create-stats-range.js';
 
 const BYTES_PER_MEGABYTE = 1_000_000;
 
@@ -25,19 +24,19 @@ export function createJsHeapMetric(): StatsMetric {
  * include other work sharing the browser's JavaScript heap.
  */
 function readJsHeap(): number | undefined {
-  if (!("memory" in performance)) {
+  if (!('memory' in performance)) {
     return undefined;
   }
 
   const { memory } = performance;
 
-  if (typeof memory !== "object" || memory === null || !("usedJSHeapSize" in memory)) {
+  if (typeof memory !== 'object' || memory === null || !('usedJSHeapSize' in memory)) {
     return undefined;
   }
 
   const bytes = memory.usedJSHeapSize;
 
-  if (typeof bytes !== "number" || !Number.isFinite(bytes) || bytes < 0) {
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes < 0) {
     return undefined;
   }
 

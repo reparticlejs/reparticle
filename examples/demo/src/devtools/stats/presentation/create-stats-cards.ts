@@ -1,20 +1,18 @@
-import type { StatsConfig } from "../../types/config.js";
-
-import type { StatsMetricDefinition } from "../../types/metric.js";
-import type { StatsCard, StatsCards } from "../../types/presentation.js";
-import type { StatsSample } from "../../types/sampling.js";
-
-import { createStatsCardSelection } from "./create-stats-card-selection.js";
-import { createStatsCard } from "./create-stats-card.js";
+import type { StatsConfig } from '../../types/config.js';
+import type { StatsMetricDefinition } from '../../types/metric.js';
+import type { StatsCard, StatsCards } from '../../types/presentation.js';
+import type { StatsSample } from '../../types/sampling.js';
+import { createStatsCardSelection } from './create-stats-card-selection.js';
+import { createStatsCard } from './create-stats-card.js';
 
 /** Owns card instances, recorded samples, and selection in registry order. */
 export function createStatsCards(
   definitions: readonly StatsMetricDefinition[],
-  display: StatsConfig["display"],
+  display: StatsConfig['display'],
 ): StatsCards {
   const cards = definitions.map(createStatsCard);
   const selection = createStatsCardSelection(cards);
-  const render = display === "compact" ? renderCompact : renderExpanded;
+  const render = display === 'compact' ? renderCompact : renderExpanded;
 
   return {
     elements: cards.map((card) => card.element),

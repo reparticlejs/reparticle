@@ -1,8 +1,8 @@
-import { expect, it } from "vitest";
+import { expect, it } from 'vitest';
 
-import { createStatsRange } from "#src/devtools/stats/measurement/create-stats-range.js";
+import { createStatsRange } from '#src/devtools/stats/measurement/create-stats-range.js';
 
-it("starts empty, ignores invalid measurements, and includes valid zero", () => {
+it('starts empty, ignores invalid measurements, and includes valid zero', () => {
   const range = createStatsRange();
   for (const value of [NaN, Infinity, -Infinity, -1]) {
     range.observe(value);

@@ -1,6 +1,6 @@
-import type { StatsMetricDefinition, StatsReading } from "./metric.js";
-import type { StatsSample } from "./sampling.js";
-import type { Stats } from "./stats.js";
+import type { StatsMetricDefinition, StatsReading } from './metric.js';
+import type { StatsSample } from './sampling.js';
+import type { Stats } from './stats.js';
 
 /** Owns card instances, recorded samples, and selection in registry order. */
 export interface StatsCards {
@@ -28,7 +28,7 @@ export interface StatsShell {
 /** Owns one metric's data and DOM. */
 export interface StatsCard {
   /** Registry identifier used to route sampled readings to this card. */
-  readonly key: StatsMetricDefinition["key"];
+  readonly key: StatsMetricDefinition['key'];
   readonly element: HTMLDivElement;
   readonly label: string;
   readonly available: boolean;

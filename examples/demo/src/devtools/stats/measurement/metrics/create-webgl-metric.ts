@@ -1,8 +1,7 @@
-import type { StatsMetric, StatsReading } from "../../../types/metric.js";
-import type { StatsWebglCounts } from "../../../types/webgl.js";
-
-import { collectWebglFrame, subscribeWebglFrames } from "../../webgl/subscribe-webgl-frames.js";
-import { createStatsRange } from "../create-stats-range.js";
+import type { StatsMetric, StatsReading } from '../../../types/metric.js';
+import type { StatsWebglCounts } from '../../../types/webgl.js';
+import { collectWebglFrame, subscribeWebglFrames } from '../../webgl/subscribe-webgl-frames.js';
+import { createStatsRange } from '../create-stats-range.js';
 
 /** One counter's frame average, graph peak, and lifetime per-frame extrema. */
 export function createWebglMetric(key: keyof StatsWebglCounts): StatsMetric {

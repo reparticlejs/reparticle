@@ -1,17 +1,15 @@
-import type { StatsConfig } from "../../types/config.js";
-
-import type { StatsShell } from "../../types/presentation.js";
-
-import { installDevtoolsInteraction } from "../../interaction/install-devtools-interaction.js";
-import { createStatsShellElements } from "./create-stats-shell-elements.js";
+import { installDevtoolsInteraction } from '../../interaction/install-devtools-interaction.js';
+import type { StatsConfig } from '../../types/config.js';
+import type { StatsShell } from '../../types/presentation.js';
+import { createStatsShellElements } from './create-stats-shell-elements.js';
 
 /** Mounts the shell, stylesheet, and optional compact input interception. */
 export function createStatsShell(
   cardElements: readonly HTMLElement[],
-  display: StatsConfig["display"],
+  display: StatsConfig['display'],
   onCycleCard: () => void,
 ): StatsShell {
-  const compact = display === "compact";
+  const compact = display === 'compact';
   const { root, style } = createStatsShellElements(cardElements, display);
   const updateAccessibility = compact ? updateCompactAccessibility : noop;
 
@@ -25,13 +23,13 @@ export function createStatsShell(
   /** Describes selection without leaving an empty view as an invisible click target. */
   function updateCompactAccessibility(label: string | undefined): void {
     if (label !== undefined) {
-      root.setAttribute("role", "button");
+      root.setAttribute('role', 'button');
       root.tabIndex = 0;
-      root.setAttribute("aria-label", `${label}. Show next stats card`);
+      root.setAttribute('aria-label', `${label}. Show next stats card`);
     } else {
-      root.removeAttribute("role");
-      root.removeAttribute("tabindex");
-      root.setAttribute("aria-label", "Development stats");
+      root.removeAttribute('role');
+      root.removeAttribute('tabindex');
+      root.setAttribute('aria-label', 'Development stats');
     }
   }
 

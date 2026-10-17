@@ -1,16 +1,14 @@
-import type { StatsConfig } from "../../types/config.js";
-
-import type { StatsMetricDefinition } from "../../types/metric.js";
-import type { StatsView } from "../../types/presentation.js";
-import type { StatsSample } from "../../types/sampling.js";
-
-import { createStatsCards } from "./create-stats-cards.js";
-import { createStatsShell } from "./create-stats-shell.js";
+import type { StatsConfig } from '../../types/config.js';
+import type { StatsMetricDefinition } from '../../types/metric.js';
+import type { StatsView } from '../../types/presentation.js';
+import type { StatsSample } from '../../types/sampling.js';
+import { createStatsCards } from './create-stats-cards.js';
+import { createStatsShell } from './create-stats-shell.js';
 
 /** Coordinates metric cards and their mounted presentation shell. */
 export function createStatsView(
   definitions: readonly StatsMetricDefinition[],
-  display: StatsConfig["display"],
+  display: StatsConfig['display'],
 ): StatsView {
   const cards = createStatsCards(definitions, display);
   const shell = createStatsShell(cards.elements, display, cycleCard);

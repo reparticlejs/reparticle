@@ -122,13 +122,9 @@ small {
 }
 
 #status {
+  display: block;
+  margin: 1em 0;
   color: #70e8cc;
-}
-#validation {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  color: #a4bad4;
-  font-size: 12px;
 }
 
 select {
@@ -149,4 +145,18 @@ select {
 }
 .workspace > aside p {
   margin-top: 20px;
+}
+
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+button:disabled,
+fieldset:disabled {
+  opacity: 0.5;
+}
+button:disabled {
+  cursor: default;
 }

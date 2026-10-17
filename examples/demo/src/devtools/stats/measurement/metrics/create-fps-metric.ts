@@ -1,6 +1,5 @@
-import type { StatsMetric, StatsReading } from "../../../types/metric.js";
-
-import { createStatsRange } from "../create-stats-range.js";
+import type { StatsMetric, StatsReading } from '../../../types/metric.js';
+import { createStatsRange } from '../create-stats-range.js';
 
 const MILLISECONDS_PER_SECOND = 1000;
 

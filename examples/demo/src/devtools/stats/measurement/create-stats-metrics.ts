@@ -1,8 +1,7 @@
-import type { StatsMetricDefinition, StatsReading } from "../../types/metric.js";
-import type { StatsMetrics } from "../../types/metrics.js";
-import type { StatsSample } from "../../types/sampling.js";
-
-import { failStatsSetup, runStatsCleanup } from "../lifecycle/run-stats-cleanup.js";
+import type { StatsMetricDefinition, StatsReading } from '../../types/metric.js';
+import type { StatsMetrics } from '../../types/metrics.js';
+import type { StatsSample } from '../../types/sampling.js';
+import { failStatsSetup, runStatsCleanup } from '../lifecycle/run-stats-cleanup.js';
 
 /** Creates independent measurement instances for the enabled registry definitions. */
 export function createStatsMetrics(definitions: readonly StatsMetricDefinition[]): StatsMetrics {
@@ -45,7 +44,7 @@ export function createStatsMetrics(definitions: readonly StatsMetricDefinition[]
 
   /** Preserves unavailable readings as undefined and leaves earlier snapshots untouched. */
   function collect(): StatsSample {
-    const readings = new Map<StatsMetricDefinition["key"], StatsReading | undefined>();
+    const readings = new Map<StatsMetricDefinition['key'], StatsReading | undefined>();
 
     for (const { key, metric } of metrics) {
       readings.set(key, metric.collect());

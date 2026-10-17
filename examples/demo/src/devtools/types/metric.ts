@@ -1,6 +1,5 @@
-import type { StatsConfig } from "./config.js";
-
-import type { StatsRange } from "./range.js";
+import type { StatsConfig } from './config.js';
+import type { StatsRange } from './range.js';
 
 /** One metric's current reading. Frame average and graph peak intentionally differ. */
 export interface StatsReading {
@@ -25,7 +24,7 @@ export interface StatsMetric {
 
 /** Internal registration: measurement and presentation are connected in one place. */
 export interface StatsMetricDefinition {
-  readonly key: Exclude<keyof StatsConfig, "display">;
+  readonly key: Exclude<keyof StatsConfig, 'display'>;
   readonly label: string;
   readonly description: string;
   readonly ceiling: number;

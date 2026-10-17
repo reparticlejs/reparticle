@@ -1,7 +1,6 @@
-import type { StatsWebglContext, StatsWebglCounts, StatsWebglTracker } from "../../types/webgl.js";
-
-import { failStatsSetup, runStatsCleanup } from "../lifecycle/run-stats-cleanup.js";
-import { observeWebglMethod } from "./observe-webgl-method.js";
+import type { StatsWebglContext, StatsWebglCounts, StatsWebglTracker } from '../../types/webgl.js';
+import { failStatsSetup, runStatsCleanup } from '../lifecycle/run-stats-cleanup.js';
+import { observeWebglMethod } from './observe-webgl-method.js';
 
 const trackers = new WeakMap<StatsWebglContext, StatsWebglTracker>();
 
@@ -25,8 +24,8 @@ export function createWebglTracker(context: StatsWebglContext): StatsWebglTracke
   // A failed installation must not leave a partly patched rendering context.
   try {
     observeDrawMethods();
-    observe(context, "bindTexture", recordTextureBind);
-    observe(context, "useProgram", recordProgramUse);
+    observe(context, 'bindTexture', recordTextureBind);
+    observe(context, 'useProgram', recordProgramUse);
     observeExtensions();
   } catch (error) {
     return failStatsSetup(error, destroy);
@@ -38,11 +37,11 @@ export function createWebglTracker(context: StatsWebglContext): StatsWebglTracke
   /** Instanced submissions count once, regardless of how many instances they draw. */
   function observeDrawMethods(): void {
     for (const name of [
-      "drawArrays",
-      "drawElements",
-      "drawRangeElements",
-      "drawArraysInstanced",
-      "drawElementsInstanced",
+      'drawArrays',
+      'drawElements',
+      'drawRangeElements',
+      'drawArraysInstanced',
+      'drawElementsInstanced',
     ]) {
       observe(context, name, recordDraw);
     }
@@ -56,18 +55,18 @@ export function createWebglTracker(context: StatsWebglContext): StatsWebglTracke
    * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_multi_draw
    */
   function observeExtensions(): void {
-    const instancing: unknown = context.getExtension("ANGLE_instanced_arrays");
-    if (typeof instancing === "object" && instancing !== null) {
-      observe(instancing, "drawArraysInstancedANGLE", recordDraw);
-      observe(instancing, "drawElementsInstancedANGLE", recordDraw);
+    const instancing: unknown = context.getExtension('ANGLE_instanced_arrays');
+    if (typeof instancing === 'object' && instancing !== null) {
+      observe(instancing, 'drawArraysInstancedANGLE', recordDraw);
+      observe(instancing, 'drawElementsInstancedANGLE', recordDraw);
     }
 
-    const multiDraw: unknown = context.getExtension("WEBGL_multi_draw");
-    if (typeof multiDraw === "object" && multiDraw !== null) {
-      observe(multiDraw, "multiDrawArraysWEBGL", (args) => recordMultiDraw(args[5]));
-      observe(multiDraw, "multiDrawElementsWEBGL", (args) => recordMultiDraw(args[6]));
-      observe(multiDraw, "multiDrawArraysInstancedWEBGL", (args) => recordMultiDraw(args[7]));
-      observe(multiDraw, "multiDrawElementsInstancedWEBGL", (args) => recordMultiDraw(args[8]));
+    const multiDraw: unknown = context.getExtension('WEBGL_multi_draw');
+    if (typeof multiDraw === 'object' && multiDraw !== null) {
+      observe(multiDraw, 'multiDrawArraysWEBGL', (args) => recordMultiDraw(args[5]));
+      observe(multiDraw, 'multiDrawElementsWEBGL', (args) => recordMultiDraw(args[6]));
+      observe(multiDraw, 'multiDrawArraysInstancedWEBGL', (args) => recordMultiDraw(args[7]));
+      observe(multiDraw, 'multiDrawElementsInstancedWEBGL', (args) => recordMultiDraw(args[8]));
     }
   }
 
@@ -84,7 +83,7 @@ export function createWebglTracker(context: StatsWebglContext): StatsWebglTracke
   /** Reads the signature's drawcount, ignoring extra arguments as WebGL does. */
   function recordMultiDraw(count: unknown): void {
     // Do not coerce user objects a second time or let invalid counts poison stats.
-    if (typeof count === "number" && Number.isInteger(count) && count > 0) {
+    if (typeof count === 'number' && Number.isInteger(count) && count > 0) {
       drawCalls += count;
     }
   }

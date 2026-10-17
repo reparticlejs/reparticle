@@ -9,7 +9,7 @@ export function observeWebglMethod(
   observe: (args: readonly unknown[]) => void,
 ): () => void {
   const original: unknown = Reflect.get(target, name);
-  if (typeof original !== "function") {
+  if (typeof original !== 'function') {
     return noop;
   }
   const method = original;

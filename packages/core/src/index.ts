@@ -4,18 +4,20 @@ import {
   type IGPUKernelSettings,
   type IKernelRunShortcut,
   type KernelVariable,
-} from "gpu.js";
-import { initialize } from "./gpujs/initialize";
-import { spawnMotion } from "./gpujs/spawn-motion";
-import { integrate } from "./gpujs/integrate";
-import { advancePosition, advancePositionWithGravity, advanceVelocity } from "./behaviors/motion";
-import { spawnVariation, spawnDirection } from "./behaviors/spawn";
-import { SpawnSchedule } from "./spawn-schedule";
-import { emitterConfigSchema } from "./config/schema";
-import { updateEmitterConfig } from "./config/update-emitter";
-import type { EmitterConfig, EmitterParameters } from "#types/effect.js";
-import type { EmitterContext, PipelineTexture } from "#types/emitter.js";
-export type { EmitterContext } from "#types/emitter.js";
+} from 'gpu.js';
+
+import type { EmitterConfig, EmitterParameters } from '#types/effect.js';
+import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
+
+import { advancePosition, advancePositionWithGravity, advanceVelocity } from './behaviors/motion';
+import { spawnVariation, spawnDirection } from './behaviors/spawn';
+import { emitterConfigSchema } from './config/schema';
+import { updateEmitterConfig } from './config/update-emitter';
+import { initialize } from './gpujs/initialize';
+import { integrate } from './gpujs/integrate';
+import { spawnMotion } from './gpujs/spawn-motion';
+import { SpawnSchedule } from './spawn-schedule';
+export type { EmitterContext } from '#types/emitter.js';
 
 /** GPU.js simulation, independent of any renderer. No particle arrays or CPU fallback. */
 export class Emitter {
@@ -45,17 +47,20 @@ export class Emitter {
     this.schedule = new SpawnSchedule(this.capacity);
     this.rows = Math.ceil(this.capacity / this.width);
     this.seed = this.initialSeed = this.settings.seed;
-    if (!Number.isFinite(this.seed)) throw new RangeError("Seed must be finite");
+    if (!Number.isFinite(this.seed)) {
+      throw new RangeError('Seed must be finite');
+    }
     const gl = this.gl;
     if (
-      typeof gl.drawArraysInstanced !== "function" ||
-      !gl.getExtension("EXT_color_buffer_float")
+      typeof gl.drawArraysInstanced !== 'function' ||
+      !gl.getExtension('EXT_color_buffer_float')
     ) {
-      throw new Error("GPU simulation requires WebGL2 and EXT_color_buffer_float");
+      throw new Error('GPU simulation requires WebGL2 and EXT_color_buffer_float');
     }
-    if (this.rows * 2 > gl.getParameter(gl.MAX_TEXTURE_SIZE))
-      throw new RangeError("Capacity exceeds GPU texture limits");
-    const gpu = new GPU({ mode: "webgl2", canvas: this.canvas, context: gl });
+    if (this.rows * 2 > gl.getParameter(gl.MAX_TEXTURE_SIZE)) {
+      throw new RangeError('Capacity exceeds GPU texture limits');
+    }
+    const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
     gpu.addFunction(advancePosition);
     gpu.addFunction(advancePositionWithGravity);
     gpu.addFunction(advanceVelocity);
@@ -64,7 +69,7 @@ export class Emitter {
     gpu.addFunction(spawnMotion);
     const config: IGPUKernelSettings = {
       output: [this.width, this.rows * 2],
-      precision: "single",
+      precision: 'single',
       pipeline: true,
       immutable: false,
       constants: { width: this.width, rows: this.rows, capacity: this.capacity },
@@ -73,7 +78,9 @@ export class Emitter {
       for (const source of [initialize, integrate, integrate]) {
         this.kernels.push(gpu.createKernel(source, config));
         const vao = gl.createVertexArray();
-        if (!vao) throw new Error("Unable to allocate simulation VAO");
+        if (!vao) {
+          throw new Error('Unable to allocate simulation VAO');
+        }
         this.vaos.push(vao);
       }
       this.reset();
@@ -104,8 +111,9 @@ export class Emitter {
   }
   update(dt: number): void {
     this.assertAlive();
-    if (!Number.isFinite(this.x) || !Number.isFinite(this.y))
-      throw new RangeError("Emitter position must be finite");
+    if (!Number.isFinite(this.x) || !Number.isFinite(this.y)) {
+      throw new RangeError('Emitter position must be finite');
+    }
     const { start, count } = this.schedule.next(
       this.emitting ? this.settings.emission.rate : 0,
       dt,
@@ -126,7 +134,9 @@ export class Emitter {
       o.initial.lifetime,
       this.seed,
     );
-    if (count) this.seed = (this.seed + 1) % 65536;
+    if (count) {
+      this.seed = (this.seed + 1) % 65536;
+    }
     this.nextKernel = this.nextKernel === 1 ? 2 : 1;
   }
   reset(): void {
@@ -137,14 +147,22 @@ export class Emitter {
     this.seed = this.initialSeed;
   }
   destroy(): void {
-    if (this.disposed) return;
+    if (this.disposed) {
+      return;
+    }
     this.disposed = true;
     // Do not call gpu.destroy(): the shared context belongs to the host renderer.
-    for (const kernel of this.kernels) kernel.destroy(true);
-    for (const vao of this.vaos) this.gl.deleteVertexArray(vao);
+    for (const kernel of this.kernels) {
+      kernel.destroy(true);
+    }
+    for (const vao of this.vaos) {
+      this.gl.deleteVertexArray(vao);
+    }
   }
   private assertAlive(): void {
-    if (this.disposed) throw new Error("Emitter has been destroyed");
+    if (this.disposed) {
+      throw new Error('Emitter has been destroyed');
+    }
   }
   private run(index: number, ...args: KernelVariable[]): PipelineTexture {
     const gl = this.gl;
@@ -165,23 +183,28 @@ export class Emitter {
       const result = kernel(...args);
       if (
         !(result instanceof Texture) ||
-        !("context" in result) ||
+        !('context' in result) ||
         result.context !== gl ||
-        !("texture" in result) ||
+        !('texture' in result) ||
         !result.texture
-      )
-        throw new Error("GPU.js did not return a shared-context texture");
+      ) {
+        throw new Error('GPU.js did not return a shared-context texture');
+      }
       return result as PipelineTexture;
     } finally {
       // GPU.js changes canvas dimensions on first compilation.
-      if (this.canvas.width !== width) this.canvas.width = width;
-      if (this.canvas.height !== height) this.canvas.height = height;
+      if (this.canvas.width !== width) {
+        this.canvas.width = width;
+      }
+      if (this.canvas.height !== height) {
+        this.canvas.height = height;
+      }
       gl.bindVertexArray(null);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
   }
 }
 
-export { parseEffectConfig } from "./config/effect";
-export { effectConfigSchema, emitterConfigSchema } from "./config/schema";
-export type { EffectConfig, EmitterConfig, EmitterParameters } from "#types/effect.js";
+export { parseEffectConfig } from './config/effect';
+export { effectConfigSchema, emitterConfigSchema } from './config/schema';
+export type { EffectConfig, EmitterConfig, EmitterParameters } from '#types/effect.js';

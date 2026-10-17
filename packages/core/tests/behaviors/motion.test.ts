@@ -1,15 +1,16 @@
-import { expect, it } from "vitest";
+import { expect, it } from 'vitest';
+
 import {
   advancePosition,
   advancePositionWithGravity,
   advanceVelocity,
-} from "#src/behaviors/motion.js";
-import { spawnDirection, spawnVariation } from "#src/behaviors/spawn.js";
-import { spawnMotion } from "#src/gpujs/spawn-motion.js";
-import { integrate } from "#src/gpujs/integrate.js";
-import type { KernelContext, ParticleTexture } from "#src/gpujs/layout.js";
+} from '#src/behaviors/motion.js';
+import { spawnDirection, spawnVariation } from '#src/behaviors/spawn.js';
+import { integrate } from '#src/gpujs/integrate.js';
+import type { KernelContext, ParticleTexture } from '#src/gpujs/layout.js';
+import { spawnMotion } from '#src/gpujs/spawn-motion.js';
 
-it("integrates gravity equivalently over one step and ten smaller steps", () => {
+it('integrates gravity equivalently over one step and ten smaller steps', () => {
   let position = 10,
     velocity = -30;
   for (let step = 0; step < 10; step++) {
@@ -20,7 +21,7 @@ it("integrates gravity equivalently over one step and ten smaller steps", () => 
   expect(velocity).toBeCloseTo(20, 10);
   expect(advancePosition(10, -30, 0.5)).toBe(-5);
 });
-it("keeps spawn direction within its range and scalar speed exact", () => {
+it('keeps spawn direction within its range and scalar speed exact', () => {
   for (let id = 0; id < 100; id++) {
     const variation = spawnVariation(id, 1);
     expect(variation).toBeGreaterThanOrEqual(0);
@@ -32,7 +33,7 @@ it("keeps spawn direction within its range and scalar speed exact", () => {
     expect(Math.hypot(vx, vy)).toBeCloseTo(100, 10);
   }
 });
-it("maps motion and lifetime texels without changing the behavior math", () => {
+it('maps motion and lifetime texels without changing the behavior math', () => {
   const state: ParticleTexture = [[[10, 20, 30, -40]], [[0.5, 2, 1, 0]]];
   const context: KernelContext = {
     thread: { x: 0, y: 0 },

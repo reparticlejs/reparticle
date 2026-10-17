@@ -2,11 +2,10 @@ import type {
   StatsWebglContext,
   StatsWebglContextSampling,
   StatsWebglFrameListener,
-} from "../../types/webgl.js";
-
-import { failStatsSetup, runStatsCleanup } from "../lifecycle/run-stats-cleanup.js";
-import { subscribeWebglContexts } from "./context-registry.js";
-import { createWebglContextSampling } from "./create-webgl-context-sampling.js";
+} from '../../types/webgl.js';
+import { failStatsSetup, runStatsCleanup } from '../lifecycle/run-stats-cleanup.js';
+import { subscribeWebglContexts } from './context-registry.js';
+import { createWebglContextSampling } from './create-webgl-context-sampling.js';
 
 // All cards/stats instances share one frame snapshot. Collecting separately
 // would reset counters before the other consumers could read the same frame.

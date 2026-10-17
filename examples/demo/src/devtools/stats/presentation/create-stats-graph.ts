@@ -1,9 +1,8 @@
-import { scaleLinear } from "d3-scale";
-import { area, line } from "d3-shape";
+import { scaleLinear } from 'd3-scale';
+import { area, line } from 'd3-shape';
 
-import type { StatsGraph } from "../../types/graph.js";
-
-import { createStatsGraphElements } from "./create-stats-graph-elements.js";
+import type { StatsGraph } from '../../types/graph.js';
+import { createStatsGraphElements } from './create-stats-graph-elements.js';
 
 /** Cards retain exactly as many refresh observations as the graph has X slots. */
 export const STATS_HISTORY_LENGTH = 60;
@@ -60,8 +59,8 @@ export function createStatsGraph(initialCeiling: number): StatsGraph {
   function render(history: readonly number[]): void {
     yScale.domain([0, ceiling]);
     if (history.length < 2) {
-      elements.fill.removeAttribute("d");
-      elements.stroke.removeAttribute("d");
+      elements.fill.removeAttribute('d');
+      elements.stroke.removeAttribute('d');
       return;
     }
 
@@ -70,7 +69,7 @@ export function createStatsGraph(initialCeiling: number): StatsGraph {
     areaPath.x((_value, index) => xScale(firstSlot + index));
     // D3 defaults to straight segments. No smoothing that could invent peaks,
     // and no transitions that would add work or lag behind the observations.
-    elements.stroke.setAttribute("d", linePath(history) ?? "");
-    elements.fill.setAttribute("d", areaPath(history) ?? "");
+    elements.stroke.setAttribute('d', linePath(history) ?? '');
+    elements.fill.setAttribute('d', areaPath(history) ?? '');
   }
 }

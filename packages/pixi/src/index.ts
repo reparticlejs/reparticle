@@ -1,5 +1,5 @@
-import { RenderContainer, type Texture, type WebGLRenderer } from "pixi.js";
-import { Emitter, parseEffectConfig } from "@reparticle/core";
+import { Emitter, parseEffectConfig } from '@reparticle/core';
+import { RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
 
 const vertex = `#version 300 es
 precision highp float;
@@ -46,27 +46,32 @@ void main() {
 }`;
 function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
   const program = gl.createProgram();
-  if (!program) throw new Error("Unable to create particle program");
+  if (!program) {
+    throw new Error('Unable to create particle program');
+  }
   try {
     for (const [type, source] of [
       [gl.VERTEX_SHADER, vertex],
       [gl.FRAGMENT_SHADER, fragment],
     ] as const) {
       const shader = gl.createShader(type);
-      if (!shader) throw new Error("Unable to create particle shader");
+      if (!shader) {
+        throw new Error('Unable to create particle shader');
+      }
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         const message = gl.getShaderInfoLog(shader);
         gl.deleteShader(shader);
-        throw new Error(message ?? "Shader compilation failed");
+        throw new Error(message ?? 'Shader compilation failed');
       }
       gl.attachShader(program, shader);
       gl.deleteShader(shader);
     }
     gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS))
-      throw new Error(gl.getProgramInfoLog(program) ?? "Particle program linking failed");
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(program) ?? 'Particle program linking failed');
+    }
     return program;
   } catch (error) {
     gl.deleteProgram(program);
@@ -91,15 +96,16 @@ export class ParticleView extends RenderContainer {
     return this.artwork;
   }
   set texture(value: Texture | null) {
-    if (value && (value.trim || value.rotate))
-      throw new Error("Trimmed or rotated particle textures are not supported yet");
+    if (value && (value.trim || value.rotate)) {
+      throw new Error('Trimmed or rotated particle textures are not supported yet');
+    }
     this.artwork = value;
   }
   constructor(renderer: WebGLRenderer, definition: unknown) {
     const config = parseEffectConfig(definition).emitters[0];
     super({});
     this.host = renderer;
-    const gl = renderer.gl as WebGL2RenderingContext;
+    const gl = renderer.gl;
     this.gl = gl;
     try {
       this.emitter = new Emitter({ gl, canvas: renderer.canvas }, config);
@@ -108,22 +114,22 @@ export class ParticleView extends RenderContainer {
         const vao = gl.createVertexArray();
         if (!vao) {
           gl.deleteProgram(this.program);
-          throw new Error("Unable to create draw VAO");
+          throw new Error('Unable to create draw VAO');
         }
         this.vao = vao;
         this.uniforms = Object.fromEntries(
           [
-            "particles",
-            "width",
-            "rows",
-            "viewport",
-            "transform",
-            "opacity",
-            "artwork",
-            "textured",
-            "straightAlpha",
-            "frame",
-            "particleSize",
+            'particles',
+            'width',
+            'rows',
+            'viewport',
+            'transform',
+            'opacity',
+            'artwork',
+            'textured',
+            'straightAlpha',
+            'frame',
+            'particleSize',
           ].map((name) => [name, gl.getUniformLocation(this.program, name)]),
         );
       } catch (error) {
@@ -149,7 +155,9 @@ export class ParticleView extends RenderContainer {
     }
   }
   override render(): void {
-    if (this.disposed) return;
+    if (this.disposed) {
+      return;
+    }
     const gl = this.gl,
       r = this.host,
       u = this.uniforms;
@@ -159,10 +167,12 @@ export class ParticleView extends RenderContainer {
     gl.useProgram(this.program);
     gl.bindVertexArray(this.vao);
     const texture = this.artwork;
-    if (texture) r.texture.bind(texture.source, 1);
+    if (texture) {
+      r.texture.bind(texture.source, 1);
+    }
     gl.uniform1i(u.artwork!, 1);
     gl.uniform1i(u.textured!, texture ? 1 : 0);
-    gl.uniform1i(u.straightAlpha!, texture?.source.alphaMode === "no-premultiply-alpha" ? 1 : 0);
+    gl.uniform1i(u.straightAlpha!, texture?.source.alphaMode === 'no-premultiply-alpha' ? 1 : 0);
     if (texture) {
       const uv = texture.uvs;
       gl.uniform4f(u.frame!, uv.x0, uv.y0, uv.x2, uv.y2);
@@ -207,7 +217,9 @@ export class ParticleView extends RenderContainer {
     r.resetState();
   }
   override destroy(): void {
-    if (this.disposed) return;
+    if (this.disposed) {
+      return;
+    }
     this.disposed = true;
     this.emitter.destroy();
     this.gl.deleteProgram(this.program);

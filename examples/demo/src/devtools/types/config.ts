@@ -1,7 +1,7 @@
 /** Explicit display and panel settings after project configuration shorthand is resolved. */
 export interface StatsConfig {
   /** Expanded shows all panels; compact presents one panel at a time. */
-  readonly display: "expanded" | "compact";
+  readonly display: 'expanded' | 'compact';
   readonly fps: boolean;
   readonly frameInterval: boolean;
   /** Approximate browser-reported JavaScript heap, when supported. */

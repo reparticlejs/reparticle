@@ -9,11 +9,13 @@
     "typecheck": "turbo run typecheck",
     "lint": "oxlint .",
     "format": "oxfmt .",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "format:check": "oxfmt --check ."
   },
   "devDependencies": {
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "tsdown": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:",

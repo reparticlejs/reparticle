@@ -1,16 +1,16 @@
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
 import {
   registerWebglContext,
   subscribeWebglContexts,
-} from "#src/devtools/stats/webgl/context-registry.js";
-import type { StatsWebglContextListener } from "#src/devtools/types/webgl.js";
+} from '#src/devtools/stats/webgl/context-registry.js';
+import type { StatsWebglContextListener } from '#src/devtools/types/webgl.js';
 
 const cleanup: (() => void)[] = [];
 
 beforeEach(() => {
   // Registration uses identity only. No browser or WebGL methods are needed.
-  vi.stubGlobal("WebGLRenderingContext", Object);
+  vi.stubGlobal('WebGLRenderingContext', Object);
 });
 
 afterEach(() => {
@@ -21,7 +21,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it("notifies early observers when a renderer registers and releases its context", () => {
+it('notifies early observers when a renderer registers and releases its context', () => {
   const observer = vi.fn<StatsWebglContextListener>();
   cleanup.push(subscribeWebglContexts(observer));
   const context = new WebGLRenderingContext();
@@ -32,7 +32,7 @@ it("notifies early observers when a renderer registers and releases its context"
   expect(observer.mock.calls).toEqual([[[]], [[context]], [[]]]);
 });
 
-it("replays existing contexts to late observers and stops notifications on unsubscribe", () => {
+it('replays existing contexts to late observers and stops notifications on unsubscribe', () => {
   const context = new WebGLRenderingContext();
   const release = registerWebglContext(context);
   cleanup.push(release);
@@ -45,7 +45,7 @@ it("replays existing contexts to late observers and stops notifications on unsub
   expect(observer).toHaveBeenCalledTimes(1);
 });
 
-it("reports a shared context once and removes it only after the last owner releases it", () => {
+it('reports a shared context once and removes it only after the last owner releases it', () => {
   const observer = vi.fn<StatsWebglContextListener>();
   cleanup.push(subscribeWebglContexts(observer));
   const context = new WebGLRenderingContext();
@@ -58,7 +58,7 @@ it("reports a shared context once and removes it only after the last owner relea
   expect(observer.mock.calls).toEqual([[[]], [[context]], [[]]]);
 });
 
-it("keeps snapshots immutable and does not let stale cleanup remove a replacement", () => {
+it('keeps snapshots immutable and does not let stale cleanup remove a replacement', () => {
   const observer = vi.fn<StatsWebglContextListener>();
   cleanup.push(subscribeWebglContexts(observer));
   const firstContext = new WebGLRenderingContext();
@@ -74,13 +74,13 @@ it("keeps snapshots immutable and does not let stale cleanup remove a replacemen
   expect(Object.isFrozen(snapshot)).toBe(true);
 });
 
-it("rolls back failed registration and notifies successful observers of the rollback", () => {
+it('rolls back failed registration and notifies successful observers of the rollback', () => {
   const context = new WebGLRenderingContext();
   const observer = vi.fn<StatsWebglContextListener>();
   cleanup.push(subscribeWebglContexts(observer));
   const fail = subscribeWebglContexts((contexts) => {
     if (contexts.includes(context)) {
-      throw new Error("Observer failed");
+      throw new Error('Observer failed');
     }
   });
   cleanup.push(fail);
@@ -96,13 +96,13 @@ it("rolls back failed registration and notifies successful observers of the roll
   expect(current).toHaveBeenLastCalledWith([]);
 });
 
-it("does not skip later observers when removal notification fails", () => {
+it('does not skip later observers when removal notification fails', () => {
   const context = new WebGLRenderingContext();
   const release = registerWebglContext(context);
   cleanup.push(release);
   const fail = subscribeWebglContexts((contexts) => {
     if (contexts.length === 0) {
-      throw new Error("Removal observer failed");
+      throw new Error('Removal observer failed');
     }
   });
   cleanup.push(fail);

@@ -1,5 +1,5 @@
-import type { StatsCardSelection } from "../../types/card-selection.js";
-import type { StatsCard } from "../../types/presentation.js";
+import type { StatsCardSelection } from '../../types/card-selection.js';
+import type { StatsCard } from '../../types/presentation.js';
 
 /** Owns available-card selection and cycling; it never renders or changes measurements. */
 export function createStatsCardSelection(cards: readonly StatsCard[]): StatsCardSelection {

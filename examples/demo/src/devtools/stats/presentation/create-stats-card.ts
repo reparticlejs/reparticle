@@ -1,9 +1,8 @@
-import type { StatsMetricDefinition, StatsReading } from "../../types/metric.js";
-import type { StatsCard } from "../../types/presentation.js";
-import type { StatsRange } from "../../types/range.js";
-
-import { createStatsCardElements } from "./create-stats-card-elements.js";
-import { createStatsGraph, STATS_HISTORY_LENGTH } from "./create-stats-graph.js";
+import type { StatsMetricDefinition, StatsReading } from '../../types/metric.js';
+import type { StatsCard } from '../../types/presentation.js';
+import type { StatsRange } from '../../types/range.js';
+import { createStatsCardElements } from './create-stats-card-elements.js';
+import { createStatsGraph, STATS_HISTORY_LENGTH } from './create-stats-graph.js';
 
 /** Owns one metric's recorded history and renders it into reusable card elements. */
 export function createStatsCard(metric: StatsMetricDefinition): StatsCard {
@@ -47,7 +46,7 @@ export function createStatsCard(metric: StatsMetricDefinition): StatsCard {
 
   /** Draws stored values and history without recording another observation. */
   function render(): void {
-    elements.value.textContent = currentValue?.toFixed(1) ?? "—";
+    elements.value.textContent = currentValue?.toFixed(1) ?? '—';
     elements.range.hidden = currentRange === undefined;
     elements.range.textContent = formatRange(currentRange);
     graph.render(history);
@@ -63,7 +62,7 @@ export function createStatsCard(metric: StatsMetricDefinition): StatsCard {
 /** Formats lifetime extrema as a compact label, leaving an unavailable range empty. */
 function formatRange(range: StatsRange | undefined): string {
   if (range === undefined) {
-    return "";
+    return '';
   }
 
   return `(${Math.round(range.min)}–${Math.round(range.max)})`;

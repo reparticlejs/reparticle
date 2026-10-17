@@ -3,10 +3,9 @@ import type {
   StatsWebglContextSampling,
   StatsWebglCounts,
   StatsWebglTracker,
-} from "../../types/webgl.js";
-
-import { failStatsSetup, runStatsCleanup } from "../lifecycle/run-stats-cleanup.js";
-import { createWebglTracker } from "./create-webgl-tracker.js";
+} from '../../types/webgl.js';
+import { failStatsSetup, runStatsCleanup } from '../lifecycle/run-stats-cleanup.js';
+import { createWebglTracker } from './create-webgl-tracker.js';
 
 /** Owns instrumentation and loss listeners for one registered, renderer-created context. */
 export function createWebglContextSampling(context: StatsWebglContext): StatsWebglContextSampling {
@@ -14,8 +13,8 @@ export function createWebglContextSampling(context: StatsWebglContext): StatsWeb
   let destroyed = false;
 
   try {
-    context.canvas.addEventListener("webglcontextlost", handleContextLost);
-    context.canvas.addEventListener("webglcontextrestored", handleContextRestored);
+    context.canvas.addEventListener('webglcontextlost', handleContextLost);
+    context.canvas.addEventListener('webglcontextrestored', handleContextRestored);
     handleContextRestored();
   } catch (error) {
     return failStatsSetup(error, destroy);
@@ -49,8 +48,8 @@ export function createWebglContextSampling(context: StatsWebglContext): StatsWeb
     }
     destroyed = true;
     runStatsCleanup([
-      () => context.canvas.removeEventListener("webglcontextlost", handleContextLost),
-      () => context.canvas.removeEventListener("webglcontextrestored", handleContextRestored),
+      () => context.canvas.removeEventListener('webglcontextlost', handleContextLost),
+      () => context.canvas.removeEventListener('webglcontextrestored', handleContextRestored),
       handleContextLost,
     ]);
   }

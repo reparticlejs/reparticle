@@ -1,6 +1,5 @@
-import type { StatsMetric, StatsReading } from "../../../types/metric.js";
-
-import { createStatsRange } from "../create-stats-range.js";
+import type { StatsMetric, StatsReading } from '../../../types/metric.js';
+import { createStatsRange } from '../create-stats-range.js';
 
 /** Displays the average, graphs the peak, and retains extrema of individual intervals. */
 export function createFrameIntervalMetric(): StatsMetric {

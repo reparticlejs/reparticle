@@ -1,4 +1,4 @@
-import type { StatsWebglContext, StatsWebglContextListener } from "../../types/webgl.js";
+import type { StatsWebglContext, StatsWebglContextListener } from '../../types/webgl.js';
 
 // Multiple owners may register the same context, but observers see it only once.
 const registrations = new Map<StatsWebglContext, number>();
@@ -15,7 +15,7 @@ export function registerWebglContext(context: StatsWebglContext): () => void {
       // observers undo any instrumentation installed before another one failed.
       registrations.delete(context);
       errors.push(...notifyListeners());
-      throw new AggregateError(errors, "Failed to register the WebGL context.");
+      throw new AggregateError(errors, 'Failed to register the WebGL context.');
     }
   }
 
@@ -36,7 +36,7 @@ export function registerWebglContext(context: StatsWebglContext): () => void {
       registrations.delete(context);
       const errors = notifyListeners();
       if (errors.length > 0) {
-        throw new AggregateError(errors, "Failed to notify WebGL context removal.");
+        throw new AggregateError(errors, 'Failed to notify WebGL context removal.');
       }
     }
   }

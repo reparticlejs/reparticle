@@ -1,7 +1,7 @@
-import type { StatsMetricDefinition, StatsReading } from "./metric.js";
+import type { StatsMetricDefinition, StatsReading } from './metric.js';
 
 /** A refresh's readings keyed by their registry identifier; unavailable readings are absent values. */
-export type StatsSample = ReadonlyMap<StatsMetricDefinition["key"], StatsReading | undefined>;
+export type StatsSample = ReadonlyMap<StatsMetricDefinition['key'], StatsReading | undefined>;
 
 /** Coordinates enabled metrics using the sampling clock's measurement and refresh cadence. */
 export interface StatsSampler {

@@ -1,10 +1,8 @@
-import type { StatsHost } from "../../types/host.js";
-
-import type { StatsView } from "../../types/presentation.js";
-import type { StatsSampler } from "../../types/sampling.js";
-import type { Stats } from "../../types/stats.js";
-
-import { failStatsSetup, runStatsCleanup } from "./run-stats-cleanup.js";
+import type { StatsHost } from '../../types/host.js';
+import type { StatsView } from '../../types/presentation.js';
+import type { StatsSampler } from '../../types/sampling.js';
+import type { Stats } from '../../types/stats.js';
+import { failStatsSetup, runStatsCleanup } from './run-stats-cleanup.js';
 
 /**
  * Connects measurement and presentation to the document's visibility and host post-render updates.
@@ -32,8 +30,8 @@ export function createStatsLifecycle(
   return { show, hide, destroy };
   function subscribeVisibility(): () => void {
     const listener = () => handleVisibilityChange(!document.hidden);
-    document.addEventListener("visibilitychange", listener);
-    return () => document.removeEventListener("visibilitychange", listener);
+    document.addEventListener('visibilitychange', listener);
+    return () => document.removeEventListener('visibilitychange', listener);
   }
 
   /** Requests stats visibility without overriding the host's visibility state. */

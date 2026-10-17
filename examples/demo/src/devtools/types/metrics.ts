@@ -1,4 +1,4 @@
-import type { StatsSample } from "./sampling.js";
+import type { StatsSample } from './sampling.js';
 
 /** Enabled metric instances, independent of frame timing and presentation. */
 export interface StatsMetrics {

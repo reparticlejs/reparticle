@@ -1,4 +1,4 @@
-import type { StatsSamplingClock } from "../../types/sampling-clock.js";
+import type { StatsSamplingClock } from '../../types/sampling-clock.js';
 
 const REFRESH_INTERVAL_MILLISECONDS = 500;
 

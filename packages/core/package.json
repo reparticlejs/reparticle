@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "imports": {
+    "#src/*": "./src/*",
+    "#types/*": "./src/types/*"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -17,9 +21,5 @@
   "dependencies": {
     "gpu.js": "catalog:",
     "zod": "catalog:"
-  },
-  "imports": {
-    "#src/*": "./src/*",
-    "#types/*": "./src/types/*"
   }
 }

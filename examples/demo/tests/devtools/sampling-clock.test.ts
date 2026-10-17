@@ -1,9 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from 'vitest';
 
-import { createStatsSamplingClock } from "#src/devtools/stats/measurement/create-stats-sampling-clock.js";
+import { createStatsSamplingClock } from '#src/devtools/stats/measurement/create-stats-sampling-clock.js';
 
-describe("stats sampling clock", () => {
-  it("delivers intervals before permitting collection at the deadline", () => {
+describe('stats sampling clock', () => {
+  it('delivers intervals before permitting collection at the deadline', () => {
     const clock = createStatsSamplingClock();
     const intervals: number[] = [];
     const measure = (delta: number): void => {
@@ -23,7 +23,7 @@ describe("stats sampling clock", () => {
     expect(intervals).toEqual([0, 20, 479, 1, 20, 480]);
   });
 
-  it("refreshes once after a stall and schedules the next deadline from that frame", () => {
+  it('refreshes once after a stall and schedules the next deadline from that frame', () => {
     const clock = createStatsSamplingClock();
     const measure = vi.fn<(delta: number) => void>();
 
@@ -37,7 +37,7 @@ describe("stats sampling clock", () => {
     expect(measure.mock.calls).toEqual([[0], [5000], [499], [1]]);
   });
 
-  it("does not collect an empty window when the first frame arrives late", () => {
+  it('does not collect an empty window when the first frame arrives late', () => {
     const clock = createStatsSamplingClock();
     const measure = vi.fn<(delta: number) => void>();
 
@@ -50,7 +50,7 @@ describe("stats sampling clock", () => {
     expect(measure.mock.calls).toEqual([[0], [499], [1]]);
   });
 
-  it("ignores nonpositive intervals and uses the latest timestamp as the baseline", () => {
+  it('ignores nonpositive intervals and uses the latest timestamp as the baseline', () => {
     const clock = createStatsSamplingClock();
     const measure = vi.fn<(delta: number) => void>();
 
@@ -63,7 +63,7 @@ describe("stats sampling clock", () => {
     expect(measure.mock.calls).toEqual([[0], [20]]);
   });
 
-  it("reset discards pending measurements and excludes the visibility gap", () => {
+  it('reset discards pending measurements and excludes the visibility gap', () => {
     const clock = createStatsSamplingClock();
     const measure = vi.fn<(delta: number) => void>();
 

@@ -1,4 +1,4 @@
-import type { StatsRange, StatsRangeTracker } from "../../types/range.js";
+import type { StatsRange, StatsRangeTracker } from '../../types/range.js';
 
 /** Tracks extrema without storing samples or allocating on each measured frame. */
 export function createStatsRange(): StatsRangeTracker {

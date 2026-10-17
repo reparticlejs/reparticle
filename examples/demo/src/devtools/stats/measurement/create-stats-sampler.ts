@@ -1,8 +1,7 @@
-import type { StatsMetricDefinition } from "../../types/metric.js";
-import type { StatsSample, StatsSampler } from "../../types/sampling.js";
-
-import { createStatsMetrics } from "./create-stats-metrics.js";
-import { createStatsSamplingClock } from "./create-stats-sampling-clock.js";
+import type { StatsMetricDefinition } from '../../types/metric.js';
+import type { StatsSample, StatsSampler } from '../../types/sampling.js';
+import { createStatsMetrics } from './create-stats-metrics.js';
+import { createStatsSamplingClock } from './create-stats-sampling-clock.js';
 
 /** Dispatches real frame intervals to enabled metrics and collects them twice per second. */
 export function createStatsSampler(definitions: readonly StatsMetricDefinition[]): StatsSampler {

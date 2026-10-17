@@ -24,7 +24,7 @@ Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error;
 - `packages/core`: GPU.js 2.24.1 simulation, mathematical behaviors, bounded spawn scheduling. No Pixi dependency. Takes a host WebGL2 context; this GPU backend is browser-based, not a headless CPU implementation.
 - `packages/core/src/gpujs`: typed GPU storage adapters. Readable motion and spawning math lives in `src/behaviors`. GPU.js receives ordinary functions directly through `createKernel` and `addFunction`, using its published types.
 - `packages/pixi`: shares Pixi's WebGL2 context and renders directly from the simulation texture with one instanced draw. No Sprite per particle or CPU particle array.
-- `examples/demo`: TypeScript/Vite preview and explicit GPU diagnostics.
+- `examples/demo`: React/TypeScript UI with a Pixi preview and explicit GPU diagnostics. React owns controls and status; Pixi owns the animation loop.
 
 GPU state contains position, velocity, age, and lifetime. Two mutable update kernels alternate output textures; both are allocated and warmed before playback. The CPU sends only time, emitter parameters, and a spawn range. The fixed-capacity ring recycles the oldest slots when full; dead particles are hidden in the vertex shader. The UI displays capacity, not a fabricated live-particle count.
 
@@ -38,8 +38,6 @@ pnpm format
 ```
 
 `check` runs lint, type checks, spawn-schedule tests, and production builds. Unit tests do not substitute for GPU execution.
-
-Click **Validate GPU residency** in the demo for actual GPU verification. It runs 120 simulation/render frames and instruments readbacks, uploads, and allocations. After that measured interval, explicit diagnostic texel reads compare gravity integration to an independent analytical result and check reset and expiration. It also checks exact spawn speed and that initial-property changes affect future births while gravity changes affect living particles. Diagnostic reads are intentional and never part of normal playback.
 
 ## Prototype limits
 
@@ -57,12 +55,12 @@ The shared-context/ping-pong integration was adapted from the local GPU.js–Pix
 ## Custom particle textures
 
 ```ts
-import { Assets } from "pixi.js";
-import { ParticleView } from "@reparticle/pixi";
+import { Assets } from 'pixi.js';
+import { ParticleView } from '@reparticle/pixi';
 
-const definition = await fetch("/effect.json").then((response) => response.json());
+const definition = await fetch('/effect.json').then((response) => response.json());
 const particles = new ParticleView(app.renderer, definition);
-particles.texture = await Assets.load("/textures/spark.png");
+particles.texture = await Assets.load('/textures/spark.png');
 particles.particleSize = 24; // longest edge; aspect ratio is preserved
 app.stage.addChild(particles);
 app.ticker.add((ticker) => particles.update(Math.min(ticker.deltaMS / 1000, 0.05)));
@@ -76,7 +74,7 @@ Untrimmed, unrotated atlas frames are supported through their UV rectangle. Trim
 
 The demo uses a source copy of Replayable's stats module in `examples/demo/src/devtools`, with its MIT license retained. It has no Replayable dependency and is not included in the core or Pixi library packages. D3 supplies the copied history graphs; Sass compiles their stylesheet.
 
-The overlay shows FPS, frame interval, browser JS heap when available, and WebGL draw calls, texture binds, and program uses. Sampling runs after Pixi renders. Draw counts include GPU.js simulation draws, particle rendering, and any other Pixi scene objects; they are API submissions, not GPU execution timings. Hide stats suspends sampling and removes instrumentation. The explicit GPU validation temporarily suspends stats and restores the user's visibility choice afterward.
+The overlay shows FPS, frame interval, browser JS heap when available, and WebGL draw calls, texture binds, and program uses. Sampling runs after Pixi renders. Draw counts include GPU.js simulation draws, particle rendering, and any other Pixi scene objects; they are API submissions, not GPU execution timings. Hide stats suspends sampling and removes instrumentation.
 
 ## Authoring simulation behavior
 
@@ -88,7 +86,7 @@ GPU.js compiles the JavaScript function bodies at runtime, so they must stay wit
 
 ## Effect configuration and runtime parameters
 
-Pass an effect JSON object to `new ParticleView(renderer, definition)`. Validation happens before GPU allocation. See [the JSON skeleton](docs/effect.example.json); the demo loads `examples/demo/src/effect.json`. Core-only consumers can pass `parseEffectConfig(definition).emitters[0]` to `new Emitter({ gl, canvas }, emitterDefinition)`.
+Pass an effect JSON object to `new ParticleView(renderer, definition)`. Validation happens before GPU allocation. See [the JSON skeleton](docs/effect.example.json); the demo loads `examples/demo/public/effect.json`. Core-only consumers can pass `parseEffectConfig(definition).emitters[0]` to `new Emitter({ gl, canvas }, emitterDefinition)`.
 
 ```ts
 particles.emitter.setParameters({ emission: { rate: 1500 } });
@@ -97,3 +95,9 @@ particles.emitter.setParameters({ modifiers: { gravity: { y: 80 } } });
 ```
 
 Updates are validated atomically. Capacity, seed, ID and shape cannot be changed through this method; create a new instance from an updated definition. `emitter.configuration` returns an independent snapshot for that purpose. Position and playback remain runtime controls. Initial values affect new births; gravity affects living particles. Horizontal gravity currently must be zero. Scalar speed is exact; implicit speed variation, shrinking and fading have been removed. Texture selection and particle size remain renderer controls until their JSON fields are implemented. No new API accepts executable particle behavior.
+
+## Demo UI
+
+The demo uses React with the official Vite React plugin. `src/app.tsx` and `src/components` render the controls, `src/hooks/use-particle-preview.ts` connects component lifetime to the preview, and `src/preview/create-preview.ts` owns the Pixi application, particle view, and stats. Types live in `src/types`; tests live in `tests`. React dependencies belong only to the demo.
+
+GPU updates run on Pixi's ticker without React state updates per frame. Controls are disabled until asynchronous initialization succeeds. Unmounting, Strict Mode remounts, failed startup, and hot reload release the owned GPU scene and stats. Shared artwork remains owned by Pixi's asset cache.

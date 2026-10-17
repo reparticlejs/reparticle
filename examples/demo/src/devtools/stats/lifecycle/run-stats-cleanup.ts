@@ -18,7 +18,7 @@ export function runStatsCleanup(actions: readonly (() => void)[]): void {
     throw errors[0];
   }
   if (errors.length > 1) {
-    throw new AggregateError(errors, "Failed to release every stats resource.");
+    throw new AggregateError(errors, 'Failed to release every stats resource.');
   }
 }
 
@@ -31,7 +31,7 @@ export function failStatsSetup(cause: unknown, cleanup: () => void): never {
     errors.push(cleanupError);
   }
   if (errors.length > 1) {
-    throw new AggregateError(errors, "Stats setup and cleanup both failed.", { cause });
+    throw new AggregateError(errors, 'Stats setup and cleanup both failed.', { cause });
   }
   throw cause;
 }

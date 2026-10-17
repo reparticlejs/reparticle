@@ -1,4 +1,4 @@
-import type { StatsCard } from "./presentation.js";
+import type { StatsCard } from './presentation.js';
 
 /** Tracks selection without recording samples or changing card DOM. */
 export interface StatsCardSelection {

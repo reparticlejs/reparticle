@@ -1,6 +1,6 @@
-import { advancePosition, advancePositionWithGravity, advanceVelocity } from "../behaviors/motion";
-import { spawnMotion } from "./spawn-motion";
-import type { KernelContext, ParticleTexel, ParticleTexture } from "./layout";
+import { advancePosition, advancePositionWithGravity, advanceVelocity } from '../behaviors/motion';
+import type { KernelContext, ParticleTexel, ParticleTexture } from './layout';
+import { spawnMotion } from './spawn-motion';
 
 /**
  * GPU storage adapter: map this output texel to a particle, then apply its behavior.
@@ -30,7 +30,9 @@ export function integrate(
 
   // Lifetime texel: age, lifetime, initialized, reserved.
   if (this.thread.y >= this.constants.rows) {
-    if (isSpawning) return [0, lifetime, 1, 0];
+    if (isSpawning) {
+      return [0, lifetime, 1, 0];
+    }
     return [lifetimeState[0] + seconds, lifetimeState[1], lifetimeState[2], 0];
   }
 
@@ -47,7 +49,9 @@ export function integrate(
   const age = lifetimeState[0];
   const particleLifetime = lifetimeState[1];
   const initialized = lifetimeState[2];
-  if (initialized < 0.5 || age >= particleLifetime) return [x, y, 0, 0];
+  if (initialized < 0.5 || age >= particleLifetime) {
+    return [x, y, 0, 0];
+  }
 
   return [
     advancePosition(x, velocityX, seconds),
