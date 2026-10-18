@@ -180,3 +180,34 @@ it('preserves authored spin curves and selects lifetime multiplier presets', () 
     ],
   });
 });
+
+it('keeps stretch axes independent across birth curves, spread, and lifetime presets', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.initial.stretchX = {
+    points: [
+      { time: 0, value: 0, tangent: 1 },
+      { time: 1, value: 1, tangent: 1 },
+    ],
+  };
+  const controls = initialControls(definition);
+  expect(controls.initialStretchXCurve).toBe('effect');
+  const changed = applyControls(definition, {
+    ...controls,
+    stretchXSpread: 0.5,
+    stretchY: -2,
+    stretchYSpread: 0.25,
+    stretchXCurve: 'grow',
+    stretchYCurve: 'shrink',
+  });
+  expect(changed.initial.stretchX).toEqual(definition.initial.stretchX);
+  expect(changed.initial.stretchXSpread).toBe(0.5);
+  expect(changed.initial.stretchY).toBe(-2);
+  expect(changed.initial.stretchYSpread).toBe(0.25);
+  expect(changed.overLifetime.stretchX).toEqual(definition.initial.stretchX);
+  expect(changed.overLifetime.stretchY).toEqual({
+    points: [
+      { time: 0, value: 0, tangent: -1 },
+      { time: 1, value: -1, tangent: -1 },
+    ],
+  });
+});

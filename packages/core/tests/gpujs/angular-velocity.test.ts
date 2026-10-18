@@ -80,6 +80,10 @@ it('captures spread once, accumulates spin, and resets on slot reuse', () => {
       40,
       curve,
       mode,
+      0,
+      0,
+      0,
+      0,
     );
   const born = run(1);
   const captured = 100 + 40 * propertyVariation(0, 1, 15);

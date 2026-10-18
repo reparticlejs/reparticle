@@ -91,6 +91,10 @@ it.each([1, 2, 3])(
           0,
           new Float32Array(65).fill(1),
           0,
+          0,
+          0,
+          0,
+          0,
         );
       context.thread.y = 0;
       expect(run(1)).toEqual(expected);

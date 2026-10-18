@@ -5,6 +5,7 @@ import { DragControls } from './drag-controls';
 import { EmissionControls } from './emission-controls';
 import { PlaybackControls } from './playback-controls';
 import { RadialControls } from './radial-controls';
+import { StretchControls } from './stretch-controls';
 import { VortexControls } from './vortex-controls';
 
 export function EmitterControls({ controls, onChange, onReset }: EmitterControlsProps) {
@@ -17,6 +18,7 @@ export function EmitterControls({ controls, onChange, onReset }: EmitterControls
       <RadialControls controls={controls} onChange={onChange} />
       <VortexControls controls={controls} onChange={onChange} />
       <AppearanceControls controls={controls} onChange={onChange} />
+      <StretchControls controls={controls} onChange={onChange} />
       <PlaybackControls controls={controls} onChange={onChange} onReset={onReset} />
     </aside>
   );

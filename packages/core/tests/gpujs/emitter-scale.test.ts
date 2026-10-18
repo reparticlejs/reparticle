@@ -77,6 +77,10 @@ it.each([0, 0.5, 2, -2])(
         0,
         new Float32Array(65).fill(1),
         0,
+        0,
+        0,
+        0,
+        0,
       );
     const base = run(1, 1);
     const scaled = run(scale, 1);

@@ -5,11 +5,12 @@ export interface KernelContext {
 }
 export type ParticleTexel = [number, number, number, number];
 /**
- * Four row bands:
+ * Five row bands:
  * motion: [x, y, velocityX, velocityY]
  * properties: [age, lifetime, initialSize, initialRotation]
  * color: [initialRed, initialGreen, initialBlue, initialAlpha]
  * modifiers: [spreadFactor, initialAngularVelocity, accumulatedRotation, reserved]
+ * stretch: [initialStretchX, initialStretchY, reserved, reserved]
  * Initial values are captured per particle at spawn.
  */
 export type ParticleTexture = ParticleTexel[][];

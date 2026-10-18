@@ -52,6 +52,12 @@ export class PreviewScene {
       next.initialAngularVelocityCurve !== this.settings.initialAngularVelocityCurve ||
       (next.initialAngularVelocityCurve !== 'constant' &&
         next.angularVelocity !== this.settings.angularVelocity) ||
+      next.stretchXCurve !== this.settings.stretchXCurve ||
+      next.initialStretchXCurve !== this.settings.initialStretchXCurve ||
+      (next.initialStretchXCurve !== 'constant' && next.stretchX !== this.settings.stretchX) ||
+      next.stretchYCurve !== this.settings.stretchYCurve ||
+      next.initialStretchYCurve !== this.settings.initialStretchYCurve ||
+      (next.initialStretchYCurve !== 'constant' && next.stretchY !== this.settings.stretchY) ||
       next.initialRotationCurve !== this.settings.initialRotationCurve ||
       (next.initialRotationCurve !== 'constant' && next.rotation !== this.settings.rotation) ||
       next.initialLifetimeCurve !== this.settings.initialLifetimeCurve ||
@@ -144,6 +150,10 @@ export class PreviewScene {
       next.alpha === current.alpha &&
       next.angularVelocity === current.angularVelocity &&
       next.angularVelocitySpread === current.angularVelocitySpread &&
+      next.stretchX === current.stretchX &&
+      next.stretchY === current.stretchY &&
+      next.stretchXSpread === current.stretchXSpread &&
+      next.stretchYSpread === current.stretchYSpread &&
       next.rotation === current.rotation &&
       next.emitterRotation === current.emitterRotation &&
       next.emitterScale === current.emitterScale &&

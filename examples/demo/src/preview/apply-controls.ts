@@ -19,9 +19,11 @@ import { initialRed } from './initial-red';
 import { initialRotation } from './initial-rotation';
 import { initialSize } from './initial-size';
 import { initialSpeed } from './initial-speed';
+import { initialStretch } from './initial-stretch';
 import { radialMagnitude } from './radial-magnitude';
 import { rotationCurves } from './rotation-curves';
 import { sizeCurves } from './size-curves';
+import { stretchCurves } from './stretch-curves';
 import { vortexMagnitude } from './vortex-magnitude';
 
 /** Maps demo settings onto an emitter definition without modifying the original. */
@@ -48,6 +50,10 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
 
     rotationSpread: controls.rotationSpread,
     rotation: initialRotation(controls),
+    stretchX: initialStretch(controls, 'X'),
+    stretchY: initialStretch(controls, 'Y'),
+    stretchXSpread: controls.stretchXSpread,
+    stretchYSpread: controls.stretchYSpread,
     angularVelocity: initialAngularVelocity(controls),
     angularVelocitySpread: controls.angularVelocitySpread,
     alpha: initialAlpha(controls),
@@ -81,6 +87,14 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
         controls.angularVelocityCurve === 'effect'
           ? definition.overLifetime.angularVelocity
           : angularVelocityCurves[controls.angularVelocityCurve],
+      stretchX:
+        controls.stretchXCurve === 'effect'
+          ? definition.overLifetime.stretchX
+          : stretchCurves[controls.stretchXCurve],
+      stretchY:
+        controls.stretchYCurve === 'effect'
+          ? definition.overLifetime.stretchY
+          : stretchCurves[controls.stretchYCurve],
       rotation:
         controls.rotationCurve === 'effect'
           ? definition.overLifetime.rotation
@@ -218,6 +232,16 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     alphaSpread: definition.initial.alphaSpread,
 
     rotationSpread: definition.initial.rotationSpread,
+    stretchX: typeof definition.initial.stretchX === 'number' ? definition.initial.stretchX : 1,
+    stretchXSpread: definition.initial.stretchXSpread,
+    initialStretchXCurve: typeof definition.initial.stretchX === 'number' ? 'constant' : 'effect',
+    effectStretchX: definition.initial.stretchX,
+    stretchXCurve: 'effect',
+    stretchY: typeof definition.initial.stretchY === 'number' ? definition.initial.stretchY : 1,
+    stretchYSpread: definition.initial.stretchYSpread,
+    initialStretchYCurve: typeof definition.initial.stretchY === 'number' ? 'constant' : 'effect',
+    effectStretchY: definition.initial.stretchY,
+    stretchYCurve: 'effect',
     sizeCurve: 'effect',
     rotation: typeof definition.initial.rotation === 'number' ? definition.initial.rotation : 0,
     initialRotationCurve: typeof definition.initial.rotation === 'number' ? 'constant' : 'effect',
@@ -286,6 +310,10 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
         ? { angularVelocity: controls.angularVelocity }
         : {}),
       angularVelocitySpread: controls.angularVelocitySpread,
+      ...(controls.initialStretchXCurve === 'constant' ? { stretchX: controls.stretchX } : {}),
+      ...(controls.initialStretchYCurve === 'constant' ? { stretchY: controls.stretchY } : {}),
+      stretchXSpread: controls.stretchXSpread,
+      stretchYSpread: controls.stretchYSpread,
       ...(controls.initialRotationCurve === 'constant' ? { rotation: controls.rotation } : {}),
       ...(controls.initialAlphaCurve === 'constant' ? { alpha: controls.alpha } : {}),
       ...(controls.initialRedCurve === 'constant' ? { red: controls.red } : {}),

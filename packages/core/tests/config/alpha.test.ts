@@ -52,6 +52,8 @@ it('parses lifetime alpha using the shared curve contract', () => {
     emitters: [{ ...original, overLifetime: { alpha } }],
   }).emitters[0];
   expect(config.overLifetime).toEqual({
+    stretchX: 0,
+    stretchY: 0,
     angularVelocity: 1,
     rotation: 0,
     scale: 1,

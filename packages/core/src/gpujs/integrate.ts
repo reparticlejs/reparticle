@@ -17,7 +17,7 @@ import { spawnRotation } from './spawn-rotation';
 
 /**
  * GPU storage adapter: map this output texel to a particle, then apply its behavior.
- * All four bands read the previous texture so position and lifetime agree on spawning.
+ * All five bands read the previous texture so position and lifetime agree on spawning.
  * The texture dimensions guarantee these indices; non-null assertions express that contract.
  */
 export function integrate(
@@ -85,12 +85,28 @@ export function integrate(
   angularVelocitySpread: number,
   angularVelocityCurve: Float32Array,
   orientToAngularVelocity: number,
+  initialStretchX: number,
+  initialStretchY: number,
+  stretchXSpread: number,
+  stretchYSpread: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
   const spawnOffset = (particleId - spawnStart + this.constants.capacity) % this.constants.capacity;
   const properties = state[particleRow + this.constants.rows]![this.thread.x]!;
   const isSpawning = particleId < this.constants.capacity && spawnOffset < spawnCount;
+
+  if (this.thread.y >= this.constants.rows * 4) {
+    if (isSpawning) {
+      return [
+        initialStretchX + propertyVariation(particleId, seed, 16) * stretchXSpread,
+        initialStretchY + propertyVariation(particleId, seed, 17) * stretchYSpread,
+        0,
+        0,
+      ];
+    }
+    return state[particleRow + this.constants.rows * 4]![this.thread.x]!;
+  }
 
   if (this.thread.y >= this.constants.rows * 3) {
     if (isSpawning) {

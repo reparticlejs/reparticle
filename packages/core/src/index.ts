@@ -33,6 +33,8 @@ export class Emitter {
   private initialBlue: SampledCurve;
   private initialAlpha: SampledCurve;
   private initialLifetime: SampledCurve;
+  private initialStretchX: SampledCurve;
+  private initialStretchY: SampledCurve;
   private initialAngularVelocity: SampledCurve;
   private readonly angularVelocitySamples: Float32Array;
   private initialRotation: SampledCurve;
@@ -64,6 +66,8 @@ export class Emitter {
       this.settings.emission.rateSpread,
       this.settings.seed,
     );
+    this.initialStretchX = new SampledCurve(this.settings.initial.stretchX);
+    this.initialStretchY = new SampledCurve(this.settings.initial.stretchY);
     this.initialAngularVelocity = new SampledCurve(this.settings.initial.angularVelocity);
     this.angularVelocitySamples = sampleCurve(this.settings.overLifetime.angularVelocity);
     this.initialRotation = new SampledCurve(this.settings.initial.rotation);
@@ -104,7 +108,7 @@ export class Emitter {
     ) {
       throw new Error('GPU simulation requires WebGL2 and EXT_color_buffer_float');
     }
-    if (this.rows * 4 > gl.getParameter(gl.MAX_TEXTURE_SIZE)) {
+    if (this.rows * 5 > gl.getParameter(gl.MAX_TEXTURE_SIZE)) {
       throw new RangeError('Capacity exceeds GPU texture limits');
     }
     const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
@@ -130,7 +134,7 @@ export class Emitter {
     gpu.addFunction(functions.propertyVariation);
     gpu.addFunction(functions.applyDrag);
     const config: IGPUKernelSettings = {
-      output: [this.width, this.rows * 4],
+      output: [this.width, this.rows * 5],
       precision: 'single',
       pipeline: true,
       immutable: false,
@@ -221,6 +225,14 @@ export class Emitter {
       patch.initial?.size === undefined
         ? this.initialSize
         : new SampledCurve(settings.initial.size);
+    const initialStretchX =
+      patch.initial?.stretchX === undefined
+        ? this.initialStretchX
+        : new SampledCurve(settings.initial.stretchX);
+    const initialStretchY =
+      patch.initial?.stretchY === undefined
+        ? this.initialStretchY
+        : new SampledCurve(settings.initial.stretchY);
     const initialAngularVelocity =
       patch.initial?.angularVelocity === undefined
         ? this.initialAngularVelocity
@@ -258,6 +270,8 @@ export class Emitter {
     this.initialGreen = initialGreen;
     this.initialBlue = initialBlue;
     this.initialAlpha = initialAlpha;
+    this.initialStretchX = initialStretchX;
+    this.initialStretchY = initialStretchY;
     this.initialAngularVelocity = initialAngularVelocity;
     this.initialRotation = initialRotation;
     this.initialSize = initialSize;
@@ -382,6 +396,10 @@ export class Emitter {
       o.initial.angularVelocitySpread,
       this.angularVelocitySamples,
       o.orientation === 'angular-velocity' ? 1 : 0,
+      this.initialStretchX.at(this.playback.normalizedAge),
+      this.initialStretchY.at(this.playback.normalizedAge),
+      o.initial.stretchXSpread,
+      o.initial.stretchYSpread,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;
@@ -432,7 +450,7 @@ export class Emitter {
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
     // GPU.js does not declare this WebGL-specific internal field.
     const size = (kernel.kernel as typeof kernel.kernel & { maxTexSize?: number[] }).maxTexSize;
-    gl.viewport(0, 0, size?.[0] ?? this.width, size?.[1] ?? this.rows * 4);
+    gl.viewport(0, 0, size?.[0] ?? this.width, size?.[1] ?? this.rows * 5);
     try {
       const result = kernel(...args);
       if (!isPipelineTexture(result, gl)) {

@@ -132,6 +132,20 @@ export async function createPreview(
         (current.initialAngularVelocityCurve !== 'constant' &&
           patch.angularVelocity !== undefined &&
           patch.angularVelocity !== current.angularVelocity);
+      const stretchXChanged =
+        (patch.stretchXCurve !== undefined && patch.stretchXCurve !== current.stretchXCurve) ||
+        (patch.initialStretchXCurve !== undefined &&
+          patch.initialStretchXCurve !== current.initialStretchXCurve) ||
+        (current.initialStretchXCurve !== 'constant' &&
+          patch.stretchX !== undefined &&
+          patch.stretchX !== current.stretchX);
+      const stretchYChanged =
+        (patch.stretchYCurve !== undefined && patch.stretchYCurve !== current.stretchYCurve) ||
+        (patch.initialStretchYCurve !== undefined &&
+          patch.initialStretchYCurve !== current.initialStretchYCurve) ||
+        (current.initialStretchYCurve !== 'constant' &&
+          patch.stretchY !== undefined &&
+          patch.stretchY !== current.stretchY);
       const rotationCurveChanged =
         patch.rotationCurve !== undefined && patch.rotationCurve !== current.rotationCurve;
       const orientationChanged =
@@ -233,6 +247,8 @@ export async function createPreview(
         alphaCurveChanged ||
         colorCurveChanged ||
         angularVelocityChanged ||
+        stretchXChanged ||
+        stretchYChanged ||
         rotationCurveChanged;
       if (rebuilding) {
         debug.setVisible(false);

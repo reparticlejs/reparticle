@@ -52,6 +52,16 @@ export interface PreviewControls {
   initialRotationCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectRotation: EmitterConfig['initial']['rotation'];
   rotationCurve: 'effect' | 'constant' | 'full-turn' | 'reverse-turn';
+  stretchX: number;
+  stretchXSpread: number;
+  initialStretchXCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectStretchX: ScalarProperty;
+  stretchXCurve: 'effect' | 'constant' | 'grow' | 'shrink' | 'mirror';
+  stretchY: number;
+  stretchYSpread: number;
+  initialStretchYCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectStretchY: ScalarProperty;
+  stretchYCurve: 'effect' | 'constant' | 'grow' | 'shrink' | 'mirror';
   size: number;
   initialSizeCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectSize: EmitterConfig['initial']['size'];

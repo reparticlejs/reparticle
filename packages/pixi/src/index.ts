@@ -1,7 +1,8 @@
-import { Emitter, parseEffectConfig, sampleCurve, CURVE_SEGMENTS } from '@reparticle/core';
+import { Emitter, parseEffectConfig, CURVE_SEGMENTS } from '@reparticle/core';
 import { RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
 
 import { sampleColorCurves } from './sample-color-curves';
+import { sampleGeometryCurves } from './sample-geometry-curves';
 
 const vertex = `#version 300 es
 precision highp float;
@@ -17,8 +18,7 @@ uniform mat3 transform;
 uniform vec2 particleAspect;
 uniform bool orientToMovement;
 uniform bool orientToAngularVelocity;
-uniform float sizeCurve[${CURVE_SEGMENTS + 1}];
-uniform float rotationCurve[${CURVE_SEGMENTS + 1}];
+uniform vec4 geometryCurve[${CURVE_SEGMENTS + 1}];
 uniform vec4 colorCurve[${CURVE_SEGMENTS + 1}];
 out vec2 uv;
 out vec4 particleColor;
@@ -32,12 +32,13 @@ void main() {
   float normalizedAge = properties.y > 0.0 ? clamp(properties.x / properties.y, 0.0, 1.0) : 0.0;
   float curvePosition = normalizedAge * ${CURVE_SEGMENTS}.0;
   int segment = min(int(curvePosition), ${CURVE_SEGMENTS - 1});
-  float scale = mix(sizeCurve[segment], sizeCurve[segment + 1], curvePosition - float(segment));
+  vec4 geometry = mix(geometryCurve[segment], geometryCurve[segment + 1], curvePosition - float(segment));
+  vec2 initialStretch = texelFetch(particles, at + ivec2(0, rows * 4), 0).xy;
   vec4 initialColor = texelFetch(particles, at + ivec2(0, rows * 2), 0);
   vec4 colorScale = mix(colorCurve[segment], colorCurve[segment + 1], curvePosition - float(segment));
   particleColor = clamp(initialColor * colorScale, 0.0, 1.0);
-  vec2 size = particleAspect * properties.z * scale;
-  float rotation = mix(rotationCurve[segment], rotationCurve[segment + 1], curvePosition - float(segment));
+  vec2 size = particleAspect * properties.z * geometry.x * (vec2(1.0) + initialStretch + geometry.zw);
+  float rotation = geometry.y;
   if (orientToAngularVelocity) rotation = texelFetch(particles, at + ivec2(0, rows * 3), 0).z;
   // Defold's positive Z rotation is counterclockwise; canvas Y points down.
   float angle = -radians(properties.w + rotation);
@@ -137,8 +138,7 @@ export class ParticleView extends RenderContainer {
   }
   constructor(renderer: WebGLRenderer, definition: unknown) {
     const config = parseEffectConfig(definition).emitters[0];
-    const sizeCurve = sampleCurve(config.overLifetime.scale);
-    const rotationCurve = sampleCurve(config.overLifetime.rotation);
+    const geometryCurve = sampleGeometryCurves(config.overLifetime);
     const colorCurve = sampleColorCurves(config.overLifetime);
     super({});
     this.host = renderer;
@@ -172,8 +172,7 @@ export class ParticleView extends RenderContainer {
             'particleAspect',
             'orientToMovement',
             'orientToAngularVelocity',
-            'sizeCurve[0]',
-            'rotationCurve[0]',
+            'geometryCurve[0]',
             'colorCurve[0]',
           ].map((name) => [name, gl.getUniformLocation(this.program, name)]),
         );
@@ -186,8 +185,7 @@ export class ParticleView extends RenderContainer {
           this.uniforms.orientToAngularVelocity!,
           config.orientation === 'angular-velocity' ? 1 : 0,
         );
-        gl.uniform1fv(this.uniforms['sizeCurve[0]']!, sizeCurve);
-        gl.uniform1fv(this.uniforms['rotationCurve[0]']!, rotationCurve);
+        gl.uniform4fv(this.uniforms['geometryCurve[0]']!, geometryCurve);
         gl.uniform4fv(this.uniforms['colorCurve[0]']!, colorCurve);
       } catch (error) {
         this.emitter.destroy();
