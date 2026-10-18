@@ -255,5 +255,17 @@ export const emitterConfigSchema = strictObject({
 /** Only implemented configuration features are accepted. */
 export const effectConfigSchema = strictObject({
   version: literal(1),
-  emitters: tuple([emitterConfigSchema]),
+  emitters: tuple([emitterConfigSchema], emitterConfigSchema).superRefine((emitters, context) => {
+    const ids = new Set<string>();
+    for (const [index, emitter] of emitters.entries()) {
+      if (ids.has(emitter.id)) {
+        context.addIssue({
+          code: 'custom',
+          path: [index, 'id'],
+          message: `Duplicate emitter ID: ${emitter.id}`,
+        });
+      }
+      ids.add(emitter.id);
+    }
+  }),
 });

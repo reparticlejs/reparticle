@@ -28,6 +28,7 @@ export function App() {
         )}
       </section>
 
+      <a href="?multiple">Multiple emitters example</a>
       <PreviewStatus ready={ready} error={error} />
     </main>
   );

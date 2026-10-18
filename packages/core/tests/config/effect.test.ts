@@ -48,10 +48,6 @@ describe('effect JSON boundary', () => {
         }),
       ]),
     );
-    input.emitters.push(input.emitters[0]);
-    expect(issues(input)).toEqual(
-      expect.arrayContaining([expect.objectContaining({ path: ['emitters'], code: 'too_big' })]),
-    );
   });
 
   it.each([NaN, Infinity, -1, '3000', () => 3000])(
@@ -102,5 +98,31 @@ describe('effect JSON boundary', () => {
         expect.objectContaining({ path: ['emitters', 0, 'initial'], code: 'unrecognized_keys' }),
       ]),
     );
+  });
+});
+
+describe('multiple emitters', () => {
+  it('preserves independently configured emitters in definition order', () => {
+    const input = example();
+    const first = input.emitters[0];
+    input.emitters.push({
+      ...first,
+      id: 'smoke',
+      capacity: 256,
+      startDelay: 0.5,
+      playMode: 'once',
+    });
+    const parsed = parseEffectConfig(input);
+    expect(parsed.emitters.map((emitter) => emitter.id)).toEqual([first.id, 'smoke']);
+    expect(parsed.emitters[1]).toMatchObject({ capacity: 256, startDelay: 0.5, playMode: 'once' });
+    parsed.emitters[1]!.initial.speed = 10;
+    expect(parsed.emitters[0].initial.speed).toBe(first.initial.speed);
+  });
+
+  it('rejects empty effects and duplicate emitter IDs', () => {
+    expect(() => parseEffectConfig({ version: 1, emitters: [] })).toThrow(ZodError);
+    const input = example();
+    input.emitters.push(input.emitters[0]);
+    expect(() => parseEffectConfig(input)).toThrow(ZodError);
   });
 });

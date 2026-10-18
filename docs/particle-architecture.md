@@ -24,7 +24,7 @@ Two timelines are distinct: emitter elapsed time controls emission and the initi
 
 Modifiers accumulate acceleration before movement integration. The integration policy must be documented and tested as each modifier arrives. Preserve the current constant-acceleration position term. Multiple modifiers must not accidentally integrate position multiple times.
 
-The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and loads through `ParticleView(renderer, definition)` or the core `Emitter` constructor after parsing. Unsupported fields, shapes, versions, and multiple emitters fail explicitly.
+The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and loads through `ParticleView(renderer, definition)` or the core `Emitter` constructor after parsing. Unsupported fields, shapes, and versions fail explicitly. Effects accept one or more emitters with unique IDs.
 
 Current required fields have no implicit defaults:
 
@@ -32,7 +32,7 @@ Current required fields have no implicit defaults:
 | ---------------------- | ----------------------------------------------------------------------------------------------------- |
 | version                | Exactly 1 for this initial contract                                                                   |
 | emitters               | Exactly one entry until orchestration is implemented; the document shape supports later expansion     |
-| id                     | Nonempty string; future multiple-emitter definitions must have unique IDs                             |
+| id                     | Nonempty string; unique within the effect                                                             |
 | capacity               | Integer 1 through 1000000; device texture limits are checked at creation                              |
 | seed                   | Integer 0 through 65535; reproducibility across different GPU drivers is not promised                 |
 | emission.rate          | Finite nonnegative particles per second                                                               |
@@ -304,3 +304,48 @@ rejected. Empty or unknown animations and invalid settings leave the old selecti
 intact. Frame metadata is snapshotted: call `setTexture` again after editing it.
 The view owns the metadata table only; the host retains ownership of atlas images.
 The demo offers loop, lifetime-once, and ping-pong atlas examples in Particle texture.
+
+### Multiple emitters per effect
+
+`EffectConfig.emitters` accepts a nonempty list with unique IDs. Following Defold's
+composition model, every emitter owns its capacity, seed, duration/play mode,
+start delay, prewarm, birth properties, curves, modifiers, and blend mode. All
+start from the effect's initial time; delayed emitters wait independently, and a
+finished once emitter does not stop looping siblings or remove its living particles.
+Core validates the whole effect before any GPU allocation. Texture data stays in Pixi:
+
+```ts
+const view = new ParticleView(renderer, effectConfig, {
+  emitters: {
+    smoke: { texture: smokeTexture },
+    fire: { atlas, animation: 'flames', playback: 'loop-forward', fps: 30 },
+    sparks: { atlas, frame: 'spark' },
+  },
+});
+view.update(seconds); // advance every emitter, including independent prewarm/delay
+view.getEmitter('fire').setParameters({ emission: { rate: 200 } });
+view.setEmitterTexture('sparks', { atlas, frame: 'star' });
+view.reset(); // reset every simulation and repeat its authored start behavior
+```
+
+Omitted texture selections use procedural particles; unknown emitter IDs fail.
+`view.emitters` is a read-only map for iterating the simulations. Each emitter's
+`x`/`y` controls its emission origin. The effect display object's transform and
+opacity apply to every emitter draw, with bounds and hit areas still opt-in.
+`getEmitterTexture(id)` returns the selected texture (the first frame for animation).
+Single-emitter construction and `emitter`, `texture`, `setTexture` conveniences
+remain available; those conveniences reject multi-emitter effects rather than
+silently choosing the first emitter.
+
+The renderer draws in definition order with one simulation and draw per emitter.
+Each emitter retains its own texture allocation; total memory and slot work scale
+with the sum of capacities, including per-emitter row padding. There is no merging
+of capacities, readback, or per-particle CPU loop. GPU resources are cleaned up on
+partial construction failure and destruction; caller-owned artwork survives.
+Shared effect-root modifiers and an effect-wide resource budget remain future work.
+This adds independent composition, not changes to the documented simulation integrator.
+
+The demo's **Multiple emitters example** link (`?multiple`) loads
+`public/multiple-emitters.json`: looping fire, delayed smoke, and a once-only spark
+burst. Pause and restart operate on the whole effect. Texture selection is in the
+Pixi host example, not that JSON.
