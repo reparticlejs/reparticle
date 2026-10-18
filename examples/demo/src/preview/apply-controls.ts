@@ -1,11 +1,9 @@
 import type { EmitterConfig, EmitterParameters } from '@reparticle/core';
 
 import type { PreviewControls } from '../types/preview';
-import { accelerationMagnitude } from './acceleration-magnitude';
 import { alphaCurves } from './alpha-curves';
 import { angularVelocityCurves } from './angular-velocity-curves';
 import { colorCurves } from './color-curves';
-import { dragMagnitude } from './drag-magnitude';
 import { emissionRate } from './emission-rate';
 import { emitterDiameter } from './emitter-diameter';
 import { emitterHeight } from './emitter-height';
@@ -20,11 +18,10 @@ import { initialRotation } from './initial-rotation';
 import { initialSize } from './initial-size';
 import { initialSpeed } from './initial-speed';
 import { initialStretch } from './initial-stretch';
-import { radialMagnitude } from './radial-magnitude';
+import { controlledModifiers } from './modifiers';
 import { rotationCurves } from './rotation-curves';
 import { sizeCurves } from './size-curves';
 import { stretchCurves } from './stretch-curves';
-import { vortexMagnitude } from './vortex-magnitude';
 
 /** Maps demo settings onto an emitter definition without modifying the original. */
 export function applyControls(definition: EmitterConfig, controls: PreviewControls): EmitterConfig {
@@ -61,12 +58,6 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     green: initialGreen(controls),
     blue: initialBlue(controls),
   };
-  const acceleration = {
-    magnitude: accelerationMagnitude(controls),
-    spread: controls.accelerationSpread,
-    rotation: controls.accelerationRotation,
-  };
-
   return {
     ...definition,
     capacity: controls.capacity,
@@ -108,31 +99,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
           ? definition.overLifetime.scale
           : sizeCurves[controls.sizeCurve],
     },
-    modifiers: {
-      ...definition.modifiers,
-      acceleration,
-      vortex: {
-        rotation: controls.vortexRotation,
-        magnitude: vortexMagnitude(controls),
-        spread: controls.vortexSpread,
-        x: controls.vortexX,
-        y: controls.vortexY,
-        maxDistance: controls.vortexMaxDistance,
-      },
-      radial: {
-        magnitude: radialMagnitude(controls),
-        spread: controls.radialSpread,
-        x: controls.radialX,
-        y: controls.radialY,
-        maxDistance: controls.radialMaxDistance,
-      },
-      drag: {
-        magnitude: dragMagnitude(controls),
-        spread: controls.dragSpread,
-        useDirection: controls.dragDirectional,
-        rotation: controls.dragRotation,
-      },
-    },
+    modifiers: controlledModifiers(definition.modifiers, controls),
     inheritVelocity: controls.inheritVelocity,
     rotation: controls.emitterRotation,
     scale: controls.emitterScale,
@@ -143,6 +110,30 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
 }
 
 export function initialControls(definition: EmitterConfig): PreviewControls {
+  const acceleration = definition.modifiers.find(
+    (modifier) => modifier.type === 'acceleration',
+  ) ?? { magnitude: 0, spread: 0, rotation: 0 };
+  const drag = definition.modifiers.find((modifier) => modifier.type === 'drag') ?? {
+    magnitude: 0,
+    spread: 0,
+    rotation: 0,
+    useDirection: false,
+  };
+  const radial = definition.modifiers.find((modifier) => modifier.type === 'radial') ?? {
+    magnitude: 0,
+    spread: 0,
+    x: 0,
+    y: 0,
+    maxDistance: 100,
+  };
+  const vortex = definition.modifiers.find((modifier) => modifier.type === 'vortex') ?? {
+    magnitude: 0,
+    spread: 0,
+    x: 0,
+    y: 0,
+    maxDistance: 100,
+    rotation: 0,
+  };
   const shape = definition.emission.shape;
   return {
     capacity: definition.capacity,
@@ -171,45 +162,32 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     rate: typeof definition.emission.rate === 'number' ? definition.emission.rate : 4000,
     rateCurve: typeof definition.emission.rate === 'number' ? 'constant' : 'effect',
     effectRate: definition.emission.rate,
-    vortexRotation: definition.modifiers.vortex.rotation,
-    vortex:
-      typeof definition.modifiers.vortex.magnitude === 'number'
-        ? definition.modifiers.vortex.magnitude
-        : 160,
-    vortexCurve: typeof definition.modifiers.vortex.magnitude === 'number' ? 'constant' : 'effect',
-    effectVortex: definition.modifiers.vortex.magnitude,
-    vortexSpread: definition.modifiers.vortex.spread,
-    vortexX: definition.modifiers.vortex.x,
-    vortexY: definition.modifiers.vortex.y,
-    vortexMaxDistance: definition.modifiers.vortex.maxDistance,
-    radial:
-      typeof definition.modifiers.radial.magnitude === 'number'
-        ? definition.modifiers.radial.magnitude
-        : 160,
-    radialCurve: typeof definition.modifiers.radial.magnitude === 'number' ? 'constant' : 'effect',
-    effectRadial: definition.modifiers.radial.magnitude,
-    radialSpread: definition.modifiers.radial.spread,
-    radialX: definition.modifiers.radial.x,
-    radialY: definition.modifiers.radial.y,
-    radialMaxDistance: definition.modifiers.radial.maxDistance,
-    acceleration:
-      typeof definition.modifiers.acceleration.magnitude === 'number'
-        ? definition.modifiers.acceleration.magnitude
-        : 160,
-    accelerationCurve:
-      typeof definition.modifiers.acceleration.magnitude === 'number' ? 'constant' : 'effect',
-    effectAcceleration: definition.modifiers.acceleration.magnitude,
-    accelerationSpread: definition.modifiers.acceleration.spread,
-    accelerationRotation: definition.modifiers.acceleration.rotation,
-    drag:
-      typeof definition.modifiers.drag.magnitude === 'number'
-        ? definition.modifiers.drag.magnitude
-        : 1,
-    dragCurve: typeof definition.modifiers.drag.magnitude === 'number' ? 'constant' : 'effect',
-    effectDrag: definition.modifiers.drag.magnitude,
-    dragSpread: definition.modifiers.drag.spread,
-    dragDirectional: definition.modifiers.drag.useDirection,
-    dragRotation: definition.modifiers.drag.rotation,
+    vortexRotation: vortex.rotation,
+    vortex: typeof vortex.magnitude === 'number' ? vortex.magnitude : 160,
+    vortexCurve: typeof vortex.magnitude === 'number' ? 'constant' : 'effect',
+    effectVortex: vortex.magnitude,
+    vortexSpread: vortex.spread,
+    vortexX: vortex.x,
+    vortexY: vortex.y,
+    vortexMaxDistance: vortex.maxDistance,
+    radial: typeof radial.magnitude === 'number' ? radial.magnitude : 160,
+    radialCurve: typeof radial.magnitude === 'number' ? 'constant' : 'effect',
+    effectRadial: radial.magnitude,
+    radialSpread: radial.spread,
+    radialX: radial.x,
+    radialY: radial.y,
+    radialMaxDistance: radial.maxDistance,
+    acceleration: typeof acceleration.magnitude === 'number' ? acceleration.magnitude : 160,
+    accelerationCurve: typeof acceleration.magnitude === 'number' ? 'constant' : 'effect',
+    effectAcceleration: acceleration.magnitude,
+    accelerationSpread: acceleration.spread,
+    accelerationRotation: acceleration.rotation,
+    drag: typeof drag.magnitude === 'number' ? drag.magnitude : 1,
+    dragCurve: typeof drag.magnitude === 'number' ? 'constant' : 'effect',
+    effectDrag: drag.magnitude,
+    dragSpread: drag.spread,
+    dragDirectional: drag.useDirection,
+    dragRotation: drag.rotation,
     inheritVelocity: definition.inheritVelocity,
     emitterRotation: definition.rotation,
     emitterScale: definition.scale,
@@ -279,7 +257,10 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
   };
 }
 
-export function emitterParameters(controls: PreviewControls): EmitterParameters {
+export function emitterParameters(
+  controls: PreviewControls,
+  modifiers: EmitterConfig['modifiers'] = [],
+): EmitterParameters {
   const emission: EmitterParameters['emission'] =
     controls.rateCurve === 'constant' ? { rate: controls.rate } : {};
   if (controls.shape === 'circle') {
@@ -326,34 +307,7 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
       ...(controls.initialGreenCurve === 'constant' ? { green: controls.green } : {}),
       ...(controls.initialBlueCurve === 'constant' ? { blue: controls.blue } : {}),
     },
-    modifiers: {
-      vortex: {
-        rotation: controls.vortexRotation,
-        ...(controls.vortexCurve === 'constant' ? { magnitude: controls.vortex } : {}),
-        spread: controls.vortexSpread,
-        x: controls.vortexX,
-        y: controls.vortexY,
-        maxDistance: controls.vortexMaxDistance,
-      },
-      radial: {
-        ...(controls.radialCurve === 'constant' ? { magnitude: controls.radial } : {}),
-        spread: controls.radialSpread,
-        x: controls.radialX,
-        y: controls.radialY,
-        maxDistance: controls.radialMaxDistance,
-      },
-      acceleration: {
-        ...(controls.accelerationCurve === 'constant' ? { magnitude: controls.acceleration } : {}),
-        spread: controls.accelerationSpread,
-        rotation: controls.accelerationRotation,
-      },
-      drag: {
-        ...(controls.dragCurve === 'constant' ? { magnitude: controls.drag } : {}),
-        spread: controls.dragSpread,
-        useDirection: controls.dragDirectional,
-        rotation: controls.dragRotation,
-      },
-    },
+    modifiers: controlledModifiers(modifiers, controls),
     inheritVelocity: controls.inheritVelocity,
     rotation: controls.emitterRotation,
     scale: controls.emitterScale,

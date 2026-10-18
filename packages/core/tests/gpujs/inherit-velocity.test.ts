@@ -4,7 +4,13 @@ import { integrate } from '#src/gpujs/integrate.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
 
 it('adds inherited motion only at birth without changing initial-direction orientation', () => {
-  const state: ParticleTexture = [[[0, 0, 0, 0]], [[0, 10, 24, 0]], [[1, 1, 1, 1]]];
+  const state: ParticleTexture = [
+    [[0, 0, 0, 0]],
+    [[0, 10, 24, 0]],
+    [[1, 1, 1, 1]],
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+  ];
   const context: KernelContext = {
     thread: { x: 0, y: 0 },
     constants: { rows: 1, width: 1, capacity: 1 },
@@ -19,7 +25,6 @@ it('adds inherited motion only at birth without changing initial-direction orien
       0,
       0,
       10,
-      0,
       0,
       0,
       10,
@@ -49,27 +54,7 @@ it('adds inherited motion only at birth without changing initial-direction orien
       1,
       0,
       1,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
-      0,
-      1,
-      0,
-      0,
-      0,
-      0,
-      0,
       new Float32Array(65),
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
       0,
       0,
       0,
@@ -79,7 +64,7 @@ it('adds inherited motion only at birth without changing initial-direction orien
       0,
       0,
       0,
-      new Float32Array(24),
+      new Float32Array([0, 0]),
     );
   const base = run(1, 0, 0);
   const inherited = run(1, 100, -50);

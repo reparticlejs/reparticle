@@ -6,7 +6,13 @@ import type { KernelContext, ParticleTexture } from '#types/layout.js';
 it.each([0, 1, 2, 3])(
   'rotates shape %s around its emitter and adds inheritance after rotation',
   (shape) => {
-    const state: ParticleTexture = [[[0, 0, 0, 0]], [[0, 10, 24, 0]], [[1, 1, 1, 1]]];
+    const state: ParticleTexture = [
+      [[0, 0, 0, 0]],
+      [[0, 10, 24, 0]],
+      [[1, 1, 1, 1]],
+      [[0, 0, 0, 0]],
+      [[0, 0, 0, 0]],
+    ];
     const context: KernelContext = {
       thread: { x: 0, y: 0 },
       constants: { width: 1, rows: 1, capacity: 1 },
@@ -21,7 +27,6 @@ it.each([0, 1, 2, 3])(
         50,
         60,
         10,
-        0,
         0,
         0,
         10,
@@ -51,27 +56,7 @@ it.each([0, 1, 2, 3])(
         cosine,
         sine,
         1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
         new Float32Array(65),
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
         0,
         0,
         0,
@@ -81,7 +66,7 @@ it.each([0, 1, 2, 3])(
         0,
         0,
         0,
-        new Float32Array(24),
+        new Float32Array([0, 0]),
       );
     const base = run(1, 0, 0);
     const rotated = run(0, -1, 100);

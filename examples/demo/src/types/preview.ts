@@ -107,13 +107,13 @@ export interface PreviewControls {
   accelerationSpread: number;
   accelerationRotation: number;
   accelerationCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
-  effectAcceleration: EmitterConfig['modifiers']['acceleration']['magnitude'];
+  effectAcceleration: ScalarProperty;
   drag: number;
   dragSpread: number;
   dragDirectional: boolean;
   dragRotation: number;
   dragCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
-  effectDrag: EmitterConfig['modifiers']['drag']['magnitude'];
+  effectDrag: ScalarProperty;
   inheritVelocity: number;
   emitterRotation: number;
   emitterScale: number;

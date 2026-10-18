@@ -1,5 +1,6 @@
 import {
   strictObject,
+  array,
   boolean,
   number,
   int,
@@ -100,19 +101,15 @@ const dragSchema = strictObject({
   useDirection: boolean().default(false),
   rotation: number().default(0),
 });
-export const modifiersSchema = strictObject({
-  vortex: vortexSchema.default({
-    magnitude: 0,
-    spread: 0,
-    x: 0,
-    y: 0,
-    maxDistance: 100,
-    rotation: 0,
-  }),
-  radial: radialSchema.default({ magnitude: 0, spread: 0, x: 0, y: 0, maxDistance: 100 }),
-  acceleration: accelerationSchema.default({ magnitude: 0, spread: 0, rotation: 0 }),
-  drag: dragSchema.default({ magnitude: 0, spread: 0, useDirection: false, rotation: 0 }),
-});
+export const modifierSchema = discriminatedUnion('type', [
+  accelerationSchema.extend({ type: literal('acceleration') }),
+  dragSchema.extend({ type: literal('drag') }),
+  radialSchema.extend({ type: literal('radial') }),
+  vortexSchema.extend({ type: literal('vortex') }),
+]);
+
+/** Each scope permits 64 modifiers; the GPU applies at most 128 in one pass. */
+export const modifiersSchema = array(modifierSchema).max(64);
 
 /** Runtime values and flags; shape type, identity, capacity and seed require recreation. */
 export const emitterParametersSchema = strictObject({
@@ -167,42 +164,7 @@ export const emitterParametersSchema = strictObject({
       'Initial parameter values must be numbers',
     )
     .optional(),
-  modifiers: strictObject({
-    vortex: strictObject({
-      rotation: number(),
-      magnitude: number(),
-      spread: number().nonnegative(),
-      x: number(),
-      y: number(),
-      maxDistance: number().nonnegative(),
-    })
-      .partial()
-      .optional(),
-    radial: strictObject({
-      magnitude: number(),
-      spread: number().nonnegative(),
-      x: number(),
-      y: number(),
-      maxDistance: number().nonnegative(),
-    })
-      .partial()
-      .optional(),
-    acceleration: strictObject({
-      magnitude: number(),
-      spread: number().nonnegative(),
-      rotation: number(),
-    })
-      .partial()
-      .optional(),
-    drag: strictObject({
-      magnitude: number(),
-      spread: number().nonnegative(),
-      useDirection: boolean(),
-      rotation: number(),
-    })
-      .partial()
-      .optional(),
-  }).optional(),
+  modifiers: modifiersSchema.optional(),
 });
 
 export const emitterConfigSchema = strictObject({
@@ -233,7 +195,7 @@ export const emitterConfigSchema = strictObject({
   playMode: enumSchema(['once', 'loop']).default('loop'),
   emission: emissionSchema,
   initial: initialPropertiesSchema,
-  modifiers: modifiersSchema,
+  modifiers: modifiersSchema.default([]),
   overLifetime: strictObject({
     stretchX: scalarPropertySchema.default(0),
     stretchY: scalarPropertySchema.default(0),
@@ -260,7 +222,7 @@ export const emitterConfigSchema = strictObject({
 /** Only implemented configuration features are accepted. */
 export const effectConfigSchema = strictObject({
   version: literal(1),
-  modifiers: modifiersSchema.prefault({}),
+  modifiers: modifiersSchema.default([]),
   emitters: tuple([emitterConfigSchema], emitterConfigSchema).superRefine((emitters, context) => {
     const ids = new Set<string>();
     for (const [index, emitter] of emitters.entries()) {

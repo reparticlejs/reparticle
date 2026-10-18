@@ -12,7 +12,7 @@ export function createParticleView(
   definition: EmitterConfig,
   textures: PreviewAssets['textures'],
   controls: PreviewControls,
-  modifiers?: ModifierConfig,
+  modifiers?: ModifierConfig[],
 ): ParticleView {
   const emitter = applyControls(definition, controls);
   const effect = { version: 1, emitters: [emitter], modifiers };
@@ -27,7 +27,7 @@ export function replaceParticleView(
   textures: PreviewAssets['textures'],
   controls: PreviewControls,
   definition: EmitterConfig,
-  modifiers?: ModifierConfig,
+  modifiers?: ModifierConfig[],
 ): ParticleView {
   const replacement = createParticleView(app, definition, textures, controls, modifiers);
   try {

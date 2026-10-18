@@ -8,7 +8,6 @@ export { propertyVariation } from '../behaviors/property-variation';
 export { circleAngle, circleRadius } from '../behaviors/circle';
 export { applyAcceleration } from '../behaviors/acceleration';
 export { advanceAge, particleAlive } from '../behaviors/lifetime';
-export { advancePosition, advanceVelocity } from '../behaviors/motion';
 export { spawnVariation, spawnDirection } from '../behaviors/spawn';
 export { initialize } from './initialize';
 export { integrate } from './integrate';
@@ -18,4 +17,4 @@ export { spawnCone2D } from './spawn-cone2d';
 export { spawnRotation } from './spawn-rotation';
 export { spawnMotion } from './spawn-motion';
 
-export { applySharedModifiers } from '../behaviors/shared-modifiers';
+export { applyModifiers } from '../behaviors/modifiers';

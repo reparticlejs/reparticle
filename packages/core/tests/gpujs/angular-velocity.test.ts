@@ -5,7 +5,13 @@ import { integrate } from '#src/gpujs/integrate.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
 
 it('captures spread once, accumulates spin, and resets on slot reuse', () => {
-  const state: ParticleTexture = [[[0, 0, 0, 0]], [[0, 2, 24, 0]], [[1, 1, 1, 1]], [[0, 0, 0, 0]]];
+  const state: ParticleTexture = [
+    [[0, 0, 0, 0]],
+    [[0, 2, 24, 0]],
+    [[1, 1, 1, 1]],
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+  ];
   const context: KernelContext = {
     thread: { x: 0, y: 3 },
     constants: { width: 1, rows: 1, capacity: 1 },
@@ -26,7 +32,6 @@ it('captures spread once, accumulates spin, and resets on slot reuse', () => {
       0,
       0,
       0,
-      100,
       10,
       seed,
       0,
@@ -54,27 +59,7 @@ it('captures spread once, accumulates spin, and resets on slot reuse', () => {
       1,
       0,
       1,
-      2,
-      2,
-      0,
-      1,
-      0,
-      40,
-      0.6,
-      -0.8,
-      0,
-      0,
-      0,
-      0,
-      0,
       new Float32Array(65),
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
       0,
       speed,
       40,
@@ -84,7 +69,7 @@ it('captures spread once, accumulates spin, and resets on slot reuse', () => {
       0,
       0,
       0,
-      new Float32Array(24),
+      new Float32Array([2, 0, 0, 100, 40, 0, 0, 0.6, -0.8, 0, 0, 1, 2, 2, 0, 0, 1, 0, 0, 0]),
     );
   const born = run(1);
   const captured = 100 + 40 * propertyVariation(0, 1, 15);

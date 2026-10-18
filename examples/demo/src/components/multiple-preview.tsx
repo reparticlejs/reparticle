@@ -63,8 +63,8 @@ export function MultiplePreview() {
             seconds.
           </p>
           <p>
-            Each emitter has its own timing, capacity, color, and blend mode. Shared wind pushes all
-            three to the left.
+            Each emitter has its own timing, capacity, color, and blend mode. Two shared
+            acceleration modifiers push all three left and upward.
           </p>
           <fieldset disabled={!ready}>
             <legend>Effect transform</legend>

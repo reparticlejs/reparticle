@@ -1,14 +1,9 @@
 import type { KernelContext, ParticleTexel, ParticleTexture } from '#types/layout.js';
 
-import { applyAcceleration } from '../behaviors/acceleration';
 import { advanceRotation } from '../behaviors/angular-velocity';
-import { applyDrag } from '../behaviors/drag';
 import { advanceAge, particleAlive } from '../behaviors/lifetime';
-import { advancePosition, advanceVelocity } from '../behaviors/motion';
+import { applyModifiers } from '../behaviors/modifiers';
 import { propertyVariation } from '../behaviors/property-variation';
-import { applyRadial } from '../behaviors/radial';
-import { applySharedModifiers } from '../behaviors/shared-modifiers';
-import { applyVortex } from '../behaviors/vortex';
 import { particleHeading } from './particle-heading';
 import { spawnBox } from './spawn-box';
 import { spawnCircle } from './spawn-circle';
@@ -32,7 +27,6 @@ export function integrate(
   speed: number,
   direction: number,
   spread: number,
-  accelerationMagnitude: number,
   lifetime: number,
   seed: number,
   shapeType: number,
@@ -60,28 +54,8 @@ export function integrate(
   emitterCosine: number,
   emitterSine: number,
   emitterScale: number,
-  dragMagnitude: number,
-  dragSpread: number,
-  dragDirectional: number,
-  dragX: number,
-  dragY: number,
-  accelerationSpread: number,
-  accelerationDirectionX: number,
-  accelerationDirectionY: number,
-  radialMagnitude: number,
-  radialSpread: number,
-  radialX: number,
-  radialY: number,
-  radialMaxDistance: number,
   rotationCurve: Float32Array,
   orientToMovement: number,
-  vortexMagnitude: number,
-  vortexSpread: number,
-  vortexX: number,
-  vortexY: number,
-  vortexMaxDistance: number,
-  vortexStartX: number,
-  vortexStartY: number,
   initialAngularVelocity: number,
   angularVelocitySpread: number,
   angularVelocityCurve: Float32Array,
@@ -90,7 +64,7 @@ export function integrate(
   initialStretchY: number,
   stretchXSpread: number,
   stretchYSpread: number,
-  sharedModifiers: Float32Array,
+  modifiers: Float32Array,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -176,34 +150,18 @@ export function integrate(
     const sampledSpeed =
       (speed + propertyVariation(particleId, seed, 1) * speedSpread) * emitterScale;
     const birthFactor = propertyVariation(particleId, seed, 14);
-    const birthAccelerationX = applyAcceleration(
-      accelerationDirectionX,
-      accelerationMagnitude,
-      accelerationSpread,
-      birthFactor,
-    );
-    const birthAccelerationY = applyAcceleration(
-      accelerationDirectionY,
-      accelerationMagnitude,
-      accelerationSpread,
-      birthFactor,
-    );
     const birthX =
-      (emitterCosine * spawned[2] - emitterSine * spawned[3]) * sampledSpeed +
-      inheritedVelocityX +
-      birthAccelerationX * seconds;
+      (emitterCosine * spawned[2] - emitterSine * spawned[3]) * sampledSpeed + inheritedVelocityX;
     const birthY =
-      (emitterSine * spawned[2] + emitterCosine * spawned[3]) * sampledSpeed +
-      inheritedVelocityY +
-      birthAccelerationY * seconds;
+      (emitterSine * spawned[2] + emitterCosine * spawned[3]) * sampledSpeed + inheritedVelocityY;
     const positionX =
       emitterX + (emitterCosine * spawned[0] - emitterSine * spawned[1]) * emitterScale;
     const positionY =
       emitterY + (emitterSine * spawned[0] + emitterCosine * spawned[1]) * emitterScale;
-    let birthRadial = [0, 0];
-    if (radialMagnitude !== 0 || radialSpread !== 0) {
+    let velocity: [number, number] = [birthX, birthY];
+    if (modifiers[0]! > 0) {
       let heading: [number, number] = [0, -1];
-      if (positionX === radialX && positionY === radialY) {
+      if (modifiers[1]! > 0) {
         heading = particleHeading(
           rotation +
             (orientToAngularVelocity > 0.5
@@ -220,97 +178,24 @@ export function integrate(
           0,
           lifetime,
           rotationCurve,
-          birthX - birthAccelerationX * seconds,
-          birthY - birthAccelerationY * seconds,
+          birthX,
+          birthY,
           orientToMovement,
         );
       }
-      birthRadial = applyRadial(
+      velocity = applyModifiers(
         positionX,
         positionY,
-        radialX,
-        radialY,
-        heading[0],
-        heading[1],
-        radialMagnitude,
-        radialSpread,
-        birthFactor,
-        radialMaxDistance,
-      );
-    }
-    let birthVortex = [0, 0];
-    if (vortexMagnitude !== 0 || vortexSpread !== 0) {
-      birthVortex = applyVortex(
-        positionX,
-        positionY,
-        vortexX,
-        vortexY,
-        vortexStartX,
-        vortexStartY,
-        vortexMagnitude,
-        vortexSpread,
-        birthFactor,
-        vortexMaxDistance,
-      );
-    }
-    const birthProjection = birthX * dragX + birthY * dragY;
-    const result: ParticleTexel = [
-      positionX,
-      positionY,
-      applyDrag(
         birthX,
-        dragDirectional > 0.5 ? birthProjection * dragX : birthX,
-        dragMagnitude,
-        dragSpread,
-        birthFactor,
-        seconds,
-      ) +
-        (birthRadial[0]! + birthVortex[0]!) * seconds,
-      applyDrag(
         birthY,
-        dragDirectional > 0.5 ? birthProjection * dragY : birthY,
-        dragMagnitude,
-        dragSpread,
-        birthFactor,
-        seconds,
-      ) +
-        (birthRadial[1]! + birthVortex[1]!) * seconds,
-    ];
-    if (sharedModifiers[0]! > 0.5) {
-      const heading = particleHeading(
-        rotation +
-          (orientToAngularVelocity > 0.5
-            ? advanceRotation(
-                0,
-                initialAngularVelocity +
-                  propertyVariation(particleId, seed, 15) * angularVelocitySpread,
-                0,
-                lifetime,
-                angularVelocityCurve,
-                seconds,
-              )
-            : 0),
-        0,
-        lifetime,
-        rotationCurve,
-        birthX - birthAccelerationX * seconds,
-        birthY - birthAccelerationY * seconds,
-        orientToMovement,
-      );
-      const velocity = applySharedModifiers(
-        positionX,
-        positionY,
-        result[2],
-        result[3],
         heading[0],
         heading[1],
         birthFactor,
         seconds,
-        sharedModifiers,
+        modifiers,
       );
-      return [positionX, positionY, velocity[0], velocity[1]];
     }
-    return result;
+    return [positionX, positionY, velocity[0], velocity[1]];
   }
 
   // Properties texel: age, lifetime, initialSize, resolved initialRotation (degrees).
@@ -329,41 +214,17 @@ export function integrate(
     return [x, y, 0, 0];
   }
 
-  // Acceleration precedes drag; both modifiers share the particle's birth spread factor.
-  let modifierState = [0, 0, 0, 0];
-  if (
-    sharedModifiers[0]! > 0.5 ||
-    dragSpread !== 0 ||
-    accelerationSpread !== 0 ||
-    radialSpread !== 0 ||
-    vortexSpread !== 0 ||
-    orientToAngularVelocity > 0.5
-  ) {
-    modifierState = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
-  }
-  const factor = modifierState[0]!;
-  const accelerationX = applyAcceleration(
-    accelerationDirectionX,
-    accelerationMagnitude,
-    accelerationSpread,
-    factor,
-  );
-  const accelerationY = applyAcceleration(
-    accelerationDirectionY,
-    accelerationMagnitude,
-    accelerationSpread,
-    factor,
-  );
-  let radial = [0, 0];
-  if (radialMagnitude !== 0 || radialSpread !== 0) {
+  let velocity: [number, number] = [velocityX, velocityY];
+  if (modifiers[0]! > 0) {
+    const dynamics = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
     let heading: [number, number] = [0, -1];
-    if (x === radialX && y === radialY) {
+    if (modifiers[1]! > 0) {
       heading = particleHeading(
         properties[3] +
           (orientToAngularVelocity > 0.5
             ? advanceRotation(
-                modifierState[2]!,
-                modifierState[1]!,
+                dynamics[2],
+                dynamics[1],
                 age + seconds,
                 particleLifetime,
                 angularVelocityCurve,
@@ -378,98 +239,17 @@ export function integrate(
         orientToMovement,
       );
     }
-    radial = applyRadial(
+    velocity = applyModifiers(
       x,
       y,
-      radialX,
-      radialY,
-      heading[0],
-      heading[1],
-      radialMagnitude,
-      radialSpread,
-      factor,
-      radialMaxDistance,
-    );
-  }
-  let vortex = [0, 0];
-  if (vortexMagnitude !== 0 || vortexSpread !== 0) {
-    vortex = applyVortex(
-      x,
-      y,
-      vortexX,
-      vortexY,
-      vortexStartX,
-      vortexStartY,
-      vortexMagnitude,
-      vortexSpread,
-      factor,
-      vortexMaxDistance,
-    );
-  }
-  const acceleratedX = advanceVelocity(velocityX, accelerationX, seconds);
-  const acceleratedY = advanceVelocity(velocityY, accelerationY, seconds);
-  const projection = acceleratedX * dragX + acceleratedY * dragY;
-  const dampedX = applyDrag(
-    acceleratedX,
-    dragDirectional > 0.5 ? projection * dragX : acceleratedX,
-    dragMagnitude,
-    dragSpread,
-    factor,
-    seconds,
-  );
-  const dampedY = applyDrag(
-    acceleratedY,
-    dragDirectional > 0.5 ? projection * dragY : acceleratedY,
-    dragMagnitude,
-    dragSpread,
-    factor,
-    seconds,
-  );
-  const result: ParticleTexel = [
-    advancePosition(x, velocityX, accelerationX, seconds) +
-      (dampedX - acceleratedX + (radial[0]! + vortex[0]!) * seconds) * seconds,
-    advancePosition(y, velocityY, accelerationY, seconds) +
-      (dampedY - acceleratedY + (radial[1]! + vortex[1]!) * seconds) * seconds,
-    dampedX + (radial[0]! + vortex[0]!) * seconds,
-    dampedY + (radial[1]! + vortex[1]!) * seconds,
-  ];
-  if (sharedModifiers[0]! > 0.5) {
-    const heading = particleHeading(
-      properties[3] +
-        (orientToAngularVelocity > 0.5
-          ? advanceRotation(
-              modifierState[2]!,
-              modifierState[1]!,
-              age + seconds,
-              particleLifetime,
-              angularVelocityCurve,
-              seconds,
-            )
-          : 0),
-      age + seconds,
-      particleLifetime,
-      rotationCurve,
       velocityX,
       velocityY,
-      orientToMovement,
-    );
-    const velocity = applySharedModifiers(
-      x,
-      y,
-      result[2],
-      result[3],
       heading[0],
       heading[1],
-      factor,
+      dynamics[0],
       seconds,
-      sharedModifiers,
+      modifiers,
     );
-    return [
-      result[0] + (velocity[0] - result[2]) * seconds,
-      result[1] + (velocity[1] - result[3]) * seconds,
-      velocity[0],
-      velocity[1],
-    ];
   }
-  return result;
+  return [x + velocity[0] * seconds, y + velocity[1] * seconds, velocity[0], velocity[1]];
 }

@@ -78,11 +78,11 @@ The overlay shows FPS, living particle count, frame interval, browser JS heap wh
 
 ## Authoring simulation behavior
 
-Edit ordinary TypeScript functions in `packages/core/src/behaviors/motion.ts` and `spawn.ts`. They have type checking, autocomplete and direct numerical tests. The `src/gpujs/integrate.ts` adapter handles the three-texel particle layout and calls those functions.
+Edit ordinary TypeScript functions in `packages/core/src/behaviors/motion.ts` and `spawn.ts`. They have type checking, autocomplete and direct numerical tests. The `src/gpujs/integrate.ts` adapter handles the five-texel particle layout and calls those functions.
 
-Core uses its normal TypeScript package build. There is no kernel generator or consumer build plugin. The demo imports the built packages in both development and production. `pnpm dev` builds the libraries before starting the demo. After library changes, rebuild them or run `pnpm --filter @reparticle/core exec tsdown --watch` and `pnpm --filter @reparticle/pixi exec tsdown --watch` in separate terminals.
+Core uses its normal TypeScript package build. The package build compiles the numeric functions into tracked `src/gpujs/functions.json` source strings; consumers need no build plugin or minifier configuration. The demo imports the built packages in both development and production. `pnpm dev` builds the libraries before starting the demo. After library changes, rebuild them or run `pnpm --filter @reparticle/core exec tsdown --watch` and `pnpm --filter @reparticle/pixi exec tsdown --watch` in separate terminals.
 
-GPU.js compiles the JavaScript function bodies at runtime, so they must stay within its supported numeric subset. Keep spawn locals in the separate `src/gpujs/spawn-motion.ts` helper: GPU.js can misidentify block-local variables when a minifier gives them the same name as a parameter. The current functions were checked under default Rolldown and Terser minification in a plain HTML page, including nonzero spawn velocity, gravity, reset, expiration, and playback GPU residency. New kernel changes should be checked in a minified browser build as well as unit tests.
+GPU.js compiles the packaged function strings at runtime, so the functions must stay within its supported numeric subset. Keep spawn locals in the separate `src/gpujs/spawn-motion.ts` helper: GPU.js can misidentify block-local variables when a minifier gives them the same name as a parameter. The current functions were checked under default Rolldown and Terser minification in a plain HTML page, including nonzero spawn velocity, gravity, reset, expiration, and playback GPU residency. New kernel changes should be checked in a minified browser build as well as unit tests.
 
 ## Effect configuration and runtime parameters
 
@@ -91,10 +91,16 @@ Pass an effect JSON object to `new ParticleView(renderer, definition)`. Validati
 ```ts
 particles.emitter.setParameters({ emission: { rate: 1500 } });
 particles.emitter.setParameters({ initial: { lifetime: 3, speed: 180 } });
-particles.emitter.setParameters({ modifiers: { gravity: { y: 80 } } });
+particles.emitter.setParameters({
+  modifiers: [
+    { type: 'acceleration', magnitude: 80, rotation: 180 },
+    { type: 'drag', magnitude: 0.2 },
+    { type: 'acceleration', magnitude: 20, rotation: -90 },
+  ],
+});
 ```
 
-Updates are validated atomically. Capacity, seed, ID and shape type cannot be changed through this method; create a new instance from an updated definition. `emitter.configuration` returns an independent snapshot for that purpose. Position and playback remain runtime controls. Initial values affect new births; gravity affects living particles. Horizontal gravity currently must be zero. Scalar speed is exact; implicit speed variation, shrinking and fading have been removed. Texture selection remains a renderer control; initial size, initial alpha, and their lifetime curves are configured in JSON. No new API accepts executable particle behavior.
+Updates are validated atomically. Capacity, seed, ID and shape type cannot be changed through this method; create a new instance from an updated definition. `emitter.configuration` returns an independent snapshot for that purpose. Position and playback remain runtime controls. Initial values affect new births; modifiers affect living particles. Modifier updates replace the complete ordered list. Emitter entries run first, then root entries, in authored array order; repeated types are supported. Each scope allows up to 64 entries. Living positions advance once after all velocity changes, following Defold’s integration order. Scalar speed is exact; implicit speed variation, shrinking and fading have been removed. Texture selection remains a renderer control; initial size, initial alpha, and their lifetime curves are configured in JSON. No new API accepts executable particle behavior.
 
 ## Demo UI
 

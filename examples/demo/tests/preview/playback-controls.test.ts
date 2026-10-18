@@ -67,7 +67,7 @@ it('maps emitter scale independently of initial particle size', () => {
 
 it('preserves authored drag curves and maps independent drag edits', () => {
   const definition = parseEffectConfig(effect).emitters[0];
-  definition.modifiers.drag.magnitude = {
+  definition.modifiers.find((modifier) => modifier.type === 'drag')!.magnitude = {
     points: [
       { time: 0, value: 0, tangent: 2 },
       { time: 1, value: 2, tangent: 2 },
@@ -81,8 +81,8 @@ it('preserves authored drag curves and maps independent drag edits', () => {
     dragDirectional: true,
     dragRotation: 90,
   });
-  expect(changed.modifiers.drag).toEqual({
-    magnitude: definition.modifiers.drag.magnitude,
+  expect(changed.modifiers.find((modifier) => modifier.type === 'drag')!).toMatchObject({
+    magnitude: definition.modifiers.find((modifier) => modifier.type === 'drag')!.magnitude,
     spread: 2,
     useDirection: true,
     rotation: 90,
@@ -91,7 +91,7 @@ it('preserves authored drag curves and maps independent drag edits', () => {
 
 it('preserves acceleration curves while changing direction and spread', () => {
   const definition = parseEffectConfig(effect).emitters[0];
-  definition.modifiers.acceleration.magnitude = {
+  definition.modifiers.find((modifier) => modifier.type === 'acceleration')!.magnitude = {
     points: [
       { time: 0, value: 0, tangent: 100 },
       { time: 1, value: 100, tangent: 100 },
@@ -100,14 +100,21 @@ it('preserves acceleration curves while changing direction and spread', () => {
   const controls = initialControls(definition);
   expect(controls.accelerationCurve).toBe('effect');
   expect(
-    applyControls(definition, { ...controls, accelerationRotation: 90, accelerationSpread: 20 })
-      .modifiers.acceleration,
-  ).toEqual({ magnitude: definition.modifiers.acceleration.magnitude, spread: 20, rotation: 90 });
+    applyControls(definition, {
+      ...controls,
+      accelerationRotation: 90,
+      accelerationSpread: 20,
+    }).modifiers.find((modifier) => modifier.type === 'acceleration')!,
+  ).toMatchObject({
+    magnitude: definition.modifiers.find((modifier) => modifier.type === 'acceleration')!.magnitude,
+    spread: 20,
+    rotation: 90,
+  });
 });
 
 it('preserves radial curves while changing the center, cutoff, and spread', () => {
   const definition = parseEffectConfig(effect).emitters[0];
-  definition.modifiers.radial.magnitude = {
+  definition.modifiers.find((modifier) => modifier.type === 'radial')!.magnitude = {
     points: [
       { time: 0, value: 0, tangent: 100 },
       { time: 1, value: 100, tangent: 100 },
@@ -122,9 +129,9 @@ it('preserves radial curves while changing the center, cutoff, and spread', () =
       radialY: -30,
       radialMaxDistance: 200,
       radialSpread: 40,
-    }).modifiers.radial,
-  ).toEqual({
-    magnitude: definition.modifiers.radial.magnitude,
+    }).modifiers.find((modifier) => modifier.type === 'radial')!,
+  ).toMatchObject({
+    magnitude: definition.modifiers.find((modifier) => modifier.type === 'radial')!.magnitude,
     x: 20,
     y: -30,
     maxDistance: 200,
@@ -134,7 +141,7 @@ it('preserves radial curves while changing the center, cutoff, and spread', () =
 
 it('preserves vortex curves while changing the center, cutoff, and spread', () => {
   const definition = parseEffectConfig(effect).emitters[0];
-  definition.modifiers.vortex.magnitude = {
+  definition.modifiers.find((modifier) => modifier.type === 'vortex')!.magnitude = {
     points: [
       { time: 0, value: 0, tangent: 100 },
       { time: 1, value: 100, tangent: 100 },
@@ -149,9 +156,9 @@ it('preserves vortex curves while changing the center, cutoff, and spread', () =
       vortexY: -30,
       vortexMaxDistance: 200,
       vortexSpread: 40,
-    }).modifiers.vortex,
-  ).toEqual({
-    magnitude: definition.modifiers.vortex.magnitude,
+    }).modifiers.find((modifier) => modifier.type === 'vortex')!,
+  ).toMatchObject({
+    magnitude: definition.modifiers.find((modifier) => modifier.type === 'vortex')!.magnitude,
     x: 20,
     y: -30,
     maxDistance: 200,
@@ -233,4 +240,23 @@ it('preserves blend modes in initial controls, definitions, and runtime patches'
   expect(controls.blendMode).toBe('multiply');
   expect(applyControls(definition, { ...controls, blendMode: 'screen' }).blendMode).toBe('screen');
   expect(emitterParameters({ ...controls, blendMode: 'add' }).blendMode).toBe('add');
+});
+
+it('preserves repeated modifiers and their order when demo controls edit the first instance', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.modifiers = [
+    { type: 'drag', magnitude: 2, spread: 0, useDirection: false, rotation: 0 },
+    { type: 'acceleration', magnitude: 10, spread: 0, rotation: 0 },
+    { type: 'drag', magnitude: 8, spread: 3, useDirection: true, rotation: 90 },
+  ];
+  const controls = initialControls(definition);
+  const changed = applyControls(definition, { ...controls, drag: 5 });
+  expect(changed.modifiers.slice(0, 3).map(({ type }) => type)).toEqual([
+    'drag',
+    'acceleration',
+    'drag',
+  ]);
+  expect(changed.modifiers[0]!.magnitude).toBe(5);
+  expect(changed.modifiers[2]).toEqual(definition.modifiers[2]);
+  expect(definition.modifiers[0]!.magnitude).toBe(2);
 });

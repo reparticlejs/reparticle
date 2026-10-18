@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 
 import { EffectTransform } from '#src/effect-transform.js';
-import { SharedModifiers } from '#src/shared-modifiers.js';
+import { Modifiers } from '#src/modifiers.js';
 
 it('composes scale, counterclockwise rotation and translation', () => {
   const transform = new EffectTransform();
@@ -25,19 +25,22 @@ it('rejects invalid patches atomically and supports zero and negative scale', ()
 it('moves shared modifier centers and rotates/scales world forces', () => {
   const transform = new EffectTransform();
   transform.set({ x: 100, y: 50, rotation: 90, scale: 2 });
-  const shared = new SharedModifiers({
-    acceleration: { magnitude: 10 },
-    radial: { x: 10, y: 5, magnitude: 3, maxDistance: 20 },
-  });
+  const shared = new Modifiers(
+    [],
+    [
+      { type: 'acceleration', magnitude: 10 },
+      { type: 'radial', x: 10, y: 5, magnitude: 3, maxDistance: 20 },
+    ],
+  );
   const values = shared.sample(0, false, 0, 0, 0, 1, transform);
-  expect(values[1]).toBe(20);
-  expect(values[3]).toBeCloseTo(-1);
-  expect(values[4]).toBeCloseTo(0);
-  expect(values[12]).toBeCloseTo(110);
-  expect(values[13]).toBeCloseTo(30);
-  expect(values[14]).toBe(40);
+  expect(values[3]).toBe(20);
+  expect(values[7]).toBeCloseTo(-1);
+  expect(values[8]).toBeCloseTo(0);
+  expect(values[14]).toBeCloseTo(110);
+  expect(values[15]).toBeCloseTo(30);
+  expect(values[18]).toBe(40);
   const local = shared.sample(0, true, 0, 0, 0, 1, transform);
-  expect(local[1]).toBe(10);
-  expect(local[12]).toBe(10);
-  expect(local[13]).toBe(5);
+  expect(local[3]).toBe(10);
+  expect(local[14]).toBe(10);
+  expect(local[15]).toBe(5);
 });

@@ -11,11 +11,16 @@ it('merges only supplied parameters and leaves the original definition independe
   const next = updateEmitterConfig(current, {
     emission: { rate: 123 },
     initial: { speed: 50 },
-    modifiers: { acceleration: { magnitude: -20 } },
+    modifiers: [{ type: 'acceleration', magnitude: -20, rotation: 180 }],
   });
   expect(next.emission).toEqual({ rate: 123, rateSpread: 0, shape: { type: 'point' } });
   expect(next.initial).toEqual({ ...current.initial, speed: 50 });
-  expect(next.modifiers.acceleration).toEqual({ magnitude: -20, spread: 0, rotation: 180 });
+  expect(next.modifiers[0]).toEqual({
+    type: 'acceleration',
+    magnitude: -20,
+    spread: 0,
+    rotation: 180,
+  });
   next.initial.direction = 0;
   expect(current).toEqual(skeleton.emitters[0]);
 });

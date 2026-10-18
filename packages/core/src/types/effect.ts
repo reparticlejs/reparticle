@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 
 import type {
-  modifiersSchema,
+  modifierSchema,
   effectConfigSchema,
   emitterConfigSchema,
   emitterParametersSchema,
@@ -11,6 +11,6 @@ import type {
 export type EffectConfig = z.infer<typeof effectConfigSchema>;
 export type EmitterConfig = z.infer<typeof emitterConfigSchema>;
 
-export type EmitterParameters = z.infer<typeof emitterParametersSchema>;
+export type EmitterParameters = z.input<typeof emitterParametersSchema>;
 
-export type ModifierConfig = z.infer<typeof modifiersSchema>;
+export type ModifierConfig = z.infer<typeof modifierSchema>;

@@ -11,7 +11,13 @@ import type { KernelContext, ParticleTexture } from '#types/layout.js';
 it.each([1, 2, 3])(
   'uses independent signed dimensions for shape %s position and initial orientation',
   (shape) => {
-    const state: ParticleTexture = [[[0, 0, 0, 0]], [[0, 10, 24, 0]], [[1, 1, 1, 1]]];
+    const state: ParticleTexture = [
+      [[0, 0, 0, 0]],
+      [[0, 10, 24, 0]],
+      [[1, 1, 1, 1]],
+      [[0, 0, 0, 0]],
+      [[0, 0, 0, 0]],
+    ];
     const context: KernelContext = {
       thread: { x: 0, y: 0 },
       constants: { rows: 1, width: 1, capacity: 1 },
@@ -35,7 +41,6 @@ it.each([1, 2, 3])(
           0,
           0,
           1,
-          0,
           0,
           0,
           10,
@@ -65,27 +70,7 @@ it.each([1, 2, 3])(
           1,
           0,
           1,
-          0,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          0,
-          0,
           new Float32Array(65),
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
           0,
           0,
           0,
@@ -95,7 +80,7 @@ it.each([1, 2, 3])(
           0,
           0,
           0,
-          new Float32Array(24),
+          new Float32Array([0, 0]),
         );
       context.thread.y = 0;
       expect(run(1)).toEqual(expected);

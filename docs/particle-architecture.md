@@ -18,30 +18,30 @@ Capacity is explicit. No automatic bounds, hit-area calculation, particle scanni
 
 ## Definition structure
 
-An effect owns named emitters and, eventually, shared modifiers. Each emitter owns emission settings, initial particle properties, properties over particle lifetime, local modifiers, and rendering settings. IDs address emitters and modifiers in runtime updates; JSON property order never sets execution order.
+An effect owns named emitters and shared modifiers. Each emitter owns emission settings, initial particle properties, properties over particle lifetime, local modifiers, and rendering settings. IDs address emitters. Modifier array order sets execution order; object property order does not.
 
 Two timelines are distinct: emitter elapsed time controls emission and the initial values of newly born particles; normalized particle age controls changes throughout an individual particle's lifetime. Lifetime is sampled at birth. Aging and expiration are mandatory lifecycle logic, not optional behaviors.
 
-Modifiers accumulate acceleration before movement integration. The integration policy must be documented and tested as each modifier arrives. Preserve the current constant-acceleration position term. Multiple modifiers must not accidentally integrate position multiple times.
+Modifiers change velocity sequentially in authored array order: emitter-local entries first, then shared effect entries. Living-particle position advances once using the resulting velocity, as in Defold. Newborns retain the prototype birth-position convention.
 
 The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and loads through `ParticleView(renderer, definition)` or the core `Emitter` constructor after parsing. Unsupported fields, shapes, and versions fail explicitly. Effects accept one or more emitters with unique IDs.
 
 Current required fields have no implicit defaults:
 
-| Field                  | Meaning and constraints                                                                               |
-| ---------------------- | ----------------------------------------------------------------------------------------------------- |
-| version                | Exactly 1 for this initial contract                                                                   |
-| emitters               | Exactly one entry until orchestration is implemented; the document shape supports later expansion     |
-| id                     | Nonempty string; unique within the effect                                                             |
-| capacity               | Integer 1 through 1000000; device texture limits are checked at creation                              |
-| seed                   | Integer 0 through 65535; reproducibility across different GPU drivers is not promised                 |
-| emission.rate          | Finite nonnegative particles per second                                                               |
-| emission.shape.type    | `point`, `circle`, `box`, or `cone2d`                                                                 |
-| initial.lifetime       | Finite positive seconds                                                                               |
-| initial.speed          | Finite nonnegative units per second                                                                   |
-| initial.direction      | Finite radians; used by point spawning                                                                |
-| initial.spread         | Finite nonnegative angular width for point spawning                                                   |
-| modifiers.acceleration | Magnitude number or emitter-time curve, nonnegative spread, and rotation in degrees; defaults to zero |
+| Field                            | Meaning and constraints                                                                               |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| version                          | Exactly 1 for this initial contract                                                                   |
+| emitters                         | Exactly one entry until orchestration is implemented; the document shape supports later expansion     |
+| id                               | Nonempty string; unique within the effect                                                             |
+| capacity                         | Integer 1 through 1000000; device texture limits are checked at creation                              |
+| seed                             | Integer 0 through 65535; reproducibility across different GPU drivers is not promised                 |
+| emission.rate                    | Finite nonnegative particles per second                                                               |
+| emission.shape.type              | `point`, `circle`, `box`, or `cone2d`                                                                 |
+| initial.lifetime                 | Finite positive seconds                                                                               |
+| initial.speed                    | Finite nonnegative units per second                                                                   |
+| initial.direction                | Finite radians; used by point spawning                                                                |
+| initial.spread                   | Finite nonnegative angular width for point spawning                                                   |
+| modifiers[] (type: acceleration) | Magnitude number or emitter-time curve, nonnegative spread, and rotation in degrees; defaults to zero |
 
 Simulation coordinates currently use local units, positive X right and positive Y down. Rotation and angular speed use radians and radians/second in Reparticle. Conversion from other formats belongs at import boundaries.
 
@@ -53,7 +53,7 @@ Scalar speed is exact. The prototype's implicit speed variation, shrinking, and 
 
 Reference: [Defold Particle FX manual](https://defold.com/manuals/particlefx/), reviewed 2026-10-17. The following feature groups are the coverage target; every unchecked group remains planned.
 
-- [ ] Multiple emitters; effect-wide and emitter-local modifiers; IDs and transforms.
+- [x] Multiple emitters; effect-wide and emitter-local modifier lists; emitter IDs and transforms.
 - [x] Once/loop playback, duration, draining particles, reset, capacity.
 - [x] Start delay (once per start, reapplied on reset).
 - [x] Start offset / prewarm.
@@ -70,7 +70,7 @@ Reference: [Defold Particle FX manual](https://defold.com/manuals/particlefx/), 
 - [x] Initial RGB and lifetime RGB curves.
 - [x] Initial rotation and lifetime rotation (additive degrees, default orientation).
 - [ ] Lifetime stretch and angular velocity curves.
-- [ ] Acceleration, drag, radial, vortex; transforms, magnitude, influence distance.
+- [x] Acceleration, drag, radial, vortex; transforms, magnitude, influence distance, repeated types and authored order.
 - [ ] Images, atlases, animation, automatic/manual sizing, materials, tint constants.
 - [ ] Alpha, additive, multiply, screen blending.
 - [ ] Playback and runtime property controls; emitter states and resource limits.
@@ -84,7 +84,7 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 
 1. **Configuration boundary — implemented.** Typed versioned definition, strict validation, independent output data, documented JSON fixture, tests outside source using package aliases. No GPU resources are created by parsing.
 2. **Connect one emitter — implemented.** The demo creates from JSON. `setParameters` validates atomic numeric patches, and `configuration` returns an independent snapshot. IDs, capacity and seed reach the runtime; scalar speed is exact. Flat prototype options and implicit visual changes are removed. Texture configuration remains in the rendering backlog; initial size is implemented.
-3. **Separate lifecycle and acceleration — implemented.** Built-in lifetime helpers own age/activity, gravity contributes acceleration, and motion integrates each axis once using the constant-acceleration position term. Spawn initializes new particles before these stages. Helpers are registered in one GPU update kernel, not separate passes. The original gravity configuration has since been replaced by the acceleration modifier described below; numeric acceleration updates affect living particles, while initial-property changes affect future births. GPU.js uses an explicitly numeric activity flag because registered boolean-return helpers are unsupported.
+3. **Separate lifecycle and acceleration — implemented.** Built-in lifetime helpers own age/activity, gravity contributes acceleration, and motion integrates each axis once. Ordered modifiers now use Defold’s post-modifier velocity for displacement. Spawn initializes new particles before these stages. Helpers are registered in one GPU update kernel, not separate passes. The original gravity configuration has since been replaced by the acceleration modifier described below; numeric acceleration updates affect living particles, while initial-property changes affect future births. GPU.js uses an explicitly numeric activity flag because registered boolean-return helpers are unsupported.
 4. **Value distributions.** Consistent constant/random representations; independent random channels; lifetime and other initial properties sampled once at birth.
 5. **Emitter playback — duration, once/loop, play/stop/clear, and state notifications implemented.** Retiring at the end of the current loop is implemented.
 6. **Shapes and transforms — circle, 2D box, and 2D cone implemented.** `circle` takes a finite nonnegative `diameter`; angle is uniform and radius uses square-root sampling. Diameter updates affect future births only; shape type requires recreation. Point direction/spread are point-only. Implement each remaining documented shape separately; coordinate-space rules and inherited velocity; resolve 3D state/rendering needs before claiming 3D shapes.
@@ -192,19 +192,19 @@ Top-level `rotation` sets emitter rotation in degrees, positive counterclockwise
 
 Top-level `scale` is a finite uniform factor, defaults to 1, and supports runtime updates or `emitter.scale = factor`. Following Defold, world-space births scale shape offsets, initial speed (including spread), and initial particle size (including spread) before storing them. Inherited world velocity is added afterward, without scaling. Existing world particles retain birth size and velocity; the acceleration magnitude uses the current world scale, so changing scale can change their subsequent acceleration. Local simulation remains unscaled; rendering scales existing particle positions and artwork around the emitter before rotation and translation, including while paused. Zero collapses the effect and signed scales are retained. Particle size curves remain independent. The demo slider updates scale live without restarting.
 
-`modifiers.drag` supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), `useDirection` (default false), and `rotation` (degrees, default 0). Defold's drag formula subtracts the selected velocity component multiplied by `min((magnitude + spread * particleFactor) * dt, 1)`. Negative sampled drag accelerates; positive drag cannot reverse velocity. Directional drag projects onto the modifier's rotated X axis, including emitter rotation in world space. Drag does not scale with emitter scale. The prototype applies acceleration before drag; magnitude/direction/spread updates affect living particles, while curve replacement requires recreation.
+`{ type: "drag", ... }` in `modifiers` supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), `useDirection` (default false), and `rotation` (degrees, default 0). Defold's drag formula subtracts the selected velocity component multiplied by `min((magnitude + spread * particleFactor) * dt, 1)`. Negative sampled drag accelerates; positive drag cannot reverse velocity. Directional drag projects onto the modifier's rotated X axis, including emitter rotation in world space. Drag does not scale with emitter scale. Drag acts on the velocity produced by earlier entries. Replacing the modifier list updates living particles, including curve changes.
 
-A fourth RGBA row band stores `[spreadFactor, initialAngularVelocity, accumulatedRotation, reserved]`. Stream 14 samples a signed factor once per birth; it persists until that slot is reused and replays after reset. At the drag implementation stage, storage became 64 bytes per slot per texture (up from 48), with the same GPU pass and no readback. This factor is available for future modifiers. Drag applies to newborn velocity as well. Reparticle retains its existing birth-position and analytic gravity integration conventions; it adds the drag velocity change to displacement, rather than changing the whole runtime to Defold's semi-implicit position integrator. Thus drag damping follows Defold, but full trajectories are not frame-identical to Defold.
+A fourth RGBA row band stores `[spreadFactor, initialAngularVelocity, accumulatedRotation, reserved]`. Stream 14 samples a signed factor once per birth; it persists until that slot is reused and replays after reset. At the drag implementation stage, storage became 64 bytes per slot per texture (up from 48), with the same GPU pass and no readback. All modifiers reuse this factor. Drag applies to newborn velocity as well. Living particles now use Defold’s semi-implicit position integration after the ordered modifier pass. Birth positions retain the prototype convention, so full trajectories are not claimed frame-identical.
 
-`modifiers.acceleration` replaces the old `modifiers.gravity` field. It supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), and `rotation` (degrees, default 0). Like Defold, it accelerates along rotated local +Y (up on canvas), with `velocity += direction * (magnitude + spread * particleFactor) * dt`. Rotation is counterclockwise; 180° gives downward gravity. World space combines emitter and modifier rotation and multiplies magnitude/spread by emitter scale; local space uses modifier rotation only, with the emitter transform applied during rendering. Acceleration applies to newborn and living velocities before drag, sharing the stored birth spread factor without another texture band. Numeric edits affect living particles; changing a curve requires recreation. The existing analytic position integration and birth-position convention remain, so trajectories are not frame-identical to Defold. Both example JSON files and the demo now use downward acceleration instead of gravity; no legacy gravity field is accepted.
+`{ type: "acceleration", ... }` in `modifiers` replaces the old `modifiers.gravity` field. It supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), and `rotation` (degrees, default 0). Like Defold, it accelerates along rotated local +Y (up on canvas), with `velocity += direction * (magnitude + spread * particleFactor) * dt`. Rotation is counterclockwise; 180° gives downward gravity. World space combines emitter and modifier rotation and multiplies magnitude/spread by emitter scale; local space uses modifier rotation only, with the emitter transform applied during rendering. Acceleration applies to newborn and living velocities at its authored list position, sharing the stored birth spread factor without another texture band. List replacements affect living particles. Position uses the final modified velocity; the birth-position convention remains. Both example JSON files and the demo now use downward acceleration instead of gravity; no legacy gravity field is accepted.
 
-`modifiers.radial` supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), center `x`/`y` (emitter-relative logical units, default 0), and `maxDistance` (nonnegative logical units, default 100). Positive magnitude repels and negative magnitude attracts. Following Defold, strength has no distance falloff; the cutoff includes its boundary, and zero distance affects only particles exactly at the center. At the center, the particle's current orientation supplies the direction, including lifetime rotation and movement orientation. The existing shared spread factor stays fixed for each birth. World-space center offsets rotate and scale with the emitter, while magnitude/spread and cutoff use its scale; local simulation leaves those values untransformed. Numeric edits affect living particles, while magnitude curve edits require recreation. Defold samples maximum distance only at its first curve point, so this API represents it as a constant number.
+`{ type: "radial", ... }` in `modifiers` supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), center `x`/`y` (emitter-relative logical units, default 0), and `maxDistance` (nonnegative logical units, default 100). Positive magnitude repels and negative magnitude attracts. Following Defold, strength has no distance falloff; the cutoff includes its boundary, and zero distance affects only particles exactly at the center. At the center, the particle's current orientation supplies the direction, including lifetime rotation and movement orientation. The existing shared spread factor stays fixed for each birth. World-space center offsets rotate and scale with the emitter, while magnitude/spread and cutoff use its scale; local simulation leaves those values untransformed. Replacing the modifier list affects living particles, including magnitude curves. Defold samples maximum distance only at its first curve point, so this API represents it as a constant number.
 
-The fixed prototype modifier order is acceleration, drag, then radial. Radial adds its velocity change to displacement, following Defold's semi-implicit radial step; the existing constant-acceleration and birth-position conventions remain. Arbitrarily ordered/repeated modifiers are still pending, so combined trajectories are not fully frame-identical to Defold. No additional particle texture band or CPU readback is introduced. The center fallback reads a cached 65-sample rotation curve only for particles exactly at the radial center. The demo exposes magnitude/curve, spread, center, and cutoff; radial defaults to disabled in both example JSON files.
+Radial applies at its authored list position. All modifiers contribute to velocity before the single position step. No additional particle texture band or CPU readback is introduced. Orientation is evaluated only when a radial modifier is active. The demo exposes magnitude/curve, spread, center, and cutoff; radial defaults to disabled in both example JSON files.
 
-`modifiers.vortex` adds the 2D form of Defold's Z-axis vortex. It supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), emitter-relative center `x`/`y` (default 0), `maxDistance` (nonnegative, default 100), and `rotation` (degrees, default 0). Positive magnitude accelerates counterclockwise in canvas coordinates; negative reverses it. Tangential acceleration has constant strength inside the inclusive cutoff. At the exact center, Defold's rotated negative-X direction supplies the fallback, independent of particle orientation; in 2D, modifier rotation only changes this fallback. World-space offsets rotate/scale with the emitter; magnitude, spread, and cutoff scale with it. Local simulation leaves the emitter transform to rendering. Maximum distance is constant, matching Defold's first-sample-only evaluation.
+`{ type: "vortex", ... }` in `modifiers` adds the 2D form of Defold's Z-axis vortex. It supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), emitter-relative center `x`/`y` (default 0), `maxDistance` (nonnegative, default 100), and `rotation` (degrees, default 0). Positive magnitude accelerates counterclockwise in canvas coordinates; negative reverses it. Tangential acceleration has constant strength inside the inclusive cutoff. At the exact center, Defold's rotated negative-X direction supplies the fallback, independent of particle orientation; in 2D, modifier rotation only changes this fallback. World-space offsets rotate/scale with the emitter; magnitude, spread, and cutoff scale with it. Local simulation leaves the emitter transform to rendering. Maximum distance is constant, matching Defold's first-sample-only evaluation.
 
-Vortex shares the existing per-birth spread factor and adds velocity/displacement after radial in the single GPU pass. The fixed order is acceleration, drag, radial, vortex; prior integration and birth-position limitations still apply. Numeric edits affect living particles, while magnitude curve edits recreate the demo preview. No new particle storage or CPU readback is needed. Both example JSON files default vortex to disabled, and the demo includes magnitude/curve, spread, center, distance, and center-fallback rotation controls.
+Vortex shares the existing per-birth spread factor and applies at its authored list position. List replacement changes living-particle forces. No new particle storage or CPU readback is needed. The demo includes magnitude/curve, spread, center, distance, and center-fallback rotation controls.
 
 `orientation: "angular-velocity"` follows Defold's dedicated spin mode. `initial.angularVelocity` is a number or emitter-time curve in degrees/second (default 0); `initial.angularVelocitySpread` is a nonnegative signed ± range (default 0), sampled once per birth with stream 15. `overLifetime.angularVelocity` is a dimensionless multiplier curve (default 1), despite the editor's angular-velocity naming. Each step accumulates `birthAngularVelocity × lifetimeMultiplier × seconds`. Positive spins counterclockwise, negative clockwise. Initial rotation and world-space emitter rotation establish the starting angle. This mode ignores `overLifetime.rotation` and does not align to movement or spawn direction; the other orientation modes ignore angular velocity. These rules follow Defold's `EvaluateParticleProperties` angular-velocity branch.
 
@@ -352,15 +352,17 @@ Pixi host example, not that JSON.
 
 ### Shared effect modifiers
 
-The root `modifiers` object accepts the same acceleration, drag, radial, and vortex
-settings as an emitter's `modifiers`. Omitted root modifiers default to disabled:
+The root `modifiers` array accepts the same typed entries as an emitter’s `modifiers`.
+Both default to an empty list. Multiple entries of any type are supported:
 
 ```json
 {
   "version": 1,
-  "modifiers": {
-    "acceleration": { "magnitude": 45, "rotation": 90 }
-  },
+  "modifiers": [
+    { "type": "acceleration", "magnitude": 45, "rotation": 90 },
+    { "type": "drag", "magnitude": 0.2 },
+    { "type": "acceleration", "magnitude": 10, "rotation": 0 }
+  ],
   "emitters": ["... emitter definitions ..."]
 }
 ```
@@ -368,20 +370,18 @@ settings as an emitter's `modifiers`. Omitted root modifiers default to disabled
 Each emitter receives both scopes. As in
 [Defold's effect compiler](https://github.com/defold/defold/blob/dev/editor/src/clj/editor/particlefx.clj),
 shared modifiers apply after the emitter's own modifiers; they never replace a
-same-kind local modifier. Within each scope this implementation retains the fixed
-order acceleration, drag, radial, vortex. Arbitrary repeated/ordered modifier
-lists remain unsupported. Shared curves sample the receiving emitter's normalized
+same-kind local modifier. Within each scope, array order is preserved exactly, as in
+[Defold’s particle update](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp).
+For example, acceleration then drag damps the added velocity; drag then acceleration does not. Shared curves sample the receiving emitter's normalized
 timeline, including its duration, start delay, loops, and prewarm. Spreads reuse
 that particle's captured modifier variation, just like local modifiers.
 
 Shared centers and directions are expressed in effect simulation coordinates.
-World-space emitters use them directly; local-space emitters inverse-transform
+World-space emitters apply the effect transform; local-space emitters inverse-transform
 them by their origin, rotation, and scale. Moving an emitter does not move a shared
 radial/vortex center. Force and distance conversion preserves effect-space strength
 under local scale, including negative scale. A collapsed zero-scale local emitter
-skips shared forces because its transform has no inverse. The ParticleView's Pixi
-transform still transforms the complete displayed effect; it is not a separate
-world-physics transform.
+skips shared forces because its transform has no inverse. ParticleView synchronizes the effect transform from its Pixi hierarchy automatically.
 
 Core's `Emitter` accepts the shared definition as its third argument:
 `new Emitter(context, effect.emitters[0], effect.modifiers)`. ParticleView passes it
@@ -390,13 +390,24 @@ construction; recreate the effect to change it. Per-emitter `configuration` and
 `setParameters` remain local and do not absorb or override the shared definition.
 The demo forwards root modifiers during single-emitter recreation too.
 
-Shared forces execute inside the existing GPU integration pass, with a small
-24-float per-emitter parameter buffer. No additional particle storage, readback,
-simulation pass, or draw is added. Shared velocity changes contribute once to
-living-particle displacement; newborn age/position and the existing local analytic
-acceleration term retain their prototype conventions. Consequently this does not
-claim frame-identical Defold trajectories. The multi-emitter example now includes
-shared leftward wind alongside the sparks' local downward acceleration.
+All modifiers execute inside the existing GPU integration pass, with one reusable
+parameter buffer per emitter. No additional particle storage, readback, simulation
+pass, or draw is added. Disabled entries are omitted from the sampled buffer without
+reordering active entries. The GPU loop stops at the active count. Limits are 64
+entries per scope (128 combined); validation rejects overflow instead of truncating.
+This is a Reparticle GPU implementation limit, not a Defold limit.
+
+`setParameters({ modifiers: [...] })` replaces the emitter-local list atomically,
+including order, count, values, and curves. `[]` removes all local modifiers. The
+root list is immutable for an existing effect. The former named-object format is
+no longer accepted; migrate each object member to an array entry with `type`.
+
+The demo edits the first entry of each type and preserves later entries and their
+order. Its multi-emitter example uses two independent shared accelerations. Living
+positions advance once using final velocity after every modifier; newborns still
+start at their sampled birth position without advancing that position on the birth
+step. This removes the old analytic-acceleration displacement difference but does
+not claim complete frame-identical Defold trajectories.
 
 ### Emitter lifecycle and notifications
 

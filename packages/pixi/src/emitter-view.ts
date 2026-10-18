@@ -198,7 +198,7 @@ export class EmitterView extends RenderContainer {
     renderer: WebGLRenderer,
     config: EmitterConfig,
     options: ParticleTexture = { texture: null },
-    sharedModifiers?: ModifierConfig,
+    sharedModifiers?: ModifierConfig[],
     effectTransform?: EffectTransform,
   ) {
     const pivot = resolvePivot(options.pivot);

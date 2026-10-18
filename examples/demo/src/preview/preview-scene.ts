@@ -208,6 +208,8 @@ export class PreviewScene {
     ) {
       return;
     }
-    this.view.emitter.setParameters(emitterParameters(next));
+    this.view.emitter.setParameters(
+      emitterParameters(next, this.view.emitter.configuration.modifiers),
+    );
   }
 }

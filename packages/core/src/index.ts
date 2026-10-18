@@ -1,10 +1,10 @@
 import { GPU, type IGPUKernelSettings, type IKernelRunShortcut, type KernelVariable } from 'gpu.js';
 
-import type { EmitterConfig, EmitterParameters } from '#types/effect.js';
+import type { EmitterConfig, EmitterParameters, ModifierConfig } from '#types/effect.js';
 import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 import type { EmitterState, EmitterStateListener, StopOptions } from '#types/lifecycle.js';
 
-import { emitterConfigSchema } from './config/schema';
+import { emitterConfigSchema, modifiersSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
 import { sampleCurve } from './curves/sample-curve';
 import { SampledCurve } from './curves/sampled-curve';
@@ -14,9 +14,9 @@ import { EmitterPlayback } from './emitter-playback';
 import { EmitterVelocity } from './emitter-velocity';
 import functions from './gpujs/functions.json';
 import { isPipelineTexture } from './gpujs/is-pipeline-texture';
+import { Modifiers } from './modifiers';
 import { ParticleLifetimes } from './particle-lifetimes';
 import { prewarm } from './prewarm';
-import { SharedModifiers } from './shared-modifiers';
 import { SpawnRate } from './spawn-rate';
 import { SpawnSchedule } from './spawn-schedule';
 export type { EmitterContext } from '#types/emitter.js';
@@ -45,11 +45,7 @@ export class Emitter {
   private initialRotation: SampledCurve;
   private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
-  private vortexMagnitude: SampledCurve;
-  private radialMagnitude: SampledCurve;
   private readonly rotationSamples: Float32Array;
-  private accelerationMagnitude: SampledCurve;
-  private dragMagnitude: SampledCurve;
   private spawnRate: SpawnRate;
   private shape: SampledShape;
   private readonly playback: EmitterPlayback;
@@ -62,17 +58,19 @@ export class Emitter {
   private seed: number;
   private readonly initialSeed: number;
   readonly gl: WebGL2RenderingContext;
-  private readonly sharedModifiers: SharedModifiers;
+  private readonly sharedModifiers: ModifierConfig[];
+  private modifiers: Modifiers;
   private readonly canvas: HTMLCanvasElement;
 
   constructor(
     context: EmitterContext,
     definition: EmitterConfig,
-    sharedModifiers: unknown = {},
+    sharedModifiers: unknown = [],
     readonly effectTransform = new EffectTransform(),
   ) {
     this.settings = emitterConfigSchema.parse(definition);
-    this.sharedModifiers = new SharedModifiers(sharedModifiers);
+    this.sharedModifiers = modifiersSchema.parse(sharedModifiers);
+    this.modifiers = new Modifiers(this.settings.modifiers, this.sharedModifiers);
     this.spawnRate = new SpawnRate(
       this.settings.emission.rate,
       this.settings.emission.rateSpread,
@@ -90,13 +88,9 @@ export class Emitter {
     this.initialBlue = new SampledCurve(this.settings.initial.blue);
     this.initialAlpha = new SampledCurve(this.settings.initial.alpha);
     this.initialLifetime = new SampledCurve(this.settings.initial.lifetime);
-    this.dragMagnitude = new SampledCurve(this.settings.modifiers.drag.magnitude);
-    this.vortexMagnitude = new SampledCurve(this.settings.modifiers.vortex.magnitude);
-    this.radialMagnitude = new SampledCurve(this.settings.modifiers.radial.magnitude);
     this.rotationSamples = sampleCurve(
       this.settings.orientation === 'angular-velocity' ? 0 : this.settings.overLifetime.rotation,
     );
-    this.accelerationMagnitude = new SampledCurve(this.settings.modifiers.acceleration.magnitude);
     this.shape = new SampledShape(this.settings.emission.shape);
     this.gl = context.gl;
     this.canvas = context.canvas;
@@ -125,17 +119,15 @@ export class Emitter {
       throw new RangeError('Capacity exceeds GPU texture limits');
     }
     const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
-    gpu.addFunction(functions.advancePosition);
     gpu.addFunction(functions.advanceRotation);
     gpu.addFunction(functions.applyAcceleration);
-    gpu.addFunction(functions.applySharedModifiers);
+    gpu.addFunction(functions.applyModifiers);
     gpu.addFunction(functions.applyRadial);
     gpu.addFunction(functions.applyVortex);
     gpu.addFunction(functions.particleHeading);
     gpu.addFunction(functions.advanceAge);
     // The alive flag is numeric in GPU storage.
     gpu.addFunction(functions.particleAlive, { returnType: 'Number' });
-    gpu.addFunction(functions.advanceVelocity);
     gpu.addFunction(functions.spawnVariation);
     gpu.addFunction(functions.spawnDirection);
     gpu.addFunction(functions.spawnMotion);
@@ -310,22 +302,10 @@ export class Emitter {
   setParameters(patch: EmitterParameters): void {
     this.assertAlive();
     const settings = updateEmitterConfig(this.settings, patch);
-    const vortexMagnitude =
-      patch.modifiers?.vortex?.magnitude === undefined
-        ? this.vortexMagnitude
-        : new SampledCurve(settings.modifiers.vortex.magnitude);
-    const radialMagnitude =
-      patch.modifiers?.radial?.magnitude === undefined
-        ? this.radialMagnitude
-        : new SampledCurve(settings.modifiers.radial.magnitude);
-    const accelerationMagnitude =
-      patch.modifiers?.acceleration?.magnitude === undefined
-        ? this.accelerationMagnitude
-        : new SampledCurve(settings.modifiers.acceleration.magnitude);
-    const dragMagnitude =
-      patch.modifiers?.drag?.magnitude === undefined
-        ? this.dragMagnitude
-        : new SampledCurve(settings.modifiers.drag.magnitude);
+    const modifiers =
+      patch.modifiers === undefined
+        ? this.modifiers
+        : new Modifiers(settings.modifiers, this.sharedModifiers);
     const shape =
       patch.emission?.shape === undefined ? this.shape : new SampledShape(settings.emission.shape);
     const spawnRate =
@@ -375,10 +355,7 @@ export class Emitter {
         ? this.initialLifetime
         : new SampledCurve(settings.initial.lifetime);
     this.settings = settings;
-    this.vortexMagnitude = vortexMagnitude;
-    this.radialMagnitude = radialMagnitude;
-    this.accelerationMagnitude = accelerationMagnitude;
-    this.dragMagnitude = dragMagnitude;
+    this.modifiers = modifiers;
     this.shape = shape;
     this.initialLifetime = initialLifetime;
     this.initialRed = initialRed;
@@ -434,23 +411,6 @@ export class Emitter {
     const scale = worldSpace ? this.worldScale : 1;
     const rotation = worldSpace ? this.worldRotation : 0;
     const radians = (-rotation * Math.PI) / 180;
-    const accelerationRadians = -((rotation + o.modifiers.acceleration.rotation) * Math.PI) / 180;
-    const dragRadians = -((rotation + o.modifiers.drag.rotation) * Math.PI) / 180;
-    const vortex = o.modifiers.vortex;
-    const vortexRadians = -((rotation + vortex.rotation) * Math.PI) / 180;
-    const vortexX =
-      (worldSpace ? this.worldX : 0) +
-      (Math.cos(radians) * vortex.x - Math.sin(radians) * vortex.y) * scale;
-    const vortexY =
-      (worldSpace ? this.worldY : 0) +
-      (Math.sin(radians) * vortex.x + Math.cos(radians) * vortex.y) * scale;
-    const radial = o.modifiers.radial;
-    const radialX =
-      (worldSpace ? this.worldX : 0) +
-      (Math.cos(radians) * radial.x - Math.sin(radians) * radial.y) * scale;
-    const radialY =
-      (worldSpace ? this.worldY : 0) +
-      (Math.sin(radians) * radial.x + Math.cos(radians) * radial.y) * scale;
     const initialRotation = this.initialRotation.at(this.playback.normalizedAge);
     const particleRotation =
       o.orientation === 'movement-direction' ? initialRotation : initialRotation + rotation;
@@ -465,7 +425,6 @@ export class Emitter {
       this.initialSpeed.at(this.playback.normalizedAge),
       o.initial.direction,
       o.initial.spread,
-      this.accelerationMagnitude.at(this.playback.normalizedAge) * scale,
       lifetime,
       this.seed,
       this.shape.type,
@@ -493,28 +452,8 @@ export class Emitter {
       Math.cos(radians),
       Math.sin(radians),
       scale,
-      this.dragMagnitude.at(this.playback.normalizedAge),
-      o.modifiers.drag.spread,
-      o.modifiers.drag.useDirection ? 1 : 0,
-      Math.cos(dragRadians),
-      Math.sin(dragRadians),
-      o.modifiers.acceleration.spread * scale,
-      Math.sin(accelerationRadians),
-      -Math.cos(accelerationRadians),
-      this.radialMagnitude.at(this.playback.normalizedAge) * scale,
-      radial.spread * scale,
-      radialX,
-      radialY,
-      radial.maxDistance * scale,
       this.rotationSamples,
       o.orientation === 'movement-direction' ? 1 : 0,
-      this.vortexMagnitude.at(this.playback.normalizedAge) * scale,
-      vortex.spread * scale,
-      vortexX,
-      vortexY,
-      vortex.maxDistance * scale,
-      -Math.cos(vortexRadians),
-      -Math.sin(vortexRadians),
       this.initialAngularVelocity.at(this.playback.normalizedAge),
       o.initial.angularVelocitySpread,
       this.angularVelocitySamples,
@@ -523,7 +462,7 @@ export class Emitter {
       this.initialStretchY.at(this.playback.normalizedAge),
       o.initial.stretchXSpread,
       o.initial.stretchYSpread,
-      this.sharedModifiers.sample(
+      this.modifiers.sample(
         this.playback.normalizedAge,
         !worldSpace,
         this.x,

@@ -49,26 +49,30 @@
         "stretchXSpread": 0,
         "stretchYSpread": 0
       },
-      "modifiers": {
-        "drag": {
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 160,
+          "spread": 0,
+          "rotation": 180
+        },
+        {
+          "type": "drag",
           "magnitude": 0,
           "spread": 0,
           "useDirection": false,
           "rotation": 0
         },
-        "acceleration": {
-          "magnitude": 160,
-          "spread": 0,
-          "rotation": 180
-        },
-        "radial": {
+        {
+          "type": "radial",
           "magnitude": 0,
           "spread": 0,
           "x": 0,
           "y": 0,
           "maxDistance": 100
         },
-        "vortex": {
+        {
+          "type": "vortex",
           "magnitude": 0,
           "spread": 0,
           "x": 0,
@@ -76,7 +80,7 @@
           "maxDistance": 100,
           "rotation": 0
         }
-      },
+      ],
       "rotation": 0,
       "scale": 1,
       "space": "world",
@@ -96,26 +100,30 @@
       }
     }
   ],
-  "modifiers": {
-    "acceleration": {
+  "modifiers": [
+    {
+      "type": "acceleration",
       "magnitude": 0,
       "spread": 0,
       "rotation": 0
     },
-    "drag": {
+    {
+      "type": "drag",
       "magnitude": 0,
       "spread": 0,
       "useDirection": false,
       "rotation": 0
     },
-    "radial": {
+    {
+      "type": "radial",
       "magnitude": 0,
       "spread": 0,
       "x": 0,
       "y": 0,
       "maxDistance": 100
     },
-    "vortex": {
+    {
+      "type": "vortex",
       "magnitude": 0,
       "spread": 0,
       "x": 0,
@@ -123,5 +131,5 @@
       "maxDistance": 100,
       "rotation": 0
     }
-  }
+  ]
 }

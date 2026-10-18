@@ -4,7 +4,13 @@ import { integrate } from '#src/gpujs/integrate.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
 
 it('samples independent signed speed and lifetime offsets once per birth', () => {
-  const state: ParticleTexture = [[[0, 0, 0, 0]], [[0, 0, 0, 0]]];
+  const state: ParticleTexture = [
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+  ];
   const context: KernelContext = {
     thread: { x: 0, y: 0 },
     constants: { width: 1, rows: 1, capacity: 1 },
@@ -19,7 +25,6 @@ it('samples independent signed speed and lifetime offsets once per birth', () =>
       0,
       0,
       10,
-      0,
       0,
       0,
       1,
@@ -49,27 +54,7 @@ it('samples independent signed speed and lifetime offsets once per birth', () =>
       1,
       0,
       1,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
-      0,
-      1,
-      0,
-      0,
-      0,
-      0,
-      0,
       new Float32Array(65),
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
       0,
       0,
       0,
@@ -79,7 +64,7 @@ it('samples independent signed speed and lifetime offsets once per birth', () =>
       0,
       0,
       0,
-      new Float32Array(24),
+      new Float32Array([0, 0]),
     );
   const speeds: number[] = [];
   const lifetimes: number[] = [];
@@ -104,7 +89,13 @@ it('samples independent signed speed and lifetime offsets once per birth', () =>
 });
 
 it('captures signed size and rotation independently, adds orientation, and resamples on reuse', () => {
-  const state: ParticleTexture = [[[0, 0, 0, 0]], [[0, 0, 0, 0]]];
+  const state: ParticleTexture = [
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+  ];
   const context: KernelContext = {
     thread: { x: 0, y: 1 },
     constants: { width: 1, rows: 1, capacity: 1 },
@@ -125,7 +116,6 @@ it('captures signed size and rotation independently, adds orientation, and resam
       0,
       0,
       10,
-      0,
       0,
       0,
       1,
@@ -155,27 +145,7 @@ it('captures signed size and rotation independently, adds orientation, and resam
       1,
       0,
       1,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
-      0,
-      1,
-      0,
-      0,
-      0,
-      0,
-      0,
       new Float32Array(65),
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
       0,
       0,
       0,
@@ -185,7 +155,7 @@ it('captures signed size and rotation independently, adds orientation, and resam
       0,
       0,
       0,
-      new Float32Array(24),
+      new Float32Array([0, 0]),
     );
   expect(run(1, 1, 0, 0, 0)).toEqual([0, 1, 10, 30]);
   const sizes: number[] = [];
@@ -209,7 +179,13 @@ it('captures signed size and rotation independently, adds orientation, and resam
 });
 
 it('samples RGBA independently without birth clamping and retains values until reuse', () => {
-  const state: ParticleTexture = [[[0, 0, 0, 0]], [[0, 1, 24, 0]], [[0, 0, 0, 0]]];
+  const state: ParticleTexture = [
+    [[0, 0, 0, 0]],
+    [[0, 1, 24, 0]],
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+    [[0, 0, 0, 0]],
+  ];
   const context: KernelContext = {
     thread: { x: 0, y: 2 },
     constants: { width: 1, rows: 1, capacity: 1 },
@@ -221,7 +197,6 @@ it('samples RGBA independently without birth clamping and retains values until r
       0.1,
       0,
       spawn,
-      0,
       0,
       0,
       0,
@@ -254,27 +229,7 @@ it('samples RGBA independently without birth clamping and retains values until r
       1,
       0,
       1,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
-      0,
-      1,
-      0,
-      0,
-      0,
-      0,
-      0,
       new Float32Array(65),
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
       0,
       0,
       0,
@@ -284,7 +239,7 @@ it('samples RGBA independently without birth clamping and retains values until r
       0,
       0,
       0,
-      new Float32Array(24),
+      new Float32Array([0, 0]),
     );
   expect(run(1, 1, 0)).toEqual([0.5, 0.5, 0.5, 0.5]);
   const samples = Array.from({ length: 100 }, (_, seed) => run(seed, 1, 1));
