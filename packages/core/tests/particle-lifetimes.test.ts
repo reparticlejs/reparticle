@@ -40,7 +40,10 @@ it.each([1, 7, 100, 65530])(
       }
       for (let index = 0; index < count; index++) {
         const slot = (cursor + index) % capacity;
-        slots.set(slot, { age: 0, lifetime: sampledLifetime(slot, seed, lifetime, spread) });
+        slots.set(slot, {
+          age: f(seconds),
+          lifetime: sampledLifetime(slot, seed, lifetime, spread),
+        });
       }
       cursor = (cursor + count) % capacity;
       lifetimes.advance(seconds, count, lifetime, spread, seed);
@@ -57,7 +60,7 @@ it('keeps old lifetimes when new births change settings and clears bookkeeping o
   expect(lifetimes.empty).toBe(false);
   lifetimes.reset();
   expect(lifetimes.empty).toBe(true);
-  lifetimes.advance(0.1, 1, 0.1, 0, 0);
+  lifetimes.advance(0.1, 1, 0.2, 0, 0);
   expect(lifetimes.empty).toBe(false);
   lifetimes.advance(0.1, 0, 0, 0, 0);
   expect(lifetimes.empty).toBe(true);

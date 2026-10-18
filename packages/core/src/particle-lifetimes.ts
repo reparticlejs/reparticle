@@ -32,14 +32,14 @@ export class ParticleLifetimes {
       const batch: LifetimeBatch = {
         start: this.spawned,
         end,
-        age: 0,
+        age: step,
         lifetime: Math.fround(lifetime),
         spread: Math.fround(spread),
         seed,
         maximum: 0,
       };
       batch.maximum = this.maximum(batch);
-      if (batch.maximum > 0) {
+      if (batch.maximum > batch.age) {
         this.batches.push(batch);
       }
     }

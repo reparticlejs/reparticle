@@ -2,11 +2,11 @@ import { expect, it } from 'vitest';
 
 import { LiveParticleCount } from '#src/devtools/stats/measurement/live-particle-count.js';
 
-it('starts newborns at age zero and expires them at their original lifetime', () => {
+it('ages newborns on their first step and expires them at their original lifetime', () => {
   const tracker = new LiveParticleCount(100);
   tracker.recordStep(0.1, 10, 0.2);
   tracker.recordStep(0.1, 5, 1);
-  expect(tracker.count).toBe(15);
+  expect(tracker.count).toBe(5);
   tracker.recordStep(0.1, 0, 10);
   expect(tracker.count).toBe(5);
   tracker.reset();
@@ -26,7 +26,7 @@ it('matches individual float32 slots through wraparound, lifetime changes and re
       slot.age = Math.fround(slot.age + Math.fround(seconds));
     }
     for (let birth = 0; birth < spawned; birth++) {
-      slots[cursor] = { age: 0, lifetime: Math.fround(lifetime) };
+      slots[cursor] = { age: Math.fround(seconds), lifetime: Math.fround(lifetime) };
       cursor = (cursor + 1) % capacity;
     }
     tracker.recordStep(seconds, spawned, lifetime);

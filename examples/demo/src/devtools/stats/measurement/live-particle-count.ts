@@ -56,11 +56,11 @@ export class LiveParticleCount {
     this.batches.length = retained;
 
     const particleLifetime = Math.fround(lifetime);
-    if (spawned > 0 && particleLifetime + spread > 0) {
+    if (spawned > 0 && particleLifetime + spread > step) {
       const newborns: ParticleBatch = {
         start: this.emitted,
         end,
-        age: 0,
+        age: step,
         lifetime: particleLifetime,
       };
       if (spread > 0) {
@@ -74,7 +74,7 @@ export class LiveParticleCount {
           const sampled = Math.fround(particleLifetime + Math.fround(random * Math.fround(spread)));
           newborns.lifetimes[index] = sampled;
           newborns.lifetime = Math.max(newborns.lifetime, sampled);
-          if (sampled > 0) {
+          if (sampled > step) {
             alive += 1;
           }
         }

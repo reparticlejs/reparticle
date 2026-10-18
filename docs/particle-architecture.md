@@ -22,7 +22,7 @@ An effect owns named emitters and shared modifiers. Each emitter owns emission s
 
 Two timelines are distinct: emitter elapsed time controls emission and the initial values of newly born particles; normalized particle age controls changes throughout an individual particle's lifetime. Lifetime is sampled at birth. Aging and expiration are mandatory lifecycle logic, not optional behaviors.
 
-Modifiers change velocity sequentially in authored array order: emitter-local entries first, then shared effect entries. Living-particle position advances once using the resulting velocity, as in Defold. Newborns retain the prototype birth-position convention.
+Modifiers change velocity sequentially in authored array order: emitter-local entries first, then shared effect entries. Living-particle position advances once using the resulting velocity, as in Defold. Newborns age by the full simulation step and advance from their sampled birth position using the modified velocity, as in Defold.
 
 The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and loads through `ParticleView(renderer, definition)` or the core `Emitter` constructor after parsing. Unsupported fields, shapes, and versions fail explicitly. Effects accept one or more emitters with unique IDs.
 
@@ -96,7 +96,7 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 
 Dependencies may change the order, but no feature disappears from the coverage inventory. Each larger step is split into individual feature changes. The old flat emitter options API has been replaced by the JSON definition and numeric parameter patches.
 
-Circle implementation reference: [Defold SpawnParticle, circle branch](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L905-L915), reviewed 2026-10-17. We match its disk sampling and radial velocity semantics, not its PRNG sequence, emitter transform system, or newborn time integration. Circle diameter corresponds to Defold's Emitter Size X. The existing Reparticle birth-age convention remains unchanged.
+Circle implementation reference: [Defold SpawnParticle, circle branch](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L905-L915), reviewed 2026-10-17. We match its disk sampling and radial velocity semantics, not its PRNG sequence. Circle diameter corresponds to Defold's Emitter Size X. Newborn movement and aging now use the full simulation step, as described below.
 
 ## Runtime update policy
 
@@ -194,9 +194,9 @@ Top-level `scale` is a finite uniform factor, defaults to 1, and supports runtim
 
 `{ type: "drag", ... }` in `modifiers` supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), `useDirection` (default false), and `rotation` (degrees, default 0). Defold's drag formula subtracts the selected velocity component multiplied by `min((magnitude + spread * particleFactor) * dt, 1)`. Negative sampled drag accelerates; positive drag cannot reverse velocity. Directional drag projects onto the modifier's rotated X axis, including emitter rotation in world space. Drag does not scale with emitter scale. Drag acts on the velocity produced by earlier entries. Replacing the modifier list updates living particles, including curve changes.
 
-A fourth RGBA row band stores `[spreadFactor, initialAngularVelocity, accumulatedRotation, reserved]`. Stream 14 samples a signed factor once per birth; it persists until that slot is reused and replays after reset. At the drag implementation stage, storage became 64 bytes per slot per texture (up from 48), with the same GPU pass and no readback. All modifiers reuse this factor. Drag applies to newborn velocity as well. Living particles now use Defold’s semi-implicit position integration after the ordered modifier pass. Birth positions retain the prototype convention, so full trajectories are not claimed frame-identical.
+A fourth RGBA row band stores `[spreadFactor, initialAngularVelocity, accumulatedRotation, reserved]`. Stream 14 samples a signed factor once per birth; it persists until that slot is reused and replays after reset. At the drag implementation stage, storage became 64 bytes per slot per texture (up from 48), with the same GPU pass and no readback. All modifiers reuse this factor. Drag applies to newborn velocity as well. Living particles now use Defold’s semi-implicit position integration after the ordered modifier pass. Newborn positions advance by the same full simulation step.
 
-`{ type: "acceleration", ... }` in `modifiers` replaces the old `modifiers.gravity` field. It supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), and `rotation` (degrees, default 0). Like Defold, it accelerates along rotated local +Y (up on canvas), with `velocity += direction * (magnitude + spread * particleFactor) * dt`. Rotation is counterclockwise; 180° gives downward gravity. World space combines emitter and modifier rotation and multiplies magnitude/spread by emitter scale; local space uses modifier rotation only, with the emitter transform applied during rendering. Acceleration applies to newborn and living velocities at its authored list position, sharing the stored birth spread factor without another texture band. List replacements affect living particles. Position uses the final modified velocity; the birth-position convention remains. Both example JSON files and the demo now use downward acceleration instead of gravity; no legacy gravity field is accepted.
+`{ type: "acceleration", ... }` in `modifiers` replaces the old `modifiers.gravity` field. It supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), and `rotation` (degrees, default 0). Like Defold, it accelerates along rotated local +Y (up on canvas), with `velocity += direction * (magnitude + spread * particleFactor) * dt`. Rotation is counterclockwise; 180° gives downward gravity. World space combines emitter and modifier rotation and multiplies magnitude/spread by emitter scale; local space uses modifier rotation only, with the emitter transform applied during rendering. Acceleration applies to newborn and living velocities at its authored list position, sharing the stored birth spread factor without another texture band. List replacements affect living particles. Position uses the final modified velocity; this also applies on the birth frame. Both example JSON files and the demo now use downward acceleration instead of gravity; no legacy gravity field is accepted.
 
 `{ type: "radial", ... }` in `modifiers` supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), center `x`/`y` (emitter-relative logical units, default 0), and `maxDistance` (nonnegative logical units, default 100). Positive magnitude repels and negative magnitude attracts. Following Defold, strength has no distance falloff; the cutoff includes its boundary, and zero distance affects only particles exactly at the center. At the center, the particle's current orientation supplies the direction, including lifetime rotation and movement orientation. The existing shared spread factor stays fixed for each birth. World-space center offsets rotate and scale with the emitter, while magnitude/spread and cutoff use its scale; local simulation leaves those values untransformed. Replacing the modifier list affects living particles, including magnitude curves. Defold samples maximum distance only at its first curve point, so this API represents it as a constant number.
 
@@ -208,7 +208,7 @@ Vortex shares the existing per-birth spread factor and applies at its authored l
 
 `orientation: "angular-velocity"` follows Defold's dedicated spin mode. `initial.angularVelocity` is a number or emitter-time curve in degrees/second (default 0); `initial.angularVelocitySpread` is a nonnegative signed ± range (default 0), sampled once per birth with stream 15. `overLifetime.angularVelocity` is a dimensionless multiplier curve (default 1), despite the editor's angular-velocity naming. Each step accumulates `birthAngularVelocity × lifetimeMultiplier × seconds`. Positive spins counterclockwise, negative clockwise. Initial rotation and world-space emitter rotation establish the starting angle. This mode ignores `overLifetime.rotation` and does not align to movement or spawn direction; the other orientation modes ignore angular velocity. These rules follow Defold's `EvaluateParticleProperties` angular-velocity branch.
 
-The fourth texture band now uses two previously reserved channels for captured angular velocity and accumulated rotation; this step did not increase the then-current 64 bytes per slot per texture. Pixi reads the accumulated angle only in spin mode, and radial's center fallback uses that same updated angle. No CPU readback or additional simulation pass is added. Numeric birth-speed/spread updates affect future births; curves and orientation require recreation. Spin advances on the birth frame using the multiplier at zero age, while the prototype retains its existing birth-position/age convention. Subsequent steps sample the multiplier at the updated normalized age. Reset and slot reuse clear accumulated spin. Constant spin is frame-rate independent; nonconstant curves use Defold-style per-step numerical integration, so timestep changes can slightly alter the result. Prewarm uses the existing fixed 1/60-second step.
+The fourth texture band now uses two previously reserved channels for captured angular velocity and accumulated rotation; this step did not increase the then-current 64 bytes per slot per texture. Pixi reads the accumulated angle only in spin mode, and radial's center fallback uses that same updated angle. No CPU readback or additional simulation pass is added. Numeric birth-speed/spread updates affect future births; curves and orientation require recreation. Spin advances on the birth frame using the multiplier at the advanced normalized age and the sampled particle lifetime. Subsequent steps sample the multiplier at the updated normalized age. Reset and slot reuse clear accumulated spin. Constant spin is frame-rate independent; nonconstant curves use Defold-style per-step numerical integration, so timestep changes can slightly alter the result. Prewarm uses the existing fixed 1/60-second step.
 
 In the demo, choose **Orientation → Angular velocity** to expose initial spin, emitter-time curve/spread, and particle-lifetime multiplier presets. The ordinary lifetime rotation control is hidden in this mode. JSON examples retain zero initial spin for backward-compatible visuals.
 
@@ -288,7 +288,7 @@ modes use FPS. Ping-pong has `2 × frameCount − 2` steps, without duplicated
 endpoints. None selects the first frame; a one-frame sequence stays static.
 FPS must be finite and nonnegative; zero freezes loops at their starting frame.
 The renderer uses particle age minus half the most recent positive simulation
-step, clamped to zero for this prototype's age-zero newborns. Paused rendering
+step, clamped to zero. Paused rendering
 retains that offset. Reset restarts particle ages. Prewarming naturally advances
 animation through the existing particle ages. Live animation changes use current
 ages, without restarting the emitter or maintaining a separate animation clock.
@@ -403,11 +403,13 @@ root list is immutable for an existing effect. The former named-object format is
 no longer accepted; migrate each object member to an array entry with `type`.
 
 The demo edits the first entry of each type and preserves later entries and their
-order. Its multi-emitter example uses two independent shared accelerations. Living
-positions advance once using final velocity after every modifier; newborns still
-start at their sampled birth position without advancing that position on the birth
-step. This removes the old analytic-acceleration displacement difference but does
-not claim complete frame-identical Defold trajectories.
+order. Its multi-emitter example uses two independent shared accelerations. Living and newborn
+positions advance once using final velocity after every modifier. Newborn age is
+the full simulation step, so lifetime curves also advance on that first frame.
+This follows Defold’s birth-frame integration order. Reparticle retains its
+existing expiration rule: particles are hidden when age reaches lifetime, including
+particles whose lifetime is shorter than their birth step. Defold retains newborns
+until its next pruning pass and uses a strict negative remaining-life cutoff.
 
 ### Emitter lifecycle and notifications
 
@@ -555,8 +557,7 @@ Following [Defold's instance transform and emission-space handling](https://gith
 world particles receive the composed transform at birth and are not transformed
 again by later simulation-transform edits. Local particles retain their local
 simulation coordinates and receive the current composed transform when drawing.
-This preserves Reparticle's existing emitter-local storage/model; it does not
-change the previously documented integration and newborn-age differences.
+This preserves Reparticle's existing emitter-local storage/model.
 World-space emitter-local forces use composed centers, directions and scale.
 Shared root modifiers are transformed from effect space into world space; local
 shared modifiers keep their existing inverse-emitter mapping.

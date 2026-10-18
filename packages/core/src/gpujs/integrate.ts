@@ -90,7 +90,15 @@ export function integrate(
         initialAngularVelocity + propertyVariation(particleId, seed, 15) * angularVelocitySpread;
       let rotation = 0;
       if (orientToAngularVelocity > 0.5) {
-        rotation = advanceRotation(0, angularVelocity, 0, lifetime, angularVelocityCurve, seconds);
+        const sampledLifetime = lifetime + propertyVariation(particleId, seed, 2) * lifetimeSpread;
+        rotation = advanceRotation(
+          0,
+          angularVelocity,
+          seconds,
+          sampledLifetime,
+          angularVelocityCurve,
+          seconds,
+        );
       }
       return [propertyVariation(particleId, seed, 14), angularVelocity, rotation, 0];
     }
@@ -127,6 +135,7 @@ export function integrate(
   }
 
   if (isSpawning) {
+    const sampledLifetime = lifetime + propertyVariation(particleId, seed, 2) * lifetimeSpread;
     const sampledX = sizeX + propertyVariation(particleId, seed, 12) * emitterSizeSpreadX;
     const sampledY = sizeY + propertyVariation(particleId, seed, 13) * emitterSizeSpreadY;
     // Unit-speed motion preserves the shape direction even when actual speed is zero.
@@ -143,9 +152,8 @@ export function integrate(
       rotation += spawnRotation(spawned[2], spawned[3]);
     }
     if (this.thread.y >= this.constants.rows) {
-      const sampledLifetime = lifetime + propertyVariation(particleId, seed, 2) * lifetimeSpread;
       const sampledSize = initialSize + propertyVariation(particleId, seed, 3) * sizeSpread;
-      return [0, sampledLifetime, sampledSize * emitterScale, rotation];
+      return [seconds, sampledLifetime, sampledSize * emitterScale, rotation];
     }
     const sampledSpeed =
       (speed + propertyVariation(particleId, seed, 1) * speedSpread) * emitterScale;
@@ -169,14 +177,14 @@ export function integrate(
                   0,
                   initialAngularVelocity +
                     propertyVariation(particleId, seed, 15) * angularVelocitySpread,
-                  0,
-                  lifetime,
+                  seconds,
+                  sampledLifetime,
                   angularVelocityCurve,
                   seconds,
                 )
               : 0),
-          0,
-          lifetime,
+          seconds,
+          sampledLifetime,
           rotationCurve,
           birthX,
           birthY,
@@ -195,7 +203,12 @@ export function integrate(
         modifiers,
       );
     }
-    return [positionX, positionY, velocity[0], velocity[1]];
+    return [
+      positionX + velocity[0] * seconds,
+      positionY + velocity[1] * seconds,
+      velocity[0],
+      velocity[1],
+    ];
   }
 
   // Properties texel: age, lifetime, initialSize, resolved initialRotation (degrees).

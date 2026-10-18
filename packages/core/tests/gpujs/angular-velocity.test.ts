@@ -85,6 +85,9 @@ it('captures spread once, accumulates spin, and resets on slot reuse', () => {
   expect(run(99)).toEqual(born);
   spawning = 1;
   expect(run(99)[1]).toBeCloseTo(500 + 40 * propertyVariation(0, 99, 15));
+  curve.set(Float32Array.from({ length: 65 }, (_, index) => index / 64));
+  const spin = 500 + 40 * propertyVariation(0, 99, 15);
+  expect(run(99)[2]).toBeCloseTo(spin * (0.1 / 10) * 0.1);
   mode = 0;
   expect(run(99)[2]).toBe(0);
 });

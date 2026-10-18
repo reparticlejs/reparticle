@@ -157,7 +157,7 @@ it('captures signed size and rotation independently, adds orientation, and resam
       0,
       new Float32Array([0, 0]),
     );
-  expect(run(1, 1, 0, 0, 0)).toEqual([0, 1, 10, 30]);
+  expect(run(1, 1, 0, 0, 0)).toEqual([0.1, 1, 10, 30]);
   const sizes: number[] = [];
   const rotations: number[] = [];
   for (let seed = 0; seed < 100; seed++) {

@@ -1,4 +1,4 @@
-/** Age advances for existing slots; newly spawned particles start at zero. */
+/** Age advances by the simulation step, including the birth step. */
 export function advanceAge(age: number, seconds: number): number {
   return age + seconds;
 }
