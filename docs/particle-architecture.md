@@ -219,3 +219,23 @@ A fifth RGBA row band stores `[initialStretchX, initialStretchY, reserved, reser
 Top-level `stretchWithVelocity` defaults to false and accepts live boolean updates through `setParameters`. When enabled, Defold's formula changes only the Y factor to `1 + (initialStretchY + lifetimeStretchY) × length(currentVelocity) / 120`. X retains ordinary stretch. The fixed `1/120` factor corresponds to Defold's 60 FPS, 180-degree shutter convention, not the current timestep or display refresh rate. Velocity is read after simulation modifiers: stationary particles have no added Y stretch, and speed 120 produces the ordinary Y stretch amount. Signed stretch still supports collapse and flips. This does not select movement orientation automatically; choose `movement-direction` to align the stretched local Y axis to motion.
 
 World-space speed includes the birth emitter scale and inherited velocity; local simulation speed remains unscaled, with the emitter transform applied during drawing. Pixi applies the factor directly from the existing motion texel, with no extra storage, readback, or simulation pass. The Stretch panel toggle updates existing particles immediately, including while paused, without resetting the effect. Both JSON examples default it to false.
+
+### Blend modes
+
+Each emitter has `blendMode`: `alpha` (default), `add`, `multiply`, or `screen`.
+The Pixi renderer uses Defold's premultiplied-alpha blend factors for textured and
+procedural particles alike. With premultiplied source color S, source alpha A,
+and destination color D, RGB output is:
+
+- Alpha: S + D × (1 − A).
+- Add: S + D.
+- Multiply: S × D + D × (1 − A).
+- Screen: S × (1 − D) + D.
+
+These match [Defold's particle renderer](https://github.com/defold/defold/blob/dev/engine/gamesys/src/gamesys/components/comp_particlefx.cpp),
+including its alpha-channel blend factors. Texture alpha, particle alpha, and
+view opacity are already incorporated into the premultiplied source color.
+`emitter.setParameters({ blendMode: 'add' })` affects the next render, including
+existing particles while paused. It does not restart simulation or add particle
+state. The demo exposes this under Appearance. Procedural particles now default
+to Alpha too; choose Add explicitly for their previous additive appearance.

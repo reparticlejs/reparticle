@@ -24,3 +24,10 @@ export const playModeOptions: SelectOption<PreviewControls['playMode']>[] = [
   { value: 'once', label: 'Once' },
   { value: 'loop', label: 'Loop' },
 ];
+
+export const blendModeOptions: SelectOption<PreviewControls['blendMode']>[] = [
+  { value: 'alpha', label: 'Alpha' },
+  { value: 'add', label: 'Add' },
+  { value: 'multiply', label: 'Multiply' },
+  { value: 'screen', label: 'Screen' },
+];

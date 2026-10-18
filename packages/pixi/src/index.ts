@@ -3,6 +3,7 @@ import { RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
 
 import { sampleColorCurves } from './sample-color-curves';
 import { sampleGeometryCurves } from './sample-geometry-curves';
+import { setBlendMode } from './set-blend-mode';
 
 const vertex = `#version 300 es
 precision highp float;
@@ -277,7 +278,7 @@ export class ParticleView extends RenderContainer {
     gl.colorMask(true, true, true, true);
     gl.enable(gl.BLEND);
     gl.blendEquation(gl.FUNC_ADD);
-    gl.blendFunc(gl.ONE, texture ? gl.ONE_MINUS_SRC_ALPHA : gl.ONE);
+    setBlendMode(gl, this.emitter.configuration.blendMode);
     gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.emitter.capacity);
     gl.bindVertexArray(null);
     r.resetState();

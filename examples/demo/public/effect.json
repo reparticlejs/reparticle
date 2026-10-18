@@ -160,6 +160,7 @@
       "duration": 1,
       "orientation": "default",
       "playMode": "loop",
+      "blendMode": "alpha",
       "stretchWithVelocity": false
     }
   ]

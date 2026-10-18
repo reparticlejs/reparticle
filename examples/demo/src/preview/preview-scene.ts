@@ -150,6 +150,7 @@ export class PreviewScene {
       next.alpha === current.alpha &&
       next.angularVelocity === current.angularVelocity &&
       next.angularVelocitySpread === current.angularVelocitySpread &&
+      next.blendMode === current.blendMode &&
       next.stretchWithVelocity === current.stretchWithVelocity &&
       next.stretchX === current.stretchX &&
       next.stretchY === current.stretchY &&

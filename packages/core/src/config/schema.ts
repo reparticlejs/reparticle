@@ -12,6 +12,8 @@ import {
 
 import { scalarPropertySchema } from './curve';
 
+const blendModeSchema = enumSchema(['alpha', 'add', 'multiply', 'screen']);
+
 const shapeSchema = discriminatedUnion('type', [
   strictObject({ type: literal('point') }),
   strictObject({
@@ -114,6 +116,7 @@ const modifiersSchema = strictObject({
 
 /** Runtime values and flags; shape type, identity, capacity and seed require recreation. */
 export const emitterParametersSchema = strictObject({
+  blendMode: blendModeSchema.optional(),
   stretchWithVelocity: boolean().optional(),
   scale: number().optional(),
   rotation: number().optional(),
@@ -202,6 +205,7 @@ export const emitterParametersSchema = strictObject({
 });
 
 export const emitterConfigSchema = strictObject({
+  blendMode: blendModeSchema.default('alpha'),
   stretchWithVelocity: boolean().default(false),
   scale: number().default(1),
   rotation: number().default(0),

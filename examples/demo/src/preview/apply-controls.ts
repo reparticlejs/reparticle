@@ -137,6 +137,7 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
     rotation: controls.emitterRotation,
     scale: controls.emitterScale,
     space: controls.space,
+    blendMode: controls.blendMode,
     stretchWithVelocity: controls.stretchWithVelocity,
   };
 }
@@ -213,6 +214,7 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     emitterRotation: definition.rotation,
     emitterScale: definition.scale,
     space: definition.space,
+    blendMode: definition.blendMode,
     stretchWithVelocity: definition.stretchWithVelocity,
     lifetime: typeof definition.initial.lifetime === 'number' ? definition.initial.lifetime : 2,
     initialLifetimeCurve: typeof definition.initial.lifetime === 'number' ? 'constant' : 'effect',
@@ -294,6 +296,7 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
     };
   }
   return {
+    blendMode: controls.blendMode,
     stretchWithVelocity: controls.stretchWithVelocity,
     emission,
     initial: {

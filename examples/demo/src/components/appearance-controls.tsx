@@ -1,7 +1,7 @@
 import type { ControlSectionProps } from '../types/controls';
 import { alphaCurveOptions } from './alpha-curve-options';
 import { ColorControls } from './color-controls';
-import { textureOptions } from './emitter-control-options';
+import { blendModeOptions, textureOptions } from './emitter-control-options';
 import { initialColorCurveOptions } from './initial-color-curve-options';
 import { initialSizeCurveOptions } from './initial-size-curve-options';
 import { RotationControls } from './rotation-controls';
@@ -13,6 +13,13 @@ export function AppearanceControls({ controls, onChange }: ControlSectionProps) 
   return (
     <fieldset>
       <legend>Appearance</legend>
+      <SelectField
+        id="blend-mode"
+        label="Blend mode"
+        value={controls.blendMode}
+        options={blendModeOptions}
+        onChange={(blendMode) => onChange({ blendMode })}
+      />
       <SelectField
         id="texture"
         label="Particle texture"

@@ -7,6 +7,7 @@ export function updateEmitterConfig(current: EmitterConfig, input: unknown): Emi
   const patch = emitterParametersSchema.parse(input);
   return emitterConfigSchema.parse({
     ...current,
+    blendMode: patch.blendMode ?? current.blendMode,
     stretchWithVelocity: patch.stretchWithVelocity ?? current.stretchWithVelocity,
     scale: patch.scale ?? current.scale,
     rotation: patch.rotation ?? current.rotation,
