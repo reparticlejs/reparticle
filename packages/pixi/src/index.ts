@@ -1,6 +1,10 @@
 import { Emitter, parseEffectConfig, CURVE_SEGMENTS } from '@reparticle/core';
 import { RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
 
+import { resolveTexture } from './resolve-texture';
+import type { ParticleTexture } from './types/particle-texture';
+export type { ParticleTexture } from './types/particle-texture';
+
 import { sampleColorCurves } from './sample-color-curves';
 import { sampleGeometryCurves } from './sample-geometry-curves';
 import { setBlendMode } from './set-blend-mode';
@@ -17,6 +21,7 @@ uniform vec2 emitterRotation;
 uniform float emitterScale;
 uniform mat3 transform;
 uniform vec2 particleAspect;
+uniform vec4 textureTrim;
 uniform bool stretchWithVelocity;
 uniform bool orientToMovement;
 uniform bool orientToAngularVelocity;
@@ -49,7 +54,7 @@ void main() {
   float angle = -radians(properties.w + rotation);
   float sine = sin(angle);
   float cosine = cos(angle);
-  vec2 corner = uv * size * 0.5;
+  vec2 corner = (textureTrim.xy + (uv * 0.5 + 0.5) * textureTrim.zw - 0.5) * size;
   vec2 rotated = vec2(cosine * corner.x - sine * corner.y, sine * corner.x + cosine * corner.y);
   if (orientToMovement && dot(motion.zw, motion.zw) > 0.0001) {
     vec2 direction = normalize(motion.zw);
@@ -73,11 +78,14 @@ uniform float opacity;
 uniform sampler2D artwork;
 uniform bool textured;
 uniform bool straightAlpha;
-uniform vec4 frame;
+uniform vec4 frameTop;
+uniform vec4 frameBottom;
 out vec4 color;
 void main() {
   if (textured) {
-    vec2 coords = mix(frame.xy, frame.zw, uv * 0.5 + 0.5);
+    vec2 fraction = uv * 0.5 + 0.5;
+    vec2 coords = mix(mix(frameTop.xy, frameTop.zw, fraction.x),
+                      mix(frameBottom.xy, frameBottom.zw, fraction.x), fraction.y);
     vec4 pixel = texture(artwork, coords);
     if (straightAlpha) pixel.rgb *= pixel.a;
     color = vec4(pixel.rgb * particleColor.rgb, pixel.a) * (opacity * particleColor.a);
@@ -131,21 +139,27 @@ export class ParticleView extends RenderContainer {
   private readonly matrix = new Float32Array(9);
   private disposed = false;
   private artwork: Texture | null = null;
-  /** Caller owns the texture. Untrimmed, unrotated frames are supported. */
+  /** Caller owns the texture. Atlas trim and rotation are respected. */
   get texture(): Texture | null {
     return this.artwork;
   }
   set texture(value: Texture | null) {
-    if (value && (value.trim || value.rotate)) {
-      throw new Error('Trimmed or rotated particle textures are not supported yet');
-    }
     this.artwork = value;
   }
-  constructor(renderer: WebGLRenderer, definition: unknown) {
+  setTexture(options: ParticleTexture): void {
+    this.texture = resolveTexture(options);
+  }
+  constructor(
+    renderer: WebGLRenderer,
+    definition: unknown,
+    options: ParticleTexture = { texture: null },
+  ) {
+    const texture = resolveTexture(options);
     const config = parseEffectConfig(definition).emitters[0];
     const geometryCurve = sampleGeometryCurves(config.overLifetime);
     const colorCurve = sampleColorCurves(config.overLifetime);
     super({});
+    this.artwork = texture;
     this.host = renderer;
     const gl = renderer.gl;
     this.gl = gl;
@@ -173,7 +187,9 @@ export class ParticleView extends RenderContainer {
             'artwork',
             'textured',
             'straightAlpha',
-            'frame',
+            'frameTop',
+            'frameBottom',
+            'textureTrim',
             'particleAspect',
             'stretchWithVelocity',
             'orientToMovement',
@@ -236,11 +252,21 @@ export class ParticleView extends RenderContainer {
     gl.uniform1i(u.straightAlpha!, texture?.source.alphaMode === 'no-premultiply-alpha' ? 1 : 0);
     if (texture) {
       const uv = texture.uvs;
-      gl.uniform4f(u.frame!, uv.x0, uv.y0, uv.x2, uv.y2);
+      gl.uniform4f(u.frameTop!, uv.x0, uv.y0, uv.x1, uv.y1);
+      gl.uniform4f(u.frameBottom!, uv.x3, uv.y3, uv.x2, uv.y2);
+      const trim = texture.trim;
+      gl.uniform4f(
+        u.textureTrim!,
+        trim ? trim.x / texture.orig.width : 0,
+        trim ? trim.y / texture.orig.height : 0,
+        trim ? trim.width / texture.orig.width : 1,
+        trim ? trim.height / texture.orig.height : 1,
+      );
       const longest = Math.max(texture.orig.width, texture.orig.height);
       gl.uniform2f(u.particleAspect!, texture.orig.width / longest, texture.orig.height / longest);
     } else {
       gl.uniform2f(u.particleAspect!, 1, 1);
+      gl.uniform4f(u.textureTrim!, 0, 0, 1, 1);
     }
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.emitter.texture);

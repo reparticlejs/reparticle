@@ -1,9 +1,9 @@
 import type { EffectConfig } from '@reparticle/core';
-import type { Texture } from 'pixi.js';
+import type { ParticleTexture } from '@reparticle/pixi';
 
 import type { ParticleTextureName } from './preview';
 
 export interface PreviewAssets {
   effect: EffectConfig;
-  textures: Record<ParticleTextureName, Texture | null>;
+  textures: Record<ParticleTextureName, ParticleTexture>;
 }

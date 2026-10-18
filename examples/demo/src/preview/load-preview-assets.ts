@@ -1,5 +1,5 @@
 import { parseEffectConfig } from '@reparticle/core';
-import { Assets, type Texture } from 'pixi.js';
+import { Assets, type Spritesheet } from 'pixi.js';
 
 import type { PreviewAssets } from '../types/preview-scene';
 
@@ -25,15 +25,13 @@ async function loadEffect(signal: AbortSignal): Promise<PreviewAssets['effect']>
 }
 
 async function loadTextures(): Promise<PreviewAssets['textures']> {
-  const base = import.meta.env.BASE_URL;
-  const star = `${base}textures/star.svg`;
-  const leaf = `${base}textures/leaf.svg`;
-  const spark = `${base}textures/spark.svg`;
-  const textures = await Assets.load<Texture>([star, leaf, spark]);
+  const atlas = await Assets.load<Spritesheet>(
+    `${import.meta.env.BASE_URL}textures/particles.json`,
+  );
   return {
-    star: textures[star]!,
-    leaf: textures[leaf]!,
-    spark: textures[spark]!,
-    procedural: null,
+    star: { atlas, frame: 'star' },
+    leaf: { atlas, frame: 'leaf' },
+    spark: { atlas, frame: 'spark' },
+    procedural: { texture: null },
   };
 }

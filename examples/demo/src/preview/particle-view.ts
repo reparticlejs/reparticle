@@ -16,14 +16,7 @@ export function createParticleView(
   const emitter = applyControls(definition, controls);
   const effect = { version: 1, emitters: [emitter] };
   const renderer = app.renderer;
-  const view = new ParticleView(renderer, effect);
-  try {
-    view.texture = textures[controls.texture];
-    return view;
-  } catch (error) {
-    view.destroy();
-    throw error;
-  }
+  return new ParticleView(renderer, effect, textures[controls.texture]);
 }
 
 /** Keeps the old view intact until its replacement is ready and attached. */

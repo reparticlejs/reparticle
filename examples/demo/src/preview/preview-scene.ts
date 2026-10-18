@@ -107,7 +107,7 @@ export class PreviewScene {
       );
     } else {
       this.updateParameters(next);
-      this.view.texture = this.assets.textures[next.texture];
+      this.view.setTexture(this.assets.textures[next.texture]);
     }
     this.settings = next;
     return { ...next };

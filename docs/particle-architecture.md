@@ -239,3 +239,28 @@ view opacity are already incorporated into the premultiplied source color.
 existing particles while paused. It does not restart simulation or add particle
 state. The demo exposes this under Appearance. Procedural particles now default
 to Alpha too; choose Add explicitly for their previous additive appearance.
+
+### Pixi atlas frames
+
+Texture configuration belongs to `@reparticle/pixi`, separate from the core effect
+JSON. Load a Pixi spritesheet in the host, then select a named frame:
+
+```ts
+const atlas = await Assets.load<Spritesheet>('textures/particles.json');
+const view = new ParticleView(renderer, effectConfig, { atlas, frame: 'star' });
+view.setTexture({ atlas, frame: 'leaf' });
+```
+
+A standalone texture uses `{ texture }`; `{ texture: null }` selects procedural
+particles. The existing `view.texture` property also accepts resolved Pixi textures.
+`ParticleTexture` is the exported union for these options. Atlas objects expose a
+`textures` map, so Pixi `Spritesheet` instances work directly. Missing frame names
+throw before replacing the current texture or allocating a new view's GPU resources.
+The caller owns all textures and atlas resources; destroying the view does not destroy them.
+
+Frames respect Pixi UV rotation and trim offsets, retaining the original untrimmed
+image's proportions and center. Initial size still controls the longest original
+dimension; automatic sizing and flipbook playback are not implemented yet. Switching
+frames affects all existing particles immediately without restarting simulation,
+including while paused. No simulation state, CPU particle readback, or extra draw
+pass is added. The demo's three artwork choices now share `textures/particles.json`.
