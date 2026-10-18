@@ -8,7 +8,7 @@ it('applies radial after drag with stable spread and integrates its displacement
     [[3, 4, 100, 50]],
     [[0, 10, 24, 0]],
     [[1, 1, 1, 1]],
-    [[0.5, 0, 0, 0]],
+    [[1, 0.5, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {

@@ -100,7 +100,7 @@ particles.emitter.setParameters({
 });
 ```
 
-Updates are validated atomically. Capacity, seed, ID and shape type cannot be changed through this method; create a new instance from an updated definition. `emitter.configuration` returns an independent snapshot for that purpose. Position and playback remain runtime controls. Initial values affect new births; modifiers affect living particles. Modifier updates replace the complete ordered list. Emitter entries run first, then root entries, in authored array order; repeated types are supported. Each scope allows up to 64 entries. Living and newborn positions advance once after all velocity changes, following Defold’s integration order. Newborns also age by the full simulation step; lifetime curves therefore use that advanced age on the first rendered frame. Scalar speed is exact; implicit speed variation, shrinking and fading have been removed. Texture selection remains a renderer control; initial size, initial alpha, and their lifetime curves are configured in JSON. No new API accepts executable particle behavior.
+Updates are validated atomically. Capacity, seed, ID and shape type cannot be changed through this method; create a new instance from an updated definition. `emitter.configuration` returns an independent snapshot for that purpose. Position and playback remain runtime controls. Initial values affect new births; modifiers affect living particles. Modifier updates replace the complete ordered list. Emitter entries run first, then root entries, in authored array order; repeated types are supported. Each scope allows up to 64 entries. Living and newborn positions advance once after all velocity changes, following Defold’s integration order. Newborns also age by the full simulation step; lifetime curves therefore use that advanced age on the first rendered frame. Existing particles expire strictly after their lifetime; newborns always survive their birth frame. An explicit GPU active flag keeps visibility, lifecycle notifications, and the debug live count consistent, including exact endpoints and zero-time updates. Scalar speed is exact; implicit speed variation, shrinking and fading have been removed. Texture selection remains a renderer control; initial size, initial alpha, and their lifetime curves are configured in JSON. No new API accepts executable particle behavior.
 
 ## Demo UI
 
@@ -238,6 +238,8 @@ The internal storage bands use the same names throughout the runtime:
 motion:     [x, y, velocityX, velocityY]
 properties: [age, lifetime, initialSize, initialRotation]
 color:      [initialRed, initialGreen, initialBlue, initialAlpha]
+dynamics:   [active, spreadFactor, initialAngularVelocity, accumulatedRotation]
+stretch:    [initialStretchX, initialStretchY, reserved, reserved]
 ```
 
 `initial` means the value captured for that particle at spawn, not the emitter's current setting. These storage names are Reparticle's; “Initial” follows the configuration and Defold editor terminology.

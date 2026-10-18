@@ -36,7 +36,7 @@ export class LiveParticleCount {
       // Match the float32 age accumulation used by the simulation texture.
       batch.age = Math.fround(batch.age + step);
       batch.start = Math.max(batch.start, oldestSlot);
-      const expired = batch.age >= batch.lifetime;
+      const expired = seconds > 0 && batch.age > batch.lifetime;
       const overwritten = batch.start >= batch.end;
       if (expired || overwritten) {
         continue;
@@ -45,8 +45,12 @@ export class LiveParticleCount {
       retained += 1;
       if (batch.lifetimes) {
         for (let slot = batch.start; slot < batch.end; slot++) {
-          if (batch.age < batch.lifetimes[slot - batch.origin!]!) {
+          const index = slot - batch.origin!;
+          const sampledLifetime = batch.lifetimes[index]!;
+          if (sampledLifetime !== -Infinity && (seconds === 0 || batch.age <= sampledLifetime)) {
             alive += 1;
+          } else {
+            batch.lifetimes[index] = -Infinity;
           }
         }
       } else {
@@ -56,7 +60,7 @@ export class LiveParticleCount {
     this.batches.length = retained;
 
     const particleLifetime = Math.fround(lifetime);
-    if (spawned > 0 && particleLifetime + spread > step) {
+    if (spawned > 0) {
       const newborns: ParticleBatch = {
         start: this.emitted,
         end,
@@ -66,7 +70,7 @@ export class LiveParticleCount {
       if (spread > 0) {
         newborns.origin = this.emitted;
         newborns.lifetimes = new Float32Array(spawned);
-        newborns.lifetime = 0;
+        newborns.lifetime = -Infinity;
         for (let index = 0; index < spawned; index++) {
           const slot = (this.emitted + index) % this.capacity;
           // Match the GPU's float32 division, subtraction, multiply and addition.
@@ -74,9 +78,7 @@ export class LiveParticleCount {
           const sampled = Math.fround(particleLifetime + Math.fround(random * Math.fround(spread)));
           newborns.lifetimes[index] = sampled;
           newborns.lifetime = Math.max(newborns.lifetime, sampled);
-          if (sampled > step) {
-            alive += 1;
-          }
+          alive += 1;
         }
       } else {
         alive += spawned;

@@ -72,6 +72,13 @@ export function integrate(
   const properties = state[particleRow + this.constants.rows]![this.thread.x]!;
   const isSpawning = particleId < this.constants.capacity && spawnOffset < spawnCount;
 
+  // A zero-time update must not prune a newborn retained from the previous frame.
+  if (seconds === 0 && !isSpawning) {
+    return state[this.thread.y]![this.thread.x]!;
+  }
+  const dynamics = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
+  const active = dynamics[0] * particleAlive(advanceAge(properties[0], seconds), properties[1]);
+
   if (this.thread.y >= this.constants.rows * 4) {
     if (isSpawning) {
       return [
@@ -100,25 +107,24 @@ export function integrate(
           seconds,
         );
       }
-      return [propertyVariation(particleId, seed, 14), angularVelocity, rotation, 0];
+      return [1, propertyVariation(particleId, seed, 14), angularVelocity, rotation];
     }
-    const dynamics = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
-    if (orientToAngularVelocity > 0.5 && particleAlive(properties[0], properties[1]) > 0.5) {
+    if (orientToAngularVelocity > 0.5 && active > 0.5) {
       return [
-        dynamics[0],
+        active,
         dynamics[1],
+        dynamics[2],
         advanceRotation(
+          dynamics[3],
           dynamics[2],
-          dynamics[1],
           properties[0] + seconds,
           properties[1],
           angularVelocityCurve,
           seconds,
         ),
-        0,
       ];
     }
-    return dynamics;
+    return [active, dynamics[1], dynamics[2], dynamics[3]];
   }
 
   // Color texel: initialRed, initialGreen, initialBlue, initialAlpha.
@@ -223,21 +229,20 @@ export function integrate(
   const velocityY = motion[3];
   const age = properties[0];
   const particleLifetime = properties[1];
-  if (particleAlive(age, particleLifetime) < 0.5) {
+  if (active < 0.5) {
     return [x, y, 0, 0];
   }
 
   let velocity: [number, number] = [velocityX, velocityY];
   if (modifiers[0]! > 0) {
-    const dynamics = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
     let heading: [number, number] = [0, -1];
     if (modifiers[1]! > 0) {
       heading = particleHeading(
         properties[3] +
           (orientToAngularVelocity > 0.5
             ? advanceRotation(
+                dynamics[3],
                 dynamics[2],
-                dynamics[1],
                 age + seconds,
                 particleLifetime,
                 angularVelocityCurve,
@@ -259,7 +264,7 @@ export function integrate(
       velocityY,
       heading[0],
       heading[1],
-      dynamics[0],
+      dynamics[1],
       seconds,
       modifiers,
     );

@@ -8,7 +8,7 @@ it('retains spread for the lifetime, resamples on birth, and damps after gravity
     [[0, 0, 100, 50]],
     [[0, 10, 24, 0]],
     [[1, 1, 1, 1]],
-    [[0.5, 0, 0, 0]],
+    [[1, 0.5, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
@@ -70,6 +70,6 @@ it('retains spread for the lifetime, resamples on birth, and damps after gravity
   expect(run(0, 99, 0).slice(2)).toEqual([70, 42]);
   expect(run(0, 1, 1).slice(2)).toEqual([70, 60]);
   context.thread.y = 3;
-  expect(run(0, 99, 0)).toEqual([0.5, 0, 0, 0]);
+  expect(run(0, 99, 0)).toEqual([1, 0.5, 0, 0]);
   expect(run(1, 1, 0)).not.toEqual(run(1, 2, 0));
 });

@@ -191,7 +191,7 @@ it('expires each birth batch using its captured emitter-time lifetime', () => {
   counter.advance(0.1, settings, true);
   expect(counter.count).toBe(1);
   counter.advance(0.1, settings, true);
-  expect(counter.count).toBe(1);
+  expect(counter.count).toBe(2);
   counter.advance(0.1, { ...settings, initialLifetimeCurve: 'constant', lifetime: 10 }, false);
   expect(counter.count).toBe(1);
   for (let i = 0; i < 4; i++) {

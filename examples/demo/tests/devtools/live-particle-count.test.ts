@@ -6,7 +6,7 @@ it('ages newborns on their first step and expires them at their original lifetim
   const tracker = new LiveParticleCount(100);
   tracker.recordStep(0.1, 10, 0.2);
   tracker.recordStep(0.1, 5, 1);
-  expect(tracker.count).toBe(5);
+  expect(tracker.count).toBe(15);
   tracker.recordStep(0.1, 0, 10);
   expect(tracker.count).toBe(5);
   tracker.reset();
@@ -16,7 +16,7 @@ it('ages newborns on their first step and expires them at their original lifetim
 it('matches individual float32 slots through wraparound, lifetime changes and resets', () => {
   const capacity = 17;
   const tracker = new LiveParticleCount(capacity);
-  const slots = Array.from({ length: capacity }, () => ({ age: 0, lifetime: 0 }));
+  const slots = Array.from({ length: capacity }, () => ({ age: 0, lifetime: 0, active: false }));
   let cursor = 0;
   for (let frame = 0; frame < 1000; frame++) {
     const seconds = frame % 13 === 0 ? 0 : ((frame % 5) + 1) / 100;
@@ -24,13 +24,16 @@ it('matches individual float32 slots through wraparound, lifetime changes and re
     const lifetime = ((frame % 7) + 1) / 10;
     for (const slot of slots) {
       slot.age = Math.fround(slot.age + Math.fround(seconds));
+      if (seconds > 0 && slot.age > slot.lifetime) {
+        slot.active = false;
+      }
     }
     for (let birth = 0; birth < spawned; birth++) {
-      slots[cursor] = { age: Math.fround(seconds), lifetime: Math.fround(lifetime) };
+      slots[cursor] = { age: Math.fround(seconds), lifetime: Math.fround(lifetime), active: true };
       cursor = (cursor + 1) % capacity;
     }
     tracker.recordStep(seconds, spawned, lifetime);
-    expect(tracker.count).toBe(slots.filter((slot) => slot.age < slot.lifetime).length);
+    expect(tracker.count).toBe(slots.filter((slot) => slot.active).length);
   }
 });
 
@@ -38,7 +41,7 @@ it('does not count expired slots again when older batches are overwritten', () =
   const tracker = new LiveParticleCount(10);
   tracker.recordStep(0, 5, 0.1);
   tracker.recordStep(0, 5, 10);
-  tracker.recordStep(0.1, 3, 1);
+  tracker.recordStep(0.2, 3, 1);
   expect(tracker.count).toBe(8);
   tracker.recordStep(0, 4, 1);
   expect(tracker.count).toBe(10);
@@ -74,4 +77,26 @@ it('expires varied lifetimes and replaces slots without retaining old births', (
     count.recordStep(0.1, 0, 1);
   }
   expect(count.count).toBe(0);
+});
+
+it.each([0.01, 0, -0.1])('retains newborn lifetime %s until the next positive step', (lifetime) => {
+  const tracker = new LiveParticleCount(10);
+  tracker.recordStep(0.1, 3, lifetime);
+  expect(tracker.count).toBe(3);
+  tracker.recordStep(0, 0, lifetime);
+  expect(tracker.count).toBe(3);
+  tracker.recordStep(0.01, 0, lifetime);
+  expect(tracker.count).toBe(0);
+});
+
+it('does not revive expired spread samples on a zero-time update', () => {
+  const tracker = new LiveParticleCount(100);
+  tracker.recordStep(0.1, 100, 0.1, 0.3);
+  expect(tracker.count).toBe(100);
+  tracker.recordStep(0.1, 0, 0.1, 0.3);
+  const survivors = tracker.count;
+  expect(survivors).toBeGreaterThan(0);
+  expect(survivors).toBeLessThan(100);
+  tracker.recordStep(0, 0, 0.1, 0.3);
+  expect(tracker.count).toBe(survivors);
 });

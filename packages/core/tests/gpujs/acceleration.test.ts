@@ -8,7 +8,7 @@ it('shares persistent spread with drag and applies acceleration first on both ax
     [[0, 0, 100, 50]],
     [[0, 10, 24, 0]],
     [[1, 1, 1, 1]],
-    [[0.5, 0, 0, 0]],
+    [[1, 0.5, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {

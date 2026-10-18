@@ -46,7 +46,7 @@ void main() {
   ivec2 at = ivec2(id % width, id / width);
   vec4 motion = texelFetch(particles, at, 0);
   vec4 properties = texelFetch(particles, at + ivec2(0, rows), 0);
-  float life = properties.y > 0.0 ? max(0.0, 1.0 - properties.x / properties.y) : 0.0;
+  vec4 dynamics = texelFetch(particles, at + ivec2(0, rows * 3), 0);
   uv = vec2(float(gl_VertexID & 1), float(gl_VertexID >> 1)) * 2.0 - 1.0;
   float normalizedAge = properties.y > 0.0 ? clamp(properties.x / properties.y, 0.0, 1.0) : 0.0;
   float curvePosition = normalizedAge * ${CURVE_SEGMENTS}.0;
@@ -75,7 +75,7 @@ void main() {
   artworkUv = mix(mix(top.xy, top.zw, fraction.x), mix(bottom.xy, bottom.zw, fraction.x), fraction.y);
   vec2 size = baseSize * geometry.x * (vec2(1.0) + stretch);
   float rotation = geometry.y;
-  if (orientToAngularVelocity) rotation = texelFetch(particles, at + ivec2(0, rows * 3), 0).z;
+  if (orientToAngularVelocity) rotation = dynamics.w;
   // Defold's positive Z rotation is counterclockwise; canvas Y points down.
   float angle = -radians(properties.w + rotation);
   float sine = sin(angle);
@@ -98,7 +98,7 @@ void main() {
   position = vec2(emitterRotation.x * position.x - emitterRotation.y * position.y,
                   emitterRotation.y * position.x + emitterRotation.x * position.y);
   vec2 world = (transform * vec3(position + emitterOffset, 1.0)).xy;
-  gl_Position = life > 0.0 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
+  gl_Position = dynamics.x > 0.5 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
 }`;
 const fragment = `#version 300 es
 precision highp float;

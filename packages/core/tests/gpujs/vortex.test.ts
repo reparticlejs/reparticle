@@ -8,7 +8,7 @@ it('combines vortex and radial after drag with stable spread and one position st
     [[3, 4, 100, 50]],
     [[0, 10, 24, 0]],
     [[1, 1, 1, 1]],
-    [[0.5, 0, 0, 0]],
+    [[1, 0.5, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {

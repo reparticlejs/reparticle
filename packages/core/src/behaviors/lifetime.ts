@@ -3,9 +3,9 @@ export function advanceAge(age: number, seconds: number): number {
   return age + seconds;
 }
 
-/** Numeric activity flag for GPU.js helpers; a positive lifetime captured at spawn identifies initialized slots. */
+/** Existing particles expire strictly after their lifetime; slot activity is tracked separately. */
 export function particleAlive(age: number, lifetime: number): number {
-  if (lifetime <= 0 || age >= lifetime) {
+  if (age > lifetime) {
     return 0;
   }
   return 1;

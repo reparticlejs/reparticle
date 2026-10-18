@@ -9,7 +9,7 @@ export type ParticleTexel = [number, number, number, number];
  * motion: [x, y, velocityX, velocityY]
  * properties: [age, lifetime, initialSize, initialRotation]
  * color: [initialRed, initialGreen, initialBlue, initialAlpha]
- * modifiers: [spreadFactor, initialAngularVelocity, accumulatedRotation, reserved]
+ * dynamics: [active, spreadFactor, initialAngularVelocity, accumulatedRotation]
  * stretch: [initialStretchX, initialStretchY, reserved, reserved]
  * Initial values are captured per particle at spawn.
  */

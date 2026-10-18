@@ -8,7 +8,7 @@ it('maps motion and properties texels without changing the behavior math', () =>
     [[10, 20, 30, -40]],
     [[0.5, 2, 1, 0]],
     [[0, 0, 0, 0]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
@@ -70,6 +70,10 @@ it('maps motion and properties texels without changing the behavior math', () =>
   context.thread.y = 1;
   expect(step()).toEqual([0.6, 2, 1, 0]);
   context.thread.y = 0;
+  state[1]![0]![0] = 1.9;
+  expect(step()).toEqual([13, 17, 30, -30]);
+  state[1]![0]![0] = 2;
+  expect(step()).toEqual([10, 20, 0, 0]);
   state[1]![0]![0] = 3;
   expect(step()).toEqual([10, 20, 0, 0]);
 });
@@ -79,26 +83,29 @@ it('reinitializes a recycled slot and moves and ages on its birth step', () => {
     [[99, 88, 77, 66]],
     [[10, 2, 1, 0]],
     [[0, 0, 0, 0]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
     thread: { x: 0, y: 0 },
     constants: { width: 1, rows: 1, capacity: 1 },
   };
+  let seconds = 0.1;
+  let count = 1;
+  let lifetime = 3;
   const step = () =>
     integrate.call(
       context,
       state,
-      0.1,
+      seconds,
       0,
-      1,
+      count,
       5,
       6,
       220,
       0,
       0,
-      3,
+      lifetime,
       1,
       0,
       0,
@@ -140,6 +147,30 @@ it('reinitializes a recycled slot and moves and ages on its birth step', () => {
   expect(step()).toEqual([27, 7, 220, 10]);
   context.thread.y = 1;
   expect(step()).toEqual([0.1, 3, 24, 0]);
+  // Read every band from the same previous texture, just as the GPU does.
+  function tick() {
+    const output = state.map((_, row) => {
+      context.thread.y = row;
+      return [step()];
+    });
+    state.splice(0, state.length, ...output);
+  }
+  lifetime = 0.01;
+  tick();
+  expect(state[3]![0]![0]).toBe(1);
+  expect(state[1]![0]![0]).toBeGreaterThan(state[1]![0]![1]);
+  const position = state[0]![0]!.slice(0, 2);
+  count = 0;
+  seconds = 0;
+  tick();
+  expect(state[3]![0]![0]).toBe(1);
+  seconds = 0.1;
+  tick();
+  expect(state[3]![0]![0]).toBe(0);
+  expect(state[0]![0]).toEqual([...position, 0, 0]);
+  count = 1;
+  tick();
+  expect(state[3]![0]![0]).toBe(1);
 });
 
 it('preserves lifetime captured at spawn and stops motion at expiry despite new initial parameters', () => {
@@ -147,7 +178,7 @@ it('preserves lifetime captured at spawn and stops motion at expiry despite new 
     [[10, 20, 30, -40]],
     [[2, 2, 1, 0]],
     [[0, 0, 0, 0]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
@@ -215,7 +246,7 @@ it('uses radial circle spawning independently of point direction and spread', ()
     [[0, 0, 0, 0]],
     [[0, 0, 0, 0]],
     [[0, 0, 0, 0]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
@@ -332,7 +363,7 @@ it('spawns a cone independently of point direction and advances birth age', () =
     [[99, 88, 77, 66]],
     [[10, 2, 1, 0]],
     [[0, 0, 0, 0]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
@@ -403,7 +434,7 @@ it('captures size at birth, preserves it when initial size changes, and replaces
     [[0, 0, 0, 0]],
     [[0.2, 2, 12, 0]],
     [[0, 0, 0, 0]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
@@ -519,7 +550,7 @@ it('preserves initial alpha until the slot is recycled', () => {
     [[0, 0, 10, 0]],
     [[0.2, 2, 24, 0]],
     [[1, 1, 1, 0.25]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
@@ -635,7 +666,7 @@ it('continues simulating transparent particles and keeps unused slots inactive',
     [[0, 0, 10, 0]],
     [[0.2, 2, 24, 0]],
     [[1, 1, 1, 0]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
@@ -695,6 +726,7 @@ it('continues simulating transparent particles and keeps unused slots inactive',
     );
   expect(step()).toEqual([1, 0, 10, 0]);
   state[1]![0] = [0, 0, 0, 0];
+  state[3]![0]![0] = 0;
   expect(step()).toEqual([0, 0, 0, 0]);
 });
 
@@ -703,7 +735,7 @@ it('captures initial RGB, preserves it, and replaces it when a slot is reused', 
     [[0, 0, 0, 0]],
     [[0.2, 2, 24, 0]],
     [[0.1, 0.2, 0.3, 0.5]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
@@ -772,7 +804,7 @@ it('captures initial rotation and preserves it until slot reuse', () => {
     [[0, 0, 0, 0]],
     [[0.2, 2, 24, -45]],
     [[1, 1, 1, 1]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {
@@ -839,7 +871,7 @@ it('captures alignment at zero speed, adds initial rotation, and retains it unde
     [[0, 0, 0, 0]],
     [[0, 0, 0, 0]],
     [[1, 1, 1, 1]],
-    [[0, 0, 0, 0]],
+    [[1, 0, 0, 0]],
     [[0, 0, 0, 0]],
   ];
   const context: KernelContext = {

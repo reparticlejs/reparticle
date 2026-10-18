@@ -26,7 +26,7 @@ export class ParticleLifetimes {
         batch.maximum = this.maximum(batch);
       }
       batch.age = Math.fround(batch.age + step);
-      return batch.age < batch.maximum;
+      return seconds === 0 || batch.age <= batch.maximum;
     });
     if (count > 0) {
       const batch: LifetimeBatch = {
@@ -39,9 +39,8 @@ export class ParticleLifetimes {
         maximum: 0,
       };
       batch.maximum = this.maximum(batch);
-      if (batch.maximum > batch.age) {
-        this.batches.push(batch);
-      }
+      // Newborns survive their birth frame, even when their lifetime is already exceeded.
+      this.batches.push(batch);
     }
     this.spawned = end;
   }
