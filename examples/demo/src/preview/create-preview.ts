@@ -124,6 +124,14 @@ export async function createPreview(
         patch.alphaCurve !== undefined && patch.alphaCurve !== current.alphaCurve;
       const colorCurveChanged =
         patch.colorCurve !== undefined && patch.colorCurve !== current.colorCurve;
+      const angularVelocityChanged =
+        (patch.angularVelocityCurve !== undefined &&
+          patch.angularVelocityCurve !== current.angularVelocityCurve) ||
+        (patch.initialAngularVelocityCurve !== undefined &&
+          patch.initialAngularVelocityCurve !== current.initialAngularVelocityCurve) ||
+        (current.initialAngularVelocityCurve !== 'constant' &&
+          patch.angularVelocity !== undefined &&
+          patch.angularVelocity !== current.angularVelocity);
       const rotationCurveChanged =
         patch.rotationCurve !== undefined && patch.rotationCurve !== current.rotationCurve;
       const orientationChanged =
@@ -224,6 +232,7 @@ export async function createPreview(
         curveChanged ||
         alphaCurveChanged ||
         colorCurveChanged ||
+        angularVelocityChanged ||
         rotationCurveChanged;
       if (rebuilding) {
         debug.setVisible(false);

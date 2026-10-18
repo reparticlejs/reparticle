@@ -3,6 +3,7 @@ import type { EmitterConfig, EmitterParameters } from '@reparticle/core';
 import type { PreviewControls } from '../types/preview';
 import { accelerationMagnitude } from './acceleration-magnitude';
 import { alphaCurves } from './alpha-curves';
+import { angularVelocityCurves } from './angular-velocity-curves';
 import { colorCurves } from './color-curves';
 import { dragMagnitude } from './drag-magnitude';
 import { emissionRate } from './emission-rate';
@@ -10,6 +11,7 @@ import { emitterDiameter } from './emitter-diameter';
 import { emitterHeight } from './emitter-height';
 import { emitterWidth } from './emitter-width';
 import { initialAlpha } from './initial-alpha';
+import { initialAngularVelocity } from './initial-angular-velocity';
 import { initialBlue } from './initial-blue';
 import { initialGreen } from './initial-green';
 import { initialLifetime } from './initial-lifetime';
@@ -46,6 +48,8 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
 
     rotationSpread: controls.rotationSpread,
     rotation: initialRotation(controls),
+    angularVelocity: initialAngularVelocity(controls),
+    angularVelocitySpread: controls.angularVelocitySpread,
     alpha: initialAlpha(controls),
     red: initialRed(controls),
     green: initialGreen(controls),
@@ -73,6 +77,10 @@ export function applyControls(definition: EmitterConfig, controls: PreviewContro
       ...(controls.colorCurve === 'effect'
         ? definition.overLifetime
         : colorCurves[controls.colorCurve]),
+      angularVelocity:
+        controls.angularVelocityCurve === 'effect'
+          ? definition.overLifetime.angularVelocity
+          : angularVelocityCurves[controls.angularVelocityCurve],
       rotation:
         controls.rotationCurve === 'effect'
           ? definition.overLifetime.rotation
@@ -215,6 +223,15 @@ export function initialControls(definition: EmitterConfig): PreviewControls {
     initialRotationCurve: typeof definition.initial.rotation === 'number' ? 'constant' : 'effect',
     effectRotation: definition.initial.rotation,
     rotationCurve: 'effect',
+    angularVelocity:
+      typeof definition.initial.angularVelocity === 'number'
+        ? definition.initial.angularVelocity
+        : 90,
+    angularVelocitySpread: definition.initial.angularVelocitySpread,
+    initialAngularVelocityCurve:
+      typeof definition.initial.angularVelocity === 'number' ? 'constant' : 'effect',
+    effectAngularVelocity: definition.initial.angularVelocity,
+    angularVelocityCurve: 'effect',
     alpha: typeof definition.initial.alpha === 'number' ? definition.initial.alpha : 1,
     initialAlphaCurve: typeof definition.initial.alpha === 'number' ? 'constant' : 'effect',
     effectAlpha: definition.initial.alpha,
@@ -265,6 +282,10 @@ export function emitterParameters(controls: PreviewControls): EmitterParameters 
       alphaSpread: controls.alphaSpread,
 
       rotationSpread: controls.rotationSpread,
+      ...(controls.initialAngularVelocityCurve === 'constant'
+        ? { angularVelocity: controls.angularVelocity }
+        : {}),
+      angularVelocitySpread: controls.angularVelocitySpread,
       ...(controls.initialRotationCurve === 'constant' ? { rotation: controls.rotation } : {}),
       ...(controls.initialAlphaCurve === 'constant' ? { alpha: controls.alpha } : {}),
       ...(controls.initialRedCurve === 'constant' ? { red: controls.red } : {}),

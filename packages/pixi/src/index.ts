@@ -16,6 +16,7 @@ uniform float emitterScale;
 uniform mat3 transform;
 uniform vec2 particleAspect;
 uniform bool orientToMovement;
+uniform bool orientToAngularVelocity;
 uniform float sizeCurve[${CURVE_SEGMENTS + 1}];
 uniform float rotationCurve[${CURVE_SEGMENTS + 1}];
 uniform vec4 colorCurve[${CURVE_SEGMENTS + 1}];
@@ -37,6 +38,7 @@ void main() {
   particleColor = clamp(initialColor * colorScale, 0.0, 1.0);
   vec2 size = particleAspect * properties.z * scale;
   float rotation = mix(rotationCurve[segment], rotationCurve[segment + 1], curvePosition - float(segment));
+  if (orientToAngularVelocity) rotation = texelFetch(particles, at + ivec2(0, rows * 3), 0).z;
   // Defold's positive Z rotation is counterclockwise; canvas Y points down.
   float angle = -radians(properties.w + rotation);
   float sine = sin(angle);
@@ -169,6 +171,7 @@ export class ParticleView extends RenderContainer {
             'frame',
             'particleAspect',
             'orientToMovement',
+            'orientToAngularVelocity',
             'sizeCurve[0]',
             'rotationCurve[0]',
             'colorCurve[0]',
@@ -178,6 +181,10 @@ export class ParticleView extends RenderContainer {
         gl.uniform1i(
           this.uniforms.orientToMovement!,
           config.orientation === 'movement-direction' ? 1 : 0,
+        );
+        gl.uniform1i(
+          this.uniforms.orientToAngularVelocity!,
+          config.orientation === 'angular-velocity' ? 1 : 0,
         );
         gl.uniform1fv(this.uniforms['sizeCurve[0]']!, sizeCurve);
         gl.uniform1fv(this.uniforms['rotationCurve[0]']!, rotationCurve);

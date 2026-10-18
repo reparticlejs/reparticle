@@ -90,7 +90,8 @@
               "tangent": 180
             }
           ]
-        }
+        },
+        "angularVelocity": 1
       },
       "initial": {
         "size": 24,
@@ -110,7 +111,9 @@
         "red": 1,
         "green": 1,
         "blue": 1,
-        "rotation": 0
+        "rotation": 0,
+        "angularVelocity": 0,
+        "angularVelocitySpread": 0
       },
       "modifiers": {
         "drag": {

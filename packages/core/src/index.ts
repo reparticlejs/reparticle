@@ -33,6 +33,8 @@ export class Emitter {
   private initialBlue: SampledCurve;
   private initialAlpha: SampledCurve;
   private initialLifetime: SampledCurve;
+  private initialAngularVelocity: SampledCurve;
+  private readonly angularVelocitySamples: Float32Array;
   private initialRotation: SampledCurve;
   private initialSize: SampledCurve;
   private initialSpeed: SampledCurve;
@@ -62,6 +64,8 @@ export class Emitter {
       this.settings.emission.rateSpread,
       this.settings.seed,
     );
+    this.initialAngularVelocity = new SampledCurve(this.settings.initial.angularVelocity);
+    this.angularVelocitySamples = sampleCurve(this.settings.overLifetime.angularVelocity);
     this.initialRotation = new SampledCurve(this.settings.initial.rotation);
     this.initialSize = new SampledCurve(this.settings.initial.size);
     this.initialSpeed = new SampledCurve(this.settings.initial.speed);
@@ -73,7 +77,9 @@ export class Emitter {
     this.dragMagnitude = new SampledCurve(this.settings.modifiers.drag.magnitude);
     this.vortexMagnitude = new SampledCurve(this.settings.modifiers.vortex.magnitude);
     this.radialMagnitude = new SampledCurve(this.settings.modifiers.radial.magnitude);
-    this.rotationSamples = sampleCurve(this.settings.overLifetime.rotation);
+    this.rotationSamples = sampleCurve(
+      this.settings.orientation === 'angular-velocity' ? 0 : this.settings.overLifetime.rotation,
+    );
     this.accelerationMagnitude = new SampledCurve(this.settings.modifiers.acceleration.magnitude);
     this.shape = new SampledShape(this.settings.emission.shape);
     this.gl = context.gl;
@@ -103,6 +109,7 @@ export class Emitter {
     }
     const gpu = new GPU({ mode: 'webgl2', canvas: this.canvas, context: gl });
     gpu.addFunction(functions.advancePosition);
+    gpu.addFunction(functions.advanceRotation);
     gpu.addFunction(functions.applyAcceleration);
     gpu.addFunction(functions.applyRadial);
     gpu.addFunction(functions.applyVortex);
@@ -214,6 +221,10 @@ export class Emitter {
       patch.initial?.size === undefined
         ? this.initialSize
         : new SampledCurve(settings.initial.size);
+    const initialAngularVelocity =
+      patch.initial?.angularVelocity === undefined
+        ? this.initialAngularVelocity
+        : new SampledCurve(settings.initial.angularVelocity);
     const initialRotation =
       patch.initial?.rotation === undefined
         ? this.initialRotation
@@ -247,6 +258,7 @@ export class Emitter {
     this.initialGreen = initialGreen;
     this.initialBlue = initialBlue;
     this.initialAlpha = initialAlpha;
+    this.initialAngularVelocity = initialAngularVelocity;
     this.initialRotation = initialRotation;
     this.initialSize = initialSize;
     this.initialSpeed = initialSpeed;
@@ -366,6 +378,10 @@ export class Emitter {
       vortex.maxDistance * scale,
       -Math.cos(vortexRadians),
       -Math.sin(vortexRadians),
+      this.initialAngularVelocity.at(this.playback.normalizedAge),
+      o.initial.angularVelocitySpread,
+      this.angularVelocitySamples,
+      o.orientation === 'angular-velocity' ? 1 : 0,
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;

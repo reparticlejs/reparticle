@@ -13,7 +13,7 @@ export interface PreviewControls {
   startDelaySpread: number;
   durationSpread: number;
   duration: number;
-  orientation: 'default' | 'initial-direction' | 'movement-direction';
+  orientation: 'default' | 'initial-direction' | 'movement-direction' | 'angular-velocity';
   playMode: 'once' | 'loop';
   shape: EmitterShape;
   diameter: number;
@@ -43,6 +43,11 @@ export interface PreviewControls {
   initialAlphaCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectAlpha: EmitterConfig['initial']['alpha'];
   alphaCurve: 'effect' | 'constant' | 'fade-out' | 'fade-in-out';
+  angularVelocity: number;
+  angularVelocitySpread: number;
+  initialAngularVelocityCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
+  effectAngularVelocity: ScalarProperty;
+  angularVelocityCurve: 'effect' | 'constant' | 'speed-up' | 'slow-down' | 'reverse';
   rotation: number;
   initialRotationCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectRotation: EmitterConfig['initial']['rotation'];

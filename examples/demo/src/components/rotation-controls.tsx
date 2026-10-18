@@ -1,4 +1,5 @@
 import type { ControlSectionProps } from '../types/controls';
+import { AngularVelocityControls } from './angular-velocity-controls';
 import { initialRotationCurveOptions } from './initial-rotation-curve-options';
 import { orientationOptions } from './orientation-options';
 import { rotationCurveOptions } from './rotation-curve-options';
@@ -43,13 +44,17 @@ export function RotationControls({ controls, onChange }: ControlSectionProps) {
         unit="°"
         onChange={(rotationSpread) => onChange({ rotationSpread })}
       />
-      <SelectField
-        id="rotation-curve"
-        label="Rotation over particle lifetime"
-        value={controls.rotationCurve}
-        options={rotationCurveOptions}
-        onChange={(rotationCurve) => onChange({ rotationCurve })}
-      />
+      {controls.orientation === 'angular-velocity' ? (
+        <AngularVelocityControls controls={controls} onChange={onChange} />
+      ) : (
+        <SelectField
+          id="rotation-curve"
+          label="Rotation over particle lifetime"
+          value={controls.rotationCurve}
+          options={rotationCurveOptions}
+          onChange={(rotationCurve) => onChange({ rotationCurve })}
+        />
+      )}
     </>
   );
 }

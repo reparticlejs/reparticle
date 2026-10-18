@@ -20,6 +20,7 @@ it('defaults RGB to white and lifetime multipliers to one', () => {
   }).emitters[0];
   expect([config.initial.red, config.initial.green, config.initial.blue]).toEqual([1, 1, 1]);
   expect(config.overLifetime).toEqual({
+    angularVelocity: 1,
     rotation: 0,
     scale: 1,
     red: 1,
@@ -41,7 +42,15 @@ it('supports independent constants and curves for each channel', () => {
     version: 1,
     emitters: [{ ...source, overLifetime: { red, green: -1, blue: 2 } }],
   }).emitters[0];
-  expect(config.overLifetime).toEqual({ red, green: -1, blue: 2, alpha: 1, scale: 1, rotation: 0 });
+  expect(config.overLifetime).toEqual({
+    angularVelocity: 1,
+    red,
+    green: -1,
+    blue: 2,
+    alpha: 1,
+    scale: 1,
+    rotation: 0,
+  });
 });
 
 it('updates initial color channels independently without resetting unspecified values', () => {

@@ -159,3 +159,24 @@ it('preserves vortex curves while changing the center, cutoff, and spread', () =
     rotation: 0,
   });
 });
+
+it('preserves authored spin curves and selects lifetime multiplier presets', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.initial.angularVelocity = { points: [{ time: 0, value: 90, tangent: 90 }] };
+  const controls = initialControls(definition);
+  expect(controls.initialAngularVelocityCurve).toBe('effect');
+  const changed = applyControls(definition, {
+    ...controls,
+    orientation: 'angular-velocity',
+    angularVelocitySpread: 45,
+    angularVelocityCurve: 'reverse',
+  });
+  expect(changed.initial.angularVelocity).toEqual(definition.initial.angularVelocity);
+  expect(changed.initial.angularVelocitySpread).toBe(45);
+  expect(changed.overLifetime.angularVelocity).toEqual({
+    points: [
+      { time: 0, value: 1, tangent: -2 },
+      { time: 1, value: -1, tangent: -2 },
+    ],
+  });
+});

@@ -1,6 +1,7 @@
 import type { KernelContext, ParticleTexel, ParticleTexture } from '#types/layout.js';
 
 import { applyAcceleration } from '../behaviors/acceleration';
+import { advanceRotation } from '../behaviors/angular-velocity';
 import { applyDrag } from '../behaviors/drag';
 import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { advancePosition, advanceVelocity } from '../behaviors/motion';
@@ -80,6 +81,10 @@ export function integrate(
   vortexMaxDistance: number,
   vortexStartX: number,
   vortexStartY: number,
+  initialAngularVelocity: number,
+  angularVelocitySpread: number,
+  angularVelocityCurve: Float32Array,
+  orientToAngularVelocity: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -89,9 +94,31 @@ export function integrate(
 
   if (this.thread.y >= this.constants.rows * 3) {
     if (isSpawning) {
-      return [propertyVariation(particleId, seed, 14), 0, 0, 0];
+      const angularVelocity =
+        initialAngularVelocity + propertyVariation(particleId, seed, 15) * angularVelocitySpread;
+      let rotation = 0;
+      if (orientToAngularVelocity > 0.5) {
+        rotation = advanceRotation(0, angularVelocity, 0, lifetime, angularVelocityCurve, seconds);
+      }
+      return [propertyVariation(particleId, seed, 14), angularVelocity, rotation, 0];
     }
-    return state[particleRow + this.constants.rows * 3]![this.thread.x]!;
+    const dynamics = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
+    if (orientToAngularVelocity > 0.5 && particleAlive(properties[0], properties[1]) > 0.5) {
+      return [
+        dynamics[0],
+        dynamics[1],
+        advanceRotation(
+          dynamics[2],
+          dynamics[1],
+          properties[0] + seconds,
+          properties[1],
+          angularVelocityCurve,
+          seconds,
+        ),
+        0,
+      ];
+    }
+    return dynamics;
   }
 
   // Color texel: initialRed, initialGreen, initialBlue, initialAlpha.
@@ -160,7 +187,18 @@ export function integrate(
       let heading: [number, number] = [0, -1];
       if (positionX === radialX && positionY === radialY) {
         heading = particleHeading(
-          rotation,
+          rotation +
+            (orientToAngularVelocity > 0.5
+              ? advanceRotation(
+                  0,
+                  initialAngularVelocity +
+                    propertyVariation(particleId, seed, 15) * angularVelocitySpread,
+                  0,
+                  lifetime,
+                  angularVelocityCurve,
+                  seconds,
+                )
+              : 0),
           0,
           lifetime,
           rotationCurve,
@@ -240,7 +278,13 @@ export function integrate(
 
   // Acceleration precedes drag; both modifiers share the particle's birth spread factor.
   let modifierState = [0, 0, 0, 0];
-  if (dragSpread !== 0 || accelerationSpread !== 0 || radialSpread !== 0 || vortexSpread !== 0) {
+  if (
+    dragSpread !== 0 ||
+    accelerationSpread !== 0 ||
+    radialSpread !== 0 ||
+    vortexSpread !== 0 ||
+    orientToAngularVelocity > 0.5
+  ) {
     modifierState = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
   }
   const factor = modifierState[0]!;
@@ -261,7 +305,17 @@ export function integrate(
     let heading: [number, number] = [0, -1];
     if (x === radialX && y === radialY) {
       heading = particleHeading(
-        properties[3],
+        properties[3] +
+          (orientToAngularVelocity > 0.5
+            ? advanceRotation(
+                modifierState[2]!,
+                modifierState[1]!,
+                age + seconds,
+                particleLifetime,
+                angularVelocityCurve,
+                seconds,
+              )
+            : 0),
         age + seconds,
         particleLifetime,
         rotationCurve,

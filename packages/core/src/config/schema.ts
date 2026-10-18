@@ -54,6 +54,8 @@ const initialPropertiesSchema = strictObject({
   green: scalarPropertySchema.default(1),
   blue: scalarPropertySchema.default(1),
   alpha: scalarPropertySchema.default(1),
+  angularVelocity: scalarPropertySchema.default(0),
+  angularVelocitySpread: number().nonnegative().default(0),
   rotation: scalarPropertySchema.default(0),
   rotationSpread: number().nonnegative().default(0),
   sizeSpread: number().nonnegative().default(0),
@@ -130,6 +132,8 @@ export const emitterParametersSchema = strictObject({
       speedSpread: number().nonnegative(),
       speed: number(),
       lifetime: number(),
+      angularVelocity: number(),
+      angularVelocitySpread: number().nonnegative(),
       rotation: number(),
       rotationSpread: number().nonnegative(),
       sizeSpread: number().nonnegative(),
@@ -201,21 +205,25 @@ export const emitterConfigSchema = strictObject({
   startDelaySpread: number().nonnegative().default(0),
   duration: number().nonnegative().default(1),
   durationSpread: number().nonnegative().default(0),
-  orientation: enumSchema(['default', 'initial-direction', 'movement-direction']).default(
+  orientation: enumSchema([
     'default',
-  ),
+    'initial-direction',
+    'movement-direction',
+    'angular-velocity',
+  ]).default('default'),
   playMode: enumSchema(['once', 'loop']).default('loop'),
   emission: emissionSchema,
   initial: initialPropertiesSchema,
   modifiers: modifiersSchema,
   overLifetime: strictObject({
+    angularVelocity: scalarPropertySchema.default(1),
     rotation: scalarPropertySchema.default(0),
     scale: scalarPropertySchema.default(1),
     alpha: scalarPropertySchema.default(1),
     red: scalarPropertySchema.default(1),
     green: scalarPropertySchema.default(1),
     blue: scalarPropertySchema.default(1),
-  }).default({ scale: 1, alpha: 1, red: 1, green: 1, blue: 1, rotation: 0 }),
+  }).default({ scale: 1, alpha: 1, red: 1, green: 1, blue: 1, rotation: 0, angularVelocity: 1 }),
 });
 
 /** Only implemented configuration features are accepted. */

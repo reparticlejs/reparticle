@@ -1,3 +1,4 @@
+export { advanceRotation } from '../behaviors/angular-velocity';
 export { applyVortex } from '../behaviors/vortex';
 export { applyRadial } from '../behaviors/radial';
 export { particleHeading } from './particle-heading';

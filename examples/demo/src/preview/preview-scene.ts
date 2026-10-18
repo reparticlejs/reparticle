@@ -48,6 +48,10 @@ export class PreviewScene {
       (next.initialBlueCurve !== 'constant' && next.blue !== this.settings.blue) ||
       next.initialAlphaCurve !== this.settings.initialAlphaCurve ||
       (next.initialAlphaCurve !== 'constant' && next.alpha !== this.settings.alpha) ||
+      next.angularVelocityCurve !== this.settings.angularVelocityCurve ||
+      next.initialAngularVelocityCurve !== this.settings.initialAngularVelocityCurve ||
+      (next.initialAngularVelocityCurve !== 'constant' &&
+        next.angularVelocity !== this.settings.angularVelocity) ||
       next.initialRotationCurve !== this.settings.initialRotationCurve ||
       (next.initialRotationCurve !== 'constant' && next.rotation !== this.settings.rotation) ||
       next.initialLifetimeCurve !== this.settings.initialLifetimeCurve ||
@@ -138,6 +142,8 @@ export class PreviewScene {
       next.green === current.green &&
       next.blue === current.blue &&
       next.alpha === current.alpha &&
+      next.angularVelocity === current.angularVelocity &&
+      next.angularVelocitySpread === current.angularVelocitySpread &&
       next.rotation === current.rotation &&
       next.emitterRotation === current.emitterRotation &&
       next.emitterScale === current.emitterScale &&
