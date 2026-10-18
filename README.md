@@ -46,7 +46,7 @@ pnpm format
 ## Prototype limits
 
 - WebGL2 only. The prior WebGPU experiment has not been ported into these packages.
-- Main-canvas rendering with textured quads (normal alpha blending) or additive procedural circles. Masks, filters, render textures, and context-loss recovery are not supported yet.
+- Main-canvas and RenderTexture rendering, including Pixi filters, graphics masks, sprite masks, and effects on parent containers. Supply bounds or a filter area explicitly; particle bounds are never scanned. Context-loss recovery is not supported yet.
 - GPU.js's browser compiler is included at runtime, increasing bundle size. Precompiled kernels are future work.
 - Default capacity is 100,000; construction accepts up to 1,000,000 subject to GPU texture limits. This is a capacity limit, not a cross-device performance guarantee.
 - Updates accept 0–0.1 seconds. The demo clamps long frames to 0.05 seconds, avoiding a large catch-up after tab suspension.
@@ -396,3 +396,37 @@ Tint multiplies the emitter's existing particle color immediately on the next re
 including living particles while simulation is paused. All channels must be finite;
 values are not clamped. Texture changes and simulation resets retain the override.
 The multiple-emitter demo includes fire-only RGBA controls.
+
+## Pixi filters, masks, and render textures
+
+`ParticleView` uses Pixi’s active render target, projection, filter offset and mask
+state. Filters and masks can be assigned to the view or its parent, including
+nested combinations. These are Pixi settings, not core effect JSON properties.
+
+```ts
+import { BlurFilter, Graphics, Rectangle, RenderTexture } from 'pixi.js';
+
+// Caller-owned local capture area: include all particles you want to filter.
+view.filterArea = new Rectangle(-300, -300, 600, 600);
+view.filters = [new BlurFilter({ strength: 4 })];
+
+const mask = new Graphics().circle(0, 0, 200).fill(0xffffff);
+container.addChild(mask);
+view.mask = mask;
+
+const target = RenderTexture.create({ width: 800, height: 600, resolution: 2 });
+renderer.render({ container, target, clear: true });
+```
+
+Set `filterArea` on whichever object owns the filters, including a filtered parent.
+For bounds-based capture, supply the inherited `addBounds` callback before first
+render, for example `view.addBounds = bounds => bounds.addFrame(-300, -300, 300, 300)`.
+This supplies local bounds without inspecting particles. World-space
+trails may extend beyond the emitter, so allow for their full extent. No automatic
+bounds, hit areas, particle scanning or GPU readbacks are introduced. Filters add
+the render passes and temporary targets that Pixi normally requires.
+
+Simulation updates remain explicit. Rendering to several targets does not advance
+particles. Pixi’s render-transform override changes the drawing projection without
+changing the emitter’s simulation transform. Destroy caller-owned filters, masks
+and render textures according to their normal Pixi ownership rules.

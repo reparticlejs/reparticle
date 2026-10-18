@@ -12,6 +12,7 @@ import { resolveFlipbook } from './resolve-flipbook';
 import { resolvePivot } from './resolve-pivot';
 import { resolveTexture } from './resolve-texture';
 import { resolveTint } from './resolve-tint';
+import { restoreSimulationState } from './restore-simulation-state';
 import type { ParticleRendering, ParticleTint } from './types/particle-rendering';
 import type { ParticleStateListener } from './types/particle-state-change';
 import type { ParticleTexture } from './types/particle-texture';
@@ -31,7 +32,8 @@ export type { ParticleViewOptions } from './types/particle-view-options';
 export class ParticleView extends RenderContainer {
   private readonly effectTransform = new EffectTransform();
   private readonly sceneTransform = new Matrix();
-  private readonly identity = new Matrix();
+  private readonly drawTransform = new Matrix();
+  private readonly renderer: WebGLRenderer;
   private readonly views = new Map<string, EmitterView>();
   private readonly simulations = new Map<string, Emitter>();
   private disposed = false;
@@ -44,6 +46,7 @@ export class ParticleView extends RenderContainer {
     options: ParticleRendering | ParticleViewOptions = { emitters: {} },
   ) {
     super({});
+    this.renderer = renderer;
     const effect = parseEffectConfig(definition);
     const selections = new Map<string, ParticleRendering>();
     if ('emitters' in options) {
@@ -81,7 +84,7 @@ export class ParticleView extends RenderContainer {
         this.simulations.set(emitter.id, view.emitter);
         this.states.set(emitter.id, view.emitter.state);
         view.emitter.onStateChange((event) => {
-          renderer.resetState();
+          restoreSimulationState(renderer);
           this.states.set(event.emitterId, event.state);
           const change = { ...event, awakeEmitters: this.awakeEmitters };
           for (const listener of [...this.stateListeners]) {
@@ -89,6 +92,7 @@ export class ParticleView extends RenderContainer {
           }
         });
       }
+      renderer.runners.prerender.add(this);
     } catch (error) {
       this.destroy();
       throw error;
@@ -200,9 +204,26 @@ export class ParticleView extends RenderContainer {
   }
 
   override render(): void {
-    this.syncSceneTransform();
+    // Particle positions already include the scene transform. Convert back to the
+    // view's local coordinates, then use Pixi's current group and target transform.
+    if (
+      this.sceneTransform.a * this.sceneTransform.d -
+        this.sceneTransform.b * this.sceneTransform.c ===
+      0
+    ) {
+      return;
+    }
+    const globals = this.renderer.globalUniforms.globalUniformData;
+    this.drawTransform
+      .copyFrom(this.sceneTransform)
+      .invert()
+      .prepend(this.relativeGroupTransform)
+      .prepend(globals.worldTransformMatrix)
+      .translate(-globals.offset.x, -globals.offset.y)
+      .prepend(globals.projectionMatrix);
+    const opacity = this.groupAlpha * ((globals.worldColor >>> 24) / 255);
     for (const view of this.views.values()) {
-      view.renderParticles(this.identity, this.groupAlpha);
+      view.renderParticles(this.drawTransform, opacity);
     }
   }
 
@@ -211,6 +232,7 @@ export class ParticleView extends RenderContainer {
       return;
     }
     this.disposed = true;
+    this.renderer.runners.prerender.remove(this);
     for (const view of this.views.values()) {
       view.destroy();
     }
@@ -219,6 +241,11 @@ export class ParticleView extends RenderContainer {
     this.views.clear();
     this.simulations.clear();
     super.destroy();
+  }
+
+  /** Capture the scene before Pixi temporarily replaces the rendered root's transform. */
+  private prerender(): void {
+    this.syncSceneTransform();
   }
 
   /** Read the current hierarchy before simulation, even before Pixi's render traversal. */

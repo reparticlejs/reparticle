@@ -9,6 +9,8 @@ import { resolveFlipbook } from './resolve-flipbook';
 import { resolvePivot } from './resolve-pivot';
 import { resolveTexture } from './resolve-texture';
 import { resolveTint } from './resolve-tint';
+import { restoreDrawState } from './restore-draw-state';
+import { restoreSimulationState } from './restore-simulation-state';
 import { sampleColorCurves } from './sample-color-curves';
 import { sampleGeometryCurves } from './sample-geometry-curves';
 import { setBlendMode } from './set-blend-mode';
@@ -23,7 +25,7 @@ layout(location = 0) in uint particleId;
 uniform sampler2D particles;
 uniform int width;
 uniform int rows;
-uniform vec2 viewport;
+
 uniform vec2 emitterOffset;
 uniform vec2 emitterRotation;
 uniform float emitterScale;
@@ -99,8 +101,8 @@ void main() {
   vec2 position = (motion.xy + rotated) * emitterScale;
   position = vec2(emitterRotation.x * position.x - emitterRotation.y * position.y,
                   emitterRotation.y * position.x + emitterRotation.x * position.y);
-  vec2 world = (transform * vec3(position + emitterOffset, 1.0)).xy;
-  gl_Position = dynamics.x > 0.5 ? vec4(world.x / viewport.x * 2.0 - 1.0, 1.0 - world.y / viewport.y * 2.0, 0, 1) : vec4(2,2,0,1);
+  vec2 clip = (transform * vec3(position + emitterOffset, 1.0)).xy;
+  gl_Position = dynamics.x > 0.5 ? vec4(clip, 0, 1) : vec4(2,2,0,1);
 }`;
 const fragment = `#version 300 es
 precision highp float;
@@ -158,7 +160,7 @@ function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
     throw error;
   }
 }
-/** WebGL2 screen-target prototype. Owns its emitter and draw resources. */
+/** WebGL2 particle draw resources; Pixi owns the render target and clipping state. */
 export class EmitterView extends RenderContainer {
   readonly emitter: Emitter;
   private readonly host: WebGLRenderer;
@@ -207,7 +209,7 @@ export class EmitterView extends RenderContainer {
         frames = createFrameTexture(this.gl, flipbook.frames);
       }
     } finally {
-      this.host.resetState();
+      restoreSimulationState(this.host);
     }
     this.gl.deleteTexture(this.frameTexture);
     this.frameTexture = frames;
@@ -265,7 +267,6 @@ export class EmitterView extends RenderContainer {
             'particles',
             'width',
             'rows',
-            'viewport',
             'emitterOffset',
             'emitterRotation',
             'emitterScale',
@@ -319,7 +320,7 @@ export class EmitterView extends RenderContainer {
         throw error;
       }
     } finally {
-      renderer.resetState();
+      restoreSimulationState(renderer);
     }
   }
   update(dt: number): void {
@@ -329,7 +330,7 @@ export class EmitterView extends RenderContainer {
         this.animationHalfStep = dt * 0.5;
       }
     } finally {
-      this.host.resetState();
+      restoreSimulationState(this.host);
     }
   }
   play(): void {
@@ -337,7 +338,7 @@ export class EmitterView extends RenderContainer {
       this.emitter.play();
       this.animationHalfStep = 0;
     } finally {
-      this.host.resetState();
+      restoreSimulationState(this.host);
     }
   }
 
@@ -345,7 +346,7 @@ export class EmitterView extends RenderContainer {
     try {
       this.emitter.stop(options);
     } finally {
-      this.host.resetState();
+      restoreSimulationState(this.host);
     }
   }
 
@@ -354,11 +355,8 @@ export class EmitterView extends RenderContainer {
       this.emitter.reset();
       this.animationHalfStep = 0;
     } finally {
-      this.host.resetState();
+      restoreSimulationState(this.host);
     }
-  }
-  override render(): void {
-    this.renderParticles(this.worldTransform, this.groupAlpha);
   }
   renderParticles(transform: Matrix, opacity: number): void {
     if (this.disposed || this.emitter.state === 'sleeping') {
@@ -367,91 +365,90 @@ export class EmitterView extends RenderContainer {
     const gl = this.gl,
       r = this.host,
       u = this.uniforms;
-    // This prototype explicitly supports the main canvas only, not filter/render textures.
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.viewport(0, 0, r.canvas.width, r.canvas.height);
-    gl.useProgram(this.program);
-    gl.bindVertexArray(this.vao);
-    const count = this.order.update(this.emitter);
-    gl.uniform2f(u.particlePivot!, this.texturePivot.x, this.texturePivot.y);
-    gl.uniform1i(u.automaticSize!, this.automaticSize ? 1 : 0);
-    const animation = this.flipbook;
-    gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, this.frameTexture ?? this.emitter.texture);
-    gl.uniform1i(u.animationFrames!, 2);
-    gl.uniform1i(u.frameCount!, animation?.frames.length ?? 0);
-    gl.uniform1f(u.animationFps!, animation?.fps ?? 0);
-    gl.uniform1f(u.animationHalfStep!, this.animationHalfStep);
-    gl.uniform1i(u.animationOnce!, animation?.once ? 1 : 0);
-    gl.uniform1i(u.animationBackward!, animation?.backward ? 1 : 0);
-    gl.uniform1i(u.animationPingpong!, animation?.pingpong ? 1 : 0);
-    const texture = this.artwork;
-    if (texture) {
-      r.texture.bind(texture.source, 1);
-    }
-    gl.uniform1i(u.artwork!, 1);
-    gl.uniform1i(u.textured!, texture ? 1 : 0);
-    gl.uniform1i(u.straightAlpha!, texture?.source.alphaMode === 'no-premultiply-alpha' ? 1 : 0);
-    if (texture) {
-      const uv = texture.uvs;
-      gl.uniform4f(u.frameTop!, uv.x0, uv.y0, uv.x1, uv.y1);
-      gl.uniform4f(u.frameBottom!, uv.x3, uv.y3, uv.x2, uv.y2);
-      const trim = texture.trim;
-      gl.uniform4f(
-        u.textureTrim!,
-        trim ? trim.x / texture.orig.width : 0,
-        trim ? trim.y / texture.orig.height : 0,
-        trim ? trim.width / texture.orig.width : 1,
-        trim ? trim.height / texture.orig.height : 1,
+    try {
+      gl.useProgram(this.program);
+      gl.bindVertexArray(this.vao);
+      const count = this.order.update(this.emitter);
+      gl.uniform2f(u.particlePivot!, this.texturePivot.x, this.texturePivot.y);
+      gl.uniform1i(u.automaticSize!, this.automaticSize ? 1 : 0);
+      const animation = this.flipbook;
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, this.frameTexture ?? this.emitter.texture);
+      gl.uniform1i(u.animationFrames!, 2);
+      gl.uniform1i(u.frameCount!, animation?.frames.length ?? 0);
+      gl.uniform1f(u.animationFps!, animation?.fps ?? 0);
+      gl.uniform1f(u.animationHalfStep!, this.animationHalfStep);
+      gl.uniform1i(u.animationOnce!, animation?.once ? 1 : 0);
+      gl.uniform1i(u.animationBackward!, animation?.backward ? 1 : 0);
+      gl.uniform1i(u.animationPingpong!, animation?.pingpong ? 1 : 0);
+      const texture = this.artwork;
+      if (texture) {
+        r.texture.bind(texture.source, 1);
+      }
+      gl.uniform1i(u.artwork!, 1);
+      gl.uniform1i(u.textured!, texture ? 1 : 0);
+      gl.uniform1i(u.straightAlpha!, texture?.source.alphaMode === 'no-premultiply-alpha' ? 1 : 0);
+      if (texture) {
+        const uv = texture.uvs;
+        gl.uniform4f(u.frameTop!, uv.x0, uv.y0, uv.x1, uv.y1);
+        gl.uniform4f(u.frameBottom!, uv.x3, uv.y3, uv.x2, uv.y2);
+        const trim = texture.trim;
+        gl.uniform4f(
+          u.textureTrim!,
+          trim ? trim.x / texture.orig.width : 0,
+          trim ? trim.y / texture.orig.height : 0,
+          trim ? trim.width / texture.orig.width : 1,
+          trim ? trim.height / texture.orig.height : 1,
+        );
+        const longest = Math.max(texture.orig.width, texture.orig.height);
+        gl.uniform2f(
+          u.particleAspect!,
+          texture.orig.width / longest,
+          texture.orig.height / longest,
+        );
+      } else {
+        gl.uniform2f(u.particleAspect!, 1, 1);
+        gl.uniform4f(u.textureTrim!, 0, 0, 1, 1);
+      }
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, this.emitter.texture);
+      gl.uniform1i(u.particles!, 0);
+      gl.uniform1i(u.width!, this.emitter.width);
+      gl.uniform1i(u.rows!, this.emitter.rows);
+      const localSpace = this.emitter.space === 'local';
+      gl.uniform1i(u.stretchWithVelocity!, this.emitter.stretchWithVelocity ? 1 : 0);
+      gl.uniform1f(u.emitterScale!, localSpace ? this.emitter.worldScale : 1);
+      const radians = localSpace ? (-this.emitter.worldRotation * Math.PI) / 180 : 0;
+      gl.uniform2f(u.emitterRotation!, Math.cos(radians), Math.sin(radians));
+      gl.uniform2f(
+        u.emitterOffset!,
+        localSpace ? this.emitter.worldX : 0,
+        localSpace ? this.emitter.worldY : 0,
       );
-      const longest = Math.max(texture.orig.width, texture.orig.height);
-      gl.uniform2f(u.particleAspect!, texture.orig.width / longest, texture.orig.height / longest);
-    } else {
-      gl.uniform2f(u.particleAspect!, 1, 1);
-      gl.uniform4f(u.textureTrim!, 0, 0, 1, 1);
+      const t = transform,
+        m = this.matrix;
+      m[0] = t.a;
+      m[1] = t.b;
+      m[2] = 0;
+      m[3] = t.c;
+      m[4] = t.d;
+      m[5] = 0;
+      m[6] = t.tx;
+      m[7] = t.ty;
+      m[8] = 1;
+      gl.uniformMatrix3fv(u.transform!, false, m);
+      gl.uniform1f(u.opacity!, opacity);
+      const tint = this.currentTint;
+      gl.uniform4f(u.tint!, tint.red, tint.green, tint.blue, tint.alpha);
+      gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.CULL_FACE);
+      gl.enable(gl.BLEND);
+      gl.blendEquation(gl.FUNC_ADD);
+      setBlendMode(gl, this.emitter.configuration.blendMode);
+      gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, count);
+    } finally {
+      restoreDrawState(r);
     }
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, this.emitter.texture);
-    gl.uniform1i(u.particles!, 0);
-    gl.uniform1i(u.width!, this.emitter.width);
-    gl.uniform1i(u.rows!, this.emitter.rows);
-    gl.uniform2f(u.viewport!, r.screen.width, r.screen.height);
-    const localSpace = this.emitter.space === 'local';
-    gl.uniform1i(u.stretchWithVelocity!, this.emitter.stretchWithVelocity ? 1 : 0);
-    gl.uniform1f(u.emitterScale!, localSpace ? this.emitter.worldScale : 1);
-    const radians = localSpace ? (-this.emitter.worldRotation * Math.PI) / 180 : 0;
-    gl.uniform2f(u.emitterRotation!, Math.cos(radians), Math.sin(radians));
-    gl.uniform2f(
-      u.emitterOffset!,
-      localSpace ? this.emitter.worldX : 0,
-      localSpace ? this.emitter.worldY : 0,
-    );
-    const t = transform,
-      m = this.matrix;
-    m[0] = t.a;
-    m[1] = t.b;
-    m[2] = 0;
-    m[3] = t.c;
-    m[4] = t.d;
-    m[5] = 0;
-    m[6] = t.tx;
-    m[7] = t.ty;
-    m[8] = 1;
-    gl.uniformMatrix3fv(u.transform!, false, m);
-    gl.uniform1f(u.opacity!, opacity);
-    const tint = this.currentTint;
-    gl.uniform4f(u.tint!, tint.red, tint.green, tint.blue, tint.alpha);
-    gl.disable(gl.DEPTH_TEST);
-    gl.disable(gl.STENCIL_TEST);
-    gl.disable(gl.SCISSOR_TEST);
-    gl.disable(gl.CULL_FACE);
-    gl.colorMask(true, true, true, true);
-    gl.enable(gl.BLEND);
-    gl.blendEquation(gl.FUNC_ADD);
-    setBlendMode(gl, this.emitter.configuration.blendMode);
-    gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, count);
-    gl.bindVertexArray(null);
-    r.resetState();
   }
   override destroy(): void {
     if (this.disposed) {
@@ -463,7 +460,7 @@ export class EmitterView extends RenderContainer {
     this.gl.deleteTexture(this.frameTexture);
     this.gl.deleteProgram(this.program);
     this.gl.deleteVertexArray(this.vao);
-    this.host.resetState();
+    restoreSimulationState(this.host);
     super.destroy();
   }
 }

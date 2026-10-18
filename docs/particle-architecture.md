@@ -670,3 +670,22 @@ texture lookup still addresses the original simulation slot. No GPU readback,
 extra simulation pass, or intermediate prewarm order upload is required. Each
 view destroys its order buffer; texture ownership and emitter definition order
 are unchanged.
+
+## Pixi rendering integration
+
+Particle draws preserve the active framebuffer, viewport, stencil test and color
+mask. Their clip-space matrix combines the inverse scene transform, relative render
+group transform, Pixi’s global transform, filter offset and target projection.
+This supports render textures (including resolution and frame offsets), filters,
+graphics/sprite masks, nested effects and ordinary sibling layering.
+
+The view captures its scene transform during Pixi’s prerender phase, before Pixi
+temporarily detaches the rendered subtree or overrides its root transform. This
+keeps world/local simulation coordinates separate from the requested projection.
+The prerender listener is removed when the view is destroyed.
+
+After drawing, only geometry, shader, texture and blend/depth state caches are
+reset; render-target and stencil stacks remain intact. After GPU.js simulation,
+its scissor test is disabled before the usual renderer state reset. Neither path
+reads GPU particle data. Bounds and filter areas remain explicitly caller-owned.
+Core configuration, simulation textures and particle slot allocation are unchanged.
