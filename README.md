@@ -320,3 +320,19 @@ a once emitter keeps its normal schedule. Calling it after a loop has wrapped
 finishes the new cycle. `play()`/`reset()` cancel retirement; `stop()` and `clear()`
 still stop immediately. Continue updating to finish and receive notifications.
 The composed demo has a **Finish current loops** button.
+
+### Authored emitter position
+
+Each emitter accepts `"position": { "x": -24, "y": 12 }` in effect JSON, defaulting
+to zero. Position is relative to the effect origin in simulation units (canvas Y
+down), independent of the emitter's own rotation and scale.
+
+`emitter.x` / `emitter.y` read and edit this same position. You can also use
+`emitter.setParameters({ position: { x: 40 } })`; omitted axes stay unchanged.
+Configuration snapshots include the current position. Reset/play preserve it.
+World-space particles retain their birth positions when the emitter moves; local
+particles follow the emitter through the existing local-space renderer transform.
+
+The composed demo now loads three separate origins from JSON and positions the
+whole `ParticleView` on screen. Moving the Pixi display object is a visual effect
+transform; use emitter coordinates for simulation motion and inherited velocity.

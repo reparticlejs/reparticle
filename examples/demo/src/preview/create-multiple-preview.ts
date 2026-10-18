@@ -38,6 +38,7 @@ export async function createMultiplePreview(
         sparks: { atlas, frame: 'spark' },
       },
     });
+    view.position.set(app.screen.width / 2, app.screen.height * 0.7);
     app.stage.addChild(view);
     view.onStateChange(onStateChange);
     for (const emitter of view.emitters.values()) {
@@ -46,8 +47,6 @@ export async function createMultiplePreview(
         state: emitter.state,
         awakeEmitters: view.awakeEmitters,
       });
-      emitter.x = app.screen.width / 2;
-      emitter.y = app.screen.height * 0.7;
     }
     app.ticker.add(({ deltaMS }) => view.update(Math.min(deltaMS / 1000, 0.05)));
     host.appendChild(app.canvas);

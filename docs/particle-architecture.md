@@ -507,3 +507,25 @@ next eligible positive update. Once emitters are unchanged; draining/sleeping
 emitters are not revived. Repeated retirement is idempotent. Stop clears the flag
 and stops immediately; reset/play clear it and restore authored loop behavior.
 No GPU changes, extra storage, or per-particle work are required.
+
+### Emitter position in effect JSON
+
+Emitter `position: { x, y }` defaults to zero and is validated as finite numbers.
+Like [Defold's emitter transform](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp),
+the authored offset locates the emitter relative to the effect, with shape rotation
+and scale applied around that origin rather than rotating/scaling the position
+itself. Reparticle retains its existing downward-positive simulation Y convention.
+
+Runtime x/y accessors and partial `setParameters({ position })` patches edit the
+same position, with configuration snapshots reflecting those edits. Reset/play
+preserve current transforms. Constructor initialization occurs before prewarm and
+velocity sampling, avoiding a false initial inherited velocity. World births and
+local drawing use the existing position paths, including local modifier centers,
+shared-modifier inverse transforms, and velocity inheritance. World-space living
+particles stay where they were born; local-space particles follow runtime emitter
+motion, preserving the existing Reparticle local-space model. No kernel changes or
+new per-particle storage are required.
+
+The multi-emitter demo stores separate fire/smoke/spark origins in JSON and uses
+the ParticleView display transform only to place the effect on screen. That
+render-only transform does not feed core velocity inheritance.

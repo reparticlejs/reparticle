@@ -118,6 +118,7 @@ export const modifiersSchema = strictObject({
 export const emitterParametersSchema = strictObject({
   blendMode: blendModeSchema.optional(),
   stretchWithVelocity: boolean().optional(),
+  position: strictObject({ x: number().optional(), y: number().optional() }).optional(),
   scale: number().optional(),
   rotation: number().optional(),
   inheritVelocity: number().optional(),
@@ -207,6 +208,10 @@ export const emitterParametersSchema = strictObject({
 export const emitterConfigSchema = strictObject({
   blendMode: blendModeSchema.default('alpha'),
   stretchWithVelocity: boolean().default(false),
+  position: strictObject({ x: number().default(0), y: number().default(0) }).default({
+    x: 0,
+    y: 0,
+  }),
   scale: number().default(1),
   rotation: number().default(0),
   space: enumSchema(['world', 'local']).default('world'),

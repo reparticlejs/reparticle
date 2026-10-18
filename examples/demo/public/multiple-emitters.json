@@ -56,7 +56,11 @@
       "id": "smoke",
       "startDelay": 0.3,
       "blendMode": "alpha",
-      "modifiers": {}
+      "modifiers": {},
+      "position": {
+        "x": 0,
+        "y": 0
+      }
     },
     {
       "capacity": 512,
@@ -98,7 +102,11 @@
       },
       "id": "fire",
       "blendMode": "add",
-      "modifiers": {}
+      "modifiers": {},
+      "position": {
+        "x": -35,
+        "y": 0
+      }
     },
     {
       "capacity": 512,
@@ -146,6 +154,10 @@
           "magnitude": 100,
           "rotation": 180
         }
+      },
+      "position": {
+        "x": 35,
+        "y": 0
       }
     }
   ],

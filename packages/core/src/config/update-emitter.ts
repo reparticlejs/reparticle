@@ -9,6 +9,7 @@ export function updateEmitterConfig(current: EmitterConfig, input: unknown): Emi
     ...current,
     blendMode: patch.blendMode ?? current.blendMode,
     stretchWithVelocity: patch.stretchWithVelocity ?? current.stretchWithVelocity,
+    position: { ...current.position, ...patch.position },
     scale: patch.scale ?? current.scale,
     rotation: patch.rotation ?? current.rotation,
     inheritVelocity: patch.inheritVelocity ?? current.inheritVelocity,

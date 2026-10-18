@@ -35,3 +35,21 @@ it.each([
   expect(() => updateEmitterConfig(current, patch)).toThrow(ZodError);
   expect(current).toEqual(skeleton.emitters[0]);
 });
+
+it('merges position axes independently without mutating the authored origin', () => {
+  const current = parseEffectConfig(skeleton).emitters[0];
+  const placed = updateEmitterConfig(current, { position: { x: -25, y: 40 } });
+  const moved = updateEmitterConfig(placed, { position: { x: 12 } });
+  expect(moved.position).toEqual({ x: 12, y: 40 });
+  expect(placed.position).toEqual({ x: -25, y: 40 });
+  expect(current.position).toEqual({ x: 0, y: 0 });
+});
+
+it.each([{ x: NaN }, { y: Infinity }, { x: '12' }, { z: 1 }])(
+  'rejects invalid position patches %j',
+  (position) => {
+    expect(() =>
+      updateEmitterConfig(parseEffectConfig(skeleton).emitters[0], { position }),
+    ).toThrow(ZodError);
+  },
+);

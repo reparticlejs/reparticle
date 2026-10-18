@@ -126,3 +126,14 @@ describe('multiple emitters', () => {
     expect(() => parseEffectConfig(input)).toThrow(ZodError);
   });
 });
+
+it('defaults absent position to the effect origin and preserves signed offsets', () => {
+  const input = example();
+  delete input.emitters[0].position;
+  expect(parseEffectConfig(input).emitters[0].position).toEqual({ x: 0, y: 0 });
+  input.emitters[0].position = { x: -24, y: 18 };
+  const parsed = parseEffectConfig(input);
+  expect(parsed.emitters[0].position).toEqual({ x: -24, y: 18 });
+  input.emitters[0].position.x = 10;
+  expect(parsed.emitters[0].position.x).toBe(-24);
+});

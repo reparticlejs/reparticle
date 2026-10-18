@@ -161,7 +161,11 @@
       "orientation": "default",
       "playMode": "loop",
       "blendMode": "alpha",
-      "stretchWithVelocity": false
+      "stretchWithVelocity": false,
+      "position": {
+        "x": 0,
+        "y": 0
+      }
     }
   ],
   "modifiers": {

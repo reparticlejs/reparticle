@@ -25,8 +25,6 @@ export class Emitter {
   readonly width = 256;
   readonly rows: number;
   readonly capacity: number;
-  x = 0;
-  y = 0;
   emitting = true;
   private settings: EmitterConfig;
   private readonly velocity = new EmitterVelocity();
@@ -234,6 +232,31 @@ export class Emitter {
   get id(): string {
     return this.settings.id;
   }
+  /** Emitter origin in effect coordinates; rotation and scale apply around this point. */
+  get x(): number {
+    return this.settings.position.x;
+  }
+
+  set x(value: number) {
+    this.assertAlive();
+    if (!Number.isFinite(value)) {
+      throw new RangeError('Emitter position must be finite');
+    }
+    this.settings.position.x = value;
+  }
+
+  get y(): number {
+    return this.settings.position.y;
+  }
+
+  set y(value: number) {
+    this.assertAlive();
+    if (!Number.isFinite(value)) {
+      throw new RangeError('Emitter position must be finite');
+    }
+    this.settings.position.y = value;
+  }
+
   /** Uniform emitter scale; independent of particle size curves. */
   get scale(): number {
     return this.settings.scale;
