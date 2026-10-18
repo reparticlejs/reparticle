@@ -1,9 +1,13 @@
 import { Emitter, parseEffectConfig, CURVE_SEGMENTS } from '@reparticle/core';
 import { RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
 
+import { createFrameTexture } from './create-frame-texture';
+import { flipbookShader } from './flipbook-shader';
+import { resolveFlipbook } from './resolve-flipbook';
 import { resolveTexture } from './resolve-texture';
+import type { Flipbook } from './types/flipbook';
 import type { ParticleTexture } from './types/particle-texture';
-export type { ParticleTexture } from './types/particle-texture';
+export type { ParticleTexture, AnimationPlayback } from './types/particle-texture';
 
 import { sampleColorCurves } from './sample-color-curves';
 import { sampleGeometryCurves } from './sample-geometry-curves';
@@ -27,6 +31,10 @@ uniform bool orientToMovement;
 uniform bool orientToAngularVelocity;
 uniform vec4 geometryCurve[${CURVE_SEGMENTS + 1}];
 uniform vec4 colorCurve[${CURVE_SEGMENTS + 1}];
+${flipbookShader}
+uniform vec4 frameTop;
+uniform vec4 frameBottom;
+out vec2 artworkUv;
 out vec2 uv;
 out vec4 particleColor;
 void main() {
@@ -47,14 +55,27 @@ void main() {
   vec2 stretch = initialStretch + geometry.zw;
   // Defold's fixed 60 FPS, 180-degree shutter factor applies only to Y stretch.
   if (stretchWithVelocity) stretch.y *= length(motion.zw) / 120.0;
-  vec2 size = particleAspect * properties.z * geometry.x * (vec2(1.0) + stretch);
+  vec2 aspect = particleAspect;
+  vec4 trim = textureTrim;
+  vec4 top = frameTop;
+  vec4 bottom = frameBottom;
+  if (frameCount > 0) {
+    int frame = animationFrame(properties.x, properties.y);
+    top = texelFetch(animationFrames, ivec2(0, frame), 0);
+    bottom = texelFetch(animationFrames, ivec2(1, frame), 0);
+    trim = texelFetch(animationFrames, ivec2(2, frame), 0);
+    aspect = texelFetch(animationFrames, ivec2(3, frame), 0).xy;
+  }
+  vec2 fraction = uv * 0.5 + 0.5;
+  artworkUv = mix(mix(top.xy, top.zw, fraction.x), mix(bottom.xy, bottom.zw, fraction.x), fraction.y);
+  vec2 size = aspect * properties.z * geometry.x * (vec2(1.0) + stretch);
   float rotation = geometry.y;
   if (orientToAngularVelocity) rotation = texelFetch(particles, at + ivec2(0, rows * 3), 0).z;
   // Defold's positive Z rotation is counterclockwise; canvas Y points down.
   float angle = -radians(properties.w + rotation);
   float sine = sin(angle);
   float cosine = cos(angle);
-  vec2 corner = (textureTrim.xy + (uv * 0.5 + 0.5) * textureTrim.zw - 0.5) * size;
+  vec2 corner = (trim.xy + (uv * 0.5 + 0.5) * trim.zw - 0.5) * size;
   vec2 rotated = vec2(cosine * corner.x - sine * corner.y, sine * corner.x + cosine * corner.y);
   if (orientToMovement && dot(motion.zw, motion.zw) > 0.0001) {
     vec2 direction = normalize(motion.zw);
@@ -72,21 +93,17 @@ void main() {
 }`;
 const fragment = `#version 300 es
 precision highp float;
+in vec2 artworkUv;
 in vec2 uv;
 in vec4 particleColor;
 uniform float opacity;
 uniform sampler2D artwork;
 uniform bool textured;
 uniform bool straightAlpha;
-uniform vec4 frameTop;
-uniform vec4 frameBottom;
 out vec4 color;
 void main() {
   if (textured) {
-    vec2 fraction = uv * 0.5 + 0.5;
-    vec2 coords = mix(mix(frameTop.xy, frameTop.zw, fraction.x),
-                      mix(frameBottom.xy, frameBottom.zw, fraction.x), fraction.y);
-    vec4 pixel = texture(artwork, coords);
+    vec4 pixel = texture(artwork, artworkUv);
     if (straightAlpha) pixel.rgb *= pixel.a;
     color = vec4(pixel.rgb * particleColor.rgb, pixel.a) * (opacity * particleColor.a);
     return;
@@ -138,23 +155,40 @@ export class ParticleView extends RenderContainer {
   private readonly uniforms: Record<string, WebGLUniformLocation | null>;
   private readonly matrix = new Float32Array(9);
   private disposed = false;
+  private flipbook: Flipbook | null = null;
+  private frameTexture: WebGLTexture | null = null;
+  private animationHalfStep = 0;
   private artwork: Texture | null = null;
   /** Caller owns the texture. Atlas trim and rotation are respected. */
   get texture(): Texture | null {
     return this.artwork;
   }
   set texture(value: Texture | null) {
-    this.artwork = value;
+    this.setTexture({ texture: value });
   }
   setTexture(options: ParticleTexture): void {
-    this.texture = resolveTexture(options);
+    const flipbook = resolveFlipbook(options);
+    const texture = flipbook ? flipbook.frames[0]! : resolveTexture(options);
+    let frames: WebGLTexture | null = null;
+    try {
+      if (flipbook) {
+        frames = createFrameTexture(this.gl, flipbook.frames);
+      }
+    } finally {
+      this.host.resetState();
+    }
+    this.gl.deleteTexture(this.frameTexture);
+    this.frameTexture = frames;
+    this.flipbook = flipbook;
+    this.artwork = texture;
   }
   constructor(
     renderer: WebGLRenderer,
     definition: unknown,
     options: ParticleTexture = { texture: null },
   ) {
-    const texture = resolveTexture(options);
+    const animation = resolveFlipbook(options);
+    const texture = animation ? animation.frames[0]! : resolveTexture(options);
     const config = parseEffectConfig(definition).emitters[0];
     const geometryCurve = sampleGeometryCurves(config.overLifetime);
     const colorCurve = sampleColorCurves(config.overLifetime);
@@ -165,11 +199,13 @@ export class ParticleView extends RenderContainer {
     this.gl = gl;
     try {
       this.emitter = new Emitter({ gl, canvas: renderer.canvas }, config);
+      let program: WebGLProgram | null = null;
+      let vao: WebGLVertexArrayObject | null = null;
       try {
-        this.program = createProgram(gl);
-        const vao = gl.createVertexArray();
+        program = createProgram(gl);
+        this.program = program;
+        vao = gl.createVertexArray();
         if (!vao) {
-          gl.deleteProgram(this.program);
           throw new Error('Unable to create draw VAO');
         }
         this.vao = vao;
@@ -187,6 +223,13 @@ export class ParticleView extends RenderContainer {
             'artwork',
             'textured',
             'straightAlpha',
+            'animationFrames',
+            'frameCount',
+            'animationFps',
+            'animationHalfStep',
+            'animationOnce',
+            'animationBackward',
+            'animationPingpong',
             'frameTop',
             'frameBottom',
             'textureTrim',
@@ -209,7 +252,14 @@ export class ParticleView extends RenderContainer {
         );
         gl.uniform4fv(this.uniforms['geometryCurve[0]']!, geometryCurve);
         gl.uniform4fv(this.uniforms['colorCurve[0]']!, colorCurve);
+        if (animation) {
+          this.frameTexture = createFrameTexture(gl, animation.frames);
+          this.flipbook = animation;
+        }
       } catch (error) {
+        gl.deleteProgram(program);
+        gl.deleteVertexArray(vao);
+        gl.deleteTexture(this.frameTexture);
         this.emitter.destroy();
         throw error;
       }
@@ -220,6 +270,9 @@ export class ParticleView extends RenderContainer {
   update(dt: number): void {
     try {
       this.emitter.update(dt);
+      if (dt > 0 && Number.isFinite(dt)) {
+        this.animationHalfStep = dt * 0.5;
+      }
     } finally {
       this.host.resetState();
     }
@@ -227,6 +280,7 @@ export class ParticleView extends RenderContainer {
   reset(): void {
     try {
       this.emitter.reset();
+      this.animationHalfStep = 0;
     } finally {
       this.host.resetState();
     }
@@ -243,6 +297,16 @@ export class ParticleView extends RenderContainer {
     gl.viewport(0, 0, r.canvas.width, r.canvas.height);
     gl.useProgram(this.program);
     gl.bindVertexArray(this.vao);
+    const animation = this.flipbook;
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, this.frameTexture ?? this.emitter.texture);
+    gl.uniform1i(u.animationFrames!, 2);
+    gl.uniform1i(u.frameCount!, animation?.frames.length ?? 0);
+    gl.uniform1f(u.animationFps!, animation?.fps ?? 0);
+    gl.uniform1f(u.animationHalfStep!, this.animationHalfStep);
+    gl.uniform1i(u.animationOnce!, animation?.once ? 1 : 0);
+    gl.uniform1i(u.animationBackward!, animation?.backward ? 1 : 0);
+    gl.uniform1i(u.animationPingpong!, animation?.pingpong ? 1 : 0);
     const texture = this.artwork;
     if (texture) {
       r.texture.bind(texture.source, 1);
@@ -315,6 +379,7 @@ export class ParticleView extends RenderContainer {
     }
     this.disposed = true;
     this.emitter.destroy();
+    this.gl.deleteTexture(this.frameTexture);
     this.gl.deleteProgram(this.program);
     this.gl.deleteVertexArray(this.vao);
     this.host.resetState();

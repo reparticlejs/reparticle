@@ -68,5 +68,8 @@
       "w": 188,
       "h": 76
     }
+  },
+  "animations": {
+    "shapes": ["star", "leaf", "spark"]
   }
 }

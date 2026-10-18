@@ -260,7 +260,47 @@ The caller owns all textures and atlas resources; destroying the view does not d
 
 Frames respect Pixi UV rotation and trim offsets, retaining the original untrimmed
 image's proportions and center. Initial size still controls the longest original
-dimension; automatic sizing and flipbook playback are not implemented yet. Switching
+dimension; automatic sizing is not implemented yet. Flipbook playback is described below. Switching
 frames affects all existing particles immediately without restarting simulation,
 including while paused. No simulation state, CPU particle readback, or extra draw
 pass is added. The demo's three artwork choices now share `textures/particles.json`.
+
+### Pixi flipbook animation
+
+Animation is also a Pixi texture option, never part of the core effect config:
+
+```ts
+const view = new ParticleView(renderer, effectConfig, {
+  atlas,
+  animation: 'flames', // name in atlas.animations
+  playback: 'loop-forward',
+  fps: 30,
+});
+view.setTexture({ atlas, animation: 'smoke', playback: 'once-forward' });
+```
+
+Playback supports `none`, `once-forward`, `once-backward`, `once-pingpong`,
+`loop-forward`, `loop-backward`, and `loop-pingpong`. Default playback is
+`loop-forward`, with 30 FPS. Following
+[Defold's particle animation timing](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp),
+once modes fit the sequence into each particle's lifetime and ignore FPS; loop
+modes use FPS. Ping-pong has `2 × frameCount − 2` steps, without duplicated
+endpoints. None selects the first frame; a one-frame sequence stays static.
+FPS must be finite and nonnegative; zero freezes loops at their starting frame.
+The renderer uses particle age minus half the most recent positive simulation
+step, clamped to zero for this prototype's age-zero newborns. Paused rendering
+retains that offset. Reset restarts particle ages. Prewarming naturally advances
+animation through the existing particle ages. Live animation changes use current
+ages, without restarting the emitter or maintaining a separate animation clock.
+
+A small renderer-owned RGBA32F table stores four texels per animation frame
+(64 bytes: UV corners, trim rectangle, aspect). It is uploaded only when selecting
+an animation. The vertex shader chooses each particle's frame independently;
+there is no particle readback, CPU animation loop, extra simulation storage, or
+extra draw pass. Rotation and trim work per frame. The existing manual sizing
+uses each frame's original proportions; automatic sizing remains a separate step.
+All frames must share one Pixi texture source; multi-page animations are explicitly
+rejected. Empty or unknown animations and invalid settings leave the old selection
+intact. Frame metadata is snapshotted: call `setTexture` again after editing it.
+The view owns the metadata table only; the host retains ownership of atlas images.
+The demo offers loop, lifetime-once, and ping-pong atlas examples in Particle texture.

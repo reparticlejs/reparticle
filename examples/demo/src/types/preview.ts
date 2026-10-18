@@ -4,7 +4,14 @@ export type ColorCurves = Pick<EmitterConfig['overLifetime'], 'red' | 'green' | 
 
 export type EmitterShape = 'point' | 'circle' | 'box' | 'cone2d';
 
-export type ParticleTextureName = 'star' | 'leaf' | 'spark' | 'procedural';
+export type ParticleTextureName =
+  | 'star'
+  | 'leaf'
+  | 'spark'
+  | 'procedural'
+  | 'flipbook'
+  | 'flipbook-once'
+  | 'flipbook-pingpong';
 
 export interface PreviewControls {
   capacity: number;
