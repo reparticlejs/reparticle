@@ -214,7 +214,7 @@ In the demo, choose **Orientation → Angular velocity** to expose initial spin,
 
 `initial.stretchX` and `initial.stretchY` accept numbers or emitter-time curves, defaulting to 0. Their nonnegative `stretchXSpread`/`stretchYSpread` ranges default to 0 and use independent birth streams 16/17. Captured values persist until a slot is reused; numeric edits affect future births. `overLifetime.stretchX` and `overLifetime.stretchY` are additive particle-lifetime curves, also defaulting to 0. Defold's formula for each axis is `initialSize × lifetimeScale × (1 + initialStretch + lifetimeStretch)`, with texture aspect ratio and emitter scale applied as usual. These are dimensionless factors: 0 is unchanged, 1 doubles, −1 collapses, and values below −1 flip that axis. No clamping, timestep accumulation, or velocity dependency is applied. Stretch operates before particle orientation/rotation. Curve edits require recreation.
 
-A fifth RGBA row band stores `[initialStretchX, initialStretchY, reserved, reserved]`, increasing allocation from 64 to 80 bytes per slot per texture (25%, before row padding). Simulation still uses one GPU pass and rendering reads the texture directly. Pixi packs scale, rotation, stretch X, and stretch Y samples into one 65-entry vec4 array; together with packed color curves this fits WebGL2's minimum vertex uniform budget. The demo's Stretch panel exposes each axis's initial curve, value, spread, and lifetime curve. Both example JSON files use zero stretch. Velocity-dependent stretch is described below.
+The fifth RGBA row band, `geometry`, stores `[initialStretchX, initialStretchY, initialHandedness, reserved]`, increasing allocation from 64 to 80 bytes per slot per texture (25%, before row padding). Simulation still uses one GPU pass and rendering reads the texture directly. Pixi packs scale, rotation, stretch X, and stretch Y samples into one 65-entry vec4 array; together with packed color curves this fits WebGL2's minimum vertex uniform budget. The demo's Stretch panel exposes each axis's initial curve, value, spread, and lifetime curve. Both example JSON files use zero stretch. Velocity-dependent stretch is described below.
 
 Top-level `stretchWithVelocity` defaults to false and accepts live boolean updates through `setParameters`. When enabled, Defold's formula changes only the Y factor to `1 + (initialStretchY + lifetimeStretchY) × length(currentVelocity) / 120`. X retains ordinary stretch. The fixed `1/120` factor corresponds to Defold's 60 FPS, 180-degree shutter convention, not the current timestep or display refresh rate. Velocity is read after simulation modifiers: stationary particles have no added Y stretch, and speed 120 produces the ordinary Y stretch amount. Signed stretch still supports collapse and flips. This does not select movement orientation automatically; choose `movement-direction` to align the stretched local Y axis to motion.
 
@@ -573,12 +573,13 @@ transform and velocity inheritance as described below.
 ### Whole-effect simulation transform
 
 Core `EffectTransform` owns finite runtime x/y, counterclockwise degree rotation,
-and uniform scale, with atomic partial `set()` and scalar accessors. Identity is
-zero translation/rotation and scale one. ParticleView shares one private instance with all
+uniform scale and handedness (`1` or `-1`), with atomic partial `set()` and scalar
+accessors. Handedness reflects local X before rotation; identity is zero
+translation/rotation, scale one and handedness one. ParticleView shares one private instance with all
 its emitters and synchronizes it from the Pixi scene hierarchy. Authored emitter positions remain relative
 to that effect. Transform composition scales and rotates the emitter origin before
-adding effect translation; world rotation adds angles and world scale multiplies
-scales. Reset/play leave transforms untouched.
+adding effect translation; world rotation is effect rotation plus handedness times
+emitter rotation, and world scale multiplies scales. Reset/play leave transforms untouched.
 
 Following [Defold's instance transform and emission-space handling](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp),
 world particles receive the composed transform at birth and are not transformed
@@ -593,8 +594,7 @@ Velocity inheritance measures each emitter's transformed origin, so translating,
 rotating or scaling the effect can impart motion to new world-space particles.
 Initialization/reset clear velocity history, and pending prewarm uses the current
 transform. Local inheritance stays disabled. Runtime values support zero and
-negative scale consistently with existing emitter transforms. No kernel source,
-particle storage, readback, or per-particle CPU work is added.
+negative scale consistently with existing emitter transforms.
 
 ParticleView now owns the simulation transform privately and synchronizes it from
 `getGlobalTransform` before every update and draw. This computes current nested
@@ -610,10 +610,24 @@ no effectTransform synchronization is exposed. Parent movement should happen
 before update. Reset/play retain scene placement and clear velocity history.
 All ancestors, including camera-style containers, are part of simulation world
 coordinates; old world particles do not follow later changes to those ancestors.
-The screen-target renderer supports uniform scale and rotation. Non-uniform scale,
-skew and one-axis reflections are rejected before simulation rather than silently
-approximated. Zero scale is supported. Core-only callers may still supply their
+The renderer supports rotation and equal-magnitude signed axis scales, including
+one-axis reflection on ParticleView or any ancestor. Non-uniform scale and skew
+are rejected before simulation rather than silently approximated. Zero uniform
+scale is supported. Core-only callers may still supply their
 own shared EffectTransform. The composed demo now uses normal Pixi transforms.
+
+The scene matrix determinant determines handedness. Its first column, corrected
+by that sign, determines rotation. World births reflect shape offsets, velocity,
+initial orientation and rotation spread. The existing geometry band's third
+channel stores `initialHandedness`; its final channel remains reserved. Texture
+geometry (including pivot and atlas trim), lifetime rotation and accumulated spin
+use the captured sign, so changing the hierarchy never flips living world
+particles. Local births store identity handedness and the shader applies the
+current composed transform to position and geometry. Shared and emitter modifiers
+reflect centers and directions; vortex strength changes sign to reverse its
+circulation. Inherited velocity is already in world coordinates and is added
+after transforming the spawn velocity. No GPU readbacks, extra texture bands,
+additional passes or per-particle CPU transform work are added.
 
 ### Runtime emitter tint (Pixi)
 

@@ -54,7 +54,7 @@ export async function createMultiplePreview(
     app.start();
     ready = true;
     return {
-      setTransform: (transform: Transform) => {
+      setTransform: (transform: Pick<Transform, 'x' | 'y' | 'rotation' | 'scale'>) => {
         view.position.set(
           app.screen.width / 2 + transform.x,
           app.screen.height * 0.7 + transform.y,

@@ -70,6 +70,7 @@ it('captures spread once, accumulates spin, and resets on slot reuse', () => {
       0,
       0,
       new Float32Array([2, 0, 0, 100, 40, 0, 0, 0.6, -0.8, 0, 0, 1, 2, 2, 0, 0, 1, 0, 0, 0]),
+      1,
     );
   const born = run(1);
   const captured = 100 + 40 * propertyVariation(0, 1, 15);

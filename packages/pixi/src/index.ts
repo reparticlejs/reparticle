@@ -252,15 +252,23 @@ export class ParticleView extends RenderContainer {
   private syncSceneTransform(): void {
     const matrix = this.getGlobalTransform(this.sceneTransform);
     const scale = Math.hypot(matrix.a, matrix.b);
+    // Decompose as rotation × uniform scale × optional local-X reflection.
+    const handedness = matrix.a * matrix.d - matrix.b * matrix.c < 0 ? -1 : 1;
     const tolerance = 1e-6 * Math.max(1, scale);
-    if (Math.abs(matrix.c + matrix.b) > tolerance || Math.abs(matrix.d - matrix.a) > tolerance) {
-      throw new Error('ParticleView requires uniform scene scale without skew or reflection');
+    if (
+      Math.abs(matrix.c + matrix.b * handedness) > tolerance ||
+      Math.abs(matrix.d - matrix.a * handedness) > tolerance
+    ) {
+      throw new Error(
+        'ParticleView requires equal-magnitude scene scale on both axes without skew',
+      );
     }
     this.effectTransform.set({
       x: matrix.tx,
       y: matrix.ty,
-      rotation: (-Math.atan2(matrix.b, matrix.a) * 180) / Math.PI,
+      rotation: (-Math.atan2(matrix.b * handedness, matrix.a * handedness) * 180) / Math.PI,
       scale,
+      handedness,
     });
   }
 

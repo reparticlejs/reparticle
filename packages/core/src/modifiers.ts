@@ -23,6 +23,7 @@ class ModifierList {
     y: number,
     rotation: number,
     scale: number,
+    handedness = 1,
   ): void {
     const radians = (-rotation * Math.PI) / 180;
     const cosine = Math.cos(radians);
@@ -34,8 +35,10 @@ class ModifierList {
         continue;
       }
       const offset = 2 + values[0]! * 9;
-      const angle = radians - (('rotation' in modifier ? modifier.rotation : 0) * Math.PI) / 180;
-      const strengthScale = modifier.type === 'drag' ? 1 : scale;
+      const angle =
+        radians - (('rotation' in modifier ? modifier.rotation : 0) * handedness * Math.PI) / 180;
+      const strengthScale =
+        modifier.type === 'drag' ? 1 : scale * (modifier.type === 'vortex' ? handedness : 1);
       if (modifier.type === 'radial') {
         values[1] = 1;
       }
@@ -45,11 +48,11 @@ class ModifierList {
       values[offset + 3] = x;
       values[offset + 4] = y;
       if ('x' in modifier) {
-        values[offset + 3] = x + (cosine * modifier.x - sine * modifier.y) * scale;
-        values[offset + 4] = y + (sine * modifier.x + cosine * modifier.y) * scale;
+        values[offset + 3] = x + (cosine * modifier.x * handedness - sine * modifier.y) * scale;
+        values[offset + 4] = y + (sine * modifier.x * handedness + cosine * modifier.y) * scale;
       }
-      values[offset + 5] = Math.cos(angle);
-      values[offset + 6] = Math.sin(angle);
+      values[offset + 5] = Math.cos(angle) * handedness;
+      values[offset + 6] = Math.sin(angle) * handedness;
       if (modifier.type === 'acceleration') {
         values[offset + 5] = Math.sin(angle);
         values[offset + 6] = -Math.cos(angle);
@@ -108,10 +111,19 @@ export class Modifiers {
         age,
         effect.applyX(x, y),
         effect.applyY(x, y),
-        rotation + effect.rotation,
+        rotation * effect.handedness + effect.rotation,
         scale * effect.scale,
+        effect.handedness,
       );
-      this.shared.write(this.values, age, effect.x, effect.y, effect.rotation, effect.scale);
+      this.shared.write(
+        this.values,
+        age,
+        effect.x,
+        effect.y,
+        effect.rotation,
+        effect.scale,
+        effect.handedness,
+      );
     }
     return this.values;
   }

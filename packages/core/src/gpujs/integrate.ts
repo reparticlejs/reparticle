@@ -65,6 +65,7 @@ export function integrate(
   stretchXSpread: number,
   stretchYSpread: number,
   modifiers: Float32Array,
+  handedness: number,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -85,7 +86,7 @@ export function integrate(
       return [
         initialStretchX + propertyVariation(particleId, seed, 16) * stretchXSpread,
         initialStretchY + propertyVariation(particleId, seed, 17) * stretchYSpread,
-        0,
+        handedness,
         0,
       ];
     }
@@ -154,9 +155,10 @@ export function integrate(
     } else if (shapeType === 3) {
       spawned = spawnCone2D(particleId, seed, 0, 0, 1, sampledX, sampledY);
     }
-    let rotation = initialRotation + propertyVariation(particleId, seed, 4) * rotationSpread;
+    let rotation =
+      initialRotation + propertyVariation(particleId, seed, 4) * rotationSpread * handedness;
     if (orientToDirection > 0.5) {
-      rotation += spawnRotation(spawned[2], spawned[3]);
+      rotation += spawnRotation(spawned[2], spawned[3]) * handedness;
     }
     if (this.thread.y >= this.constants.rows) {
       const sampledSize = initialSize + propertyVariation(particleId, seed, 3) * sizeSpread;
@@ -166,13 +168,17 @@ export function integrate(
       (speed + propertyVariation(particleId, seed, 1) * speedSpread) * emitterScale;
     const birthFactor = propertyVariation(particleId, seed, 14);
     const birthX =
-      (emitterCosine * spawned[2] - emitterSine * spawned[3]) * sampledSpeed + inheritedVelocityX;
+      (emitterCosine * spawned[2] * handedness - emitterSine * spawned[3]) * sampledSpeed +
+      inheritedVelocityX;
     const birthY =
-      (emitterSine * spawned[2] + emitterCosine * spawned[3]) * sampledSpeed + inheritedVelocityY;
+      (emitterSine * spawned[2] * handedness + emitterCosine * spawned[3]) * sampledSpeed +
+      inheritedVelocityY;
     const positionX =
-      emitterX + (emitterCosine * spawned[0] - emitterSine * spawned[1]) * emitterScale;
+      emitterX +
+      (emitterCosine * spawned[0] * handedness - emitterSine * spawned[1]) * emitterScale;
     const positionY =
-      emitterY + (emitterSine * spawned[0] + emitterCosine * spawned[1]) * emitterScale;
+      emitterY +
+      (emitterSine * spawned[0] * handedness + emitterCosine * spawned[1]) * emitterScale;
     let velocity: [number, number] = [birthX, birthY];
     if (modifiers[0]! > 0) {
       let heading: [number, number] = [0, -1];
@@ -188,7 +194,7 @@ export function integrate(
                   sampledLifetime,
                   angularVelocityCurve,
                   seconds,
-                )
+                ) * handedness
               : 0),
           seconds,
           sampledLifetime,
@@ -196,6 +202,7 @@ export function integrate(
           birthX,
           birthY,
           orientToMovement,
+          handedness,
         );
       }
       velocity = applyModifiers(
@@ -238,6 +245,7 @@ export function integrate(
   if (modifiers[0]! > 0) {
     let heading: [number, number] = [0, -1];
     if (modifiers[1]! > 0) {
+      const geometry = state[particleRow + this.constants.rows * 4]![this.thread.x]!;
       heading = particleHeading(
         properties[3] +
           (orientToAngularVelocity > 0.5
@@ -248,7 +256,7 @@ export function integrate(
                 particleLifetime,
                 angularVelocityCurve,
                 seconds,
-              )
+              ) * geometry[2]
             : 0),
         age + seconds,
         particleLifetime,
@@ -256,6 +264,7 @@ export function integrate(
         velocityX,
         velocityY,
         orientToMovement,
+        geometry[2],
       );
     }
     velocity = applyModifiers(

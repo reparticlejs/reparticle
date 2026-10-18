@@ -243,7 +243,7 @@ motion:     [x, y, velocityX, velocityY]
 properties: [age, lifetime, initialSize, initialRotation]
 color:      [initialRed, initialGreen, initialBlue, initialAlpha]
 dynamics:   [active, spreadFactor, initialAngularVelocity, accumulatedRotation]
-stretch:    [initialStretchX, initialStretchY, reserved, reserved]
+geometry:   [initialStretchX, initialStretchY, initialHandedness, reserved]
 ```
 
 `initial` means the value captured for that particle at spawn, not the emitter's current setting. These storage names are Reparticle's; “Initial” follows the configuration and Defold editor terminology.
@@ -363,7 +363,7 @@ view.update(seconds);
 ParticleView automatically reads the current Pixi parent hierarchy before
 simulation. World-space particles stay behind; new births follow the rocket.
 Local-space particles follow the current hierarchy, including while paused.
-Position, rotation, uniform scale and pivot offsets compose normally through
+Position, rotation, uniform scale (including X/Y flips) and pivot offsets compose normally through
 nested parents. Inherited velocity includes movement of each transformed emitter
 origin. No consumer effectTransform synchronization is needed or exposed.
 
@@ -371,8 +371,18 @@ Use normal Pixi units and angles (`rotation` in radians, `angle` in degrees).
 Move parents before calling update. Drawing does not advance simulation. Reset/play
 preserve the scene transform and clear velocity history. World particles use global
 scene coordinates, so later parent/camera-container movement also leaves them
-behind. This screen-target renderer requires uniform scale without skew or
-one-axis reflection; unsupported scene matrices throw a descriptive error.
+behind. Negative scales work on the view and its parents:
+
+```ts
+rocket.scale.x = -1; // mirror the rocket and future world-space births
+view.scale.y = -1; // mirror the effect vertically
+```
+
+Existing world particles keep their birth reflection, size and orientation. Local
+particles follow flips immediately, including while paused. Texture artwork,
+pivots, motion, spin and modifier directions are reflected together.
+The composed scene transform still requires equal scale magnitudes on both axes
+(e.g. `(-2, 2)`); unequal scaling and skew throw a descriptive error.
 
 Core-only users can still share an `EffectTransform` across emitters through the
 fourth constructor argument. Pixi manages this runtime transform internally.

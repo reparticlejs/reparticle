@@ -2,12 +2,15 @@ import type { Transform } from '#types/transform.js';
 
 /** Shared simulation transform. Degrees are counterclockwise in canvas coordinates. */
 export class EffectTransform {
-  private value: Transform = { x: 0, y: 0, rotation: 0, scale: 1 };
+  private value: Transform = { x: 0, y: 0, rotation: 0, scale: 1, handedness: 1 };
 
   set(patch: Partial<Transform>): void {
     const next = { ...this.value, ...patch };
     if (!Object.values(next).every(Number.isFinite)) {
       throw new RangeError('Effect transform must contain finite numbers');
+    }
+    if (next.handedness !== 1 && next.handedness !== -1) {
+      throw new RangeError('Effect transform handedness must be 1 or -1');
     }
     this.value = next;
   }
@@ -37,13 +40,20 @@ export class EffectTransform {
     this.set({ scale: value });
   }
 
+  get handedness(): 1 | -1 {
+    return this.value.handedness;
+  }
+  set handedness(value: 1 | -1) {
+    this.set({ handedness: value });
+  }
+
   applyX(x: number, y: number): number {
     const radians = (-this.rotation * Math.PI) / 180;
-    return this.x + (Math.cos(radians) * x - Math.sin(radians) * y) * this.scale;
+    return this.x + (Math.cos(radians) * x * this.handedness - Math.sin(radians) * y) * this.scale;
   }
 
   applyY(x: number, y: number): number {
     const radians = (-this.rotation * Math.PI) / 180;
-    return this.y + (Math.sin(radians) * x + Math.cos(radians) * y) * this.scale;
+    return this.y + (Math.sin(radians) * x * this.handedness + Math.cos(radians) * y) * this.scale;
   }
 }

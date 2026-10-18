@@ -29,6 +29,7 @@ uniform int rows;
 uniform vec2 emitterOffset;
 uniform vec2 emitterRotation;
 uniform float emitterScale;
+uniform float emitterHandedness;
 uniform mat3 transform;
 uniform vec2 particleAspect;
 uniform bool automaticSize;
@@ -56,7 +57,9 @@ void main() {
   float curvePosition = normalizedAge * ${CURVE_SEGMENTS}.0;
   int segment = min(int(curvePosition), ${CURVE_SEGMENTS - 1});
   vec4 geometry = mix(geometryCurve[segment], geometryCurve[segment + 1], curvePosition - float(segment));
-  vec2 initialStretch = texelFetch(particles, at + ivec2(0, rows * 4), 0).xy;
+  vec4 geometryData = texelFetch(particles, at + ivec2(0, rows * 4), 0);
+  vec2 initialStretch = geometryData.xy;
+  float initialHandedness = geometryData.z;
   vec4 initialColor = texelFetch(particles, at + ivec2(0, rows * 2), 0);
   vec4 colorScale = mix(colorCurve[segment], colorCurve[segment + 1], curvePosition - float(segment));
   particleColor = clamp(initialColor * colorScale, 0.0, 1.0);
@@ -81,7 +84,7 @@ void main() {
   float rotation = geometry.y;
   if (orientToAngularVelocity) rotation = dynamics.w;
   // Defold's positive Z rotation is counterclockwise; canvas Y points down.
-  float angle = -radians(properties.w + rotation);
+  float angle = -radians(properties.w + rotation * initialHandedness);
   float sine = sin(angle);
   float cosine = cos(angle);
   vec2 corner = (trim.xy + (uv * 0.5 + 0.5) * trim.zw - 0.5) * size;
@@ -89,6 +92,7 @@ void main() {
   vec2 pivotScale = particleAspect * geometry.x * (vec2(1.0) + stretch);
   if (!automaticSize) pivotScale *= properties.z;
   corner += vec2(particlePivot.x, -particlePivot.y) * pivotScale;
+  corner.x *= initialHandedness;
   vec2 rotated = vec2(cosine * corner.x - sine * corner.y, sine * corner.x + cosine * corner.y);
   if (orientToMovement && dot(motion.zw, motion.zw) > 0.0001) {
     vec2 direction = normalize(motion.zw);
@@ -99,6 +103,7 @@ void main() {
                     direction.x * rotated.x - direction.y * rotated.y);
   }
   vec2 position = (motion.xy + rotated) * emitterScale;
+  position.x *= emitterHandedness;
   position = vec2(emitterRotation.x * position.x - emitterRotation.y * position.y,
                   emitterRotation.y * position.x + emitterRotation.x * position.y);
   vec2 clip = (transform * vec3(position + emitterOffset, 1.0)).xy;
@@ -270,6 +275,7 @@ export class EmitterView extends RenderContainer {
             'emitterOffset',
             'emitterRotation',
             'emitterScale',
+            'emitterHandedness',
             'transform',
             'opacity',
             'artwork',
@@ -418,6 +424,7 @@ export class EmitterView extends RenderContainer {
       const localSpace = this.emitter.space === 'local';
       gl.uniform1i(u.stretchWithVelocity!, this.emitter.stretchWithVelocity ? 1 : 0);
       gl.uniform1f(u.emitterScale!, localSpace ? this.emitter.worldScale : 1);
+      gl.uniform1f(u.emitterHandedness!, localSpace ? this.emitter.worldHandedness : 1);
       const radians = localSpace ? (-this.emitter.worldRotation * Math.PI) / 180 : 0;
       gl.uniform2f(u.emitterRotation!, Math.cos(radians), Math.sin(radians));
       gl.uniform2f(

@@ -7,12 +7,13 @@ export function particleHeading(
   velocityX: number,
   velocityY: number,
   orientToMovement: number,
+  handedness: number,
 ): [number, number] {
   const position = Math.max(0, Math.min(1, age / lifetime)) * 64;
   const segment = Math.min(Math.floor(position), 63);
   const left = rotationCurve[segment]!;
   const rotation = left + (rotationCurve[segment + 1]! - left) * (position - segment);
-  const angle = (-(initialRotation + rotation) * Math.PI) / 180;
+  const angle = (-(initialRotation + rotation * handedness) * Math.PI) / 180;
   const x = Math.sin(angle);
   const y = -Math.cos(angle);
   const speedSquared = velocityX * velocityX + velocityY * velocityY;

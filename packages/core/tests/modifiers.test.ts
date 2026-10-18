@@ -81,3 +81,42 @@ it('handles empty lists and the full supported list without dropping entries', (
   expect(values[0]).toBe(128);
   expect(advance(values)[1]).toBeCloseTo(-12.8);
 });
+
+it.each(['local', 'shared'])(
+  'reflects %s forces and centers including vortex handedness',
+  (scope) => {
+    const definitions = [
+      { type: 'acceleration', magnitude: 10, rotation: 35, spread: 3 },
+      { type: 'drag', magnitude: 2, rotation: 20, useDirection: true },
+      { type: 'radial', x: 3, y: 5, magnitude: 4, maxDistance: 50 },
+      { type: 'vortex', x: 3, y: 5, magnitude: 6, maxDistance: 50, rotation: 15 },
+    ];
+    const list = new Modifiers(
+      scope === 'local' ? definitions : [],
+      scope === 'shared' ? definitions : [],
+    );
+    const effect = new EffectTransform();
+    for (const [x, y] of [
+      [12, 8],
+      [3, 5],
+    ]) {
+      effect.handedness = 1;
+      const normal = advance(list.sample(0, false, 0, 0, 0, 1, effect), x, y, 7, 9, 0.5);
+      effect.handedness = -1;
+      const reflected = advance(list.sample(0, false, 0, 0, 0, 1, effect), -x!, y, -7, 9, 0.5);
+      expect(reflected[0]).toBeCloseTo(-normal[0]);
+      expect(reflected[1]).toBeCloseTo(normal[1]);
+    }
+  },
+);
+
+it('keeps local-space forces unchanged when the whole effect is reflected', () => {
+  const list = new Modifiers(
+    [{ type: 'acceleration', rotation: 30, magnitude: 4 }],
+    [{ type: 'vortex', x: 12, magnitude: 6 }],
+  );
+  const effect = new EffectTransform();
+  const normal = list.sample(0, true, 5, 3, 40, 2, effect).slice();
+  effect.handedness = -1;
+  expect(list.sample(0, true, 5, 3, 40, 2, effect)).toEqual(normal);
+});

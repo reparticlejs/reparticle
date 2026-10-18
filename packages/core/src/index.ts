@@ -172,7 +172,10 @@ export class Emitter {
     return this.effectTransform.applyY(this.x, this.y);
   }
   get worldRotation(): number {
-    return this.effectTransform.rotation + this.rotation;
+    return this.effectTransform.rotation + this.effectTransform.handedness * this.rotation;
+  }
+  get worldHandedness(): 1 | -1 {
+    return this.effectTransform.handedness;
   }
   get worldScale(): number {
     return this.effectTransform.scale * this.scale;
@@ -427,10 +430,11 @@ export class Emitter {
       Math.max(0, this.initialLifetime.maximum),
     );
     const worldSpace = o.space === 'world';
+    const handedness = worldSpace ? this.worldHandedness : 1;
     const scale = worldSpace ? this.worldScale : 1;
     const rotation = worldSpace ? this.worldRotation : 0;
     const radians = (-rotation * Math.PI) / 180;
-    const initialRotation = this.initialRotation.at(this.playback.normalizedAge);
+    const initialRotation = this.initialRotation.at(this.playback.normalizedAge) * handedness;
     const particleRotation =
       o.orientation === 'movement-direction' ? initialRotation : initialRotation + rotation;
     this.output = this.run(
@@ -490,6 +494,7 @@ export class Emitter {
         o.scale,
         this.effectTransform,
       ),
+      handedness,
     );
     if (dt > 0) {
       this.playback.finish(this.slots.empty);

@@ -44,3 +44,12 @@ it('moves shared modifier centers and rotates/scales world forces', () => {
   expect(local[14]).toBe(10);
   expect(local[15]).toBe(5);
 });
+
+it('reflects local X before rotation and translation', () => {
+  const transform = new EffectTransform();
+  transform.set({ x: 100, y: 50, rotation: 90, scale: 2, handedness: -1 });
+  expect(transform.applyX(10, 5)).toBeCloseTo(110);
+  expect(transform.applyY(10, 5)).toBeCloseTo(70);
+  transform.handedness = 1;
+  expect(transform.applyY(10, 5)).toBeCloseTo(30);
+});
