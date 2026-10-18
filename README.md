@@ -235,3 +235,36 @@ color:      [initialRed, initialGreen, initialBlue, initialAlpha]
 ```
 
 `initial` means the value captured for that particle at spawn, not the emitter's current setting. These storage names are Reparticle's; “Initial” follows the configuration and Defold editor terminology.
+
+### Playback and completion
+
+```ts
+const unsubscribe = view.onStateChange(({ emitterId, state, awakeEmitters }) => {
+  console.log(emitterId, state);
+  if (state === 'sleeping' && awakeEmitters === 0) {
+    console.log('Effect finished');
+  }
+});
+
+view.play(); // restart all emitters, including delay and prewarm
+view.stop(); // stop spawning; let existing particles finish
+view.stop({ clear: true }); // stop and remove particles immediately
+view.clear(); // shorthand for stop({ clear: true })
+view.getEmitter('sparks').stop(); // control one emitter
+unsubscribe();
+```
+
+States follow Defold's `prespawn → spawning → postspawn → sleeping` lifecycle.
+A stopped emitter can skip spawning. Loops stay in `spawning` until stopped.
+Continue calling `update()` after stopping so particles can drain and sleeping can
+be reported. Clearing removes particles immediately; sleeping is reported on the
+next positive update, including when stopped during start delay. `view.isSleeping`
+and `view.awakeEmitters` expose effect completion; each core emitter exposes `state`
+and `onStateChange()`. Subscriptions report changes, not an initial snapshot.
+
+Construction still starts playback automatically for compatibility. `play()`
+restarts this effect's existing simulations, clearing old particles; it does not
+allocate overlapping playback instances. `reset()` retains its previous restart
+behavior and manual emission gate; `play()` also enables that gate. Pausing means
+skipping updates, whereas stopping lets particles continue moving. The composed
+example at `?multiple` includes stop, clear, restart and emitter-state indicators.

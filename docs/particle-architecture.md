@@ -86,7 +86,7 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 2. **Connect one emitter — implemented.** The demo creates from JSON. `setParameters` validates atomic numeric patches, and `configuration` returns an independent snapshot. IDs, capacity and seed reach the runtime; scalar speed is exact. Flat prototype options and implicit visual changes are removed. Texture configuration remains in the rendering backlog; initial size is implemented.
 3. **Separate lifecycle and acceleration — implemented.** Built-in lifetime helpers own age/activity, gravity contributes acceleration, and motion integrates each axis once using the constant-acceleration position term. Spawn initializes new particles before these stages. Helpers are registered in one GPU update kernel, not separate passes. The original gravity configuration has since been replaced by the acceleration modifier described below; numeric acceleration updates affect living particles, while initial-property changes affect future births. GPU.js uses an explicitly numeric activity flag because registered boolean-return helpers are unsupported.
 4. **Value distributions.** Consistent constant/random representations; independent random channels; lifetime and other initial properties sampled once at birth.
-5. **Emitter playback — duration and once/loop implemented.** Remaining: explicit stop/retire APIs and state notifications.
+5. **Emitter playback — duration, once/loop, play/stop/clear, and state notifications implemented.** Retiring at the end of the current loop remains pending.
 6. **Shapes and transforms — circle, 2D box, and 2D cone implemented.** `circle` takes a finite nonnegative `diameter`; angle is uniform and radius uses square-root sampling. Diameter updates affect future births only; shape type requires recreation. Point direction/spread are point-only. Implement each remaining documented shape separately; coordinate-space rules and inherited velocity; resolve 3D state/rendering needs before claiming 3D shapes.
 7. **Curves and particle appearance.** Shared curve contract, emitter-time evaluation, particle-age evaluation; each size/color/rotation/stretch feature separately. Renderer evaluation may avoid storing values derivable from age.
 8. **Remaining modifiers.** Drag, radial, vortex individually, with clear ordering and influence rules.
@@ -130,7 +130,7 @@ The emitter clock is independent of particle lifetime. Once stops after emitting
 
 `emitting` is a manual gate, `isEmitting` combines that gate with the playback state, and reset restarts playback. The manual gate does not freeze elapsed time. Pausing the demo skips both simulation and counting; debug uses emission eligibility captured before the update so the final once frame is counted correctly. No per-particle CPU tracking is added to core.
 
-Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844). Duration spread, timeline curves, and lifecycle callbacks remain pending.
+Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844). Duration spread, timeline curves, and lifecycle callbacks were added in subsequent steps below.
 
 Start delay: `startDelay` is finite and nonnegative, defaults to zero, and is structural. Defold checks the existing timer against the delay before adding the current step. The crossing step does not emit; the next step emits its full frame, carrying any delay overshoot into the duration timer. Loop wrap does not reenter the waiting state. Reset restores the delay, and zero-time warmup does not consume it. The pre-step emission eligibility used by demo stats follows the same boundary. Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844).
 
@@ -397,3 +397,45 @@ living-particle displacement; newborn age/position and the existing local analyt
 acceleration term retain their prototype conventions. Consequently this does not
 claim frame-identical Defold trajectories. The multi-emitter example now includes
 shared leftward wind alongside the sparks' local downward acceleration.
+
+### Emitter lifecycle and notifications
+
+Core `Emitter` exposes `play()`, `stop({ clear?: boolean })`, `clear()`, `state`,
+and `onStateChange(listener)` (returns an unsubscribe function). State changes
+follow [Defold's particlefx API](https://defold.com/ref/particlefx-lua/): prespawn
+waits for delay, spawning includes zero-rate/gated emission, postspawn stops births
+while particles drain, and sleeping means no particles remain and no future births
+are scheduled. A once emitter reports spawning and postspawn even when its duration
+fits in one frame; loops do not report a new transition every cycle. Stop during
+delay cancels pending prewarm. Clear removes particles immediately; sleeping is
+resolved on the next positive update, as in Defold's update-driven state machine.
+Zero-time updates never consume lifecycle transitions. Emitter-time modifier curves
+continue advancing while draining, capped at duration.
+
+Existing construction remains auto-started. `play()` restarts the existing
+simulation from its initial seed, clearing old particles and reapplying delay and
+prewarm. It enables the manual emission gate. Existing `reset()` keeps its restart
+semantics but preserves that gate. Reparticle does not create overlapping playback
+instances on repeated play calls. Notifications are synchronous after the GPU
+operation completes; prewarm may produce multiple ordered transitions in one call.
+The event describes each transition; reading `state` returns the current state,
+which may already be later in that sequence. Subscribers do not receive an initial
+snapshot. Listeners may unsubscribe or restart/destroy an emitter; destruction
+removes subscriptions without synthesizing a completion event.
+
+Sleeping is determined without GPU readback or per-particle CPU simulation.
+`ParticleLifetimes` retains one last-expiry record per surviving spawn batch,
+advances its age with float32 rounding, and trims batches when ring slots are
+reused. Changing initial lifetime affects only future batches. With lifetime
+spread, a lazy shared 512 KiB range-maximum index covers the periodic random
+stream. Queries find the actual maximum lifetime of surviving slots in logarithmic
+time, including ring and random-period wraparound; no birth-by-birth CPU loop is
+added. This is lifecycle bookkeeping, not the demo's debug live-count tracker.
+Sleeping emitters skip simulation and rendering until restarted.
+
+`ParticleView` forwards controls to every emitter and forwards state events with
+`emitterId`, `state`, and the number of awake emitters at that transition.
+`awakeEmitters === 0` on a sleeping event signals whole-effect completion.
+Renderer state is restored before forwarding callbacks. Texture configuration
+remains separate and is unaffected by playback. The `?multiple` demo displays
+notifications and provides restart, stop, clear and pause controls.

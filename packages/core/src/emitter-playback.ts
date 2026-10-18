@@ -1,4 +1,5 @@
 import type { EmitterConfig } from '#types/effect.js';
+import type { EmitterState } from '#types/lifecycle.js';
 import type { PlaybackVariation } from '#types/playback.js';
 
 import { propertyVariation } from './behaviors/property-variation';
@@ -8,6 +9,38 @@ export class EmitterPlayback {
   private elapsed = 0;
   private finished = false;
   private waiting = true;
+  private currentState: EmitterState = 'prespawn';
+  private transitions: EmitterState[] = [];
+
+  get state(): EmitterState {
+    return this.currentState;
+  }
+
+  takeTransitions(): EmitterState[] {
+    const transitions = this.transitions;
+    this.transitions = [];
+    return transitions;
+  }
+
+  stop(): void {
+    if (this.currentState !== 'sleeping') {
+      this.finished = true;
+      this.setState('postspawn');
+    }
+  }
+
+  finish(empty: boolean): void {
+    if (empty && this.currentState === 'postspawn') {
+      this.setState('sleeping');
+    }
+  }
+
+  private setState(state: EmitterState): void {
+    if (state !== this.currentState) {
+      this.currentState = state;
+      this.transitions.push(state);
+    }
+  }
 
   private readonly duration: number;
   private readonly startDelay: number;
@@ -34,7 +67,11 @@ export class EmitterPlayback {
 
   /** Defold emits the whole boundary frame, then stops or restarts its timer. */
   advance(seconds: number): boolean {
-    if (seconds === 0 || this.finished) {
+    if (seconds === 0 || this.currentState === 'sleeping') {
+      return false;
+    }
+    if (this.finished) {
+      this.elapsed = Math.min(this.elapsed + seconds, this.duration);
       return false;
     }
     if (this.waiting) {
@@ -45,6 +82,7 @@ export class EmitterPlayback {
       }
       this.elapsed = Math.max(0, this.elapsed - this.startDelay);
       this.waiting = false;
+      this.setState('spawning');
     }
     this.elapsed = Math.min(this.elapsed + seconds, this.duration);
     // Avoid an extra frame caused solely by floating-point accumulation.
@@ -52,7 +90,7 @@ export class EmitterPlayback {
       if (this.playMode === 'loop') {
         this.elapsed = 0;
       } else {
-        this.finished = true;
+        this.stop();
       }
     }
     return true;
@@ -66,5 +104,6 @@ export class EmitterPlayback {
     this.elapsed = 0;
     this.finished = false;
     this.waiting = true;
+    this.setState('prespawn');
   }
 }

@@ -155,3 +155,52 @@ it('clamps negative sampled duration to zero but retains negative delay as clock
   expect(delayed.advance(0.01)).toBe(true);
   expect(delayed.normalizedAge).toBeCloseTo((0.01 - propertyVariation(0, seed, 10)) / 2);
 });
+
+it('reports delay, spawning, draining and sleeping in order without duplicate events', () => {
+  const playback = new EmitterPlayback(0.1, 'once', 0.1);
+  expect(playback.state).toBe('prespawn');
+  playback.advance(0.1);
+  expect(playback.takeTransitions()).toEqual([]);
+  playback.advance(0.1);
+  expect(playback.takeTransitions()).toEqual(['spawning', 'postspawn']);
+  playback.finish(false);
+  expect(playback.state).toBe('postspawn');
+  playback.finish(true);
+  expect(playback.takeTransitions()).toEqual(['sleeping']);
+  playback.stop();
+  playback.finish(true);
+  expect(playback.takeTransitions()).toEqual([]);
+  playback.reset();
+  expect(playback.takeTransitions()).toEqual(['prespawn']);
+});
+
+it('can stop during delay without ever spawning', () => {
+  const playback = new EmitterPlayback(1, 'loop', 2);
+  playback.advance(0.1);
+  playback.stop();
+  expect(playback.advance(0.1)).toBe(false);
+  expect(playback.emitting).toBe(false);
+  playback.finish(true);
+  expect(playback.takeTransitions()).toEqual(['postspawn', 'sleeping']);
+});
+
+it('loop boundaries do not emit spurious state transitions', () => {
+  const playback = new EmitterPlayback(0.1, 'loop');
+  for (let frame = 0; frame < 20; frame++) {
+    playback.advance(0.1);
+  }
+  playback.finish(true);
+  expect(playback.state).toBe('spawning');
+  expect(playback.takeTransitions()).toEqual(['spawning']);
+});
+
+it('continues emitter-time modifier curves while draining, then freezes when sleeping', () => {
+  const playback = new EmitterPlayback(1, 'loop');
+  playback.advance(0.1);
+  playback.stop();
+  expect(playback.advance(0.1)).toBe(false);
+  expect(playback.normalizedAge).toBeCloseTo(0.2);
+  playback.finish(true);
+  playback.advance(0.1);
+  expect(playback.normalizedAge).toBeCloseTo(0.2);
+});

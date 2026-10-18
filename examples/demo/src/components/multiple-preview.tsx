@@ -1,3 +1,4 @@
+import type { EmitterState } from '@reparticle/core';
 import { useRef, useState } from 'react';
 
 import { useMountEffect } from '../hooks/use-mount-effect';
@@ -8,10 +9,15 @@ export function MultiplePreview() {
   const preview = useRef<Awaited<ReturnType<typeof createMultiplePreview>>>(null);
   const [paused, setPaused] = useState(false);
   const [error, setError] = useState('');
+  const [states, setStates] = useState<Record<string, EmitterState>>({});
   const [ready, setReady] = useState(false);
   useMountEffect(() => {
     const controller = new AbortController();
-    void createMultiplePreview(host.current!, controller.signal)
+    void createMultiplePreview(host.current!, controller.signal, ({ emitterId, state }) => {
+      if (!controller.signal.aborted) {
+        setStates((current) => ({ ...current, [emitterId]: state }));
+      }
+    })
       .then((created) => {
         if (controller.signal.aborted) {
           created?.destroy();
@@ -19,6 +25,7 @@ export function MultiplePreview() {
           preview.current = created;
           setReady(created !== null);
         }
+        return created;
       })
       .catch((reason: unknown) => {
         if (!controller.signal.aborted) {
@@ -54,9 +61,23 @@ export function MultiplePreview() {
           <button disabled={!ready} onClick={togglePause}>
             {paused ? 'Resume' : 'Pause'}
           </button>
-          <button disabled={!ready} onClick={() => preview.current?.reset()}>
+          <button disabled={!ready} onClick={() => preview.current?.play()}>
             Restart all emitters
           </button>
+          <button disabled={!ready} onClick={() => preview.current?.stop()}>
+            Stop spawning
+          </button>
+          <button disabled={!ready} onClick={() => preview.current?.clear()}>
+            Stop and clear
+          </button>
+          <dl aria-label="Emitter states" aria-live="polite">
+            {Object.entries(states).map(([id, state]) => (
+              <div key={id}>
+                <dt>{id}</dt>
+                <dd>{state}</dd>
+              </div>
+            ))}
+          </dl>
           <p>
             <a href={import.meta.env.BASE_URL}>Single-emitter controls</a>
           </p>

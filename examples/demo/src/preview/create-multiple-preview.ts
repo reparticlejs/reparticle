@@ -1,10 +1,14 @@
-import { ParticleView } from '@reparticle/pixi';
+import { ParticleView, type ParticleStateListener } from '@reparticle/pixi';
 import { Application, Assets, type Spritesheet, type WebGLRenderer } from 'pixi.js';
 
 import { destroyApplication } from './destroy-application';
 
 /** Small composed-effect example, independent of the single-emitter controls. */
-export async function createMultiplePreview(host: HTMLDivElement, signal: AbortSignal) {
+export async function createMultiplePreview(
+  host: HTMLDivElement,
+  signal: AbortSignal,
+  onStateChange: ParticleStateListener,
+) {
   const app = new Application<WebGLRenderer>();
   let ready = false;
   try {
@@ -35,7 +39,13 @@ export async function createMultiplePreview(host: HTMLDivElement, signal: AbortS
       },
     });
     app.stage.addChild(view);
+    view.onStateChange(onStateChange);
     for (const emitter of view.emitters.values()) {
+      onStateChange({
+        emitterId: emitter.id,
+        state: emitter.state,
+        awakeEmitters: view.awakeEmitters,
+      });
       emitter.x = app.screen.width / 2;
       emitter.y = app.screen.height * 0.7;
     }
@@ -44,7 +54,9 @@ export async function createMultiplePreview(host: HTMLDivElement, signal: AbortS
     app.start();
     ready = true;
     return {
-      reset: () => view.reset(),
+      play: () => view.play(),
+      stop: () => view.stop(),
+      clear: () => view.clear(),
       pause: (paused: boolean) => (paused ? app.stop() : app.start()),
       destroy: () => destroyApplication(app),
     };

@@ -2,6 +2,7 @@ import { GPU, type IGPUKernelSettings, type IKernelRunShortcut, type KernelVaria
 
 import type { EmitterConfig, EmitterParameters } from '#types/effect.js';
 import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
+import type { EmitterState, EmitterStateListener, StopOptions } from '#types/lifecycle.js';
 
 import { emitterConfigSchema } from './config/schema';
 import { updateEmitterConfig } from './config/update-emitter';
@@ -12,6 +13,7 @@ import { EmitterPlayback } from './emitter-playback';
 import { EmitterVelocity } from './emitter-velocity';
 import functions from './gpujs/functions.json';
 import { isPipelineTexture } from './gpujs/is-pipeline-texture';
+import { ParticleLifetimes } from './particle-lifetimes';
 import { prewarm } from './prewarm';
 import { SharedModifiers } from './shared-modifiers';
 import { SpawnRate } from './spawn-rate';
@@ -29,6 +31,9 @@ export class Emitter {
   private settings: EmitterConfig;
   private readonly velocity = new EmitterVelocity();
   private readonly schedule: SpawnSchedule;
+  private readonly lifetimes: ParticleLifetimes;
+  private readonly listeners = new Set<EmitterStateListener>();
+  private notifying = false;
   private initialRed: SampledCurve;
   private initialGreen: SampledCurve;
   private initialBlue: SampledCurve;
@@ -93,6 +98,7 @@ export class Emitter {
     this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
     this.schedule = new SpawnSchedule(this.capacity);
+    this.lifetimes = new ParticleLifetimes(this.capacity);
     this.playback = new EmitterPlayback(
       this.settings.duration,
       this.settings.playMode,
@@ -163,6 +169,58 @@ export class Emitter {
       throw error;
     }
   }
+  get state(): EmitterState {
+    return this.playback.state;
+  }
+
+  onStateChange(listener: EmitterStateListener): () => void {
+    this.assertAlive();
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  /** Restart from the initial state, including delay, seed and prewarm. */
+  play(): void {
+    this.emitting = true;
+    this.reset();
+  }
+
+  /** Stop spawning; existing particles drain unless clear is requested. */
+  stop({ clear = false }: StopOptions = {}): void {
+    this.assertAlive();
+    if (clear) {
+      this.output = this.run(0);
+      this.lifetimes.reset();
+    }
+    this.needsPrewarm = false;
+    this.playback.stop();
+    this.notifyStateChanges();
+  }
+
+  clear(): void {
+    this.stop({ clear: true });
+  }
+
+  private notifyStateChanges(): void {
+    if (this.notifying) {
+      return;
+    }
+    this.notifying = true;
+    try {
+      let transitions = this.playback.takeTransitions();
+      while (transitions.length > 0) {
+        for (const state of transitions) {
+          for (const listener of [...this.listeners]) {
+            listener({ emitterId: this.id, state });
+          }
+        }
+        transitions = this.playback.takeTransitions();
+      }
+    } finally {
+      this.notifying = false;
+    }
+  }
+
   /** Emission eligibility at the current clock, before any pending prewarm. */
   get isEmitting(): boolean {
     return this.emitting && this.playback.emitting;
@@ -300,6 +358,9 @@ export class Emitter {
     if (!Number.isFinite(dt) || dt < 0 || dt > 0.1) {
       throw new RangeError('Step must be between 0 and 0.1 seconds');
     }
+    if (this.state === 'sleeping') {
+      return;
+    }
     if (dt > 0 && this.needsPrewarm) {
       this.needsPrewarm = false;
       prewarm(
@@ -310,11 +371,16 @@ export class Emitter {
     }
     this.velocity.update(this.x, this.y, dt);
     this.step(dt);
+    this.notifyStateChanges();
   }
   private step(dt: number): void {
+    if (this.state === 'sleeping') {
+      return;
+    }
     const active = this.playback.advance(dt);
     const rate = active && this.emitting ? this.spawnRate.at(this.playback.normalizedAge) : 0;
     const { start, count } = this.schedule.next(rate, dt);
+    const lifetime = this.initialLifetime.at(this.playback.normalizedAge);
     const o = this.settings;
     const worldSpace = o.space === 'world';
     const scale = worldSpace ? o.scale : 1;
@@ -352,7 +418,7 @@ export class Emitter {
       o.initial.direction,
       o.initial.spread,
       this.accelerationMagnitude.at(this.playback.normalizedAge) * scale,
-      this.initialLifetime.at(this.playback.normalizedAge),
+      lifetime,
       this.seed,
       this.shape.type,
       this.shape.x.at(this.playback.normalizedAge),
@@ -418,6 +484,10 @@ export class Emitter {
         o.scale,
       ),
     );
+    this.lifetimes.advance(dt, count, lifetime, o.initial.lifetimeSpread, this.seed);
+    if (dt > 0) {
+      this.playback.finish(this.lifetimes.empty);
+    }
     if (count) {
       this.seed = (this.seed + 1) % 65536;
     }
@@ -427,17 +497,20 @@ export class Emitter {
     this.assertAlive();
     this.output = this.run(0);
     this.schedule.reset();
+    this.lifetimes.reset();
     this.playback.reset();
     this.velocity.reset();
     this.needsPrewarm = true;
     this.nextKernel = 1;
     this.seed = this.initialSeed;
+    this.notifyStateChanges();
   }
   destroy(): void {
     if (this.disposed) {
       return;
     }
     this.disposed = true;
+    this.listeners.clear();
     // Do not call gpu.destroy(): the shared context belongs to the host renderer.
     for (const kernel of this.kernels) {
       kernel.destroy(true);
@@ -502,3 +575,10 @@ export { sampleCurve, CURVE_SEGMENTS } from './curves/sample-curve';
 export type { Curve, CurvePoint, ScalarProperty } from '#types/curve.js';
 
 export type { ModifierConfig } from '#types/effect.js';
+
+export type {
+  EmitterState,
+  EmitterStateChange,
+  EmitterStateListener,
+  StopOptions,
+} from '#types/lifecycle.js';

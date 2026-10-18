@@ -1,3 +1,4 @@
+import type { StopOptions } from '@reparticle/core';
 import { Emitter, CURVE_SEGMENTS, type EmitterConfig, type ModifierConfig } from '@reparticle/core';
 import { RenderContainer, type Texture, type WebGLRenderer, type Matrix } from 'pixi.js';
 
@@ -275,6 +276,23 @@ export class EmitterView extends RenderContainer {
       this.host.resetState();
     }
   }
+  play(): void {
+    try {
+      this.emitter.play();
+      this.animationHalfStep = 0;
+    } finally {
+      this.host.resetState();
+    }
+  }
+
+  stop(options: StopOptions): void {
+    try {
+      this.emitter.stop(options);
+    } finally {
+      this.host.resetState();
+    }
+  }
+
   reset(): void {
     try {
       this.emitter.reset();
@@ -287,7 +305,7 @@ export class EmitterView extends RenderContainer {
     this.renderParticles(this.worldTransform, this.groupAlpha);
   }
   renderParticles(transform: Matrix, opacity: number): void {
-    if (this.disposed) {
+    if (this.disposed || this.emitter.state === 'sleeping') {
       return;
     }
     const gl = this.gl,
