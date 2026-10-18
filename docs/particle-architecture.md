@@ -640,3 +640,33 @@ remains the host's responsibility; the demo requests a render after a tint edit.
 The multiple-emitter demo exposes fire RGBA controls, leaving smoke and sparks
 unchanged. This implements the built-in tint constant only, not arbitrary custom
 materials or consumer shader functions.
+
+## Particle draw ordering
+
+Pixi uses [Defold’s remaining-lifetime sort key](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp):
+`clamp((1 - remainingLifetime / maximumLifetime) * 65535, 0, 65535)`,
+truncated to a 16-bit integer. Longer remaining lifetimes draw first. The
+normalization maximum comes from the initial lifetime curve, excluding spread.
+A nonpositive maximum produces equal keys.
+
+Core maintains a logical array of fixed GPU slot IDs. Each simulation step marks
+expired slots, walks the logical array forward and swaps its last entry into each
+removed position, rechecking that position. Births append in allocation order.
+The lifetime sort key is then paired with the current logical index, matching
+Defold’s swap-removal and tie-breaking sequence. GPU simulation slots never move.
+Indices remain full-width for Reparticle’s capacities above 65,536; there is no
+16-bit index wraparound.
+
+Sorting runs during every simulation step, including all prewarm steps and steps
+between renders. Core exposes an order revision and `copyParticleOrder(target)`;
+Pixi copies and uploads only the completed order when rendering. Paused renders
+reuse the buffer, and reset or clear invalidates it. Initial lifetime edits affect
+the normalization on the next simulation step. The optional debug counter keeps
+allocation tracking without logical sorting.
+
+Sorting takes O(n log n) CPU work for n living particles per step; rendering uploads
+4n bytes once per changed draw. There is one instanced draw per emitter. Every
+texture lookup still addresses the original simulation slot. No GPU readback,
+extra simulation pass, or intermediate prewarm order upload is required. Each
+view destroys its order buffer; texture ownership and emitter definition order
+are unchanged.

@@ -96,7 +96,7 @@ export class Emitter {
     this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
     this.schedule = new SpawnSchedule(this.capacity);
-    this.slots = new ParticleSlots(this.capacity);
+    this.slots = new ParticleSlots(this.capacity, true);
     this.playback = new EmitterPlayback(
       this.settings.duration,
       this.settings.playMode,
@@ -370,6 +370,17 @@ export class Emitter {
     this.initialSpeed = initialSpeed;
     this.spawnRate = spawnRate;
   }
+  /** Changes when allocation or particle ages change, including reset and clear. */
+  get particleRevision(): number {
+    return this.slots.revision;
+  }
+
+  /** Copy the final logical order; simulation texels always remain in their original slots. */
+  copyParticleOrder(target: Uint32Array): number {
+    this.assertAlive();
+    return this.slots.copyOrder(target);
+  }
+
   /** GPU resource handle for renderer adapters. Never calls toArray/readPixels. */
   get texture(): WebGLTexture {
     this.assertAlive();
@@ -407,7 +418,14 @@ export class Emitter {
     const requested = this.schedule.next(rate, dt);
     const lifetime = this.initialLifetime.at(this.playback.normalizedAge);
     const o = this.settings;
-    const count = this.slots.advance(dt, requested, lifetime, o.initial.lifetimeSpread, this.seed);
+    const count = this.slots.advance(
+      dt,
+      requested,
+      lifetime,
+      o.initial.lifetimeSpread,
+      this.seed,
+      Math.max(0, this.initialLifetime.maximum),
+    );
     const worldSpace = o.space === 'world';
     const scale = worldSpace ? this.worldScale : 1;
     const rotation = worldSpace ? this.worldRotation : 0;
@@ -576,3 +594,5 @@ export type { Transform } from '#types/transform.js';
 
 export { ParticleSlots } from './particle-slots';
 export { SpawnSchedule } from './spawn-schedule';
+
+export type { ParticleLifetimeVisitor } from '#types/particle-lifetime.js';

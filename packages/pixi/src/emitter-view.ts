@@ -4,6 +4,7 @@ import { RenderContainer, type Texture, type WebGLRenderer, type Matrix } from '
 
 import { createFrameTexture } from './create-frame-texture';
 import { flipbookShader } from './flipbook-shader';
+import { ParticleOrderBuffer } from './particle-order-buffer';
 import { resolveFlipbook } from './resolve-flipbook';
 import { resolvePivot } from './resolve-pivot';
 import { resolveTexture } from './resolve-texture';
@@ -18,6 +19,7 @@ import type { ParticleTexture, ParticlePivot } from './types/particle-texture';
 const vertex = `#version 300 es
 precision highp float;
 precision highp int;
+layout(location = 0) in uint particleId;
 uniform sampler2D particles;
 uniform int width;
 uniform int rows;
@@ -42,7 +44,7 @@ out vec2 artworkUv;
 out vec2 uv;
 out vec4 particleColor;
 void main() {
-  int id = gl_InstanceID;
+  int id = int(particleId);
   ivec2 at = ivec2(id % width, id / width);
   vec4 motion = texelFetch(particles, at, 0);
   vec4 properties = texelFetch(particles, at + ivec2(0, rows), 0);
@@ -162,6 +164,7 @@ export class EmitterView extends RenderContainer {
   private readonly host: WebGLRenderer;
   private readonly gl: WebGL2RenderingContext;
   private readonly program: WebGLProgram;
+  private readonly order: ParticleOrderBuffer;
   private readonly vao: WebGLVertexArrayObject;
   private readonly uniforms: Record<string, WebGLUniformLocation | null>;
   private readonly matrix = new Float32Array(9);
@@ -244,6 +247,7 @@ export class EmitterView extends RenderContainer {
       );
       let program: WebGLProgram | null = null;
       let vao: WebGLVertexArrayObject | null = null;
+      let order: ParticleOrderBuffer | undefined;
       try {
         program = createProgram(gl);
         this.program = program;
@@ -252,6 +256,10 @@ export class EmitterView extends RenderContainer {
           throw new Error('Unable to create draw VAO');
         }
         this.vao = vao;
+        gl.bindVertexArray(vao);
+        order = new ParticleOrderBuffer(gl, this.emitter.capacity);
+        this.order = order;
+        gl.bindVertexArray(null);
         this.uniforms = Object.fromEntries(
           [
             'particles',
@@ -303,6 +311,7 @@ export class EmitterView extends RenderContainer {
           this.flipbook = animation;
         }
       } catch (error) {
+        order?.destroy();
         gl.deleteProgram(program);
         gl.deleteVertexArray(vao);
         gl.deleteTexture(this.frameTexture);
@@ -363,6 +372,7 @@ export class EmitterView extends RenderContainer {
     gl.viewport(0, 0, r.canvas.width, r.canvas.height);
     gl.useProgram(this.program);
     gl.bindVertexArray(this.vao);
+    const count = this.order.update(this.emitter);
     gl.uniform2f(u.particlePivot!, this.texturePivot.x, this.texturePivot.y);
     gl.uniform1i(u.automaticSize!, this.automaticSize ? 1 : 0);
     const animation = this.flipbook;
@@ -439,7 +449,7 @@ export class EmitterView extends RenderContainer {
     gl.enable(gl.BLEND);
     gl.blendEquation(gl.FUNC_ADD);
     setBlendMode(gl, this.emitter.configuration.blendMode);
-    gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.emitter.capacity);
+    gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, count);
     gl.bindVertexArray(null);
     r.resetState();
   }
@@ -449,6 +459,7 @@ export class EmitterView extends RenderContainer {
     }
     this.disposed = true;
     this.emitter.destroy();
+    this.order.destroy();
     this.gl.deleteTexture(this.frameTexture);
     this.gl.deleteProgram(this.program);
     this.gl.deleteVertexArray(this.vao);

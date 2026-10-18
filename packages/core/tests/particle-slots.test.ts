@@ -109,3 +109,24 @@ it('retains the exact endpoint and announces sleeping only after it', () => {
   playback.finish(particles.empty);
   expect(playback.takeTransitions()).toEqual(['sleeping']);
 });
+
+it('exposes live lifetime metadata with a new generation for reused and reset slots', () => {
+  const slots = new ParticleSlots(1);
+  const visits: number[][] = [];
+  const visit = (slot: number, age: number, lifetime: number, generation: number) => {
+    visits.push([slot, age, lifetime, generation]);
+  };
+  slots.advance(0.125, 1, 0.125, 0, 1);
+  slots.forEachLifetime(visit);
+  expect(visits[0]?.slice(0, 3)).toEqual([0, 0.125, 0.125]);
+  slots.advance(0.125, 1, 1, 0, 2);
+  slots.forEachLifetime(visit);
+  expect(visits[1]?.slice(0, 3)).toEqual([0, 0.125, 1]);
+  expect(visits[1]![3]).toBeGreaterThan(visits[0]![3]!);
+  slots.reset();
+  slots.forEachLifetime(visit);
+  expect(visits).toHaveLength(2);
+  slots.advance(0, 1, 2, 0, 1);
+  slots.forEachLifetime(visit);
+  expect(visits[2]![3]).toBeGreaterThan(visits[1]![3]!);
+});

@@ -3,4 +3,5 @@ export interface ParticleSlotBatch {
   slots: Uint32Array;
   next: number;
   age: number;
+  generation: number;
 }

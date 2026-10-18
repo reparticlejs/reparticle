@@ -1,25 +1,55 @@
+import type { ParticleLifetimeVisitor } from '#types/particle-lifetime.js';
 import type { ParticleSlotBatch } from '#types/particle-slots.js';
 
 import { propertyVariation } from './behaviors/property-variation';
+import { ParticleOrder } from './particle-order';
 
 /** CPU allocation metadata only; particle positions and velocities remain on the GPU. */
 export class ParticleSlots {
+  private version = 0;
+  private readonly order: ParticleOrder | undefined;
+  private maximumLifetime = NaN;
   readonly spawnMask: Float32Array;
   private readonly free: Uint32Array;
   private readonly lifetimes: Float32Array;
   private freeCount: number;
   private batches: ParticleSlotBatch[] = [];
 
-  constructor(private readonly capacity: number) {
+  constructor(
+    private readonly capacity: number,
+    trackOrder = false,
+  ) {
     if (!Number.isInteger(capacity) || capacity < 1 || capacity > 1_000_000) {
       throw new RangeError('Capacity must be an integer from 1 to 1,000,000');
     }
     // 24 bits per float stay exact in GPU.js single precision.
+    this.order = trackOrder ? new ParticleOrder(capacity) : undefined;
     this.spawnMask = new Float32Array(Math.ceil(capacity / 24));
     this.free = new Uint32Array(capacity);
     this.lifetimes = new Float32Array(capacity);
     this.freeCount = capacity;
     this.reset();
+  }
+
+  get revision(): number {
+    return this.version;
+  }
+
+  /** Visit only live allocation metadata; no particle texture is inspected. */
+  forEachLifetime(visitor: ParticleLifetimeVisitor): void {
+    for (const batch of this.batches) {
+      for (let index = batch.next; index < batch.slots.length; index++) {
+        const slot = batch.slots[index]!;
+        visitor(slot, batch.age, this.lifetimes[slot]!, batch.generation);
+      }
+    }
+  }
+
+  copyOrder(target: Uint32Array): number {
+    if (!this.order) {
+      throw new Error('Particle ordering is not enabled');
+    }
+    return this.order.copyTo(target);
   }
 
   get count(): number {
@@ -37,7 +67,13 @@ export class ParticleSlots {
     lifetime: number,
     spread: number,
     seed: number,
+    maximumLifetime = lifetime,
   ): number {
+    const changed = seconds > 0 || requested > 0 || maximumLifetime !== this.maximumLifetime;
+    this.maximumLifetime = maximumLifetime;
+    if (changed) {
+      this.version++;
+    }
     this.spawnMask.fill(0);
     const step = Math.fround(seconds);
     if (seconds > 0) {
@@ -45,6 +81,9 @@ export class ParticleSlots {
     }
     const count = Math.min(requested, this.freeCount);
     if (count === 0) {
+      if (changed) {
+        this.sort();
+      }
       return 0;
     }
     const slots = new Uint32Array(count);
@@ -53,6 +92,7 @@ export class ParticleSlots {
     for (let index = 0; index < count; index++) {
       const slot = this.free[--this.freeCount]!;
       slots[index] = slot;
+      this.order?.add(slot);
       let sampledLifetime = initialLifetime;
       if (spread > 0) {
         const variation = Math.fround(Math.fround(propertyVariation(slot, seed, 2) + 1) - 1);
@@ -66,11 +106,25 @@ export class ParticleSlots {
       slots.sort((a, b) => this.lifetimes[a]! - this.lifetimes[b]! || a - b);
     }
     // Even nonpositive lifetimes retain their birth frame.
-    this.batches.push({ slots, next: 0, age: step });
+    this.batches.push({ slots, next: 0, age: step, generation: this.version });
+    this.sort();
     return count;
   }
 
+  private sort(): void {
+    const order = this.order;
+    if (!order) {
+      return;
+    }
+    this.forEachLifetime((slot, age, lifetime) => {
+      order.setLifetime(slot, age, lifetime, this.maximumLifetime);
+    });
+    order.sort();
+  }
+
   reset(): void {
+    this.version++;
+    this.order?.reset();
     this.batches = [];
     this.freeCount = this.capacity;
     this.spawnMask.fill(0);
@@ -88,6 +142,7 @@ export class ParticleSlots {
         if (batch.age <= this.lifetimes[slot]!) {
           break;
         }
+        this.order?.expire(slot);
         this.free[this.freeCount++] = slot;
         batch.next++;
       }
@@ -101,5 +156,6 @@ export class ParticleSlots {
       }
     }
     this.batches.length = retained;
+    this.order?.removeExpired();
   }
 }
