@@ -7,10 +7,12 @@ import { flipbookShader } from './flipbook-shader';
 import { resolveFlipbook } from './resolve-flipbook';
 import { resolvePivot } from './resolve-pivot';
 import { resolveTexture } from './resolve-texture';
+import { resolveTint } from './resolve-tint';
 import { sampleColorCurves } from './sample-color-curves';
 import { sampleGeometryCurves } from './sample-geometry-curves';
 import { setBlendMode } from './set-blend-mode';
 import type { Flipbook } from './types/flipbook';
+import type { ParticleRendering, ParticleTint } from './types/particle-rendering';
 import type { ParticleTexture, ParticlePivot } from './types/particle-texture';
 
 const vertex = `#version 300 es
@@ -104,19 +106,21 @@ in vec2 artworkUv;
 in vec2 uv;
 in vec4 particleColor;
 uniform float opacity;
+uniform vec4 tint;
 uniform sampler2D artwork;
 uniform bool textured;
 uniform bool straightAlpha;
 out vec4 color;
 void main() {
+  vec4 premultipliedTint = vec4(tint.rgb * tint.a, tint.a);
   if (textured) {
     vec4 pixel = texture(artwork, artworkUv);
     if (straightAlpha) pixel.rgb *= pixel.a;
-    color = vec4(pixel.rgb * particleColor.rgb, pixel.a) * (opacity * particleColor.a);
+    color = vec4(pixel.rgb * particleColor.rgb, pixel.a) * (opacity * particleColor.a) * premultipliedTint;
     return;
   }
   float alpha = max(0.0, 1.0 - dot(uv, uv)) * opacity * particleColor.a;
-  color = vec4(particleColor.rgb * alpha, alpha);
+  color = vec4(particleColor.rgb * alpha, alpha) * premultipliedTint;
 }`;
 function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
   const program = gl.createProgram();
@@ -164,6 +168,21 @@ export class EmitterView extends RenderContainer {
   private disposed = false;
   private flipbook: Flipbook | null = null;
   private automaticSize = false;
+  private readonly defaultTint: ParticleTint;
+  private currentTint: ParticleTint;
+
+  getTint(): ParticleTint {
+    return { ...this.currentTint };
+  }
+
+  setTint(tint: ParticleTint): void {
+    this.currentTint = resolveTint(tint);
+  }
+
+  resetTint(): void {
+    this.currentTint = this.defaultTint;
+  }
+
   private texturePivot: ParticlePivot = { x: 0, y: 0 };
   private frameTexture: WebGLTexture | null = null;
   private animationHalfStep = 0;
@@ -197,16 +216,19 @@ export class EmitterView extends RenderContainer {
   constructor(
     renderer: WebGLRenderer,
     config: EmitterConfig,
-    options: ParticleTexture = { texture: null },
+    options: ParticleRendering = { texture: null },
     sharedModifiers?: ModifierConfig[],
     effectTransform?: EffectTransform,
   ) {
+    const tint = resolveTint(options.tint);
     const pivot = resolvePivot(options.pivot);
     const animation = resolveFlipbook(options);
     const texture = animation ? animation.frames[0]! : resolveTexture(options);
     const geometryCurve = sampleGeometryCurves(config.overLifetime);
     const colorCurve = sampleColorCurves(config.overLifetime);
     super({});
+    this.defaultTint = tint;
+    this.currentTint = tint;
     this.artwork = texture;
     this.texturePivot = pivot;
     this.automaticSize = options.sizeMode === 'auto' && (animation?.frames.length ?? 0) > 1;
@@ -243,6 +265,7 @@ export class EmitterView extends RenderContainer {
             'opacity',
             'artwork',
             'textured',
+            'tint',
             'straightAlpha',
             'animationFrames',
             'frameCount',
@@ -406,6 +429,8 @@ export class EmitterView extends RenderContainer {
     m[8] = 1;
     gl.uniformMatrix3fv(u.transform!, false, m);
     gl.uniform1f(u.opacity!, opacity);
+    const tint = this.currentTint;
+    gl.uniform4f(u.tint!, tint.red, tint.green, tint.blue, tint.alpha);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.STENCIL_TEST);
     gl.disable(gl.SCISSOR_TEST);

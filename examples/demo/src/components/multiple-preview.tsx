@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 
 import { useMountEffect } from '../hooks/use-mount-effect';
 import { createMultiplePreview } from '../preview/create-multiple-preview';
+import { EmitterTintControls } from './emitter-tint-controls';
 import { Slider } from './slider';
 
 export function MultiplePreview() {
@@ -66,6 +67,11 @@ export function MultiplePreview() {
             Each emitter has its own timing, capacity, color, and blend mode. Two shared
             acceleration modifiers push all three left and upward.
           </p>
+          <EmitterTintControls
+            disabled={!ready}
+            onChange={(tint) => preview.current?.setTint('fire', tint)}
+            onReset={() => preview.current?.resetTint('fire')}
+          />
           <fieldset disabled={!ready}>
             <legend>Effect transform</legend>
             <Slider

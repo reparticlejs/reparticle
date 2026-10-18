@@ -11,6 +11,8 @@ import { EmitterView } from './emitter-view';
 import { resolveFlipbook } from './resolve-flipbook';
 import { resolvePivot } from './resolve-pivot';
 import { resolveTexture } from './resolve-texture';
+import { resolveTint } from './resolve-tint';
+import type { ParticleRendering, ParticleTint } from './types/particle-rendering';
 import type { ParticleStateListener } from './types/particle-state-change';
 import type { ParticleTexture } from './types/particle-texture';
 import type { ParticleViewOptions } from './types/particle-view-options';
@@ -22,6 +24,7 @@ export type {
   ParticlePivot,
 } from './types/particle-texture';
 export type { ParticleStateChange, ParticleStateListener } from './types/particle-state-change';
+export type { ParticleRendering, ParticleTint } from './types/particle-rendering';
 export type { ParticleViewOptions } from './types/particle-view-options';
 
 /** An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller. */
@@ -38,11 +41,11 @@ export class ParticleView extends RenderContainer {
   constructor(
     renderer: WebGLRenderer,
     definition: unknown,
-    options: ParticleTexture | ParticleViewOptions = { emitters: {} },
+    options: ParticleRendering | ParticleViewOptions = { emitters: {} },
   ) {
     super({});
     const effect = parseEffectConfig(definition);
-    const selections = new Map<string, ParticleTexture>();
+    const selections = new Map<string, ParticleRendering>();
     if ('emitters' in options) {
       const ids = new Set(effect.emitters.map((emitter) => emitter.id));
       for (const [id, texture] of Object.entries(options.emitters)) {
@@ -59,6 +62,7 @@ export class ParticleView extends RenderContainer {
     }
     // Validate every selection before allocating any emitter resources.
     for (const texture of selections.values()) {
+      resolveTint(texture.tint);
       resolvePivot(texture.pivot);
       if (!resolveFlipbook(texture)) {
         resolveTexture(texture);
@@ -142,6 +146,19 @@ export class ParticleView extends RenderContainer {
 
   getEmitter(id: string): Emitter {
     return this.getView(id).emitter;
+  }
+
+  setEmitterTint(id: string, tint: ParticleTint): void {
+    this.getView(id).setTint(tint);
+  }
+
+  getEmitterTint(id: string): ParticleTint {
+    return this.getView(id).getTint();
+  }
+
+  /** Remove the override and restore the authored rendering tint. */
+  resetEmitterTint(id: string): void {
+    this.getView(id).resetTint();
   }
 
   setEmitterTexture(id: string, options: ParticleTexture): void {

@@ -586,3 +586,29 @@ The screen-target renderer supports uniform scale and rotation. Non-uniform scal
 skew and one-axis reflections are rejected before simulation rather than silently
 approximated. Zero scale is supported. Core-only callers may still supply their
 own shared EffectTransform. The composed demo now uses normal Pixi transforms.
+
+### Runtime emitter tint (Pixi)
+
+`ParticleRendering` combines the existing texture selection with an optional straight
+RGBA `tint` (`red`, `green`, `blue`, `alpha`). It lives in Pixi's constructor options,
+never in the core effect JSON. Each omitted tint defaults to white with alpha one.
+Use `{ texture: null, tint: ... }` for procedural particles.
+
+As with [Defold's material constant overrides](https://defold.com/ref/particlefx-lua/#particlefx.set_constant),
+`setEmitterTint(id, tint)` overrides the authored value until `resetEmitterTint(id)`
+restores it. `getEmitterTint(id)` returns an independent snapshot. All four channels
+must be finite numbers; signed and above-one values are preserved, not clamped.
+Inputs are copied and every emitter's configuration is validated before allocation.
+Unknown IDs and invalid updates throw without altering the current tint.
+
+Tint multiplies texture color and the particle's initial/lifetime color in the
+fragment shader. Tint alpha multiplies both premultiplied RGB and alpha; Pixi
+hierarchy alpha composes with it. It affects living and future particles on the
+next render, including when simulation is paused. No simulation update, restart,
+particle readback, extra texture band, or additional draw is needed. Overrides
+survive texture/animation replacement and playback resets. Rendering while paused
+remains the host's responsibility; the demo requests a render after a tint edit.
+
+The multiple-emitter demo exposes fire RGBA controls, leaving smoke and sparks
+unchanged. This implements the built-in tint constant only, not arbitrary custom
+materials or consumer shader functions.

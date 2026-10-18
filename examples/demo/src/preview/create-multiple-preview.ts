@@ -1,5 +1,5 @@
 import type { Transform } from '@reparticle/core';
-import { ParticleView, type ParticleStateListener } from '@reparticle/pixi';
+import { ParticleView, type ParticleTint, type ParticleStateListener } from '@reparticle/pixi';
 import { Application, Assets, type Spritesheet, type WebGLRenderer } from 'pixi.js';
 
 import { destroyApplication } from './destroy-application';
@@ -61,6 +61,14 @@ export async function createMultiplePreview(
         );
         view.angle = -transform.rotation;
         view.scale.set(transform.scale);
+      },
+      setTint: (id: string, tint: ParticleTint) => {
+        view.setEmitterTint(id, tint);
+        app.render();
+      },
+      resetTint: (id: string) => {
+        view.resetEmitterTint(id);
+        app.render();
       },
       play: () => view.play(),
       stop: () => view.stop(),

@@ -1,3 +1,5 @@
+import type { ParticleTint } from '@reparticle/pixi';
+
 import type { PreviewControls } from './preview';
 import type { PreviewController } from './preview-controller';
 
@@ -41,4 +43,10 @@ export interface SelectFieldProps<Value extends string | number> {
   value: Value;
   options: readonly SelectOption<Value>[];
   onChange: (value: Value) => void;
+}
+
+export interface EmitterTintControlsProps {
+  disabled: boolean;
+  onChange: (tint: ParticleTint) => void;
+  onReset: () => void;
 }

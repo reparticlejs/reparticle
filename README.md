@@ -370,3 +370,23 @@ one-axis reflection; unsupported scene matrices throw a descriptive error.
 
 Core-only users can still share an `EffectTransform` across emitters through the
 fourth constructor argument. Pixi manages this runtime transform internally.
+
+## Per-emitter rendering tint
+
+Tint belongs to Pixi rendering options, separately from the core effect definition:
+
+```ts
+const particles = new ParticleView(renderer, effect, {
+  emitters: {
+    fire: { texture: null, tint: { red: 1, green: 0.8, blue: 0.5, alpha: 1 } },
+  },
+});
+particles.setEmitterTint('fire', { red: 0.5, green: 1, blue: 1, alpha: 0.4 });
+particles.getEmitterTint('fire'); // Independent RGBA snapshot.
+particles.resetEmitterTint('fire'); // Restore the authored tint, not necessarily white.
+```
+
+Tint multiplies the emitter's existing particle color immediately on the next render,
+including living particles while simulation is paused. All channels must be finite;
+values are not clamped. Texture changes and simulation resets retain the override.
+The multiple-emitter demo includes fire-only RGBA controls.
