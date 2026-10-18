@@ -5,12 +5,13 @@ import { RenderContainer, type Texture, type WebGLRenderer, type Matrix } from '
 import { createFrameTexture } from './create-frame-texture';
 import { flipbookShader } from './flipbook-shader';
 import { resolveFlipbook } from './resolve-flipbook';
+import { resolvePivot } from './resolve-pivot';
 import { resolveTexture } from './resolve-texture';
 import { sampleColorCurves } from './sample-color-curves';
 import { sampleGeometryCurves } from './sample-geometry-curves';
 import { setBlendMode } from './set-blend-mode';
 import type { Flipbook } from './types/flipbook';
-import type { ParticleTexture } from './types/particle-texture';
+import type { ParticleTexture, ParticlePivot } from './types/particle-texture';
 
 const vertex = `#version 300 es
 precision highp float;
@@ -25,6 +26,7 @@ uniform float emitterScale;
 uniform mat3 transform;
 uniform vec2 particleAspect;
 uniform bool automaticSize;
+uniform vec2 particlePivot;
 uniform vec4 textureTrim;
 uniform bool stretchWithVelocity;
 uniform bool orientToMovement;
@@ -77,6 +79,10 @@ void main() {
   float sine = sin(angle);
   float cosine = cos(angle);
   vec2 corner = (trim.xy + (uv * 0.5 + 0.5) * trim.zw - 0.5) * size;
+  // Defold composes pivot translation inside the particle rotation/scale transform.
+  vec2 pivotScale = particleAspect * geometry.x * (vec2(1.0) + stretch);
+  if (!automaticSize) pivotScale *= properties.z;
+  corner += vec2(particlePivot.x, -particlePivot.y) * pivotScale;
   vec2 rotated = vec2(cosine * corner.x - sine * corner.y, sine * corner.x + cosine * corner.y);
   if (orientToMovement && dot(motion.zw, motion.zw) > 0.0001) {
     vec2 direction = normalize(motion.zw);
@@ -158,6 +164,7 @@ export class EmitterView extends RenderContainer {
   private disposed = false;
   private flipbook: Flipbook | null = null;
   private automaticSize = false;
+  private texturePivot: ParticlePivot = { x: 0, y: 0 };
   private frameTexture: WebGLTexture | null = null;
   private animationHalfStep = 0;
   private artwork: Texture | null = null;
@@ -169,6 +176,7 @@ export class EmitterView extends RenderContainer {
     this.setTexture({ texture: value });
   }
   setTexture(options: ParticleTexture): void {
+    const pivot = resolvePivot(options.pivot);
     const flipbook = resolveFlipbook(options);
     const texture = flipbook ? flipbook.frames[0]! : resolveTexture(options);
     let frames: WebGLTexture | null = null;
@@ -182,6 +190,7 @@ export class EmitterView extends RenderContainer {
     this.gl.deleteTexture(this.frameTexture);
     this.frameTexture = frames;
     this.flipbook = flipbook;
+    this.texturePivot = pivot;
     this.automaticSize = options.sizeMode === 'auto' && (flipbook?.frames.length ?? 0) > 1;
     this.artwork = texture;
   }
@@ -191,12 +200,14 @@ export class EmitterView extends RenderContainer {
     options: ParticleTexture = { texture: null },
     sharedModifiers?: ModifierConfig,
   ) {
+    const pivot = resolvePivot(options.pivot);
     const animation = resolveFlipbook(options);
     const texture = animation ? animation.frames[0]! : resolveTexture(options);
     const geometryCurve = sampleGeometryCurves(config.overLifetime);
     const colorCurve = sampleColorCurves(config.overLifetime);
     super({});
     this.artwork = texture;
+    this.texturePivot = pivot;
     this.automaticSize = options.sizeMode === 'auto' && (animation?.frames.length ?? 0) > 1;
     this.host = renderer;
     const gl = renderer.gl;
@@ -239,6 +250,7 @@ export class EmitterView extends RenderContainer {
             'textureTrim',
             'particleAspect',
             'automaticSize',
+            'particlePivot',
             'stretchWithVelocity',
             'orientToMovement',
             'orientToAngularVelocity',
@@ -322,6 +334,7 @@ export class EmitterView extends RenderContainer {
     gl.viewport(0, 0, r.canvas.width, r.canvas.height);
     gl.useProgram(this.program);
     gl.bindVertexArray(this.vao);
+    gl.uniform2f(u.particlePivot!, this.texturePivot.x, this.texturePivot.y);
     gl.uniform1i(u.automaticSize!, this.automaticSize ? 1 : 0);
     const animation = this.flipbook;
     gl.activeTexture(gl.TEXTURE2);

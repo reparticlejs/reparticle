@@ -31,6 +31,7 @@ async function loadTextures(): Promise<PreviewAssets['textures']> {
   return {
     star: { atlas, frame: 'star' },
     leaf: { atlas, frame: 'leaf' },
+    'leaf-pivot': { atlas, frame: 'leaf', pivot: { x: 0, y: 0.5 } },
     spark: { atlas, frame: 'spark' },
     flipbook: { atlas, animation: 'shapes', playback: 'loop-forward', fps: 6 },
     'flipbook-auto': {

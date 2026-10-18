@@ -12,6 +12,7 @@ export const textureOptions: SelectOption<ParticleTextureName>[] = [
   { value: 'spark', label: 'Blue spark' },
   { value: 'flipbook', label: 'Atlas animation · loop' },
   { value: 'flipbook-once', label: 'Atlas animation · once over lifetime' },
+  { value: 'leaf-pivot', label: 'Leaf · bottom pivot' },
   { value: 'flipbook-auto', label: 'Atlas animation · automatic size' },
   { value: 'flipbook-pingpong', label: 'Atlas animation · ping-pong' },
   { value: 'procedural', label: 'Soft circle (procedural)' },

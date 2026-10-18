@@ -11,8 +11,14 @@ export type AnimationPlayback =
 
 export type ParticleSizeMode = 'manual' | 'auto';
 
+/** Defold offset from the centered geometry: positive X right, positive Y up. */
+export interface ParticlePivot {
+  x: number;
+  y: number;
+}
+
 /** Caller owns the textures, including frames loaded by a Pixi Spritesheet. */
-export type ParticleTexture = { sizeMode?: ParticleSizeMode } & (
+export type ParticleTexture = { sizeMode?: ParticleSizeMode; pivot?: ParticlePivot } & (
   | { texture: Texture | null; atlas?: never; frame?: never; animation?: never }
   | {
       atlas: { textures: Record<string, Texture> };

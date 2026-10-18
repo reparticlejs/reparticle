@@ -12,7 +12,8 @@ export type ParticleTextureName =
   | 'flipbook'
   | 'flipbook-once'
   | 'flipbook-pingpong'
-  | 'flipbook-auto';
+  | 'flipbook-auto'
+  | 'leaf-pivot';
 
 export interface PreviewControls {
   capacity: number;

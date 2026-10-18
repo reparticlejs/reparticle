@@ -464,3 +464,28 @@ Switching texture options updates living particles immediately, including while
 paused. Texture dimensions are Pixi logical dimensions (`orig`), so high-resolution
 assets and renderer DPR retain their normal logical-unit semantics. The demo has
 an explicit automatic-size animation selection beside its manual animations.
+
+### Particle pivot (Pixi only)
+
+`ParticleTexture.pivot` is a finite `{ x, y }` offset, centered at zero by default.
+It is copied and validated before resource allocation or texture-selection changes.
+Core configuration, particle state and simulation are unchanged. The renderer
+follows [Defold's pivot transform composition](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp):
+scale the pivot by the animation's base aspect, apply particle scale/stretch,
+rotate it with the particle, and translate it with the particle position. Positive
+Y is upward, converted to canvas coordinates in the shader. This is a geometry
+offset, not Pixi's normalized anchor convention; manual `y: 0.5` puts the bottom
+edge at the simulated position. Values outside the image are supported.
+
+Manual pivot offsets include captured initial size. Auto offsets deliberately do
+not include initial size or the selected frame's dimensions, matching Defold's
+Auto transform branch. The animation's first frame supplies its base aspect,
+which remains stable across animation frames. Trim offsets continue to describe
+the cropped artwork within the original frame, and packed atlas rotation affects
+UVs only. Movement direction, angular rotation, local emitter transforms, and
+Pixi display transforms apply to both corners and pivot translation.
+
+The implementation adds one vec2 uniform, no particle storage, readbacks, or
+additional draw calls. Each emitter owns its pivot selection; changing one texture
+configuration does not alter another emitter. Omitted pivot restores zero on
+texture replacement. The demo includes a bottom-pivot leaf selection.

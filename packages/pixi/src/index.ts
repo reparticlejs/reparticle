@@ -8,6 +8,7 @@ import { RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
 
 import { EmitterView } from './emitter-view';
 import { resolveFlipbook } from './resolve-flipbook';
+import { resolvePivot } from './resolve-pivot';
 import { resolveTexture } from './resolve-texture';
 import type { ParticleStateListener } from './types/particle-state-change';
 import type { ParticleTexture } from './types/particle-texture';
@@ -17,6 +18,7 @@ export type {
   ParticleTexture,
   AnimationPlayback,
   ParticleSizeMode,
+  ParticlePivot,
 } from './types/particle-texture';
 export type { ParticleStateChange, ParticleStateListener } from './types/particle-state-change';
 export type { ParticleViewOptions } from './types/particle-view-options';
@@ -53,6 +55,7 @@ export class ParticleView extends RenderContainer {
     }
     // Validate every selection before allocating any emitter resources.
     for (const texture of selections.values()) {
+      resolvePivot(texture.pivot);
       if (!resolveFlipbook(texture)) {
         resolveTexture(texture);
       }

@@ -286,3 +286,22 @@ Trimmed frames keep their original extent and trim offset; atlas rotation does n
 swap particle dimensions. Dimensions use Pixi's logical texture units, independent
 of renderer device pixel ratio. Switching modes affects existing particles without
 restarting the simulation. Select **Atlas animation · automatic size** in the demo.
+
+### Particle pivot
+
+```ts
+view.setTexture({ atlas, frame: 'leaf', pivot: { x: 0, y: 0.5 } });
+```
+
+Pivot is a Pixi texture option, defaulting to `{ x: 0, y: 0 }` (center).
+It follows Defold's geometry-offset convention: positive X shifts the artwork
+right and positive Y shifts it up. In manual mode, `y: 0.5` places the bottom edge
+at the particle position. Values are finite and may lie outside the image.
+The offset follows particle rotation, orientation, lifetime scale and stretch.
+Trimmed frames use their original extent, not the cropped rectangle.
+
+Defold's Auto mode applies pivot against the animation's base aspect without
+multiplying by frame dimensions or initial size; `0.5` is therefore **not** a
+half-frame anchor in Auto mode. Switching options changes living particles,
+including while paused, without touching simulation state. Omitting pivot on a
+later texture selection restores the center. Try **Leaf · bottom pivot** in the demo.
