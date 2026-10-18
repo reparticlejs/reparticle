@@ -84,6 +84,7 @@ it('combines vortex and radial after drag with stable spread and one position st
       0,
       0,
       0,
+      new Float32Array(24),
     );
   expect(run(1)[2]).toBeCloseTo((100 + 120 * 0.6 * 0.1) * 0.7 + 7.2 + 9.6);
   expect(run(1)[3]).toBeCloseTo((50 - 120 * 0.8 * 0.1) * 0.7 + 9.6 - 7.2);

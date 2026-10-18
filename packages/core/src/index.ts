@@ -13,6 +13,7 @@ import { EmitterVelocity } from './emitter-velocity';
 import functions from './gpujs/functions.json';
 import { isPipelineTexture } from './gpujs/is-pipeline-texture';
 import { prewarm } from './prewarm';
+import { SharedModifiers } from './shared-modifiers';
 import { SpawnRate } from './spawn-rate';
 import { SpawnSchedule } from './spawn-schedule';
 export type { EmitterContext } from '#types/emitter.js';
@@ -57,10 +58,12 @@ export class Emitter {
   private seed: number;
   private readonly initialSeed: number;
   readonly gl: WebGL2RenderingContext;
+  private readonly sharedModifiers: SharedModifiers;
   private readonly canvas: HTMLCanvasElement;
 
-  constructor(context: EmitterContext, definition: EmitterConfig) {
+  constructor(context: EmitterContext, definition: EmitterConfig, sharedModifiers: unknown = {}) {
     this.settings = emitterConfigSchema.parse(definition);
+    this.sharedModifiers = new SharedModifiers(sharedModifiers);
     this.spawnRate = new SpawnRate(
       this.settings.emission.rate,
       this.settings.emission.rateSpread,
@@ -115,6 +118,7 @@ export class Emitter {
     gpu.addFunction(functions.advancePosition);
     gpu.addFunction(functions.advanceRotation);
     gpu.addFunction(functions.applyAcceleration);
+    gpu.addFunction(functions.applySharedModifiers);
     gpu.addFunction(functions.applyRadial);
     gpu.addFunction(functions.applyVortex);
     gpu.addFunction(functions.particleHeading);
@@ -405,6 +409,14 @@ export class Emitter {
       this.initialStretchY.at(this.playback.normalizedAge),
       o.initial.stretchXSpread,
       o.initial.stretchYSpread,
+      this.sharedModifiers.sample(
+        this.playback.normalizedAge,
+        !worldSpace,
+        this.x,
+        this.y,
+        o.rotation,
+        o.scale,
+      ),
     );
     if (count) {
       this.seed = (this.seed + 1) % 65536;
@@ -488,3 +500,5 @@ export { prewarm } from './prewarm';
 
 export { sampleCurve, CURVE_SEGMENTS } from './curves/sample-curve';
 export type { Curve, CurvePoint, ScalarProperty } from '#types/curve.js';
+
+export type { ModifierConfig } from '#types/effect.js';

@@ -1,4 +1,4 @@
-import { Emitter, CURVE_SEGMENTS, type EmitterConfig } from '@reparticle/core';
+import { Emitter, CURVE_SEGMENTS, type EmitterConfig, type ModifierConfig } from '@reparticle/core';
 import { RenderContainer, type Texture, type WebGLRenderer, type Matrix } from 'pixi.js';
 
 import { createFrameTexture } from './create-frame-texture';
@@ -184,6 +184,7 @@ export class EmitterView extends RenderContainer {
     renderer: WebGLRenderer,
     config: EmitterConfig,
     options: ParticleTexture = { texture: null },
+    sharedModifiers?: ModifierConfig,
   ) {
     const animation = resolveFlipbook(options);
     const texture = animation ? animation.frames[0]! : resolveTexture(options);
@@ -195,7 +196,7 @@ export class EmitterView extends RenderContainer {
     const gl = renderer.gl;
     this.gl = gl;
     try {
-      this.emitter = new Emitter({ gl, canvas: renderer.canvas }, config);
+      this.emitter = new Emitter({ gl, canvas: renderer.canvas }, config, sharedModifiers);
       let program: WebGLProgram | null = null;
       let vao: WebGLVertexArrayObject | null = null;
       try {

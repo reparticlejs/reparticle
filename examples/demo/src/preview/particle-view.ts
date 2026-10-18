@@ -1,4 +1,4 @@
-import type { EmitterConfig } from '@reparticle/core';
+import type { EmitterConfig, ModifierConfig } from '@reparticle/core';
 import { ParticleView } from '@reparticle/pixi';
 import type { Application, WebGLRenderer } from 'pixi.js';
 
@@ -12,9 +12,10 @@ export function createParticleView(
   definition: EmitterConfig,
   textures: PreviewAssets['textures'],
   controls: PreviewControls,
+  modifiers?: ModifierConfig,
 ): ParticleView {
   const emitter = applyControls(definition, controls);
-  const effect = { version: 1, emitters: [emitter] };
+  const effect = { version: 1, emitters: [emitter], modifiers };
   const renderer = app.renderer;
   return new ParticleView(renderer, effect, textures[controls.texture]);
 }
@@ -26,8 +27,9 @@ export function replaceParticleView(
   textures: PreviewAssets['textures'],
   controls: PreviewControls,
   definition: EmitterConfig,
+  modifiers?: ModifierConfig,
 ): ParticleView {
-  const replacement = createParticleView(app, definition, textures, controls);
+  const replacement = createParticleView(app, definition, textures, controls, modifiers);
   try {
     replacement.emitter.x = current.emitter.x;
     replacement.emitter.y = current.emitter.y;

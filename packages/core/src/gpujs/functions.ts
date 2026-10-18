@@ -17,3 +17,5 @@ export { spawnCircle } from './spawn-circle';
 export { spawnCone2D } from './spawn-cone2d';
 export { spawnRotation } from './spawn-rotation';
 export { spawnMotion } from './spawn-motion';
+
+export { applySharedModifiers } from '../behaviors/shared-modifiers';

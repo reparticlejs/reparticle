@@ -148,5 +148,11 @@
         }
       }
     }
-  ]
+  ],
+  "modifiers": {
+    "acceleration": {
+      "magnitude": 45,
+      "rotation": 90
+    }
+  }
 }

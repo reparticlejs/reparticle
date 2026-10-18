@@ -100,7 +100,7 @@ const dragSchema = strictObject({
   useDirection: boolean().default(false),
   rotation: number().default(0),
 });
-const modifiersSchema = strictObject({
+export const modifiersSchema = strictObject({
   vortex: vortexSchema.default({
     magnitude: 0,
     spread: 0,
@@ -255,6 +255,7 @@ export const emitterConfigSchema = strictObject({
 /** Only implemented configuration features are accepted. */
 export const effectConfigSchema = strictObject({
   version: literal(1),
+  modifiers: modifiersSchema.prefault({}),
   emitters: tuple([emitterConfigSchema], emitterConfigSchema).superRefine((emitters, context) => {
     const ids = new Set<string>();
     for (const [index, emitter] of emitters.entries()) {

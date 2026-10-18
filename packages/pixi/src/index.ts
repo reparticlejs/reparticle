@@ -46,7 +46,12 @@ export class ParticleView extends RenderContainer {
     }
     try {
       for (const emitter of effect.emitters) {
-        const view = new EmitterView(renderer, emitter, selections.get(emitter.id));
+        const view = new EmitterView(
+          renderer,
+          emitter,
+          selections.get(emitter.id),
+          effect.modifiers,
+        );
         this.views.set(emitter.id, view);
         this.simulations.set(emitter.id, view.emitter);
       }

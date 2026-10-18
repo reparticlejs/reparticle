@@ -7,6 +7,7 @@ import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { advancePosition, advanceVelocity } from '../behaviors/motion';
 import { propertyVariation } from '../behaviors/property-variation';
 import { applyRadial } from '../behaviors/radial';
+import { applySharedModifiers } from '../behaviors/shared-modifiers';
 import { applyVortex } from '../behaviors/vortex';
 import { particleHeading } from './particle-heading';
 import { spawnBox } from './spawn-box';
@@ -89,6 +90,7 @@ export function integrate(
   initialStretchY: number,
   stretchXSpread: number,
   stretchYSpread: number,
+  sharedModifiers: Float32Array,
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
@@ -252,7 +254,7 @@ export function integrate(
       );
     }
     const birthProjection = birthX * dragX + birthY * dragY;
-    return [
+    const result: ParticleTexel = [
       positionX,
       positionY,
       applyDrag(
@@ -274,6 +276,41 @@ export function integrate(
       ) +
         (birthRadial[1]! + birthVortex[1]!) * seconds,
     ];
+    if (sharedModifiers[0]! > 0.5) {
+      const heading = particleHeading(
+        rotation +
+          (orientToAngularVelocity > 0.5
+            ? advanceRotation(
+                0,
+                initialAngularVelocity +
+                  propertyVariation(particleId, seed, 15) * angularVelocitySpread,
+                0,
+                lifetime,
+                angularVelocityCurve,
+                seconds,
+              )
+            : 0),
+        0,
+        lifetime,
+        rotationCurve,
+        birthX - birthAccelerationX * seconds,
+        birthY - birthAccelerationY * seconds,
+        orientToMovement,
+      );
+      const velocity = applySharedModifiers(
+        positionX,
+        positionY,
+        result[2],
+        result[3],
+        heading[0],
+        heading[1],
+        birthFactor,
+        seconds,
+        sharedModifiers,
+      );
+      return [positionX, positionY, velocity[0], velocity[1]];
+    }
+    return result;
   }
 
   // Properties texel: age, lifetime, initialSize, resolved initialRotation (degrees).
@@ -295,6 +332,7 @@ export function integrate(
   // Acceleration precedes drag; both modifiers share the particle's birth spread factor.
   let modifierState = [0, 0, 0, 0];
   if (
+    sharedModifiers[0]! > 0.5 ||
     dragSpread !== 0 ||
     accelerationSpread !== 0 ||
     radialSpread !== 0 ||
@@ -387,7 +425,7 @@ export function integrate(
     factor,
     seconds,
   );
-  return [
+  const result: ParticleTexel = [
     advancePosition(x, velocityX, accelerationX, seconds) +
       (dampedX - acceleratedX + (radial[0]! + vortex[0]!) * seconds) * seconds,
     advancePosition(y, velocityY, accelerationY, seconds) +
@@ -395,4 +433,43 @@ export function integrate(
     dampedX + (radial[0]! + vortex[0]!) * seconds,
     dampedY + (radial[1]! + vortex[1]!) * seconds,
   ];
+  if (sharedModifiers[0]! > 0.5) {
+    const heading = particleHeading(
+      properties[3] +
+        (orientToAngularVelocity > 0.5
+          ? advanceRotation(
+              modifierState[2]!,
+              modifierState[1]!,
+              age + seconds,
+              particleLifetime,
+              angularVelocityCurve,
+              seconds,
+            )
+          : 0),
+      age + seconds,
+      particleLifetime,
+      rotationCurve,
+      velocityX,
+      velocityY,
+      orientToMovement,
+    );
+    const velocity = applySharedModifiers(
+      x,
+      y,
+      result[2],
+      result[3],
+      heading[0],
+      heading[1],
+      factor,
+      seconds,
+      sharedModifiers,
+    );
+    return [
+      result[0] + (velocity[0] - result[2]) * seconds,
+      result[1] + (velocity[1] - result[3]) * seconds,
+      velocity[0],
+      velocity[1],
+    ];
+  }
+  return result;
 }

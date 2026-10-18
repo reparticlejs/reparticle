@@ -163,5 +163,33 @@
       "blendMode": "alpha",
       "stretchWithVelocity": false
     }
-  ]
+  ],
+  "modifiers": {
+    "acceleration": {
+      "magnitude": 0,
+      "spread": 0,
+      "rotation": 0
+    },
+    "drag": {
+      "magnitude": 0,
+      "spread": 0,
+      "useDirection": false,
+      "rotation": 0
+    },
+    "radial": {
+      "magnitude": 0,
+      "spread": 0,
+      "x": 0,
+      "y": 0,
+      "maxDistance": 100
+    },
+    "vortex": {
+      "magnitude": 0,
+      "spread": 0,
+      "x": 0,
+      "y": 0,
+      "maxDistance": 100,
+      "rotation": 0
+    }
+  }
 }

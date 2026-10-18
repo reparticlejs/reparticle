@@ -47,7 +47,10 @@ export function MultiplePreview() {
             Fire loops continuously. Smoke starts after 0.3 seconds. Sparks emit once after 0.15
             seconds.
           </p>
-          <p>Each emitter has its own timing, capacity, color, and blend mode.</p>
+          <p>
+            Each emitter has its own timing, capacity, color, and blend mode. Shared wind pushes all
+            three to the left.
+          </p>
           <button disabled={!ready} onClick={togglePause}>
             {paused ? 'Resume' : 'Pause'}
           </button>

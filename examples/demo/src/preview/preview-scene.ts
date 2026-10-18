@@ -18,7 +18,13 @@ export class PreviewScene {
   ) {
     const definition = assets.effect.emitters[0];
     this.settings = initialControls(definition);
-    this.view = createParticleView(app, definition, assets.textures, this.settings);
+    this.view = createParticleView(
+      app,
+      definition,
+      assets.textures,
+      this.settings,
+      assets.effect.modifiers,
+    );
     try {
       this.view.emitter.x = app.screen.width / 2;
       this.view.emitter.y = app.screen.height * 0.7;
@@ -104,6 +110,7 @@ export class PreviewScene {
         this.assets.textures,
         next,
         this.assets.effect.emitters[0],
+        this.assets.effect.modifiers,
       );
     } else {
       this.updateParameters(next);

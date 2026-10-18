@@ -342,10 +342,58 @@ Each emitter retains its own texture allocation; total memory and slot work scal
 with the sum of capacities, including per-emitter row padding. There is no merging
 of capacities, readback, or per-particle CPU loop. GPU resources are cleaned up on
 partial construction failure and destruction; caller-owned artwork survives.
-Shared effect-root modifiers and an effect-wide resource budget remain future work.
+Shared effect-root modifiers are described below; an effect-wide resource budget remains future work.
 This adds independent composition, not changes to the documented simulation integrator.
 
 The demo's **Multiple emitters example** link (`?multiple`) loads
 `public/multiple-emitters.json`: looping fire, delayed smoke, and a once-only spark
 burst. Pause and restart operate on the whole effect. Texture selection is in the
 Pixi host example, not that JSON.
+
+### Shared effect modifiers
+
+The root `modifiers` object accepts the same acceleration, drag, radial, and vortex
+settings as an emitter's `modifiers`. Omitted root modifiers default to disabled:
+
+```json
+{
+  "version": 1,
+  "modifiers": {
+    "acceleration": { "magnitude": 45, "rotation": 90 }
+  },
+  "emitters": ["... emitter definitions ..."]
+}
+```
+
+Each emitter receives both scopes. As in
+[Defold's effect compiler](https://github.com/defold/defold/blob/dev/editor/src/clj/editor/particlefx.clj),
+shared modifiers apply after the emitter's own modifiers; they never replace a
+same-kind local modifier. Within each scope this implementation retains the fixed
+order acceleration, drag, radial, vortex. Arbitrary repeated/ordered modifier
+lists remain unsupported. Shared curves sample the receiving emitter's normalized
+timeline, including its duration, start delay, loops, and prewarm. Spreads reuse
+that particle's captured modifier variation, just like local modifiers.
+
+Shared centers and directions are expressed in effect simulation coordinates.
+World-space emitters use them directly; local-space emitters inverse-transform
+them by their origin, rotation, and scale. Moving an emitter does not move a shared
+radial/vortex center. Force and distance conversion preserves effect-space strength
+under local scale, including negative scale. A collapsed zero-scale local emitter
+skips shared forces because its transform has no inverse. The ParticleView's Pixi
+transform still transforms the complete displayed effect; it is not a separate
+world-physics transform.
+
+Core's `Emitter` accepts the shared definition as its third argument:
+`new Emitter(context, effect.emitters[0], effect.modifiers)`. ParticleView passes it
+to every emitter automatically. Shared configuration is validated and sampled at
+construction; recreate the effect to change it. Per-emitter `configuration` and
+`setParameters` remain local and do not absorb or override the shared definition.
+The demo forwards root modifiers during single-emitter recreation too.
+
+Shared forces execute inside the existing GPU integration pass, with a small
+24-float per-emitter parameter buffer. No additional particle storage, readback,
+simulation pass, or draw is added. Shared velocity changes contribute once to
+living-particle displacement; newborn age/position and the existing local analytic
+acceleration term retain their prototype conventions. Consequently this does not
+claim frame-identical Defold trajectories. The multi-emitter example now includes
+shared leftward wind alongside the sparks' local downward acceleration.
