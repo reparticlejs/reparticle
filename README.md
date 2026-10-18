@@ -268,3 +268,21 @@ allocate overlapping playback instances. `reset()` retains its previous restart
 behavior and manual emission gate; `play()` also enables that gate. Pausing means
 skipping updates, whereas stopping lets particles continue moving. The composed
 example at `?multiple` includes stop, clear, restart and emitter-state indicators.
+
+### Automatic frame sizing
+
+```ts
+view.setTexture({ atlas, animation: 'smoke', sizeMode: 'auto', fps: 30 });
+// For composed effects: view.setEmitterTexture('smoke', { atlas, animation: 'smoke', sizeMode: 'auto' });
+```
+
+`sizeMode` belongs only to Pixi texture options and defaults to `'manual'`.
+Following Defold, `'auto'` uses the current frame's original dimensions for
+animations with multiple frames and playback other than `'none'`. Initial size,
+its curve and spread are ignored; lifetime scale and stretch still apply.
+Single frames, single-frame animations, playback `'none'`, and procedural particles
+retain manual sizing. FPS zero freezes the first frame but retains Auto sizing.
+Trimmed frames keep their original extent and trim offset; atlas rotation does not
+swap particle dimensions. Dimensions use Pixi's logical texture units, independent
+of renderer device pixel ratio. Switching modes affects existing particles without
+restarting the simulation. Select **Atlas animation · automatic size** in the demo.

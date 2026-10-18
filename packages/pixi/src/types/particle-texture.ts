@@ -9,8 +9,10 @@ export type AnimationPlayback =
   | 'loop-backward'
   | 'loop-pingpong';
 
+export type ParticleSizeMode = 'manual' | 'auto';
+
 /** Caller owns the textures, including frames loaded by a Pixi Spritesheet. */
-export type ParticleTexture =
+export type ParticleTexture = { sizeMode?: ParticleSizeMode } & (
   | { texture: Texture | null; atlas?: never; frame?: never; animation?: never }
   | {
       atlas: { textures: Record<string, Texture> };
@@ -25,4 +27,5 @@ export type ParticleTexture =
       fps?: number;
       texture?: never;
       frame?: never;
-    };
+    }
+);

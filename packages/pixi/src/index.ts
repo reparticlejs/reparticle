@@ -13,7 +13,11 @@ import type { ParticleStateListener } from './types/particle-state-change';
 import type { ParticleTexture } from './types/particle-texture';
 import type { ParticleViewOptions } from './types/particle-view-options';
 
-export type { ParticleTexture, AnimationPlayback } from './types/particle-texture';
+export type {
+  ParticleTexture,
+  AnimationPlayback,
+  ParticleSizeMode,
+} from './types/particle-texture';
 export type { ParticleStateChange, ParticleStateListener } from './types/particle-state-change';
 export type { ParticleViewOptions } from './types/particle-view-options';
 

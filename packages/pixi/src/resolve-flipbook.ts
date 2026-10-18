@@ -2,6 +2,13 @@ import type { Flipbook } from './types/flipbook';
 import type { ParticleTexture } from './types/particle-texture';
 
 export function resolveFlipbook(options: ParticleTexture): Flipbook | null {
+  if (
+    options.sizeMode !== undefined &&
+    options.sizeMode !== 'manual' &&
+    options.sizeMode !== 'auto'
+  ) {
+    throw new Error(`Unknown particle size mode: ${String(options.sizeMode)}`);
+  }
   if (options.animation === undefined) {
     return null;
   }

@@ -33,6 +33,13 @@ async function loadTextures(): Promise<PreviewAssets['textures']> {
     leaf: { atlas, frame: 'leaf' },
     spark: { atlas, frame: 'spark' },
     flipbook: { atlas, animation: 'shapes', playback: 'loop-forward', fps: 6 },
+    'flipbook-auto': {
+      atlas,
+      animation: 'shapes',
+      playback: 'loop-forward',
+      fps: 6,
+      sizeMode: 'auto',
+    },
     'flipbook-once': { atlas, animation: 'shapes', playback: 'once-forward' },
     'flipbook-pingpong': { atlas, animation: 'shapes', playback: 'loop-pingpong', fps: 6 },
     procedural: { texture: null },

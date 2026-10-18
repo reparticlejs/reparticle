@@ -24,6 +24,7 @@ uniform vec2 emitterRotation;
 uniform float emitterScale;
 uniform mat3 transform;
 uniform vec2 particleAspect;
+uniform bool automaticSize;
 uniform vec4 textureTrim;
 uniform bool stretchWithVelocity;
 uniform bool orientToMovement;
@@ -54,7 +55,7 @@ void main() {
   vec2 stretch = initialStretch + geometry.zw;
   // Defold's fixed 60 FPS, 180-degree shutter factor applies only to Y stretch.
   if (stretchWithVelocity) stretch.y *= length(motion.zw) / 120.0;
-  vec2 aspect = particleAspect;
+  vec2 baseSize = particleAspect * properties.z;
   vec4 trim = textureTrim;
   vec4 top = frameTop;
   vec4 bottom = frameBottom;
@@ -63,11 +64,12 @@ void main() {
     top = texelFetch(animationFrames, ivec2(0, frame), 0);
     bottom = texelFetch(animationFrames, ivec2(1, frame), 0);
     trim = texelFetch(animationFrames, ivec2(2, frame), 0);
-    aspect = texelFetch(animationFrames, ivec2(3, frame), 0).xy;
+    vec4 dimensions = texelFetch(animationFrames, ivec2(3, frame), 0);
+    baseSize = automaticSize ? dimensions.zw : dimensions.xy * properties.z;
   }
   vec2 fraction = uv * 0.5 + 0.5;
   artworkUv = mix(mix(top.xy, top.zw, fraction.x), mix(bottom.xy, bottom.zw, fraction.x), fraction.y);
-  vec2 size = aspect * properties.z * geometry.x * (vec2(1.0) + stretch);
+  vec2 size = baseSize * geometry.x * (vec2(1.0) + stretch);
   float rotation = geometry.y;
   if (orientToAngularVelocity) rotation = texelFetch(particles, at + ivec2(0, rows * 3), 0).z;
   // Defold's positive Z rotation is counterclockwise; canvas Y points down.
@@ -155,6 +157,7 @@ export class EmitterView extends RenderContainer {
   private readonly matrix = new Float32Array(9);
   private disposed = false;
   private flipbook: Flipbook | null = null;
+  private automaticSize = false;
   private frameTexture: WebGLTexture | null = null;
   private animationHalfStep = 0;
   private artwork: Texture | null = null;
@@ -179,6 +182,7 @@ export class EmitterView extends RenderContainer {
     this.gl.deleteTexture(this.frameTexture);
     this.frameTexture = frames;
     this.flipbook = flipbook;
+    this.automaticSize = options.sizeMode === 'auto' && (flipbook?.frames.length ?? 0) > 1;
     this.artwork = texture;
   }
   constructor(
@@ -193,6 +197,7 @@ export class EmitterView extends RenderContainer {
     const colorCurve = sampleColorCurves(config.overLifetime);
     super({});
     this.artwork = texture;
+    this.automaticSize = options.sizeMode === 'auto' && (animation?.frames.length ?? 0) > 1;
     this.host = renderer;
     const gl = renderer.gl;
     this.gl = gl;
@@ -233,6 +238,7 @@ export class EmitterView extends RenderContainer {
             'frameBottom',
             'textureTrim',
             'particleAspect',
+            'automaticSize',
             'stretchWithVelocity',
             'orientToMovement',
             'orientToAngularVelocity',
@@ -316,6 +322,7 @@ export class EmitterView extends RenderContainer {
     gl.viewport(0, 0, r.canvas.width, r.canvas.height);
     gl.useProgram(this.program);
     gl.bindVertexArray(this.vao);
+    gl.uniform1i(u.automaticSize!, this.automaticSize ? 1 : 0);
     const animation = this.flipbook;
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, this.frameTexture ?? this.emitter.texture);

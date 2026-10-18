@@ -136,7 +136,7 @@ Start delay: `startDelay` is finite and nonnegative, defaults to zero, and is st
 
 Start offset: `startOffset` is a finite nonnegative structural setting, default zero. Match Defold StartInstance: ignore offsets below 0.0001 and clamp simulated time to maximum particle lifetime (currently scalar `initial.lifetime`). Fast-forward in full float32 1/60-second steps with float32 elapsed accumulation, including delay and once/loop transitions. The last step is not shortened. Reparticle defers this work until the first positive update so consumers can position an emitter before its world-space particles are born. Reset queues it again; zero-time kernel warmup does not consume it. The debug overlay replays the shared timing utilities independently, keeping counting out of core. Reference: [Defold StartInstance](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L407-L429) and [FastForwardEmitter](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L313-L324).
 
-Size over lifetime is implemented as `initial.size` (default 24, captured at birth) multiplied by `overLifetime.scale` (default 1). Scale accepts a constant or `{ points: [{ time, value, tangent }] }`. Tangents are slopes equivalent to Defold ty/tx; Hermite interpolation is sampled into 64 linear segments, matching Defold PROPERTY_SAMPLE_COUNT. Time is normalized particle age, not emitter time. Core owns schema and curve math, and stores initial size in the properties texel's third channel. Pixi uploads the sampled curve once and evaluates it in its vertex shader, retaining texture aspect ratio. No texture expansion, extra simulation kernel, CPU particle state, or per-frame curve upload is required. Runtime initial-size updates affect future births only; curve edits require recreation. Initial-size spread, emitter-time size curves and automatic animated-frame sizing remain pending.
+Size over lifetime is implemented as `initial.size` (default 24, captured at birth) multiplied by `overLifetime.scale` (default 1). Scale accepts a constant or `{ points: [{ time, value, tangent }] }`. Tangents are slopes equivalent to Defold ty/tx; Hermite interpolation is sampled into 64 linear segments, matching Defold PROPERTY_SAMPLE_COUNT. Time is normalized particle age, not emitter time. Core owns schema and curve math, and stores initial size in the properties texel's third channel. Pixi uploads the sampled curve once and evaluates it in its vertex shader, retaining texture aspect ratio. No texture expansion, extra simulation kernel, CPU particle state, or per-frame curve upload is required. Runtime initial-size updates affect future births only; curve edits require recreation. Initial-size spread, emitter-time size curves and automatic animated-frame sizing were added in subsequent steps below.
 
 Alpha over lifetime: `initial.alpha` and `overLifetime.alpha` default to 1. The latter uses the shared constant/Hermite curve schema and 64-segment sampling. Following Defold, clamp only the product of captured initial alpha and lifetime alpha to [0, 1], before multiplying texture and object opacity. Pixi scales premultiplied RGB and alpha together for both textured and procedural rendering. Initial alpha shares the color texel with initial RGB; positive lifetime captured at spawn identifies active storage. Transparent particles remain simulated and counted. Initial alpha is a numeric parameter for future births; lifetime curves remain structural. No texture growth, readback, extra pass, or per-frame curve upload.
 
@@ -260,7 +260,7 @@ The caller owns all textures and atlas resources; destroying the view does not d
 
 Frames respect Pixi UV rotation and trim offsets, retaining the original untrimmed
 image's proportions and center. Initial size still controls the longest original
-dimension; automatic sizing is not implemented yet. Flipbook playback is described below. Switching
+dimension; automatic sizing is described below. Flipbook playback is described below. Switching
 frames affects all existing particles immediately without restarting simulation,
 including while paused. No simulation state, CPU particle readback, or extra draw
 pass is added. The demo's three artwork choices now share `textures/particles.json`.
@@ -298,7 +298,7 @@ A small renderer-owned RGBA32F table stores four texels per animation frame
 an animation. The vertex shader chooses each particle's frame independently;
 there is no particle readback, CPU animation loop, extra simulation storage, or
 extra draw pass. Rotation and trim work per frame. The existing manual sizing
-uses each frame's original proportions; automatic sizing remains a separate step.
+uses each frame's original proportions; automatic sizing is described below.
 All frames must share one Pixi texture source; multi-page animations are explicitly
 rejected. Empty or unknown animations and invalid settings leave the old selection
 intact. Frame metadata is snapshotted: call `setTexture` again after editing it.
@@ -439,3 +439,28 @@ Sleeping emitters skip simulation and rendering until restarted.
 Renderer state is restored before forwarding callbacks. Texture configuration
 remains separate and is unaffected by playback. The `?multiple` demo displays
 notifications and provides restart, stop, clear and pause controls.
+
+### Automatic frame sizing (Pixi only)
+
+`ParticleTexture.sizeMode` accepts `manual` (default) or `auto`, with runtime
+validation before changing texture resources. Core JSON, GPU state and simulation
+are unchanged. The renderer follows [Defold's CreateParticleRenderContext and
+UpdateParticleRenderState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp):
+Auto applies only to multi-frame animations whose playback is not `none`.
+Single/static frames retain manual size, even when Auto is selected. A multi-frame
+animation at zero FPS still qualifies and holds its first frame.
+
+The frame table's two spare components now store original width and height.
+Storage remains four RGBA texels (64 bytes) per frame. The shader chooses original
+frame dimensions in Auto mode and normalized aspect times captured initial size in
+Manual mode, then applies lifetime scale, stretch, orientation and display
+transforms. Trim offsets remain normalized against the original frame; packed
+rotation only changes UVs. Initial size curves/spread do not affect Auto geometry.
+Like Defold's Auto branch, world-space size does not include the scale embedded in
+captured initial size; local emitter scale and the Pixi display transform still
+apply. No per-particle CPU work, GPU readback or additional draw pass is introduced.
+
+Switching texture options updates living particles immediately, including while
+paused. Texture dimensions are Pixi logical dimensions (`orig`), so high-resolution
+assets and renderer DPR retain their normal logical-unit semantics. The demo has
+an explicit automatic-size animation selection beside its manual animations.
