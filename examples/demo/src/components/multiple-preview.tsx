@@ -3,10 +3,12 @@ import { useRef, useState } from 'react';
 
 import { useMountEffect } from '../hooks/use-mount-effect';
 import { createMultiplePreview } from '../preview/create-multiple-preview';
+import { Slider } from './slider';
 
 export function MultiplePreview() {
   const host = useRef<HTMLDivElement>(null);
   const preview = useRef<Awaited<ReturnType<typeof createMultiplePreview>>>(null);
+  const [transform, setTransform] = useState({ x: 0, y: 0, rotation: 0, scale: 1 });
   const [paused, setPaused] = useState(false);
   const [error, setError] = useState('');
   const [states, setStates] = useState<Record<string, EmitterState>>({});
@@ -39,6 +41,12 @@ export function MultiplePreview() {
     };
   });
 
+  function changeTransform(patch: Partial<typeof transform>) {
+    const next = { ...transform, ...patch };
+    setTransform(next);
+    preview.current?.setTransform(next);
+  }
+
   function togglePause() {
     preview.current?.pause(!paused);
     setPaused(!paused);
@@ -58,6 +66,43 @@ export function MultiplePreview() {
             Each emitter has its own timing, capacity, color, and blend mode. Shared wind pushes all
             three to the left.
           </p>
+          <fieldset disabled={!ready}>
+            <legend>Effect transform</legend>
+            <Slider
+              id="effect-x"
+              label="X"
+              value={transform.x}
+              min={-300}
+              max={300}
+              onChange={(x) => changeTransform({ x })}
+            />
+            <Slider
+              id="effect-y"
+              label="Y"
+              value={transform.y}
+              min={-200}
+              max={200}
+              onChange={(y) => changeTransform({ y })}
+            />
+            <Slider
+              id="effect-rotation"
+              label="Rotation"
+              value={transform.rotation}
+              min={-180}
+              max={180}
+              unit="°"
+              onChange={(rotation) => changeTransform({ rotation })}
+            />
+            <Slider
+              id="effect-scale"
+              label="Scale"
+              value={transform.scale}
+              min={0}
+              max={3}
+              step={0.1}
+              onChange={(scale) => changeTransform({ scale })}
+            />
+          </fieldset>
           <button disabled={!ready} onClick={togglePause}>
             {paused ? 'Resume' : 'Pause'}
           </button>

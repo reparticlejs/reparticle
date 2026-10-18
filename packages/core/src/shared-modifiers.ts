@@ -2,6 +2,7 @@ import type { ModifierConfig } from '#types/effect.js';
 
 import { modifiersSchema } from './config/schema';
 import { SampledCurve } from './curves/sampled-curve';
+import type { EffectTransform } from './effect-transform';
 
 /** Effect-space modifiers sampled on each receiving emitter's own timeline. */
 export class SharedModifiers {
@@ -31,6 +32,7 @@ export class SharedModifiers {
     y: number,
     rotation: number,
     scale: number,
+    effect?: EffectTransform,
   ): Float32Array {
     if (!this.enabled) {
       return this.values;
@@ -89,6 +91,26 @@ export class SharedModifiers {
       values[16] !== 0
         ? 1
         : 0;
+    if (!local && effect) {
+      const angle = (-effect.rotation * Math.PI) / 180;
+      const effectCosine = Math.cos(angle);
+      const effectSine = Math.sin(angle);
+      for (const index of [3, 8, 20]) {
+        const componentX = values[index]!;
+        const componentY = values[index + 1]!;
+        values[index] = effectCosine * componentX - effectSine * componentY;
+        values[index + 1] = effectSine * componentX + effectCosine * componentY;
+      }
+      for (const index of [12, 17]) {
+        const componentX = values[index]!;
+        const componentY = values[index + 1]!;
+        values[index] = effect.applyX(componentX, componentY);
+        values[index + 1] = effect.applyY(componentX, componentY);
+      }
+      for (const index of [1, 2, 10, 11, 14, 15, 16, 19]) {
+        values[index] = values[index]! * effect.scale;
+      }
+    }
     return values;
   }
 }

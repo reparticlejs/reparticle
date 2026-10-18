@@ -1,10 +1,11 @@
 import {
   parseEffectConfig,
+  EffectTransform,
   type Emitter,
   type EmitterState,
   type StopOptions,
 } from '@reparticle/core';
-import { RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
+import { Matrix, RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
 
 import { EmitterView } from './emitter-view';
 import { resolveFlipbook } from './resolve-flipbook';
@@ -25,6 +26,9 @@ export type { ParticleViewOptions } from './types/particle-view-options';
 
 /** An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller. */
 export class ParticleView extends RenderContainer {
+  private readonly effectTransform = new EffectTransform();
+  private readonly sceneTransform = new Matrix();
+  private readonly identity = new Matrix();
   private readonly views = new Map<string, EmitterView>();
   private readonly simulations = new Map<string, Emitter>();
   private disposed = false;
@@ -67,6 +71,7 @@ export class ParticleView extends RenderContainer {
           emitter,
           selections.get(emitter.id),
           effect.modifiers,
+          this.effectTransform,
         );
         this.views.set(emitter.id, view);
         this.simulations.set(emitter.id, view.emitter);
@@ -165,6 +170,7 @@ export class ParticleView extends RenderContainer {
   }
 
   update(seconds: number): void {
+    this.syncSceneTransform();
     for (const view of this.views.values()) {
       view.update(seconds);
     }
@@ -177,8 +183,9 @@ export class ParticleView extends RenderContainer {
   }
 
   override render(): void {
+    this.syncSceneTransform();
     for (const view of this.views.values()) {
-      view.renderParticles(this.worldTransform, this.groupAlpha);
+      view.renderParticles(this.identity, this.groupAlpha);
     }
   }
 
@@ -195,6 +202,22 @@ export class ParticleView extends RenderContainer {
     this.views.clear();
     this.simulations.clear();
     super.destroy();
+  }
+
+  /** Read the current hierarchy before simulation, even before Pixi's render traversal. */
+  private syncSceneTransform(): void {
+    const matrix = this.getGlobalTransform(this.sceneTransform);
+    const scale = Math.hypot(matrix.a, matrix.b);
+    const tolerance = 1e-6 * Math.max(1, scale);
+    if (Math.abs(matrix.c + matrix.b) > tolerance || Math.abs(matrix.d - matrix.a) > tolerance) {
+      throw new Error('ParticleView requires uniform scene scale without skew or reflection');
+    }
+    this.effectTransform.set({
+      x: matrix.tx,
+      y: matrix.ty,
+      rotation: (-Math.atan2(matrix.b, matrix.a) * 180) / Math.PI,
+      scale,
+    });
   }
 
   private getView(id: string): EmitterView {

@@ -333,6 +333,34 @@ Configuration snapshots include the current position. Reset/play preserve it.
 World-space particles retain their birth positions when the emitter moves; local
 particles follow the emitter through the existing local-space renderer transform.
 
-The composed demo now loads three separate origins from JSON and positions the
-whole `ParticleView` on screen. Moving the Pixi display object is a visual effect
-transform; use emitter coordinates for simulation motion and inherited velocity.
+The composed demo loads three separate origins from JSON and positions the
+whole effect through its Pixi parent hierarchy. Moving the Pixi display object now drives simulation motion and inherited velocity
+automatically.
+
+### Attach particles to a moving object
+
+```ts
+rocket.addChild(view);
+view.position.set(0, 30); // emitter effect offset inside the rocket
+
+// Each frame: move the rocket first, then advance particles.
+rocket.x += speed * seconds;
+view.update(seconds);
+```
+
+ParticleView automatically reads the current Pixi parent hierarchy before
+simulation. World-space particles stay behind; new births follow the rocket.
+Local-space particles follow the current hierarchy, including while paused.
+Position, rotation, uniform scale and pivot offsets compose normally through
+nested parents. Inherited velocity includes movement of each transformed emitter
+origin. No consumer effectTransform synchronization is needed or exposed.
+
+Use normal Pixi units and angles (`rotation` in radians, `angle` in degrees).
+Move parents before calling update. Drawing does not advance simulation. Reset/play
+preserve the scene transform and clear velocity history. World particles use global
+scene coordinates, so later parent/camera-container movement also leaves them
+behind. This screen-target renderer requires uniform scale without skew or
+one-axis reflection; unsupported scene matrices throw a descriptive error.
+
+Core-only users can still share an `EffectTransform` across emitters through the
+fourth constructor argument. Pixi manages this runtime transform internally.

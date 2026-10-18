@@ -1,4 +1,4 @@
-import type { StopOptions } from '@reparticle/core';
+import type { StopOptions, EffectTransform } from '@reparticle/core';
 import { Emitter, CURVE_SEGMENTS, type EmitterConfig, type ModifierConfig } from '@reparticle/core';
 import { RenderContainer, type Texture, type WebGLRenderer, type Matrix } from 'pixi.js';
 
@@ -199,6 +199,7 @@ export class EmitterView extends RenderContainer {
     config: EmitterConfig,
     options: ParticleTexture = { texture: null },
     sharedModifiers?: ModifierConfig,
+    effectTransform?: EffectTransform,
   ) {
     const pivot = resolvePivot(options.pivot);
     const animation = resolveFlipbook(options);
@@ -213,7 +214,12 @@ export class EmitterView extends RenderContainer {
     const gl = renderer.gl;
     this.gl = gl;
     try {
-      this.emitter = new Emitter({ gl, canvas: renderer.canvas }, config, sharedModifiers);
+      this.emitter = new Emitter(
+        { gl, canvas: renderer.canvas },
+        config,
+        sharedModifiers,
+        effectTransform,
+      );
       let program: WebGLProgram | null = null;
       let vao: WebGLVertexArrayObject | null = null;
       try {
@@ -379,13 +385,13 @@ export class EmitterView extends RenderContainer {
     gl.uniform2f(u.viewport!, r.screen.width, r.screen.height);
     const localSpace = this.emitter.space === 'local';
     gl.uniform1i(u.stretchWithVelocity!, this.emitter.stretchWithVelocity ? 1 : 0);
-    gl.uniform1f(u.emitterScale!, localSpace ? this.emitter.scale : 1);
-    const radians = localSpace ? (-this.emitter.rotation * Math.PI) / 180 : 0;
+    gl.uniform1f(u.emitterScale!, localSpace ? this.emitter.worldScale : 1);
+    const radians = localSpace ? (-this.emitter.worldRotation * Math.PI) / 180 : 0;
     gl.uniform2f(u.emitterRotation!, Math.cos(radians), Math.sin(radians));
     gl.uniform2f(
       u.emitterOffset!,
-      localSpace ? this.emitter.x : 0,
-      localSpace ? this.emitter.y : 0,
+      localSpace ? this.emitter.worldX : 0,
+      localSpace ? this.emitter.worldY : 0,
     );
     const t = transform,
       m = this.matrix;

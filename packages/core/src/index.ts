@@ -9,6 +9,7 @@ import { updateEmitterConfig } from './config/update-emitter';
 import { sampleCurve } from './curves/sample-curve';
 import { SampledCurve } from './curves/sampled-curve';
 import { SampledShape } from './curves/sampled-shape';
+import { EffectTransform } from './effect-transform';
 import { EmitterPlayback } from './emitter-playback';
 import { EmitterVelocity } from './emitter-velocity';
 import functions from './gpujs/functions.json';
@@ -64,7 +65,12 @@ export class Emitter {
   private readonly sharedModifiers: SharedModifiers;
   private readonly canvas: HTMLCanvasElement;
 
-  constructor(context: EmitterContext, definition: EmitterConfig, sharedModifiers: unknown = {}) {
+  constructor(
+    context: EmitterContext,
+    definition: EmitterConfig,
+    sharedModifiers: unknown = {},
+    readonly effectTransform = new EffectTransform(),
+  ) {
     this.settings = emitterConfigSchema.parse(definition);
     this.sharedModifiers = new SharedModifiers(sharedModifiers);
     this.spawnRate = new SpawnRate(
@@ -167,6 +173,19 @@ export class Emitter {
       throw error;
     }
   }
+  get worldX(): number {
+    return this.effectTransform.applyX(this.x, this.y);
+  }
+  get worldY(): number {
+    return this.effectTransform.applyY(this.x, this.y);
+  }
+  get worldRotation(): number {
+    return this.effectTransform.rotation + this.rotation;
+  }
+  get worldScale(): number {
+    return this.effectTransform.scale * this.scale;
+  }
+
   get state(): EmitterState {
     return this.playback.state;
   }
@@ -398,7 +417,7 @@ export class Emitter {
         (seconds) => this.step(seconds),
       );
     }
-    this.velocity.update(this.x, this.y, dt);
+    this.velocity.update(this.worldX, this.worldY, dt);
     this.step(dt);
     this.notifyStateChanges();
   }
@@ -412,25 +431,25 @@ export class Emitter {
     const lifetime = this.initialLifetime.at(this.playback.normalizedAge);
     const o = this.settings;
     const worldSpace = o.space === 'world';
-    const scale = worldSpace ? o.scale : 1;
-    const rotation = worldSpace ? o.rotation : 0;
+    const scale = worldSpace ? this.worldScale : 1;
+    const rotation = worldSpace ? this.worldRotation : 0;
     const radians = (-rotation * Math.PI) / 180;
     const accelerationRadians = -((rotation + o.modifiers.acceleration.rotation) * Math.PI) / 180;
     const dragRadians = -((rotation + o.modifiers.drag.rotation) * Math.PI) / 180;
     const vortex = o.modifiers.vortex;
     const vortexRadians = -((rotation + vortex.rotation) * Math.PI) / 180;
     const vortexX =
-      (worldSpace ? this.x : 0) +
+      (worldSpace ? this.worldX : 0) +
       (Math.cos(radians) * vortex.x - Math.sin(radians) * vortex.y) * scale;
     const vortexY =
-      (worldSpace ? this.y : 0) +
+      (worldSpace ? this.worldY : 0) +
       (Math.sin(radians) * vortex.x + Math.cos(radians) * vortex.y) * scale;
     const radial = o.modifiers.radial;
     const radialX =
-      (worldSpace ? this.x : 0) +
+      (worldSpace ? this.worldX : 0) +
       (Math.cos(radians) * radial.x - Math.sin(radians) * radial.y) * scale;
     const radialY =
-      (worldSpace ? this.y : 0) +
+      (worldSpace ? this.worldY : 0) +
       (Math.sin(radians) * radial.x + Math.cos(radians) * radial.y) * scale;
     const initialRotation = this.initialRotation.at(this.playback.normalizedAge);
     const particleRotation =
@@ -441,8 +460,8 @@ export class Emitter {
       dt,
       start,
       count,
-      worldSpace ? this.x : 0,
-      worldSpace ? this.y : 0,
+      worldSpace ? this.worldX : 0,
+      worldSpace ? this.worldY : 0,
       this.initialSpeed.at(this.playback.normalizedAge),
       o.initial.direction,
       o.initial.spread,
@@ -511,6 +530,7 @@ export class Emitter {
         this.y,
         o.rotation,
         o.scale,
+        this.effectTransform,
       ),
     );
     this.lifetimes.advance(dt, count, lifetime, o.initial.lifetimeSpread, this.seed);
@@ -611,3 +631,6 @@ export type {
   EmitterStateListener,
   StopOptions,
 } from '#types/lifecycle.js';
+
+export { EffectTransform } from './effect-transform';
+export type { Transform } from '#types/transform.js';

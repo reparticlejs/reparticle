@@ -1,3 +1,4 @@
+import type { Transform } from '@reparticle/core';
 import { ParticleView, type ParticleStateListener } from '@reparticle/pixi';
 import { Application, Assets, type Spritesheet, type WebGLRenderer } from 'pixi.js';
 
@@ -53,6 +54,14 @@ export async function createMultiplePreview(
     app.start();
     ready = true;
     return {
+      setTransform: (transform: Transform) => {
+        view.position.set(
+          app.screen.width / 2 + transform.x,
+          app.screen.height * 0.7 + transform.y,
+        );
+        view.angle = -transform.rotation;
+        view.scale.set(transform.scale);
+      },
       play: () => view.play(),
       stop: () => view.stop(),
       retire: () => view.retire(),
