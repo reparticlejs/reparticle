@@ -114,6 +114,12 @@ export class ParticleView extends RenderContainer {
     }
   }
 
+  retire(): void {
+    for (const emitter of this.simulations.values()) {
+      emitter.retire();
+    }
+  }
+
   stop(options: StopOptions = {}): void {
     for (const view of this.views.values()) {
       view.stop(options);

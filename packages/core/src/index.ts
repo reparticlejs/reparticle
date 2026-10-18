@@ -185,6 +185,12 @@ export class Emitter {
     this.reset();
   }
 
+  /** Finish the current cycle, then drain existing particles. */
+  retire(): void {
+    this.assertAlive();
+    this.playback.retire();
+  }
+
   /** Stop spawning; existing particles drain unless clear is requested. */
   stop({ clear = false }: StopOptions = {}): void {
     this.assertAlive();

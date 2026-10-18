@@ -56,6 +56,7 @@ export async function createMultiplePreview(
     return {
       play: () => view.play(),
       stop: () => view.stop(),
+      retire: () => view.retire(),
       clear: () => view.clear(),
       pause: (paused: boolean) => (paused ? app.stop() : app.start()),
       destroy: () => destroyApplication(app),

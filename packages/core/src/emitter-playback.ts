@@ -8,6 +8,7 @@ import { propertyVariation } from './behaviors/property-variation';
 export class EmitterPlayback {
   private elapsed = 0;
   private finished = false;
+  private retiring = false;
   private waiting = true;
   private currentState: EmitterState = 'prespawn';
   private transitions: EmitterState[] = [];
@@ -22,7 +23,13 @@ export class EmitterPlayback {
     return transitions;
   }
 
+  /** Disable the next loop without changing the current clock or state. */
+  retire(): void {
+    this.retiring = true;
+  }
+
   stop(): void {
+    this.retiring = false;
     if (this.currentState !== 'sleeping') {
       this.finished = true;
       this.setState('postspawn');
@@ -87,7 +94,7 @@ export class EmitterPlayback {
     this.elapsed = Math.min(this.elapsed + seconds, this.duration);
     // Avoid an extra frame caused solely by floating-point accumulation.
     if (this.duration - this.elapsed <= Number.EPSILON * Math.max(1, this.duration) * 4) {
-      if (this.playMode === 'loop') {
+      if (this.playMode === 'loop' && !this.retiring) {
         this.elapsed = 0;
       } else {
         this.stop();
@@ -103,6 +110,7 @@ export class EmitterPlayback {
   reset(): void {
     this.elapsed = 0;
     this.finished = false;
+    this.retiring = false;
     this.waiting = true;
     this.setState('prespawn');
   }

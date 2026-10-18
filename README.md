@@ -305,3 +305,18 @@ multiplying by frame dimensions or initial size; `0.5` is therefore **not** a
 half-frame anchor in Auto mode. Switching options changes living particles,
 including while paused, without touching simulation state. Omitting pivot on a
 later texture selection restores the center. Try **Leaf · bottom pivot** in the demo.
+
+To finish the current emission cycle instead of stopping births immediately:
+
+```ts
+view.retire(); // every emitter finishes its own current cycle
+view.getEmitter('smoke').retire(); // or just one emitter
+```
+
+Retirement follows Defold: it disables the next loop without changing the current
+clock or state. The boundary frame still emits, then reports `postspawn`, followed
+by `sleeping` when particles expire. During start delay it waits and runs one cycle;
+a once emitter keeps its normal schedule. Calling it after a loop has wrapped
+finishes the new cycle. `play()`/`reset()` cancel retirement; `stop()` and `clear()`
+still stop immediately. Continue updating to finish and receive notifications.
+The composed demo has a **Finish current loops** button.

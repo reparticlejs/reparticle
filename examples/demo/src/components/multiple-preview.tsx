@@ -64,6 +64,9 @@ export function MultiplePreview() {
           <button disabled={!ready} onClick={() => preview.current?.play()}>
             Restart all emitters
           </button>
+          <button disabled={!ready} onClick={() => preview.current?.retire()}>
+            Finish current loops
+          </button>
           <button disabled={!ready} onClick={() => preview.current?.stop()}>
             Stop spawning
           </button>

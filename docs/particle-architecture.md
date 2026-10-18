@@ -86,7 +86,7 @@ Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when
 2. **Connect one emitter — implemented.** The demo creates from JSON. `setParameters` validates atomic numeric patches, and `configuration` returns an independent snapshot. IDs, capacity and seed reach the runtime; scalar speed is exact. Flat prototype options and implicit visual changes are removed. Texture configuration remains in the rendering backlog; initial size is implemented.
 3. **Separate lifecycle and acceleration — implemented.** Built-in lifetime helpers own age/activity, gravity contributes acceleration, and motion integrates each axis once using the constant-acceleration position term. Spawn initializes new particles before these stages. Helpers are registered in one GPU update kernel, not separate passes. The original gravity configuration has since been replaced by the acceleration modifier described below; numeric acceleration updates affect living particles, while initial-property changes affect future births. GPU.js uses an explicitly numeric activity flag because registered boolean-return helpers are unsupported.
 4. **Value distributions.** Consistent constant/random representations; independent random channels; lifetime and other initial properties sampled once at birth.
-5. **Emitter playback — duration, once/loop, play/stop/clear, and state notifications implemented.** Retiring at the end of the current loop remains pending.
+5. **Emitter playback — duration, once/loop, play/stop/clear, and state notifications implemented.** Retiring at the end of the current loop is implemented.
 6. **Shapes and transforms — circle, 2D box, and 2D cone implemented.** `circle` takes a finite nonnegative `diameter`; angle is uniform and radius uses square-root sampling. Diameter updates affect future births only; shape type requires recreation. Point direction/spread are point-only. Implement each remaining documented shape separately; coordinate-space rules and inherited velocity; resolve 3D state/rendering needs before claiming 3D shapes.
 7. **Curves and particle appearance.** Shared curve contract, emitter-time evaluation, particle-age evaluation; each size/color/rotation/stretch feature separately. Renderer evaluation may avoid storing values derivable from age.
 8. **Remaining modifiers.** Drag, radial, vortex individually, with clear ordering and influence rules.
@@ -489,3 +489,21 @@ The implementation adds one vec2 uniform, no particle storage, readbacks, or
 additional draw calls. Each emitter owns its pivot selection; changing one texture
 configuration does not alter another emitter. Omitted pivot restores zero on
 texture replacement. The demo includes a bottom-pivot leaf selection.
+
+### Retire after the current cycle
+
+`Emitter.retire()` and `ParticleView.retire()` follow [Defold's RetireEmitter and
+IsEmitterLooping](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp):
+set a retirement flag that disables looping without changing the timer, emission
+gate, particles, prewarm, or current state. Each emitter finishes its own sampled
+duration. The final frame samples the endpoint of emitter-time curves and still
+spawns before entering postspawn; sleeping follows normal lifetime completion.
+There is no separate retiring state or notification at the moment of the request.
+
+Retiring during delay retains that delay and completes one cycle. Before pending
+prewarm, retirement applies throughout prewarm too. After a loop boundary has
+already wrapped, the new cycle is the current one. Zero duration completes on the
+next eligible positive update. Once emitters are unchanged; draining/sleeping
+emitters are not revived. Repeated retirement is idempotent. Stop clears the flag
+and stops immediately; reset/play clear it and restore authored loop behavior.
+No GPU changes, extra storage, or per-particle work are required.

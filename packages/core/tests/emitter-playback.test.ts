@@ -204,3 +204,86 @@ it('continues emitter-time modifier curves while draining, then freezes when sle
   playback.advance(0.1);
   expect(playback.normalizedAge).toBeCloseTo(0.2);
 });
+
+it('retires at the current boundary, preserving the final frame and curve endpoint', () => {
+  const playback = new EmitterPlayback(0.3, 'loop');
+  playback.advance(0.1);
+  playback.takeTransitions();
+  playback.retire();
+  playback.retire();
+  expect(playback.takeTransitions()).toEqual([]);
+  expect(playback.advance(0.1)).toBe(true);
+  expect(playback.state).toBe('spawning');
+  expect(playback.advance(0.1)).toBe(true);
+  expect(playback.normalizedAge).toBe(1);
+  expect(playback.takeTransitions()).toEqual(['postspawn']);
+  expect(playback.advance(0.1)).toBe(false);
+  playback.finish(false);
+  expect(playback.state).toBe('postspawn');
+  playback.finish(true);
+  expect(playback.takeTransitions()).toEqual(['sleeping']);
+});
+
+it('retirement during delay waits, then emits one full cycle', () => {
+  const playback = new EmitterPlayback(0.2, 'loop', 0.2);
+  playback.retire();
+  expect([0.1, 0.1, 0.1, 0.1, 0.1].map((dt) => playback.advance(dt))).toEqual([
+    false,
+    false,
+    true,
+    true,
+    false,
+  ]);
+  expect(playback.takeTransitions()).toEqual(['spawning', 'postspawn']);
+});
+
+it('retirement after a wrapped boundary finishes the newly started cycle', () => {
+  const playback = new EmitterPlayback(0.2, 'loop');
+  playback.advance(0.1);
+  playback.advance(0.1);
+  expect(playback.normalizedAge).toBe(0);
+  playback.retire();
+  expect(playback.advance(0.1)).toBe(true);
+  expect(playback.state).toBe('spawning');
+  expect(playback.advance(0.1)).toBe(true);
+  expect(playback.state).toBe('postspawn');
+});
+
+it.each(['once', 'loop'] as const)('retiring zero duration %s emits one positive step', (mode) => {
+  const playback = new EmitterPlayback(0, mode);
+  playback.retire();
+  expect(playback.advance(0)).toBe(false);
+  expect(playback.state).toBe('prespawn');
+  expect(playback.advance(0.1)).toBe(true);
+  expect(playback.advance(0.1)).toBe(false);
+});
+
+it('reset cancels retirement and stop overrides it immediately', () => {
+  const playback = new EmitterPlayback(0.2, 'loop');
+  playback.retire();
+  playback.reset();
+  for (let frame = 0; frame < 6; frame++) {
+    expect(playback.advance(0.1)).toBe(true);
+  }
+  playback.retire();
+  playback.stop();
+  expect(playback.advance(0.1)).toBe(false);
+  playback.finish(true);
+  playback.takeTransitions();
+  playback.retire();
+  expect(playback.advance(0.1)).toBe(false);
+  expect(playback.takeTransitions()).toEqual([]);
+});
+
+it('retirement respects sampled duration and does not change once playback', () => {
+  const options = { seed: 42, durationSpread: 0.4, startDelaySpread: 0.1 };
+  const retiring = new EmitterPlayback(0.3, 'loop', 0.2, options);
+  const once = new EmitterPlayback(0.3, 'once', 0.2, options);
+  retiring.retire();
+  once.retire();
+  for (let frame = 0; frame < 30; frame++) {
+    expect(retiring.advance(0.05)).toBe(once.advance(0.05));
+    expect(retiring.normalizedAge).toBe(once.normalizedAge);
+    expect(retiring.state).toBe(once.state);
+  }
+});
