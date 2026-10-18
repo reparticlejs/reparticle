@@ -6,21 +6,21 @@ describe('spawn scheduling', () => {
     const schedule = new SpawnSchedule(1000);
     let count = 0;
     for (let i = 0; i < 60; i++) {
-      count += schedule.next(140, 1 / 60).count;
+      count += schedule.next(140, 1 / 60);
     }
     expect(count).toBe(140);
   });
-  it('wraps bounded slots and never exceeds capacity', () => {
+  it('caps requests per frame without queuing excess', () => {
     const schedule = new SpawnSchedule(10);
-    expect(schedule.next(80, 0.1)).toEqual({ start: 0, count: 8 });
-    expect(schedule.next(50, 0.1)).toEqual({ start: 8, count: 5 });
-    expect(schedule.next(1000, 0.1)).toEqual({ start: 3, count: 10 });
+    expect(schedule.next(80, 0.1)).toEqual(8);
+    expect(schedule.next(50, 0.1)).toEqual(5);
+    expect(schedule.next(1000, 0.1)).toEqual(10);
   });
-  it('clears carry and cursor on reset', () => {
+  it('clears carry on reset', () => {
     const schedule = new SpawnSchedule(10);
     schedule.next(15, 0.1);
     schedule.reset();
-    expect(schedule.next(5, 0.1)).toEqual({ start: 0, count: 0 });
+    expect(schedule.next(5, 0.1)).toEqual(0);
   });
   it('rejects invalid inputs before scheduling', () => {
     expect(() => new SpawnSchedule(0)).toThrow(RangeError);

@@ -20,7 +20,7 @@ it('adds inherited motion only at birth without changing initial-direction orien
       context,
       state,
       0,
-      0,
+      new Float32Array(Math.ceil(context.constants.capacity / 24)).fill(16777215),
       spawn,
       0,
       0,

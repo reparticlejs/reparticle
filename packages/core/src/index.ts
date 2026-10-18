@@ -15,13 +15,13 @@ import { EmitterVelocity } from './emitter-velocity';
 import functions from './gpujs/functions.json';
 import { isPipelineTexture } from './gpujs/is-pipeline-texture';
 import { Modifiers } from './modifiers';
-import { ParticleLifetimes } from './particle-lifetimes';
+import { ParticleSlots } from './particle-slots';
 import { prewarm } from './prewarm';
 import { SpawnRate } from './spawn-rate';
 import { SpawnSchedule } from './spawn-schedule';
 export type { EmitterContext } from '#types/emitter.js';
 
-/** GPU.js simulation, independent of any renderer. No particle arrays or CPU fallback. */
+/** GPU.js simulation, independent of any renderer. Only slot allocation and lifetime metadata live on the CPU. */
 export class Emitter {
   readonly width = 256;
   readonly rows: number;
@@ -30,7 +30,7 @@ export class Emitter {
   private settings: EmitterConfig;
   private readonly velocity = new EmitterVelocity();
   private readonly schedule: SpawnSchedule;
-  private readonly lifetimes: ParticleLifetimes;
+  private readonly slots: ParticleSlots;
   private readonly listeners = new Set<EmitterStateListener>();
   private notifying = false;
   private initialRed: SampledCurve;
@@ -96,7 +96,7 @@ export class Emitter {
     this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
     this.schedule = new SpawnSchedule(this.capacity);
-    this.lifetimes = new ParticleLifetimes(this.capacity);
+    this.slots = new ParticleSlots(this.capacity);
     this.playback = new EmitterPlayback(
       this.settings.duration,
       this.settings.playMode,
@@ -205,7 +205,7 @@ export class Emitter {
     this.assertAlive();
     if (clear) {
       this.output = this.run(0);
-      this.lifetimes.reset();
+      this.slots.reset();
     }
     this.needsPrewarm = false;
     this.playback.stop();
@@ -404,9 +404,10 @@ export class Emitter {
     }
     const active = this.playback.advance(dt);
     const rate = active && this.emitting ? this.spawnRate.at(this.playback.normalizedAge) : 0;
-    const { start, count } = this.schedule.next(rate, dt);
+    const requested = this.schedule.next(rate, dt);
     const lifetime = this.initialLifetime.at(this.playback.normalizedAge);
     const o = this.settings;
+    const count = this.slots.advance(dt, requested, lifetime, o.initial.lifetimeSpread, this.seed);
     const worldSpace = o.space === 'world';
     const scale = worldSpace ? this.worldScale : 1;
     const rotation = worldSpace ? this.worldRotation : 0;
@@ -418,7 +419,7 @@ export class Emitter {
       this.nextKernel,
       this.output,
       dt,
-      start,
+      this.slots.spawnMask,
       count,
       worldSpace ? this.worldX : 0,
       worldSpace ? this.worldY : 0,
@@ -472,9 +473,8 @@ export class Emitter {
         this.effectTransform,
       ),
     );
-    this.lifetimes.advance(dt, count, lifetime, o.initial.lifetimeSpread, this.seed);
     if (dt > 0) {
-      this.playback.finish(this.lifetimes.empty);
+      this.playback.finish(this.slots.empty);
     }
     if (count) {
       this.seed = (this.seed + 1) % 65536;
@@ -485,7 +485,7 @@ export class Emitter {
     this.assertAlive();
     this.output = this.run(0);
     this.schedule.reset();
-    this.lifetimes.reset();
+    this.slots.reset();
     this.playback.reset();
     this.velocity.reset();
     this.needsPrewarm = true;
@@ -573,3 +573,6 @@ export type {
 
 export { EffectTransform } from './effect-transform';
 export type { Transform } from '#types/transform.js';
+
+export { ParticleSlots } from './particle-slots';
+export { SpawnSchedule } from './spawn-schedule';

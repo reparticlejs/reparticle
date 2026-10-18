@@ -445,15 +445,33 @@ which may already be later in that sequence. Subscribers do not receive an initi
 snapshot. Listeners may unsubscribe or restart/destroy an emitter; destruction
 removes subscriptions without synthesizing a completion event.
 
-Sleeping is determined without GPU readback or per-particle CPU simulation.
-`ParticleLifetimes` retains one last-expiry record per surviving spawn batch,
-advances its age with float32 rounding, and trims batches when ring slots are
-reused. Changing initial lifetime affects only future batches. With lifetime
-spread, a lazy shared 512 KiB range-maximum index covers the periodic random
-stream. Queries find the actual maximum lifetime of surviving slots in logarithmic
-time, including ring and random-period wraparound; no birth-by-birth CPU loop is
-added. This is lifecycle bookkeeping, not the demo's debug live-count tracker.
-Sleeping emitters skip simulation and rendering until restarted.
+Sleeping is determined without GPU readback or per-particle CPU motion simulation.
+`ParticleSlots` owns a free-slot stack, captured float32 lifetimes, and birth batches
+with a shared float32 age. Existing slots expire strictly after lifetime before
+new requests are admitted; all admitted newborns survive their birth frame. Only
+free slots are reused. Excess requested births are dropped, and only fractional
+emission carry survives to the next frame. The emission seed advances only when
+at least one birth is admitted. Numeric lifetime changes affect future births only.
+
+Each batch's slot IDs are sorted by sampled lifetime when spread is used. Expiry
+visits each live batch and frees its expired prefix; it does not scan every live
+particle. Long-lived batch tails compact their expired prefixes to bound storage.
+Births and deaths require per-slot CPU bookkeeping, but motion, modifiers, curves,
+and rendering remain GPU work. This replaces the old ring overwrite policy and
+range-maximum lifecycle index. Reset/clear discard allocation state; prewarm uses
+the same admission rules. Sleeping emitters skip simulation and rendering.
+
+A spawn bitmask packs 24 physical slots into each float32 word, keeping every bit
+exact. It costs 4 × ceil(capacity / 24) bytes per update input: 16,668 bytes for
+100,000 slots. Kernel invocations test their own bit in constant time, so scattered
+free slots still spawn in the existing single GPU update pass. This adds CPU-side
+allocation memory and an input upload, but no GPU readback, compaction pass, or new
+particle-state channel. Slot reuse and random sequences are deterministic within
+Reparticle; Defold's compacting storage order and PRNG sequence are not reproduced.
+
+The demo's debug counter replays `ParticleSlots` with its own allocation metadata,
+keeping admitted birth counts, seed progression, expiry, and lifecycle completion
+consistent without exposing a live-count instrumentation API on `Emitter`.
 
 `ParticleView` forwards controls to every emitter and forwards state events with
 `emitterId`, `state`, and the number of awake emitters at that transition.

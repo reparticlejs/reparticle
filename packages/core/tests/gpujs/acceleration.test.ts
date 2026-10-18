@@ -20,7 +20,7 @@ it('shares persistent spread with drag and applies acceleration first on both ax
       context,
       state,
       0.1,
-      0,
+      new Float32Array(Math.ceil(context.constants.capacity / 24)).fill(16777215),
       0,
       0,
       0,

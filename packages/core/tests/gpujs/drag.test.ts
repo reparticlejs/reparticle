@@ -20,7 +20,7 @@ it('retains spread for the lifetime, resamples on birth, and damps after gravity
       context,
       state,
       0.1,
-      0,
+      new Float32Array(Math.ceil(context.constants.capacity / 24)).fill(16777215),
       spawn,
       0,
       0,

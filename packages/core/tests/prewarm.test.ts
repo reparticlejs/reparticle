@@ -27,7 +27,7 @@ it('includes start delay in the prewarm time', () => {
   const schedule = new SpawnSchedule(100);
   let births = 0;
   prewarm(0.05, 1, (seconds) => {
-    births += schedule.next(playback.advance(seconds) ? 60 : 0, seconds).count;
+    births += schedule.next(playback.advance(seconds) ? 60 : 0, seconds);
   });
   expect(births).toBe(0);
   expect(playback.emitting).toBe(false);
@@ -38,7 +38,7 @@ it('can finish once playback during prewarm', () => {
   const schedule = new SpawnSchedule(100);
   let births = 0;
   prewarm(0.1, 1, (seconds) => {
-    births += schedule.next(playback.advance(seconds) ? 60 : 0, seconds).count;
+    births += schedule.next(playback.advance(seconds) ? 60 : 0, seconds);
   });
   expect(births).toBe(3);
   expect(playback.emitting).toBe(false);

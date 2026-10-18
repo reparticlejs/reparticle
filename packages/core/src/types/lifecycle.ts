@@ -10,13 +10,3 @@ export type EmitterStateListener = (event: EmitterStateChange) => void;
 export interface StopOptions {
   clear?: boolean;
 }
-
-export interface LifetimeBatch {
-  start: number;
-  end: number;
-  age: number;
-  lifetime: number;
-  spread: number;
-  seed: number;
-  maximum: number;
-}

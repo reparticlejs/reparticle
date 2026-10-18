@@ -20,7 +20,7 @@ export function integrate(
   this: KernelContext,
   state: ParticleTexture,
   seconds: number,
-  spawnStart: number,
+  spawnMask: Float32Array,
   spawnCount: number,
   emitterX: number,
   emitterY: number,
@@ -68,9 +68,10 @@ export function integrate(
 ): ParticleTexel {
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
-  const spawnOffset = (particleId - spawnStart + this.constants.capacity) % this.constants.capacity;
   const properties = state[particleRow + this.constants.rows]![this.thread.x]!;
-  const isSpawning = particleId < this.constants.capacity && spawnOffset < spawnCount;
+  const spawnWord = spawnMask[Math.floor(particleId / 24)]!;
+  const spawnBit = Math.floor(spawnWord / Math.pow(2, particleId % 24)) % 2;
+  const isSpawning = particleId < this.constants.capacity && spawnCount > 0 && spawnBit > 0.5;
 
   // A zero-time update must not prune a newborn retained from the previous frame.
   if (seconds === 0 && !isSpawning) {

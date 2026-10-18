@@ -36,7 +36,7 @@ it.each([1, 2, 3])(
           context,
           state,
           0,
-          0,
+          new Float32Array(Math.ceil(context.constants.capacity / 24)).fill(16777215),
           spawn,
           0,
           0,

@@ -39,8 +39,8 @@ it('samples once at the end and loop at the start of a boundary frame', () => {
     const clock = new EmitterPlayback(0.2, mode);
     const rate = new SpawnRate(ramp);
     const schedule = new SpawnSchedule(100);
-    const counts = [0.1, 0.1, 0.1].map(
-      (dt) => schedule.next(clock.advance(dt) ? rate.at(clock.normalizedAge) : 0, dt).count,
+    const counts = [0.1, 0.1, 0.1].map((dt) =>
+      schedule.next(clock.advance(dt) ? rate.at(clock.normalizedAge) : 0, dt),
     );
     expect(counts).toEqual(mode === 'once' ? [5, 10, 0] : [5, 0, 5]);
     clock.reset();
@@ -59,7 +59,7 @@ it('waits for start delay, samples zero duration at zero, and retains fractional
   expect(zero.advance(0.1)).toBe(true);
   expect(zero.normalizedAge).toBe(0);
   const schedule = new SpawnSchedule(100);
-  expect([2, 3, 5].map((rate) => schedule.next(rate, 0.1).count)).toEqual([0, 0, 1]);
+  expect([2, 3, 5].map((rate) => schedule.next(rate, 0.1))).toEqual([0, 0, 1]);
 });
 
 it('accepts rate curves, preserves them during unrelated updates, and allows numeric replacement', () => {

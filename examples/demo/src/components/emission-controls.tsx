@@ -36,7 +36,7 @@ export function EmissionControls({ controls, onChange }: ControlSectionProps) {
       />
       <p id="capacity-note" aria-live="polite">
         {exceedsCapacity
-          ? 'Maximum emission × lifetime exceeds capacity: older particles will be replaced early.'
+          ? 'Maximum emission × lifetime exceeds capacity: excess births will be dropped while full.'
           : 'Switching clears particles. Wait one lifetime before comparing FPS.'}
       </p>
       <p>

@@ -7,8 +7,8 @@ import { SpawnSchedule } from '#src/spawn-schedule.js';
 it('emits the complete boundary step before once stops', () => {
   const playback = new EmitterPlayback(0.25, 'once');
   const schedule = new SpawnSchedule(100);
-  const counts = [0.1, 0.1, 0.1, 0.1].map(
-    (seconds) => schedule.next(playback.advance(seconds) ? 100 : 0, seconds).count,
+  const counts = [0.1, 0.1, 0.1, 0.1].map((seconds) =>
+    schedule.next(playback.advance(seconds) ? 100 : 0, seconds),
   );
   expect(counts).toEqual([10, 10, 10, 0]);
   expect(playback.emitting).toBe(false);
@@ -33,15 +33,14 @@ it('does not consume a zero-duration effect during zero-time initialization', ()
 });
 
 it.each([0, 0.01, 0.1, 0.25])(
-  'loops duration %s without clearing fractional emission or slots',
+  'loops duration %s without clearing fractional emission',
   (duration) => {
     const playback = new EmitterPlayback(duration, 'loop');
     const schedule = new SpawnSchedule(100);
     let total = 0;
     for (let frame = 0; frame < 10; frame++) {
       const step = schedule.next(playback.advance(0.1) ? 15 : 0, 0.1);
-      expect(step.start).toBe(total);
-      total += step.count;
+      total += step;
     }
     expect(total).toBe(15);
     expect(playback.emitting).toBe(true);
@@ -66,7 +65,7 @@ it('waits through the delay boundary and emits on the following frame', () => {
     const eligible = playback.emitting;
     const emitting = playback.advance(0.1);
     expect(emitting).toBe(eligible);
-    return schedule.next(emitting ? 100 : 0, 0.1).count;
+    return schedule.next(emitting ? 100 : 0, 0.1);
   });
   expect(counts).toEqual([0, 0, 10, 10, 0]);
 });

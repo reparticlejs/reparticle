@@ -22,7 +22,7 @@ it.each([0, 1, 2, 3])(
         context,
         state,
         0,
-        0,
+        new Float32Array(Math.ceil(context.constants.capacity / 24)).fill(16777215),
         1,
         50,
         60,

@@ -25,7 +25,7 @@ it('captures spread once, accumulates spin, and resets on slot reuse', () => {
       context,
       state,
       0.1,
-      0,
+      new Float32Array(Math.ceil(context.constants.capacity / 24)).fill(16777215),
       spawning,
       0,
       0,
