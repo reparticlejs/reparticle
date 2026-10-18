@@ -184,6 +184,11 @@ export class Emitter {
     this.setParameters({ rotation: value });
   }
 
+  /** Whether Y stretch follows the current simulation speed. */
+  get stretchWithVelocity(): boolean {
+    return this.settings.stretchWithVelocity;
+  }
+
   get space(): EmitterConfig['space'] {
     return this.settings.space;
   }

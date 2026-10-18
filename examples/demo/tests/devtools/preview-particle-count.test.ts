@@ -91,6 +91,7 @@ const controls: PreviewControls = {
   texture: 'star',
   size: 24,
   sizeCurve: 'effect',
+  stretchWithVelocity: false,
   stretchX: 0,
   stretchXSpread: 0,
   initialStretchXCurve: 'constant',

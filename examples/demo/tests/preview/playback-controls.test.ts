@@ -1,7 +1,7 @@
 import { parseEffectConfig } from '@reparticle/core';
 import { expect, it } from 'vitest';
 
-import { applyControls, initialControls } from '#src/preview/apply-controls.js';
+import { applyControls, emitterParameters, initialControls } from '#src/preview/apply-controls.js';
 
 import effect from '../../public/effect.json';
 
@@ -210,4 +210,18 @@ it('keeps stretch axes independent across birth curves, spread, and lifetime pre
       { time: 1, value: -1, tangent: -1 },
     ],
   });
+});
+
+it('applies velocity stretch through both initial configuration and runtime updates', () => {
+  const definition = parseEffectConfig(effect).emitters[0];
+  definition.stretchWithVelocity = true;
+  const controls = initialControls(definition);
+  expect(controls.stretchWithVelocity).toBe(true);
+  expect(
+    applyControls(definition, { ...controls, stretchWithVelocity: false }).stretchWithVelocity,
+  ).toBe(false);
+  expect(emitterParameters(controls).stretchWithVelocity).toBe(true);
+  expect(emitterParameters({ ...controls, stretchWithVelocity: false }).stretchWithVelocity).toBe(
+    false,
+  );
 });

@@ -87,7 +87,8 @@
       "durationSpread": 0,
       "duration": 1,
       "orientation": "default",
-      "playMode": "loop"
+      "playMode": "loop",
+      "stretchWithVelocity": false
     }
   ]
 }

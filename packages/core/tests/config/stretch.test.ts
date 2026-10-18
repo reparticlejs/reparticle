@@ -60,3 +60,22 @@ it('defaults stretch to zero without changing existing size', () => {
   expect(config.overLifetime.stretchX).toBe(0);
   expect(config.overLifetime.stretchY).toBe(0);
 });
+
+it('defaults velocity stretch off and supports live boolean toggles', () => {
+  const source = skeleton.emitters[0]!;
+  const config = parseEffectConfig({
+    version: 1,
+    emitters: [{ ...source, stretchWithVelocity: undefined }],
+  }).emitters[0];
+  expect(config.stretchWithVelocity).toBe(false);
+  const enabled = updateEmitterConfig(config, { stretchWithVelocity: true });
+  expect(enabled.stretchWithVelocity).toBe(true);
+  expect(updateEmitterConfig(enabled, { initial: { stretchY: 2 } }).stretchWithVelocity).toBe(true);
+  expect(updateEmitterConfig(enabled, { stretchWithVelocity: false }).stretchWithVelocity).toBe(
+    false,
+  );
+  expect(config.stretchWithVelocity).toBe(false);
+  for (const stretchWithVelocity of [0, 1, 'true', null]) {
+    expect(() => updateEmitterConfig(config, { stretchWithVelocity })).toThrow(ZodError);
+  }
+});

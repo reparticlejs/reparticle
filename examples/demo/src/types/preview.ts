@@ -52,6 +52,7 @@ export interface PreviewControls {
   initialRotationCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectRotation: EmitterConfig['initial']['rotation'];
   rotationCurve: 'effect' | 'constant' | 'full-turn' | 'reverse-turn';
+  stretchWithVelocity: boolean;
   stretchX: number;
   stretchXSpread: number;
   initialStretchXCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';

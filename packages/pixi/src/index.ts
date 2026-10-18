@@ -16,6 +16,7 @@ uniform vec2 emitterRotation;
 uniform float emitterScale;
 uniform mat3 transform;
 uniform vec2 particleAspect;
+uniform bool stretchWithVelocity;
 uniform bool orientToMovement;
 uniform bool orientToAngularVelocity;
 uniform vec4 geometryCurve[${CURVE_SEGMENTS + 1}];
@@ -37,7 +38,10 @@ void main() {
   vec4 initialColor = texelFetch(particles, at + ivec2(0, rows * 2), 0);
   vec4 colorScale = mix(colorCurve[segment], colorCurve[segment + 1], curvePosition - float(segment));
   particleColor = clamp(initialColor * colorScale, 0.0, 1.0);
-  vec2 size = particleAspect * properties.z * geometry.x * (vec2(1.0) + initialStretch + geometry.zw);
+  vec2 stretch = initialStretch + geometry.zw;
+  // Defold's fixed 60 FPS, 180-degree shutter factor applies only to Y stretch.
+  if (stretchWithVelocity) stretch.y *= length(motion.zw) / 120.0;
+  vec2 size = particleAspect * properties.z * geometry.x * (vec2(1.0) + stretch);
   float rotation = geometry.y;
   if (orientToAngularVelocity) rotation = texelFetch(particles, at + ivec2(0, rows * 3), 0).z;
   // Defold's positive Z rotation is counterclockwise; canvas Y points down.
@@ -170,6 +174,7 @@ export class ParticleView extends RenderContainer {
             'straightAlpha',
             'frame',
             'particleAspect',
+            'stretchWithVelocity',
             'orientToMovement',
             'orientToAngularVelocity',
             'geometryCurve[0]',
@@ -243,6 +248,7 @@ export class ParticleView extends RenderContainer {
     gl.uniform1i(u.rows!, this.emitter.rows);
     gl.uniform2f(u.viewport!, r.screen.width, r.screen.height);
     const localSpace = this.emitter.space === 'local';
+    gl.uniform1i(u.stretchWithVelocity!, this.emitter.stretchWithVelocity ? 1 : 0);
     gl.uniform1f(u.emitterScale!, localSpace ? this.emitter.scale : 1);
     const radians = localSpace ? (-this.emitter.rotation * Math.PI) / 180 : 0;
     gl.uniform2f(u.emitterRotation!, Math.cos(radians), Math.sin(radians));

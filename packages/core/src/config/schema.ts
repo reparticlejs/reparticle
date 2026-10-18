@@ -112,8 +112,9 @@ const modifiersSchema = strictObject({
   drag: dragSchema.default({ magnitude: 0, spread: 0, useDirection: false, rotation: 0 }),
 });
 
-/** Numeric updates only; shape type, identity, capacity and seed require recreation. */
+/** Runtime values and flags; shape type, identity, capacity and seed require recreation. */
 export const emitterParametersSchema = strictObject({
+  stretchWithVelocity: boolean().optional(),
   scale: number().optional(),
   rotation: number().optional(),
   inheritVelocity: number().optional(),
@@ -201,6 +202,7 @@ export const emitterParametersSchema = strictObject({
 });
 
 export const emitterConfigSchema = strictObject({
+  stretchWithVelocity: boolean().default(false),
   scale: number().default(1),
   rotation: number().default(0),
   space: enumSchema(['world', 'local']).default('world'),
