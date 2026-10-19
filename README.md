@@ -312,6 +312,22 @@ swap particle dimensions. Dimensions use Pixi's logical texture units, independe
 of renderer device pixel ratio. Switching modes affects existing particles without
 restarting the simulation. Select **Atlas animation · automatic size** in the demo.
 
+### Artwork flipping
+
+```ts
+view.setTexture({ atlas, animation: 'smoke', flipX: true, flipY: false });
+view.setEmitterTexture('sparks', { atlas, frame: 'spark', flipY: true });
+```
+
+`flipX` and `flipY` are optional booleans in Pixi texture configuration, both
+false by default. They mirror artwork in particle-local axes before rotation,
+without changing motion, orientation, size, or pivot translation. Trim offsets
+mirror inside the original frame extent; packed atlas rotation is respected.
+They work with static textures and every animation playback/size mode. Changes
+apply to living particles while paused; omitting the flags on the next texture
+selection resets them. Procedural circles are symmetric, so flipping has no visible
+effect. No core fields, GPU readbacks, or extra draw passes are required.
+
 ### Particle pivot
 
 ```ts

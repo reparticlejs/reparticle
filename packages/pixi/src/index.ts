@@ -11,6 +11,7 @@ import { EmitterView } from './emitter-view';
 import { resolveFlipbook } from './resolve-flipbook';
 import { resolvePivot } from './resolve-pivot';
 import { resolveTexture } from './resolve-texture';
+import { resolveTextureFlip } from './resolve-texture-flip';
 import { resolveTint } from './resolve-tint';
 import { restoreSimulationState } from './restore-simulation-state';
 import type { ParticleRendering, ParticleTint } from './types/particle-rendering';
@@ -68,6 +69,7 @@ export class ParticleView extends RenderContainer {
     for (const texture of selections.values()) {
       resolveTint(texture.tint);
       resolvePivot(texture.pivot);
+      resolveTextureFlip(texture);
       if (!resolveFlipbook(texture)) {
         resolveTexture(texture);
       }

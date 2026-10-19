@@ -8,6 +8,7 @@ import { ParticleOrderBuffer } from './particle-order-buffer';
 import { resolveFlipbook } from './resolve-flipbook';
 import { resolvePivot } from './resolve-pivot';
 import { resolveTexture } from './resolve-texture';
+import { resolveTextureFlip } from './resolve-texture-flip';
 import { resolveTint } from './resolve-tint';
 import { restoreDrawState } from './restore-draw-state';
 import { restoreSimulationState } from './restore-simulation-state';
@@ -35,6 +36,7 @@ uniform vec2 particleAspect;
 uniform bool automaticSize;
 uniform vec2 particlePivot;
 uniform vec4 textureTrim;
+uniform vec2 textureFlip;
 uniform bool stretchWithVelocity;
 uniform bool orientToMovement;
 uniform bool orientToAngularVelocity;
@@ -89,6 +91,8 @@ void main() {
   float sine = sin(angle);
   float cosine = cos(angle);
   vec2 corner = (trim.xy + (uv * 0.5 + 0.5) * trim.zw - 0.5) * size;
+  // Reflect trimmed artwork within its original extent; keep pivot translation unchanged.
+  corner *= textureFlip;
   // Defold composes pivot translation inside the particle rotation/scale transform.
   vec2 pivotScale = particleAspect * geometry.x * (vec2(1.0) + stretch);
   if (!automaticSize) pivotScale *= properties.z;
@@ -186,6 +190,7 @@ export class EmitterView extends RenderContainer {
     this.currentTint = this.defaultTint;
   }
 
+  private textureFlip: [number, number] = [1, 1];
   private texturePivot: ParticlePivot = { x: 0, y: 0 };
   private frameTexture: WebGLTexture | null = null;
   private animationHalfStep = 0;
@@ -199,6 +204,7 @@ export class EmitterView extends RenderContainer {
   }
   setTexture(options: ParticleTexture): void {
     const pivot = resolvePivot(options.pivot);
+    const flip = resolveTextureFlip(options);
     const flipbook = resolveFlipbook(options);
     const texture = flipbook ? flipbook.frames[0]! : resolveTexture(options);
     let frames: WebGLTexture | null = null;
@@ -213,6 +219,7 @@ export class EmitterView extends RenderContainer {
     this.frameTexture = frames;
     this.flipbook = flipbook;
     this.texturePivot = pivot;
+    this.textureFlip = flip;
     this.automaticSize = options.sizeMode === 'auto' && (flipbook?.frames.length ?? 0) > 1;
     this.artwork = texture;
   }
@@ -225,6 +232,7 @@ export class EmitterView extends RenderContainer {
   ) {
     const tint = resolveTint(options.tint);
     const pivot = resolvePivot(options.pivot);
+    const flip = resolveTextureFlip(options);
     const animation = resolveFlipbook(options);
     const texture = animation ? animation.frames[0]! : resolveTexture(options);
     const geometryCurve = sampleGeometryCurves(config.overLifetime);
@@ -234,6 +242,7 @@ export class EmitterView extends RenderContainer {
     this.currentTint = tint;
     this.artwork = texture;
     this.texturePivot = pivot;
+    this.textureFlip = flip;
     this.automaticSize = options.sizeMode === 'auto' && (animation?.frames.length ?? 0) > 1;
     this.host = renderer;
     const gl = renderer.gl;
@@ -285,6 +294,7 @@ export class EmitterView extends RenderContainer {
             'frameTop',
             'frameBottom',
             'textureTrim',
+            'textureFlip',
             'particleAspect',
             'automaticSize',
             'particlePivot',
@@ -368,6 +378,7 @@ export class EmitterView extends RenderContainer {
       gl.useProgram(this.program);
       gl.bindVertexArray(this.vao);
       const count = this.order.update(this.emitter);
+      gl.uniform2f(u.textureFlip!, ...this.textureFlip);
       gl.uniform2f(u.particlePivot!, this.texturePivot.x, this.texturePivot.y);
       gl.uniform1i(u.automaticSize!, this.automaticSize ? 1 : 0);
       const animation = this.flipbook;

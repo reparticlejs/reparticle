@@ -78,7 +78,7 @@ parity or supersede the open corrections below.
 
 ### Missing asset and authoring capabilities
 
-- [ ] Animation-only horizontal/vertical flip metadata in Pixi (distinct from implemented negative display scale).
+- [x] Artwork-only `flipX` / `flipY` in Pixi texture options, for static frames and animations.
 - [ ] Flipbook frames spanning multiple texture sources / atlas pages.
 - [ ] Full editor: hierarchy, property/curve authoring, modifier gizmos, persistence and live preview workflow. The demo is not this editor.
 - [ ] Committed browser conformance fixtures for renderer behavior; previous temporary GPU checks are not a repository regression suite.
@@ -711,3 +711,13 @@ reset; render-target and stencil stacks remain intact. After GPU.js simulation,
 its scissor test is disabled before the usual renderer state reset. Neither path
 reads GPU particle data. Bounds and filter areas remain explicitly caller-owned.
 Core configuration, simulation textures and particle slot allocation are unchanged.
+
+### Artwork flipping (Pixi only)
+
+`ParticleTexture.flipX` and `flipY` are validated booleans, default false.
+A vec2 uniform reflects artwork corners in particle-local axes before pivot
+translation and particle rotation. This matches Defold's full-frame UV flipping
+and mirrors trimmed artwork within its original extent. Packed atlas rotation,
+manual/automatic sizing, and animation playback remain independent. No caller
+texture mutation, simulation change, readback, or additional draw pass is needed.
+Selection changes apply while paused; omitted flags reset to false.

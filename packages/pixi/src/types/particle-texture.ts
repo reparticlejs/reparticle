@@ -24,7 +24,13 @@ export interface AnimationSize {
 }
 
 /** Caller owns the textures, including frames loaded by a Pixi Spritesheet. */
-export type ParticleTexture = { sizeMode?: ParticleSizeMode; pivot?: ParticlePivot } & (
+export type ParticleTexture = {
+  sizeMode?: ParticleSizeMode;
+  pivot?: ParticlePivot;
+  /** Mirror artwork in particle-local axes, without changing the pivot or simulation. */
+  flipX?: boolean;
+  flipY?: boolean;
+} & (
   | { texture: Texture | null; atlas?: never; frame?: never; animation?: never }
   | {
       atlas: { textures: Record<string, Texture> };

@@ -56,11 +56,9 @@ Verified against Defold's `CreateParticleRenderContext` and `UpdateParticleRende
 
 ## Missing 2D asset capabilities
 
-### Animation-only horizontal/vertical flips
+### Artwork horizontal/vertical flips — implemented
 
-Defold's [component adapter](https://github.com/defold/defold/blob/1.13.2/engine/gamesys/src/gamesys/components/comp_particlefx.cpp#L1158-L1171) supplies horizontal/vertical animation flags; [`WriteVertexData`](https://github.com/defold/defold/blob/1.13.2/engine/particle/src/particle.cpp#L1124-L1252) applies them to texture coordinates. Our texture configuration has no equivalent flag or metadata ingestion. Supplying a texture with already mirrored UVs may represent the result, but is not a supported animation-flip setting.
-
-Negative display scale is implemented and remains useful: it mirrors geometry and motion together. This asset setting mirrors artwork while retaining motion. Record it as a Pixi configuration gap, not an unimplemented transform feature or mandatory next task.
+Defold's [`WriteVertexData`](https://github.com/defold/defold/blob/1.13.2/engine/particle/src/particle.cpp#L1124-L1252) mirrors artwork using animation flags. Pixi texture options now accept `flipX` and `flipY` (boolean, default false) for static frames and animations. The renderer reflects artwork corners before pivot translation, equivalent to UV corner swaps on a full frame, while also reflecting Pixi trim offsets within the original extent. Particle motion and pivot translation remain unchanged; packed rotation and playback direction are independent. Changes affect living particles while paused. Flags are explicit texture options; atlas-specific metadata import is not implied.
 
 ### Animation frames spanning atlas pages
 
@@ -93,6 +91,6 @@ Supporting this requires a Pixi rendering design (texture arrays or ordering-pre
 ## Next work
 
 1. Add repeatable browser conformance fixtures for the corrections; choose test infrastructure separately, without adding dependencies as part of this audit.
-2. Consider animation flip metadata and cross-page animation only when their use cases justify the rendering/API work.
+2. Consider cross-page animation only when their use cases justify the rendering/API work.
 
 No additional portable 2D shape, force type, emitter-property family or particle-property family was found missing in the audited schema. That conclusion is capability coverage, not a claim that every numerical edge case has been compared against a running Defold build.
