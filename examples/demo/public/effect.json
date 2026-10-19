@@ -3,7 +3,7 @@
   "emitters": [
     {
       "id": "sparks",
-      "capacity": 100000,
+      "capacity": 8192,
       "seed": 1,
       "emission": {
         "rateSpread": 0,
