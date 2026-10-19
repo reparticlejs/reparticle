@@ -4,13 +4,14 @@ import { particleSortKey } from './particle-sort-key';
 export class ParticleOrder {
   private readonly slots: Uint32Array;
   private readonly keys: Uint32Array;
-  private readonly ranks: Uint32Array;
+  private readonly scratch: Uint32Array;
+  private readonly bins = new Uint32Array(256);
   private count = 0;
 
   constructor(capacity: number) {
     this.slots = new Uint32Array(capacity);
     this.keys = new Uint32Array(capacity);
-    this.ranks = new Uint32Array(capacity);
+    this.scratch = new Uint32Array(capacity);
   }
 
   add(slot: number): void {
@@ -37,13 +38,33 @@ export class ParticleOrder {
     this.keys[slot] = particleSortKey(age, lifetime, maximum);
   }
 
+  /** Two stable byte passes preserve the post-removal logical order for equal keys. */
   sort(): void {
-    for (let index = 0; index < this.count; index++) {
-      this.ranks[this.slots[index]!] = index;
+    if (this.count < 2) {
+      return;
     }
-    this.slots
-      .subarray(0, this.count)
-      .sort((a, b) => this.keys[a]! - this.keys[b]! || this.ranks[a]! - this.ranks[b]!);
+    this.sortByte(this.slots, this.scratch, 0);
+    this.sortByte(this.scratch, this.slots, 8);
+  }
+
+  private sortByte(source: Uint32Array, target: Uint32Array, shift: number): void {
+    const bins = this.bins;
+    bins.fill(0);
+    for (let i = 0; i < this.count; i++) {
+      bins[(this.keys[source[i]!]! >>> shift) & 255]!++;
+    }
+    let offset = 0;
+    for (let i = 0; i < 256; i++) {
+      const count = bins[i]!;
+      bins[i] = offset;
+      offset += count;
+    }
+    for (let i = 0; i < this.count; i++) {
+      const slot = source[i]!;
+      const bucket = (this.keys[slot]! >>> shift) & 255;
+      target[bins[bucket]!] = slot;
+      bins[bucket]!++;
+    }
   }
 
   copyTo(target: Uint32Array): number {

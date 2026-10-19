@@ -86,3 +86,57 @@ describe('Defold logical order', () => {
     expect(particleSortKey(0, 0, 0)).toBe(65535);
   });
 });
+
+describe('stable radix ordering', () => {
+  it.each([0, 1, 17, 256, 6000, 100000])(
+    'matches stable comparison sorting for %i slots across byte boundaries and ties',
+    (count) => {
+      const order = new ParticleOrder(count);
+      const target = new Uint32Array(count);
+      const ids = Array.from({ length: count }, (_, index) => index);
+      let seed = 123;
+      const random = () => {
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+      for (let index = count - 1; index > 0; index--) {
+        const other = Math.floor(random() * (index + 1));
+        [ids[index], ids[other]] = [ids[other]!, ids[index]!];
+      }
+      for (const slot of ids) {
+        order.add(slot);
+      }
+      let expected = [...ids];
+      // Every 16-bit key, including byte boundaries, repeated keys, and reversed keys.
+      const distributions = [
+        (slot: number) => slot % 65536,
+        (slot: number) => 65535 - (slot % 65536),
+        (slot: number) => (slot % 7) * 256,
+        () => 65535,
+        () => Math.floor(random() * 65536),
+      ];
+      for (const distribution of distributions) {
+        const keys = new Map<number, number>();
+        for (const slot of ids) {
+          const key = distribution(slot);
+          order.setLifetime(slot, key, 65535, 65535);
+          keys.set(slot, particleSortKey(key, 65535, 65535));
+        }
+        expected.sort((a, b) => keys.get(a)! - keys.get(b)!);
+        order.sort();
+        expect(order.copyTo(target)).toBe(count);
+        expect(Array.from(target)).toEqual(expected);
+      }
+      order.reset();
+      order.sort();
+      expect(order.copyTo(target)).toBe(0);
+      if (count > 0) {
+        order.add(count - 1);
+        order.setLifetime(count - 1, 0, -1, 0);
+        order.sort();
+      }
+      expect(order.copyTo(target)).toBe(count > 0 ? 1 : 0);
+      expect(target[0]).toBe(count > 0 ? count - 1 : undefined);
+    },
+  );
+});

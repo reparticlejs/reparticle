@@ -721,3 +721,13 @@ and mirrors trimmed artwork within its original extent. Packed atlas rotation,
 manual/automatic sizing, and animation playback remain independent. No caller
 texture mutation, simulation change, readback, or additional draw pass is needed.
 Selection changes apply while paused; omitted flags reset to false.
+
+### Stable integer draw-order sorting
+
+CPU draw ordering uses two stable radix passes over the unchanged 16-bit lifetime
+key. Low-byte then high-byte bucket placement preserves the existing logical order
+for ties, including Defold-style swap removal and appended births. The old rank
+array is replaced by equally sized reusable scratch storage, with 256 additional
+Uint32 counters (1 KiB per emitter). Sorting introduces no per-call array allocation.
+Simulation slots stay fixed; prewarm sorts every step and uploads only its final
+order. No GPU readback or particle simulation change is involved.
