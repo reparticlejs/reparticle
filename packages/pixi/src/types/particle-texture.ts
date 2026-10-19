@@ -17,6 +17,12 @@ export interface ParticlePivot {
   y: number;
 }
 
+/** Animation reference dimensions in logical texture units. */
+export interface AnimationSize {
+  width: number;
+  height: number;
+}
+
 /** Caller owns the textures, including frames loaded by a Pixi Spritesheet. */
 export type ParticleTexture = { sizeMode?: ParticleSizeMode; pivot?: ParticlePivot } & (
   | { texture: Texture | null; atlas?: never; frame?: never; animation?: never }
@@ -29,6 +35,8 @@ export type ParticleTexture = { sizeMode?: ParticleSizeMode; pivot?: ParticlePiv
   | {
       atlas: { animations: Record<string, Texture[]> };
       animation: string;
+      /** Defaults to the first authored frame's original size; independent of playback order. */
+      animationSize?: AnimationSize;
       playback?: AnimationPlayback;
       fps?: number;
       texture?: never;

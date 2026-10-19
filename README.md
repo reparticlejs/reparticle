@@ -296,6 +296,12 @@ view.setTexture({ atlas, animation: 'smoke', sizeMode: 'auto', fps: 30 });
 ```
 
 `sizeMode` belongs only to Pixi texture options and defaults to `'manual'`.
+Manual flipbooks keep one aspect ratio across frames, using the first authored
+frame's original size by default (including backward playback). To supply the
+animation's reference dimensions explicitly, use `animationSize: { width: 64, height: 32 }`
+in the animation texture options. Both dimensions must be finite and positive.
+These dimensions also determine pivot scaling in either size mode; they never
+enter core effect JSON.
 Following Defold, `'auto'` uses the current frame's original dimensions for
 animations with multiple frames and playback other than `'none'`. Initial size,
 its curve and spread are ignored; lifetime scale and stretch still apply.

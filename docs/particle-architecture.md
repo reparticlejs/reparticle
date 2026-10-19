@@ -74,7 +74,7 @@ parity or supersede the open corrections below.
 
 - [x] Movement-direction heading uses the velocity at Defold's pre-modifier evaluation point, including births.
 - [x] Modifier curves use authored-duration timing, including final-segment extrapolation when duration spread extends playback.
-- [ ] Manual flipbook size must use animation-level aspect rather than each frame's aspect.
+- [x] Manual flipbook size uses animation-level aspect rather than each frame's aspect.
 
 ### Missing asset and authoring capabilities
 
@@ -296,7 +296,7 @@ animation through the existing particle ages. Live animation changes use current
 ages, without restarting the emitter or maintaining a separate animation clock.
 
 A small renderer-owned RGBA32F table stores four texels per animation frame
-(64 bytes: UV corners, trim rectangle, aspect). It is uploaded only when selecting
+(64 bytes: UV corners, trim rectangle, original dimensions, two reserved components). It is uploaded only when selecting
 an animation. The vertex shader chooses each particle's frame independently;
 there is no particle readback, CPU animation loop, extra simulation storage, or
 extra draw pass. Rotation and trim work per frame. The existing manual sizing
@@ -497,9 +497,9 @@ Auto applies only to multi-frame animations whose playback is not `none`.
 Single/static frames retain manual size, even when Auto is selected. A multi-frame
 animation at zero FPS still qualifies and holds its first frame.
 
-The frame table's two spare components now store original width and height.
+The frame table's fourth texel stores original width/height and two reserved components.
 Storage remains four RGBA texels (64 bytes) per frame. The shader chooses original
-frame dimensions in Auto mode and normalized aspect times captured initial size in
+frame dimensions in Auto mode and animation reference aspect times captured initial size in
 Manual mode, then applies lifetime scale, stretch, orientation and display
 transforms. Trim offsets remain normalized against the original frame; packed
 rotation only changes UVs. Initial size curves/spread do not affect Auto geometry.
@@ -526,8 +526,9 @@ edge at the simulated position. Values outside the image are supported.
 
 Manual pivot offsets include captured initial size. Auto offsets deliberately do
 not include initial size or the selected frame's dimensions, matching Defold's
-Auto transform branch. The animation's first frame supplies its base aspect,
-which remains stable across animation frames. Trim offsets continue to describe
+Auto transform branch. The animation's `animationSize` supplies its base aspect, defaulting to the first
+authored frame's original dimensions. It remains stable across frames and playback
+directions and must contain finite positive width and height. Trim offsets continue to describe
 the cropped artwork within the original frame, and packed atlas rotation affects
 UVs only. Movement direction, angular rotation, local emitter transforms, and
 Pixi display transforms apply to both corners and pivot translation.

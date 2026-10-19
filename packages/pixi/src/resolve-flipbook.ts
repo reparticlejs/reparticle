@@ -21,6 +21,11 @@ export function resolveFlipbook(options: ParticleTexture): Flipbook | null {
   if (frames.some((frame) => frame.source !== frames[0]!.source)) {
     throw new Error('Particle animation frames must share one texture source');
   }
+  const { width, height } = options.animationSize ?? frames[0]!.orig;
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    throw new Error('Particle animation dimensions must be finite and positive');
+  }
+  const longest = Math.max(width, height);
   const fps = options.fps ?? 30;
   if (!Number.isFinite(fps) || fps < 0) {
     throw new Error('Particle animation FPS must be finite and nonnegative');
@@ -41,6 +46,7 @@ export function resolveFlipbook(options: ParticleTexture): Flipbook | null {
   }
   return {
     frames: playback === 'none' ? [frames[0]!] : [...frames],
+    aspect: { x: width / longest, y: height / longest },
     fps,
     once: playback.startsWith('once-'),
     backward: playback.endsWith('-backward'),

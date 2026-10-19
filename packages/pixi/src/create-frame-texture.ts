@@ -1,6 +1,6 @@
 import type { Texture } from 'pixi.js';
 
-/** Four RGBA texels per frame: UV corners, trim rectangle, original aspect and dimensions. */
+/** Four RGBA texels per frame: UV corners, trim rectangle, original dimensions and two reserved channels. */
 export function createFrameTexture(gl: WebGL2RenderingContext, frames: Texture[]): WebGLTexture {
   if (frames.length > gl.getParameter(gl.MAX_TEXTURE_SIZE)) {
     throw new Error('Particle animation exceeds the GPU texture height limit');
@@ -8,7 +8,6 @@ export function createFrameTexture(gl: WebGL2RenderingContext, frames: Texture[]
   const data = new Float32Array(frames.length * 16);
   for (const [index, frame] of frames.entries()) {
     const { uvs: uv, orig, trim } = frame;
-    const longest = Math.max(orig.width, orig.height);
     data.set(
       [
         uv.x0,
@@ -23,10 +22,10 @@ export function createFrameTexture(gl: WebGL2RenderingContext, frames: Texture[]
         trim ? trim.y / orig.height : 0,
         trim ? trim.width / orig.width : 1,
         trim ? trim.height / orig.height : 1,
-        orig.width / longest,
-        orig.height / longest,
         orig.width,
         orig.height,
+        0,
+        0,
       ],
       index * 16,
     );

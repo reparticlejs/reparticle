@@ -76,7 +76,7 @@ void main() {
     bottom = texelFetch(animationFrames, ivec2(1, frame), 0);
     trim = texelFetch(animationFrames, ivec2(2, frame), 0);
     vec4 dimensions = texelFetch(animationFrames, ivec2(3, frame), 0);
-    baseSize = automaticSize ? dimensions.zw : dimensions.xy * properties.z;
+    if (automaticSize) baseSize = dimensions.xy;
   }
   vec2 fraction = uv * 0.5 + 0.5;
   artworkUv = mix(mix(top.xy, top.zw, fraction.x), mix(bottom.xy, bottom.zw, fraction.x), fraction.y);
@@ -402,8 +402,8 @@ export class EmitterView extends RenderContainer {
         const longest = Math.max(texture.orig.width, texture.orig.height);
         gl.uniform2f(
           u.particleAspect!,
-          texture.orig.width / longest,
-          texture.orig.height / longest,
+          animation?.aspect.x ?? texture.orig.width / longest,
+          animation?.aspect.y ?? texture.orig.height / longest,
         );
       } else {
         gl.uniform2f(u.particleAspect!, 1, 1);

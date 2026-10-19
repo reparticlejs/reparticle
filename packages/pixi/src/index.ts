@@ -21,6 +21,7 @@ import type { ParticleViewOptions } from './types/particle-view-options';
 export type {
   ParticleTexture,
   AnimationPlayback,
+  AnimationSize,
   ParticleSizeMode,
   ParticlePivot,
 } from './types/particle-texture';
