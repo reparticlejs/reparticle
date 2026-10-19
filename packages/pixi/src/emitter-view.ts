@@ -84,7 +84,8 @@ void main() {
   float rotation = geometry.y;
   if (orientToAngularVelocity) rotation = dynamics.w;
   // Defold's positive Z rotation is counterclockwise; canvas Y points down.
-  float angle = -radians(properties.w + rotation * initialHandedness);
+  float movement = orientToMovement ? geometryData.w : 0.0;
+  float angle = -radians(properties.w + rotation * initialHandedness + movement);
   float sine = sin(angle);
   float cosine = cos(angle);
   vec2 corner = (trim.xy + (uv * 0.5 + 0.5) * trim.zw - 0.5) * size;
@@ -94,14 +95,6 @@ void main() {
   corner += vec2(particlePivot.x, -particlePivot.y) * pivotScale;
   corner.x *= initialHandedness;
   vec2 rotated = vec2(cosine * corner.x - sine * corner.y, sine * corner.x + cosine * corner.y);
-  if (orientToMovement && dot(motion.zw, motion.zw) > 0.0001) {
-    vec2 direction = normalize(motion.zw);
-    // Match Defold's near-opposite fallback to a half turn.
-    if (abs(1.0 - direction.y) <= 0.0001) direction = vec2(0.0, 1.0);
-    // Local up is (0, -1): heading cosine = -direction.y, sine = direction.x.
-    rotated = vec2(-direction.y * rotated.x - direction.x * rotated.y,
-                    direction.x * rotated.x - direction.y * rotated.y);
-  }
   vec2 position = (motion.xy + rotated) * emitterScale;
   position.x *= emitterHandedness;
   position = vec2(emitterRotation.x * position.x - emitterRotation.y * position.y,

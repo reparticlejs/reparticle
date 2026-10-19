@@ -10,7 +10,8 @@ export type ParticleTexel = [number, number, number, number];
  * properties: [age, lifetime, initialSize, initialRotation]
  * color: [initialRed, initialGreen, initialBlue, initialAlpha]
  * dynamics: [active, spreadFactor, initialAngularVelocity, accumulatedRotation]
- * geometry: [initialStretchX, initialStretchY, initialHandedness, reserved]
- * Initial values are captured per particle at spawn.
+ * geometry: [initialStretchX, initialStretchY, initialHandedness, movementRotation]
+ * Initial values are captured per particle at spawn. Movement rotation is the
+ * pre-modifier velocity heading in degrees, refreshed each positive simulation step.
  */
 export type ParticleTexture = ParticleTexel[][];

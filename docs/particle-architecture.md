@@ -1,6 +1,6 @@
 # Particle architecture and implementation roadmap
 
-Reparticle targets full coverage of Defold's documented particle capabilities, implemented and verified one feature at a time. Consumers provide versioned JSON and supported runtime parameter updates. All simulation functions are authored inside Reparticle. The editor follows after the runtime contract is established.
+Reparticle targets Defold's portable particle capabilities, implemented and verified one feature at a time. The current scope is 2D; 3D remains deferred, and engine-specific resource/material systems are outside the Pixi runtime contract. Consumers provide versioned JSON and supported runtime parameter updates. All simulation functions are authored inside Reparticle. The editor follows after the runtime contract is established.
 
 This is capability coverage, not a promise of Defold file compatibility or numerically identical output. Defold file importing and exact simulation compatibility require separate decisions. New findings extend the backlog rather than silently reducing the target.
 
@@ -12,7 +12,7 @@ The configuration boundary uses strict Zod schemas to validate unknown input bef
 
 Core has no Pixi dependency. GPU.js remains the simulation backend. Pixi owns visual output and resolves asset identifiers through the host. Host texture objects do not belong in JSON. Shared GPU textures remain resident; normal playback must not read particle state back to the CPU.
 
-Keep ordinary typed kernel functions and explicit helper registration. There is no kernel generator or consumer build plugin. Avoid block-local names that minifiers can shadow against GPU function parameters. Test kernels after production minification.
+Keep ordinary typed kernel functions and explicit helper registration. The package build compiles their source strings into tracked `src/gpujs/functions.json`; consumers need no build plugin, source rewriting or minifier configuration. Test kernels after production minification.
 
 Capacity is explicit. No automatic bounds, hit-area calculation, particle scanning, or hidden CPU fallback. Consumers supply bounds and hit areas. Resource destruction respects the renderer's ownership of the shared GL context.
 
@@ -26,75 +26,77 @@ Modifiers change velocity sequentially in authored array order: emitter-local en
 
 The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and loads through `ParticleView(renderer, definition)` or the core `Emitter` constructor after parsing. Unsupported fields, shapes, and versions fail explicitly. Effects accept one or more emitters with unique IDs.
 
-Current required fields have no implicit defaults:
+The required fields are `version`, the nonempty `emitters` list, and each emitter's
+`id`, `capacity`, `seed`, `emission.rate`, `emission.shape`, `initial.lifetime`,
+`initial.speed`, `initial.direction` and `initial.spread`. Shapes other than `point`
+also require their dimensions. Other defaults and accepted runtime patches are
+specified by `packages/core/src/config/schema.ts`; do not duplicate the schema as
+an outdated required-field table here. Scalar properties can be constants or
+curves; spreads are explicit. Signed speed, size and sampled lifetime values are
+supported by their runtime semantics.
 
-| Field                            | Meaning and constraints                                                                               |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| version                          | Exactly 1 for this initial contract                                                                   |
-| emitters                         | Exactly one entry until orchestration is implemented; the document shape supports later expansion     |
-| id                               | Nonempty string; unique within the effect                                                             |
-| capacity                         | Integer 1 through 1000000; device texture limits are checked at creation                              |
-| seed                             | Integer 0 through 65535; reproducibility across different GPU drivers is not promised                 |
-| emission.rate                    | Finite nonnegative particles per second                                                               |
-| emission.shape.type              | `point`, `circle`, `box`, or `cone2d`                                                                 |
-| initial.lifetime                 | Finite positive seconds                                                                               |
-| initial.speed                    | Finite nonnegative units per second                                                                   |
-| initial.direction                | Finite radians; used by point spawning                                                                |
-| initial.spread                   | Finite nonnegative angular width for point spawning                                                   |
-| modifiers[] (type: acceleration) | Magnitude number or emitter-time curve, nonnegative spread, and rotation in degrees; defaults to zero |
+Coordinates use logical units, positive X right and positive Y down. Particle,
+emitter and modifier rotations use counterclockwise degrees; angular velocity is
+in degrees/second. Point-emission `initial.direction` and `initial.spread` use
+radians. Pixi display transforms retain Pixi's own angle conventions. Device pixel
+ratio affects rendering resolution, not simulation units.
 
-Simulation coordinates currently use local units, positive X right and positive Y down. Rotation and angular speed use radians and radians/second in Reparticle. Conversion from other formats belongs at import boundaries.
-
-Version 1 is an unpublished initial contract. Add validated fields as their semantics and execution become available. Once published, incompatible semantic changes require a new version and migration rules. Do not predeclare fields that silently have no effect.
-
-Scalar speed is exact. The prototype's implicit speed variation, shrinking, and fading have been removed. Lifetime scale and alpha now use explicit curves; randomized values remain pending. Initial size belongs to the effect definition; texture remains a renderer control.
+Version 1 is an unpublished initial contract. Only accept fields that execute a
+defined behavior. Texture assets, animations, sizing mode, pivot and tint belong
+to the Pixi configuration, separate from the core effect definition.
 
 ## Coverage inventory
 
-Reference: [Defold Particle FX manual](https://defold.com/manuals/particlefx/), reviewed 2026-10-17. The following feature groups are the coverage target; every unchecked group remains planned.
+Audited 2026-10-19 against Defold 1.13.2. See the [2D audit](defold-2d-audit.md) for
+pinned source references, local evidence, confirmed differences and scope decisions.
+Checked entries mean the capability exists; they do not claim exact numerical
+parity or supersede the open corrections below.
 
-- [x] Multiple emitters; effect-wide and emitter-local modifier lists; emitter IDs and transforms.
-- [x] Once/loop playback, duration, draining particles, reset, capacity.
-- [x] Start delay (once per start, reapplied on reset).
-- [x] Start offset / prewarm.
-- [ ] Emitter/world space.
-- [x] Circle: uniform disk births, outward radial velocity, numeric diameter.
-- [x] Box in 2D: uniform rectangle births, upward velocity, full width/height.
-- [x] 2D cone: uniform triangle births, velocity away from the tip, full width/height.
-- [ ] Sphere, 3D cone; box depth and remaining shape dimensions.
-- [x] Default, initial-direction and movement-direction orientation.
-- [ ] Inherited velocity, velocity-aligned stretch.
-- [ ] Spawn rate, lifetime, speed, size, RGBA, rotation, stretch, angular velocity; emitter-time curves and random spread.
-- [x] Lifetime scale: Hermite curves sampled into 64 linear segments.
-- [x] Initial alpha and lifetime alpha (clamp their product to [0, 1]).
-- [x] Initial RGB and lifetime RGB curves.
-- [x] Initial rotation and lifetime rotation (additive degrees, default orientation).
-- [ ] Lifetime stretch and angular velocity curves.
-- [x] Acceleration, drag, radial, vortex; transforms, magnitude, influence distance, repeated types and authored order.
-- [ ] Images, atlases, animation, automatic/manual sizing, materials, tint constants.
-- [ ] Alpha, additive, multiply, screen blending.
-- [ ] Playback and runtime property controls; emitter states and resource limits.
-- [ ] Hierarchy editing, property editing, curve editing, live preview, playback controls.
+### Implemented portable 2D runtime
 
-The inventory includes 3D concepts. Our current implementation is 2D; sphere/cone depth, projection, and 3D transforms remain explicit architecture work, not silently flattened substitutes. Material capabilities must be expressed through Reparticle-owned rendering implementations and data; consumer-authored GPU functions remain outside the contract.
+- [x] Multiple named emitters; emitter position/rotation; local and shared ordered modifiers, including repeated types.
+- [x] Once/loop, duration and duration spread, start delay and spread, start offset/prewarm.
+- [x] Play/restart, stop/drain, clear, retire after the current loop, lifecycle state notifications.
+- [x] Explicit capacity, preservation of living particles, dropped excess births, expiration and Defold-style logical draw ordering/ties.
+- [x] World/local emission space, inherited velocity and automatic Pixi hierarchy synchronization.
+- [x] Circle, 2D box and 2D cone; emitter-size curves and spread. Point emission is an additional Reparticle shape.
+- [x] Default, initial-direction, movement-direction and angular-velocity orientation.
+- [x] Spawn-rate curves/spread; initial lifetime, speed, size, RGBA, rotation, stretch X/Y and angular velocity curves/spread.
+- [x] Particle-lifetime scale, RGBA, rotation, stretch X/Y and angular-velocity curves; velocity-dependent stretch.
+- [x] Hermite property curves sampled into 64 linear segments.
+- [x] Acceleration, directional/general drag, radial and 2D vortex; magnitude curves/spread, transforms and constant influence distance.
+- [x] Pixi texture/atlas frames with trim and packed rotation; single-source flipbook playback and runtime image/animation replacement.
+- [x] Manual/automatic animation sizing and particle pivot.
+- [x] Alpha, additive, multiply and screen blending; runtime per-emitter tint/reset.
+- [x] Pixi-specific integration: nested transforms, equal-magnitude signed axis scales, filters, masks and render textures.
 
-Use the [Defold runtime API](https://defold.com/ref/stable/particlefx-lua/) when specifying runtime controls. Verify individual behavior against the relevant manual/API/source before claiming parity. Engine-specific scene deletion, GUI integration, resource formats, and project settings need documented equivalents in a standalone library. Do not copy an undocumented or inconsistent formula without verification.
+### Open compatibility corrections
 
-## Implementation sequence
+- [x] Movement-direction heading uses the velocity at Defold's pre-modifier evaluation point, including births.
+- [ ] Modifier curves must use authored-duration timing, including final-segment extrapolation when duration spread extends playback.
+- [ ] Manual flipbook size must use animation-level aspect rather than each frame's aspect.
 
-1. **Configuration boundary — implemented.** Typed versioned definition, strict validation, independent output data, documented JSON fixture, tests outside source using package aliases. No GPU resources are created by parsing.
-2. **Connect one emitter — implemented.** The demo creates from JSON. `setParameters` validates atomic numeric patches, and `configuration` returns an independent snapshot. IDs, capacity and seed reach the runtime; scalar speed is exact. Flat prototype options and implicit visual changes are removed. Texture configuration remains in the rendering backlog; initial size is implemented.
-3. **Separate lifecycle and acceleration — implemented.** Built-in lifetime helpers own age/activity, gravity contributes acceleration, and motion integrates each axis once. Ordered modifiers now use Defold’s post-modifier velocity for displacement. Spawn initializes new particles before these stages. Helpers are registered in one GPU update kernel, not separate passes. The original gravity configuration has since been replaced by the acceleration modifier described below; numeric acceleration updates affect living particles, while initial-property changes affect future births. GPU.js uses an explicitly numeric activity flag because registered boolean-return helpers are unsupported.
-4. **Value distributions.** Consistent constant/random representations; independent random channels; lifetime and other initial properties sampled once at birth.
-5. **Emitter playback — duration, once/loop, play/stop/clear, and state notifications implemented.** Retiring at the end of the current loop is implemented.
-6. **Shapes and transforms — circle, 2D box, and 2D cone implemented.** `circle` takes a finite nonnegative `diameter`; angle is uniform and radius uses square-root sampling. Diameter updates affect future births only; shape type requires recreation. Point direction/spread are point-only. Implement each remaining documented shape separately; coordinate-space rules and inherited velocity; resolve 3D state/rendering needs before claiming 3D shapes.
-7. **Curves and particle appearance.** Shared curve contract, emitter-time evaluation, particle-age evaluation; each size/color/rotation/stretch feature separately. Renderer evaluation may avoid storing values derivable from age.
-8. **Remaining modifiers.** Drag, radial, vortex individually, with clear ordering and influence rules.
-9. **Effect composition.** Multiple emitters, shared modifiers, IDs, ownership and total resource budgets. Never imply an entire multi-emitter effect costs one draw.
-10. **Rendering coverage.** Blend modes, orientation, stretch, atlases/animation, sizing, tint and material equivalents, each separately.
-11. **Editor.** Defold-inspired workflow backed by the same validated definition. Only expose supported features. No editor-specific simulation logic.
+### Missing asset and authoring capabilities
 
-Dependencies may change the order, but no feature disappears from the coverage inventory. Each larger step is split into individual feature changes. The old flat emitter options API has been replaced by the JSON definition and numeric parameter patches.
+- [ ] Animation-only horizontal/vertical flip metadata in Pixi (distinct from implemented negative display scale).
+- [ ] Flipbook frames spanning multiple texture sources / atlas pages.
+- [ ] Full editor: hierarchy, property/curve authoring, modifier gizmos, persistence and live preview workflow. The demo is not this editor.
+- [ ] Committed browser conformance fixtures for renderer behavior; previous temporary GPU checks are not a repository regression suite.
+
+### Deferred or outside the current contract
+
+- **3D deferred:** sphere, 3D cone, box depth, 3D transforms/orientation and out-of-plane vortex axes.
+- **Engine-specific:** Defold material resources, custom material attributes/constants, resource loaders, render predicates, Lua/GUI messaging and project-wide engine budgets. Tint and blend equivalents are already implemented. No dissolve-material feature is implied.
+- **Intentional API differences:** `play()` restarts one owned simulation instead of allocating overlapping instances; destruction releases that simulation. Separate views represent overlapping effects.
+- **Representation differences:** own seed streams, local emitter coordinates, explicit Pixi transform semantics and a versioned JSON format. No Defold-file importer or bitwise-identical simulation promise.
+
+## Next implementation sequence
+
+The original runtime feature sequence is implemented at capability level. Finish
+the two remaining compatibility corrections above, one at a time, with focused reference
+cases. Asset expansion and the editor remain separate work. The [audit](defold-2d-audit.md#next-work)
+explains the recommended order; do not infer new simulation features from stale
+unchecked groups or engine-only Defold settings.
 
 Circle implementation reference: [Defold SpawnParticle, circle branch](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L905-L915), reviewed 2026-10-17. We match its disk sampling and radial velocity semantics, not its PRNG sequence. Circle diameter corresponds to Defold's Emitter Size X. Newborn movement and aging now use the full simulation step, as described below.
 
@@ -126,15 +128,15 @@ Box reference: [Defold SpawnParticle box branch](https://github.com/defold/defol
 
 Emitter-level `duration` is finite, nonnegative seconds (default 1); `playMode` is `once` or `loop` (default loop). These are structural settings, not numeric uniform patches. The demo recreates the effect and resets debug counting when they change.
 
-The emitter clock is independent of particle lifetime. Once stops after emitting the duration boundary frame; it does not kill particles. Loop resets its clock at the boundary without clearing particles or resetting emission carry/seed. Zero-duration once runs one positive step; loop continues. Zero-time initialization is deliberately inert. A tiny floating-point tolerance avoids an extra boundary frame from accumulation error. This matches Defold's frame-based playback policy, not bit-identical timer arithmetic or its newborn aging convention.
+The emitter clock is independent of particle lifetime. Once stops after emitting the duration boundary frame; it does not kill particles. Loop resets its clock at the boundary without clearing particles or resetting emission carry/seed. Zero-duration once runs one positive step; loop continues. Zero-time initialization is deliberately inert. A tiny floating-point tolerance avoids an extra boundary frame from accumulation error. This matches Defold's frame-based playback policy, not bit-identical timer arithmetic. Newborn aging follows the full-step behavior described below.
 
-`emitting` is a manual gate, `isEmitting` combines that gate with the playback state, and reset restarts playback. The manual gate does not freeze elapsed time. Pausing the demo skips both simulation and counting; debug uses emission eligibility captured before the update so the final once frame is counted correctly. No per-particle CPU tracking is added to core.
+`emitting` is a manual gate, `isEmitting` combines that gate with the playback state, and reset restarts playback. The manual gate does not freeze elapsed time. Pausing the demo skips both simulation and counting; debug uses emission eligibility captured before the update so the final once frame is counted correctly. Core now tracks slot allocation and lifetime for capacity and ordering; particle motion remains on the GPU.
 
 Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844). Duration spread, timeline curves, and lifecycle callbacks were added in subsequent steps below.
 
 Start delay: `startDelay` is finite and nonnegative, defaults to zero, and is structural. Defold checks the existing timer against the delay before adding the current step. The crossing step does not emit; the next step emits its full frame, carrying any delay overshoot into the duration timer. Loop wrap does not reenter the waiting state. Reset restores the delay, and zero-time warmup does not consume it. The pre-step emission eligibility used by demo stats follows the same boundary. Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844).
 
-Start offset: `startOffset` is a finite nonnegative structural setting, default zero. Match Defold StartInstance: ignore offsets below 0.0001 and clamp simulated time to maximum particle lifetime (currently scalar `initial.lifetime`). Fast-forward in full float32 1/60-second steps with float32 elapsed accumulation, including delay and once/loop transitions. The last step is not shortened. Reparticle defers this work until the first positive update so consumers can position an emitter before its world-space particles are born. Reset queues it again; zero-time kernel warmup does not consume it. The debug overlay replays the shared timing utilities independently, keeping counting out of core. Reference: [Defold StartInstance](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L407-L429) and [FastForwardEmitter](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L313-L324).
+Start offset: `startOffset` is a finite nonnegative structural setting, default zero. Match Defold StartInstance: ignore offsets below 0.0001 and clamp simulated time to maximum sampled initial-lifetime curve value plus lifetime spread. Fast-forward in full float32 1/60-second steps with float32 elapsed accumulation, including delay and once/loop transitions. The last step is not shortened. Reparticle defers this work until the first positive update so consumers can position an emitter before its world-space particles are born. Reset queues it again; zero-time kernel warmup does not consume it. The debug overlay replays the shared timing utilities independently, keeping the debug display separate from core allocation bookkeeping. Reference: [Defold StartInstance](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L407-L429) and [FastForwardEmitter](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L313-L324).
 
 Size over lifetime is implemented as `initial.size` (default 24, captured at birth) multiplied by `overLifetime.scale` (default 1). Scale accepts a constant or `{ points: [{ time, value, tangent }] }`. Tangents are slopes equivalent to Defold ty/tx; Hermite interpolation is sampled into 64 linear segments, matching Defold PROPERTY_SAMPLE_COUNT. Time is normalized particle age, not emitter time. Core owns schema and curve math, and stores initial size in the properties texel's third channel. Pixi uploads the sampled curve once and evaluates it in its vertex shader, retaining texture aspect ratio. No texture expansion, extra simulation kernel, CPU particle state, or per-frame curve upload is required. Runtime initial-size updates affect future births only; curve edits require recreation. Initial-size spread, emitter-time size curves and automatic animated-frame sizing were added in subsequent steps below.
 
@@ -142,7 +144,7 @@ Alpha over lifetime: `initial.alpha` and `overLifetime.alpha` default to 1. The 
 
 Color over lifetime: initial red/green/blue and lifetime red/green/blue default to 1. Each channel follows Defold's clamp(initial × lifetime, 0, 1), then tints texture RGB without additional color-space conversion. Initial numeric updates affect new births, lifetime curves require recreation. Captured RGB occupies a third RGBA texel `[initialRed, initialGreen, initialBlue, initialAlpha]`, raising texture storage and update output by 50% (32 to 48 bytes per slot per texture), still in one simulation pass. GPU texture-height validation now accounts for all three row bands. RGBA curves share one array of 65 vec4 samples to stay within minimum WebGL2 vertex-uniform limits; samples upload once. The procedural circle has a white base, so its color comes entirely from configured RGB. Initial color spread and emitter-time color curves remain pending.
 
-Rotation uses `initial.rotation` plus `overLifetime.rotation`, both degrees and default zero. Initial rotation is stored in the fourth properties channel, making the properties band `[age, lifetime, initialSize, initialRotation]`; texture storage is unchanged. Lifetime rotation uses the shared 64-segment Hermite sampling and is an absolute additive offset, not angular velocity. Positive angles rotate counterclockwise after accounting for downward canvas Y. Pixi rotates the aspect-correct quad around its center before applying the object transform, leaving simulation velocity unchanged. Initial degree updates affect future births, curve edits require recreation. `orientation` defaults to `"default"`; `"initial-direction"` aligns local up to the shape's spawn direction, then adds initial rotation and lifetime rotation. Alignment is captured at birth even at zero speed and remains fixed when gravity changes velocity. Box points up, circle points radially outward (including zero diameter), and Cone2D points away from its tip with an up fallback at zero length. Reparticle's extra point shape uses its sampled direction/spread. Orientation edits require recreation. The stored `initialRotation` includes this alignment. `"movement-direction"` instead aligns to current velocity in the render shader, adding the captured initial rotation and lifetime offset. It follows gravity-induced turns. As in Defold, squared speed must exceed `0.0001`; otherwise only the rotation offsets apply, with no retained heading. Directions nearly opposite local up use Defold's half-turn fallback (`abs(upDot + 1) <= 0.0001`). No extra texture channels or CPU readback are needed. Angular velocity, rotation spread and emitter transforms were added in subsequent steps below.
+Rotation uses `initial.rotation` plus `overLifetime.rotation`, both degrees and default zero. Initial rotation is stored in the fourth properties channel, making the properties band `[age, lifetime, initialSize, initialRotation]`; texture storage is unchanged. Lifetime rotation uses the shared 64-segment Hermite sampling and is an absolute additive offset, not angular velocity. Positive angles rotate counterclockwise after accounting for downward canvas Y. Pixi rotates the aspect-correct quad around its center before applying the object transform, leaving simulation velocity unchanged. Initial degree updates affect future births, curve edits require recreation. `orientation` defaults to `"default"`; `"initial-direction"` aligns local up to the shape's spawn direction, then adds initial rotation and lifetime rotation. Alignment is captured at birth even at zero speed and remains fixed when gravity changes velocity. Box points up, circle points radially outward (including zero diameter), and Cone2D points away from its tip with an up fallback at zero length. Reparticle's extra point shape uses its sampled direction/spread. Orientation edits require recreation. The stored `initialRotation` includes this alignment. `"movement-direction"` captures the incoming velocity heading before modifiers on each simulation step, including the birth velocity after emitter transformation and inheritance. Pixi combines that captured heading with initial rotation and the lifetime offset. A force-induced turn changes the visual heading on the following step, matching Defold. As in Defold, squared speed must exceed `0.0001`; otherwise only the rotation offsets apply, with no retained heading. Directions nearly opposite local up use Defold's half-turn fallback (`abs(upDot + 1) <= 0.0001`). The previously reserved geometry channel stores `movementRotation` in degrees; no texture band, simulation pass or CPU readback is added. Paused rendering retains this angle; local hierarchy transforms still apply at draw time. Angular velocity, rotation spread and emitter transforms were added in subsequent steps below.
 
 Storage terminology: `motion` is `[x, y, velocityX, velocityY]`, `properties` is `[age, lifetime, initialSize, initialRotation]`, and `color` is `[initialRed, initialGreen, initialBlue, initialAlpha]`. Initial values belong to each particle and are captured at spawn; later emitter parameter changes do not replace them. These are internal Reparticle names aligned with our JSON and Defold's editor terminology, not Defold's exact internal field names.
 
@@ -214,7 +216,7 @@ In the demo, choose **Orientation → Angular velocity** to expose initial spin,
 
 `initial.stretchX` and `initial.stretchY` accept numbers or emitter-time curves, defaulting to 0. Their nonnegative `stretchXSpread`/`stretchYSpread` ranges default to 0 and use independent birth streams 16/17. Captured values persist until a slot is reused; numeric edits affect future births. `overLifetime.stretchX` and `overLifetime.stretchY` are additive particle-lifetime curves, also defaulting to 0. Defold's formula for each axis is `initialSize × lifetimeScale × (1 + initialStretch + lifetimeStretch)`, with texture aspect ratio and emitter scale applied as usual. These are dimensionless factors: 0 is unchanged, 1 doubles, −1 collapses, and values below −1 flip that axis. No clamping, timestep accumulation, or velocity dependency is applied. Stretch operates before particle orientation/rotation. Curve edits require recreation.
 
-The fifth RGBA row band, `geometry`, stores `[initialStretchX, initialStretchY, initialHandedness, reserved]`, increasing allocation from 64 to 80 bytes per slot per texture (25%, before row padding). Simulation still uses one GPU pass and rendering reads the texture directly. Pixi packs scale, rotation, stretch X, and stretch Y samples into one 65-entry vec4 array; together with packed color curves this fits WebGL2's minimum vertex uniform budget. The demo's Stretch panel exposes each axis's initial curve, value, spread, and lifetime curve. Both example JSON files use zero stretch. Velocity-dependent stretch is described below.
+The fifth RGBA row band, `geometry`, stores `[initialStretchX, initialStretchY, initialHandedness, movementRotation]`, increasing allocation from 64 to 80 bytes per slot per texture (25%, before row padding). Simulation still uses one GPU pass and rendering reads the texture directly. Pixi packs scale, rotation, stretch X, and stretch Y samples into one 65-entry vec4 array; together with packed color curves this fits WebGL2's minimum vertex uniform budget. The demo's Stretch panel exposes each axis's initial curve, value, spread, and lifetime curve. Both example JSON files use zero stretch. Velocity-dependent stretch is described below.
 
 Top-level `stretchWithVelocity` defaults to false and accepts live boolean updates through `setParameters`. When enabled, Defold's formula changes only the Y factor to `1 + (initialStretchY + lifetimeStretchY) × length(currentVelocity) / 120`. X retains ordinary stretch. The fixed `1/120` factor corresponds to Defold's 60 FPS, 180-degree shutter convention, not the current timestep or display refresh rate. Velocity is read after simulation modifiers: stationary particles have no added Y stretch, and speed 120 produces the ordinary Y stretch amount. Signed stretch still supports collapse and flips. This does not select movement orientation automatically; choose `movement-direction` to align the stretched local Y axis to motion.
 
@@ -298,7 +300,8 @@ A small renderer-owned RGBA32F table stores four texels per animation frame
 an animation. The vertex shader chooses each particle's frame independently;
 there is no particle readback, CPU animation loop, extra simulation storage, or
 extra draw pass. Rotation and trim work per frame. The existing manual sizing
-uses each frame's original proportions; automatic sizing is described below.
+uses each frame's original proportions; this is a confirmed Defold compatibility
+gap (see the 2D audit). Automatic sizing is described below.
 All frames must share one Pixi texture source; multi-page animations are explicitly
 rejected. Empty or unknown animations and invalid settings leave the old selection
 intact. Frame metadata is snapshotted: call `setTexture` again after editing it.
@@ -342,7 +345,7 @@ Each emitter retains its own texture allocation; total memory and slot work scal
 with the sum of capacities, including per-emitter row padding. There is no merging
 of capacities, readback, or per-particle CPU loop. GPU resources are cleaned up on
 partial construction failure and destruction; caller-owned artwork survives.
-Shared effect-root modifiers are described below; an effect-wide resource budget remains future work.
+Shared effect-root modifiers are described below. Effect-wide resource budgets are a host-level concern outside the current contract.
 This adds independent composition, not changes to the documented simulation integrator.
 
 The demo's **Multiple emitters example** link (`?multiple`) loads
@@ -374,7 +377,9 @@ same-kind local modifier. Within each scope, array order is preserved exactly, a
 [Defold’s particle update](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp).
 For example, acceleration then drag damps the added velocity; drag then acceleration does not. Shared curves sample the receiving emitter's normalized
 timeline, including its duration, start delay, loops, and prewarm. Spreads reuse
-that particle's captured modifier variation, just like local modifiers.
+that particle's captured modifier variation, just like local modifiers. The current
+clock uses sampled duration; the [2D audit](defold-2d-audit.md#2-modifier-curves-use-sampled-duration-instead-of-authored-duration)
+records the authored-duration compatibility correction.
 
 Shared centers and directions are expressed in effect simulation coordinates.
 World-space emitters apply the effect transform; local-space emitters inverse-transform
@@ -619,7 +624,7 @@ own shared EffectTransform. The composed demo now uses normal Pixi transforms.
 The scene matrix determinant determines handedness. Its first column, corrected
 by that sign, determines rotation. World births reflect shape offsets, velocity,
 initial orientation and rotation spread. The existing geometry band's third
-channel stores `initialHandedness`; its final channel remains reserved. Texture
+channel stores `initialHandedness`; its final channel stores `movementRotation`. Texture
 geometry (including pivot and atlas trim), lifetime rotation and accumulated spin
 use the captured sign, so changing the hierarchy never flips living world
 particles. Local births store identity handedness and the shader applies the

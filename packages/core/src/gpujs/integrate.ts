@@ -4,6 +4,7 @@ import { advanceRotation } from '../behaviors/angular-velocity';
 import { advanceAge, particleAlive } from '../behaviors/lifetime';
 import { applyModifiers } from '../behaviors/modifiers';
 import { propertyVariation } from '../behaviors/property-variation';
+import { movementRotation } from './movement-rotation';
 import { particleHeading } from './particle-heading';
 import { spawnBox } from './spawn-box';
 import { spawnCircle } from './spawn-circle';
@@ -81,19 +82,21 @@ export function integrate(
   const dynamics = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
   const active = dynamics[0] * particleAlive(advanceAge(properties[0], seconds), properties[1]);
 
-  if (this.thread.y >= this.constants.rows * 4) {
-    if (isSpawning) {
+  if (this.thread.y >= this.constants.rows * 4 && !isSpawning) {
+    const geometry = state[particleRow + this.constants.rows * 4]![this.thread.x]!;
+    if (orientToMovement > 0.5 && active > 0.5) {
+      const previousMotion = state[particleRow]![this.thread.x]!;
       return [
-        initialStretchX + propertyVariation(particleId, seed, 16) * stretchXSpread,
-        initialStretchY + propertyVariation(particleId, seed, 17) * stretchYSpread,
-        handedness,
-        0,
+        geometry[0],
+        geometry[1],
+        geometry[2],
+        movementRotation(previousMotion[2], previousMotion[3]),
       ];
     }
-    return state[particleRow + this.constants.rows * 4]![this.thread.x]!;
+    return geometry;
   }
 
-  if (this.thread.y >= this.constants.rows * 3) {
+  if (this.thread.y >= this.constants.rows * 3 && this.thread.y < this.constants.rows * 4) {
     if (isSpawning) {
       const angularVelocity =
         initialAngularVelocity + propertyVariation(particleId, seed, 15) * angularVelocitySpread;
@@ -130,7 +133,7 @@ export function integrate(
   }
 
   // Color texel: initialRed, initialGreen, initialBlue, initialAlpha.
-  if (this.thread.y >= this.constants.rows * 2) {
+  if (this.thread.y >= this.constants.rows * 2 && this.thread.y < this.constants.rows * 3) {
     if (isSpawning) {
       return [
         initialRed + propertyVariation(particleId, seed, 5) * redSpread,
@@ -160,7 +163,7 @@ export function integrate(
     if (orientToDirection > 0.5) {
       rotation += spawnRotation(spawned[2], spawned[3]) * handedness;
     }
-    if (this.thread.y >= this.constants.rows) {
+    if (this.thread.y >= this.constants.rows && this.thread.y < this.constants.rows * 2) {
       const sampledSize = initialSize + propertyVariation(particleId, seed, 3) * sizeSpread;
       return [seconds, sampledLifetime, sampledSize * emitterScale, rotation];
     }
@@ -173,6 +176,14 @@ export function integrate(
     const birthY =
       (emitterSine * spawned[2] * handedness + emitterCosine * spawned[3]) * sampledSpeed +
       inheritedVelocityY;
+    if (this.thread.y >= this.constants.rows * 4) {
+      return [
+        initialStretchX + propertyVariation(particleId, seed, 16) * stretchXSpread,
+        initialStretchY + propertyVariation(particleId, seed, 17) * stretchYSpread,
+        handedness,
+        orientToMovement > 0.5 ? movementRotation(birthX, birthY) : 0,
+      ];
+    }
     const positionX =
       emitterX +
       (emitterCosine * spawned[0] * handedness - emitterSine * spawned[1]) * emitterScale;

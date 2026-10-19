@@ -243,8 +243,15 @@ motion:     [x, y, velocityX, velocityY]
 properties: [age, lifetime, initialSize, initialRotation]
 color:      [initialRed, initialGreen, initialBlue, initialAlpha]
 dynamics:   [active, spreadFactor, initialAngularVelocity, accumulatedRotation]
-geometry:   [initialStretchX, initialStretchY, initialHandedness, reserved]
+geometry:   [initialStretchX, initialStretchY, initialHandedness, movementRotation]
 ```
+
+Movement-direction orientation uses the velocity before each step's forces, as in
+Defold. Births include transformed spawn velocity and inheritance. The geometry
+row stores that heading in degrees; Pixi adds initial and lifetime rotation.
+Stopped particles use only those rotation offsets on the next positive step.
+Paused rendering retains the captured heading. No extra texture or GPU readback
+is required.
 
 `initial` means the value captured for that particle at spawn, not the emitter's current setting. These storage names are Reparticle's; “Initial” follows the configuration and Defold editor terminology.
 

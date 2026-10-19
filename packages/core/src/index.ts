@@ -125,6 +125,7 @@ export class Emitter {
     gpu.addFunction(functions.applyRadial);
     gpu.addFunction(functions.applyVortex);
     gpu.addFunction(functions.particleHeading);
+    gpu.addFunction(functions.movementRotation);
     gpu.addFunction(functions.advanceAge);
     // The alive flag is numeric in GPU storage.
     gpu.addFunction(functions.particleAlive, { returnType: 'Number' });

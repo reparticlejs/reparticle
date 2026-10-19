@@ -18,3 +18,5 @@ export { spawnRotation } from './spawn-rotation';
 export { spawnMotion } from './spawn-motion';
 
 export { applyModifiers } from '../behaviors/modifiers';
+
+export { movementRotation } from './movement-rotation';
