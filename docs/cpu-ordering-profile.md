@@ -218,3 +218,84 @@ and verify swap removal, slot reuse, reset and key quantization. The benchmark
 comparison also covers lifetime spread.
 Renderer checks cover blending order, living instance counts, paused uploads and
 final-only prewarm upload.
+
+## Skipping unchanged draw-order uploads
+
+Benchmarked after radix adoption on the same local desktop browser. Production
+remains unchanged: the candidate does not provide a convincing CPU improvement.
+
+### Candidate and method
+
+On a new simulation revision, copy the sorted IDs into a staging array, compare
+count and exact slot sequence against the last submitted order, and upload only
+when different. Reuse two capacity-sized arrays and swap their roles after upload,
+avoiding another full-array copy. Sorting and Defold tie-breaking are untouched;
+there are no hashes or collision risks. The existing revision fast path still
+handles paused rendering without copying or comparing.
+
+Three alternating rounds of 120 updates per algorithm, 360 samples per case.
+Actual `ParticleSlots` radix sorting runs before the measured update. Workloads:
+
+- Stable: a full long-lived cohort; positive simulation steps, identical slot order.
+- Churn: continuous births and deaths, lifetime 2 seconds with 0.5 spread,
+  after 180 warmup steps.
+- Late change: a synthetic final-two-slot swap alternates each frame, forcing a
+  nearly full comparison before detecting a change. This is an adversarial upload
+  workload, not a replacement for Defold sorting.
+- Paused: unchanged revision, already optimized in production.
+
+The isolated test uses real WebGL buffer allocation and `bufferSubData` but no
+draws, synchronization or GPU completion timing. CPU update measurements exclude
+sorting and validation. The copied/submitted sequence and returned live count are
+checked against the expected order after each update, including when no upload
+occurs. All 8,640 comparisons passed; readback traps recorded zero calls, and GL
+reported no errors. Validation checks the submitted CPU data, not GPU contents.
+
+### Isolated CPU update results
+
+Mean milliseconds per update (including staging copy, comparison if applicable,
+and upload submission). Browser timer quantization limits small values.
+
+| Slots / target live | Workload    | Current | Skip candidate | Candidate uploads saved |
+| ------------------- | ----------- | ------- | -------------- | ----------------------- |
+| 6,000               | Stable      | 0.0014  | 0.0050         | 360 / 360               |
+| 6,000               | Churn       | 0.0014  | 0.0031         | 0 / 360                 |
+| 6,000               | Late change | 0.0017  | 0.0058         | 0 / 360                 |
+| 100,000             | Stable      | 0.0253  | 0.0786         | 360 / 360               |
+| 100,000             | Churn       | 0.0178  | 0.0183         | 0 / 360                 |
+| 100,000             | Late change | 0.0156  | 0.0953         | 0 / 360                 |
+| 300,000             | Stable      | 0.0786  | 0.3311         | 360 / 360               |
+| 300,000             | Churn       | 0.0894  | 0.0797         | 0 / 360                 |
+| 300,000             | Late change | 0.0697  | 0.3900         | 0 / 360                 |
+
+Both variants skip every paused upload and remain at/below timer resolution.
+Churn differences are small and do not demonstrate upload savings: both submitted
+exactly the same number of bytes. Stable-order traffic was eliminated (144 MB
+across 360 updates at 100,000 slots; 432 MB at 300,000), but comparison CPU time
+exceeded the isolated upload-submission cost. The candidate also needs an extra
+four bytes per capacity slot: 400 KB at 100,000 or 1.2 MB at 300,000.
+
+### Draw stress caveat
+
+An earlier variant copied the previous order instead of swapping arrays and issued
+instanced point draws after every update without frame pacing. All 8,640 CPU order
+checks passed, with no readbacks or GL errors. However, it produced very large
+outlier stalls and contradictory means even for churn, where both implementations
+uploaded identical data. Those averages are dominated by asynchronous driver/queue
+backpressure and are not used as evidence of a speedup. A paced, representative
+full-effect benchmark would be needed to establish benefits from reduced GPU
+transfer/driver contention; the isolated test cannot rule those out.
+
+### Decision
+
+Keep the existing upload path. This exact-sequence scan does not justify its CPU
+and memory cost on this device. Do not skip sorting, approximate order equality,
+or change Defold tie-breaking. If uploads become a measured full-effect bottleneck,
+consider detecting order changes while performing existing work rather than adding
+another complete scan, and validate that separately. Mobile behavior remains
+unmeasured.
+
+Temporary harness: `/tmp/reparticle-json-runtime/profile-upload.js`,
+`skip-order-buffer.ts`, `build-profile-upload.mjs`, `profile-upload.html`.
+The retained candidate is the two-buffer version; the retained harness is the
+isolated submission test. No dependencies or production instrumentation were added.
