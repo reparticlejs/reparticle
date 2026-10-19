@@ -487,7 +487,7 @@ export class Emitter {
       o.initial.stretchXSpread,
       o.initial.stretchYSpread,
       this.modifiers.sample(
-        this.playback.normalizedAge,
+        this.playback.modifierAge,
         !worldSpace,
         this.x,
         this.y,

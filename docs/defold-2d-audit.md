@@ -25,7 +25,7 @@ The [architecture checklist](particle-architecture.md#coverage-inventory) distin
 | Emitter properties         | Spawn rate, initial lifetime/speed/size/RGBA/rotation/stretch X/Y/angular velocity; curves and spread                              | `core/src/config/schema.ts`, `core/src/index.ts`, `core/src/gpujs/integrate.ts`; initial-property, spread and GPU-function tests                                                    |
 | Particle properties        | Lifetime scale/RGBA/rotation/stretch/angular velocity                                                                              | `core/src/curves`, `core/src/behaviors/angular-velocity.ts`, `pixi/src/emitter-view.ts`; curve, spin and stretch tests                                                              |
 | Orientation and spaces     | Default, initial direction, movement direction, angular velocity; world/local and inherited velocity                               | Core transform/velocity/kernel code and Pixi shader; orientation, inheritance and reflection tests. Movement timing correction below is implemented                                 |
-| Forces                     | Acceleration, directional/general drag, radial, 2D vortex; magnitude curves/spread and constant distance cutoff                    | `core/src/modifiers.ts`, `core/src/behaviors`; modifier and GPU-function tests. Modifier clock correction below remains open                                                        |
+| Forces                     | Acceleration, directional/general drag, radial, 2D vortex; magnitude curves/spread and constant distance cutoff                    | `core/src/modifiers.ts`, `core/src/behaviors`; modifier and GPU-function tests. Authored-duration modifier clock and final-segment extrapolation verified                           |
 | Capacity and order         | Keep living slots, drop excess births, expiry, logical swap-removal and lifetime sort with tie breaking                            | `core/src/particle-slots.ts`, `core/src/particle-order.ts`, `core/src/particle-sort-key.ts`, `pixi/src/particle-order-buffer.ts`; allocator/order tests                             |
 | Images and animation       | Texture/atlas frames, trim/packed rotation, seven playback modes, runtime texture/animation replacement, manual/auto sizing, pivot | `pixi/src/types/particle-texture.ts`, `resolve-flipbook.ts`, `create-frame-texture.ts`, `flipbook-shader.ts`, `emitter-view.ts`; asset gaps and aspect correction below remain open |
 | Appearance and integration | Alpha/add/multiply/screen, runtime tint/reset, ordinary Pixi hierarchy, filters/masks/render targets                               | `pixi/src/set-blend-mode.ts`, `pixi/src/index.ts`, `pixi/src/emitter-view.ts`                                                                                                       |
@@ -42,11 +42,11 @@ Defold's [`Simulate` and `EvaluateParticleProperties`](https://github.com/defold
 
 Verification: committed helper and kernel tests cover turns, stops, reversals, inherited/reflected birth velocity, radial-center consistency, pause, expiration and slot reuse. Temporary browser checks compare asymmetric textured particles with an independent pre-force reference in world/local spaces, with reflections and paused parent changes, through Rolldown and Terser minification. These are not a substitute for the still-planned committed browser harness.
 
-### 2. Modifier curves use sampled duration instead of authored duration
+### 2. Modifier curve timing — implemented
 
-Defold [`Simulate`](https://github.com/defold/defold/blob/1.13.2/engine/particle/src/particle.cpp#L1569-L1629) normalizes the modifier clock with the authored `ddf->m_Duration`. Its emission-property clock uses the sampled duration instead. Our `Emitter.step()` passes `playback.normalizedAge` to both, which uses the sampled duration. The results differ when duration spread changes the duration and modifier magnitude varies over time. Defold can also evaluate beyond normalized time one using its final linear segment; `SampledCurve.at()` clamps to one.
+Defold [`Simulate`](https://github.com/defold/defold/blob/1.13.2/engine/particle/src/particle.cpp#L1569-L1629) normalizes modifiers with authored duration, while emission properties use sampled duration. `EmitterPlayback.modifierAge` now follows that distinction. Zero authored duration samples time zero. Modifier magnitudes extrapolate the final sampled line beyond one; emission and initial-property curves retain their existing sampling.
 
-**Correction:** distinguish the modifier clock from the emission-property clock, including the authored-zero-duration case and final-segment extrapolation. Keep initial-property/emission timing unchanged. Verify nonzero duration spread and postspawn draining with explicit reference cases.
+Tests cover duration spread, all four modifier types in both scopes, nonlinear final-segment extrapolation, draining after stop, loop wrapping, retirement, reset, delay, zero-time updates, and zero authored duration. The existing CPU emitter clock supplies the samples; no GPU readbacks or additional simulation passes are needed.
 
 ### 3. Manual animation sizing changes aspect ratio per frame
 
@@ -92,9 +92,8 @@ Supporting this requires a Pixi rendering design (texture arrays or ordering-pre
 
 ## Next work
 
-1. Correct modifier-curve timing under duration spread.
-2. Resolve manual animation aspect semantics in Pixi.
-3. Add repeatable browser conformance fixtures for the corrections; choose test infrastructure separately, without adding dependencies as part of this audit.
-4. Consider animation flip metadata and cross-page animation only when their use cases justify the rendering/API work.
+1. Resolve manual animation aspect semantics in Pixi.
+2. Add repeatable browser conformance fixtures for the corrections; choose test infrastructure separately, without adding dependencies as part of this audit.
+3. Consider animation flip metadata and cross-page animation only when their use cases justify the rendering/API work.
 
 No additional portable 2D shape, force type, emitter-property family or particle-property family was found missing in the audited schema. That conclusion is capability coverage, not a claim that every numerical edge case has been compared against a running Defold build.

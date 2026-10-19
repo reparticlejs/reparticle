@@ -73,7 +73,7 @@ parity or supersede the open corrections below.
 ### Open compatibility corrections
 
 - [x] Movement-direction heading uses the velocity at Defold's pre-modifier evaluation point, including births.
-- [ ] Modifier curves must use authored-duration timing, including final-segment extrapolation when duration spread extends playback.
+- [x] Modifier curves use authored-duration timing, including final-segment extrapolation when duration spread extends playback.
 - [ ] Manual flipbook size must use animation-level aspect rather than each frame's aspect.
 
 ### Missing asset and authoring capabilities
@@ -377,9 +377,10 @@ same-kind local modifier. Within each scope, array order is preserved exactly, a
 [Defold’s particle update](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp).
 For example, acceleration then drag damps the added velocity; drag then acceleration does not. Shared curves sample the receiving emitter's normalized
 timeline, including its duration, start delay, loops, and prewarm. Spreads reuse
-that particle's captured modifier variation, just like local modifiers. The current
-clock uses sampled duration; the [2D audit](defold-2d-audit.md#2-modifier-curves-use-sampled-duration-instead-of-authored-duration)
-records the authored-duration compatibility correction.
+that particle's captured modifier variation, just like local modifiers. Modifier time
+is the emitter timer divided by authored duration, while emission and initial properties
+use sampled duration. Zero authored duration samples zero. Beyond time one, modifier
+magnitudes continue the final sampled line rather than clamping to its endpoint.
 
 Shared centers and directions are expressed in effect simulation coordinates.
 World-space emitters apply the effect transform; local-space emitters inverse-transform
@@ -437,7 +438,8 @@ fits in one frame; loops do not report a new transition every cycle. Stop during
 delay cancels pending prewarm. Clear removes particles immediately; sleeping is
 resolved on the next positive update, as in Defold's update-driven state machine.
 Zero-time updates never consume lifecycle transitions. Emitter-time modifier curves
-continue advancing while draining, capped at duration.
+continue advancing while draining: the timer caps at sampled duration, then is divided
+by authored duration.
 
 Existing construction remains auto-started. `play()` restarts the existing
 simulation from its initial seed, clearing old particles and reapplying delay and

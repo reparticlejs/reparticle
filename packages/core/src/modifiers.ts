@@ -30,7 +30,7 @@ class ModifierList {
     const sine = Math.sin(radians);
     for (let index = 0; index < this.definitions.length; index++) {
       const modifier = this.definitions[index]!;
-      const magnitude = this.magnitudes[index]!.at(age);
+      const magnitude = this.magnitudes[index]!.extrapolate(age);
       if (magnitude === 0 && modifier.spread === 0) {
         continue;
       }

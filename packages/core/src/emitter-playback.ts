@@ -53,13 +53,13 @@ export class EmitterPlayback {
   private readonly startDelay: number;
 
   constructor(
-    duration: number,
+    private readonly authoredDuration: number,
     private readonly playMode: EmitterConfig['playMode'],
     startDelay = 0,
     { seed = 0, durationSpread = 0, startDelaySpread = 0 }: PlaybackVariation = {},
   ) {
     // Emitter-level samples stay fixed across loops and resets.
-    this.duration = Math.max(0, duration + propertyVariation(0, seed, 9) * durationSpread);
+    this.duration = Math.max(0, authoredDuration + propertyVariation(0, seed, 9) * durationSpread);
     this.startDelay = startDelay + propertyVariation(0, seed, 10) * startDelaySpread;
   }
 
@@ -70,6 +70,11 @@ export class EmitterPlayback {
   /** Current emitter age after delay and loop handling; zero duration samples the start. */
   get normalizedAge(): number {
     return this.waiting || this.duration === 0 ? 0 : this.elapsed / this.duration;
+  }
+
+  /** Modifiers use the authored duration, even when spread extends the sampled clock. */
+  get modifierAge(): number {
+    return this.authoredDuration === 0 ? 0 : this.elapsed / this.authoredDuration;
   }
 
   /** Defold emits the whole boundary frame, then stops or restarts its timer. */
