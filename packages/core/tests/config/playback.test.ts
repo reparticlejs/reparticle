@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -36,7 +36,7 @@ it.each([{ duration: 2 }, { playMode: 'once' }, { startDelay: 1 }, { startOffset
   'rejects structural playback updates: %j',
   (patch) => {
     const original = parseEffectConfig(effect(1, 'loop')).emitters[0];
-    expect(() => updateEmitterConfig(original, patch)).toThrow(ZodError);
+    expect(() => applyEmitterPatch(original, patch)).toThrow(ZodError);
     expect(original.duration).toBe(1);
     expect(original.playMode).toBe('loop');
   },
@@ -96,7 +96,7 @@ it.each(['durationSpread', 'startDelaySpread'])(
         parseEffectConfig({ ...input, emitters: [{ ...input.emitters[0], [key]: value }] }),
       ).toThrow(ZodError);
     }
-    expect(() => updateEmitterConfig(parseEffectConfig(input).emitters[0], { [key]: 1 })).toThrow(
+    expect(() => applyEmitterPatch(parseEffectConfig(input).emitters[0], { [key]: 1 })).toThrow(
       ZodError,
     );
   },

@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -13,9 +13,9 @@ it('defaults to alpha and accepts all four blend modes in definitions and runtim
   for (const blendMode of ['alpha', 'add', 'multiply', 'screen'] as const) {
     const parsed = parseEffectConfig({ version: 1, emitters: [{ ...source, blendMode }] });
     expect(parsed.emitters[0].blendMode).toBe(blendMode);
-    const changed = updateEmitterConfig(config, { blendMode });
+    const changed = applyEmitterPatch(config, { blendMode });
     expect(changed.blendMode).toBe(blendMode);
-    expect(updateEmitterConfig(changed, { initial: { size: 10 } }).blendMode).toBe(blendMode);
+    expect(applyEmitterPatch(changed, { initial: { size: 10 } }).blendMode).toBe(blendMode);
   }
   expect(config.blendMode).toBe('alpha');
 });
@@ -26,6 +26,6 @@ it('rejects unsupported blend modes in definitions and patches', () => {
     expect(() => parseEffectConfig({ version: 1, emitters: [{ ...config, blendMode }] })).toThrow(
       ZodError,
     );
-    expect(() => updateEmitterConfig(config, { blendMode })).toThrow(ZodError);
+    expect(() => applyEmitterPatch(config, { blendMode })).toThrow(ZodError);
   }
 });

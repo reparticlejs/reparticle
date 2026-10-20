@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 import { EmitterPlayback } from '#src/runtime/emitter-playback.js';
 import { SpawnRate } from '#src/runtime/spawn-rate.js';
 import { SpawnSchedule } from '#src/runtime/spawn-schedule.js';
@@ -68,8 +68,8 @@ it('accepts rate curves, preserves them during unrelated updates, and allows num
     version: 1,
     emitters: [{ ...source, emission: { ...source.emission, rate: ramp } }],
   }).emitters[0];
-  expect(updateEmitterConfig(config, { initial: { size: 40 } }).emission.rate).toEqual(ramp);
-  expect(updateEmitterConfig(config, { emission: { rate: 25 } }).emission.rate).toBe(25);
+  expect(applyEmitterPatch(config, { initial: { size: 40 } }).emission.rate).toEqual(ramp);
+  expect(applyEmitterPatch(config, { emission: { rate: 25 } }).emission.rate).toBe(25);
 });
 
 it('adds one seeded offset before clamping, including negative curve values', () => {
@@ -92,10 +92,10 @@ it('validates rate spread, defaults to zero, and requires recreation to change i
       emitters: [{ ...source, emission: { ...source.emission, rateSpread } }],
     }).emitters[0];
     expect(config.emission.rateSpread).toBe(rateSpread ?? 0);
-    expect(updateEmitterConfig(config, { emission: { rate: 10 } }).emission.rateSpread).toBe(
+    expect(applyEmitterPatch(config, { emission: { rate: 10 } }).emission.rateSpread).toBe(
       rateSpread ?? 0,
     );
-    expect(() => updateEmitterConfig(config, { emission: { rateSpread: 10 } })).toThrow(ZodError);
+    expect(() => applyEmitterPatch(config, { emission: { rateSpread: 10 } })).toThrow(ZodError);
   }
   for (const rateSpread of [-1, NaN, Infinity, '1', null]) {
     expect(() =>

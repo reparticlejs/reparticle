@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 import { sampleCurve } from '#src/curves/sample-curve.js';
 
 import skeleton from '../../../../docs/effect.example.json';
@@ -42,13 +42,13 @@ it('accepts negative and multi-turn degree values without wrapping', () => {
 
 it('updates initial rotation independently and rejects invalid or structural patches', () => {
   const original = parseEffectConfig(skeleton).emitters[0];
-  const changed = updateEmitterConfig(original, { initial: { rotation: 90 } });
-  expect(updateEmitterConfig(changed, { initial: { size: 40 } }).initial.rotation).toBe(90);
+  const changed = applyEmitterPatch(original, { initial: { rotation: 90 } });
+  expect(applyEmitterPatch(changed, { initial: { size: 40 } }).initial.rotation).toBe(90);
   expect(original.initial.rotation).toBe(0);
   for (const rotation of [undefined, NaN, Infinity, null, '90']) {
-    expect(() => updateEmitterConfig(changed, { initial: { rotation } })).toThrow(ZodError);
+    expect(() => applyEmitterPatch(changed, { initial: { rotation } })).toThrow(ZodError);
   }
-  expect(() => updateEmitterConfig(changed, { overLifetime: { rotation: 90 } })).toThrow(ZodError);
+  expect(() => applyEmitterPatch(changed, { overLifetime: { rotation: 90 } })).toThrow(ZodError);
 });
 
 it('defaults orientation and accepts only supported structural modes', () => {
@@ -59,7 +59,7 @@ it('defaults orientation and accepts only supported structural modes', () => {
   expect(parse('initial-direction').orientation).toBe('initial-direction');
   expect(parse('movement-direction').orientation).toBe('movement-direction');
   expect(() => parse('unknown')).toThrow(ZodError);
-  expect(() => updateEmitterConfig(parse('default'), { orientation: 'initial-direction' })).toThrow(
+  expect(() => applyEmitterPatch(parse('default'), { orientation: 'initial-direction' })).toThrow(
     ZodError,
   );
 });

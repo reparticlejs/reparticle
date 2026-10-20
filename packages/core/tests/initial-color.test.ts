@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 import { SampledCurve } from '#src/curves/sampled-curve.js';
 
 import skeleton from '../../../docs/effect.example.json';
@@ -22,11 +22,9 @@ it.each(['red', 'green', 'blue', 'alpha'] as const)(
       version: 1,
       emitters: [{ ...source, initial: { ...source.initial, [channel]: curve } }],
     }).emitters[0];
-    expect(updateEmitterConfig(config, { initial: { size: 40 } }).initial[channel]).toEqual(curve);
-    expect(updateEmitterConfig(config, { initial: { [channel]: 0.25 } }).initial[channel]).toBe(
-      0.25,
-    );
-    expect(() => updateEmitterConfig(config, { initial: { [channel]: curve } })).toThrow(ZodError);
+    expect(applyEmitterPatch(config, { initial: { size: 40 } }).initial[channel]).toEqual(curve);
+    expect(applyEmitterPatch(config, { initial: { [channel]: 0.25 } }).initial[channel]).toBe(0.25);
+    expect(() => applyEmitterPatch(config, { initial: { [channel]: curve } })).toThrow(ZodError);
     expect(() =>
       parseEffectConfig({
         version: 1,

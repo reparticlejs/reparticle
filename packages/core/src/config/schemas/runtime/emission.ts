@@ -1,7 +1,7 @@
 import { number, strictObject } from 'zod';
 
 // Runtime patches change dimensions without changing the emitter's shape type.
-const shapeParametersSchema = strictObject({
+const shapeSchema = strictObject({
   diameter: number(),
   diameterSpread: number().nonnegative(),
   width: number(),
@@ -10,7 +10,7 @@ const shapeParametersSchema = strictObject({
   heightSpread: number().nonnegative(),
 }).partial();
 
-export const emissionParametersSchema = strictObject({
+export const emissionSchema = strictObject({
   rate: number().nonnegative(),
-  shape: shapeParametersSchema,
+  shape: shapeSchema,
 }).partial();

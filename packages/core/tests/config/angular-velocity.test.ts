@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -27,16 +27,16 @@ it('supports angular orientation, birth speed curves, and lifetime multipliers',
   }).emitters[0];
   expect(config.initial.angularVelocity).toEqual(curve);
   expect(config.overLifetime.angularVelocity).toEqual(curve);
-  const changed = updateEmitterConfig(config, { initial: { angularVelocitySpread: 45 } });
+  const changed = applyEmitterPatch(config, { initial: { angularVelocitySpread: 45 } });
   expect(changed.initial.angularVelocity).toEqual(curve);
   expect(
-    updateEmitterConfig(changed, { initial: { angularVelocity: -180 } }).initial.angularVelocity,
+    applyEmitterPatch(changed, { initial: { angularVelocity: -180 } }).initial.angularVelocity,
   ).toBe(-180);
   for (const initial of [
     { angularVelocity: Infinity },
     { angularVelocitySpread: -1 },
     { angularVelocity: curve },
   ]) {
-    expect(() => updateEmitterConfig(config, { initial })).toThrow(ZodError);
+    expect(() => applyEmitterPatch(config, { initial })).toThrow(ZodError);
   }
 });

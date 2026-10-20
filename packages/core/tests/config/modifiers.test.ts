@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
 import { modifierSchema } from '#src/config/schemas/definition/modifiers.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -58,7 +58,7 @@ it('replaces the complete list atomically, including order and curves', () => {
       { time: 1, value: 10, tangent: 10 },
     ],
   };
-  const next = updateEmitterConfig(current, {
+  const next = applyEmitterPatch(current, {
     modifiers: [
       { type: 'radial', magnitude: curve },
       { type: 'radial', magnitude: -10 },
@@ -67,8 +67,8 @@ it('replaces the complete list atomically, including order and curves', () => {
   expect(next.modifiers).toHaveLength(2);
   expect(next.modifiers[0]!.magnitude).toEqual(curve);
   expect(next.modifiers[1]!.magnitude).toBe(-10);
-  expect(updateEmitterConfig(next, { initial: { speed: 0 } }).modifiers).toEqual(next.modifiers);
-  expect(updateEmitterConfig(next, { modifiers: [] }).modifiers).toEqual([]);
+  expect(applyEmitterPatch(next, { initial: { speed: 0 } }).modifiers).toEqual(next.modifiers);
+  expect(applyEmitterPatch(next, { modifiers: [] }).modifiers).toEqual([]);
   expect(current).toEqual(skeleton.emitters[0]);
 });
 
@@ -86,6 +86,6 @@ it.each([
 ])('rejects malformed or oversized lists in both scopes and runtime updates: %j', (modifiers) => {
   const current = parseEffectConfig(skeleton).emitters[0];
   expect(() => parseEffectConfig({ ...skeleton, modifiers })).toThrow(ZodError);
-  expect(() => updateEmitterConfig(current, { modifiers })).toThrow(ZodError);
+  expect(() => applyEmitterPatch(current, { modifiers })).toThrow(ZodError);
   expect(current).toEqual(skeleton.emitters[0]);
 });

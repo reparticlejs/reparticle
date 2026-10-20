@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -13,11 +13,11 @@ it('defaults emitter rotation to zero and updates it independently of particle r
   }).emitters[0];
   expect(config.rotation).toBe(0);
   for (const rotation of [-360, -90, 0, 90, 720]) {
-    const updated = updateEmitterConfig(config, { rotation });
+    const updated = applyEmitterPatch(config, { rotation });
     expect(updated.rotation).toBe(rotation);
     expect(updated.initial.rotation).toEqual(config.initial.rotation);
   }
   for (const rotation of [NaN, Infinity, '90', null]) {
-    expect(() => updateEmitterConfig(config, { rotation })).toThrow(ZodError);
+    expect(() => applyEmitterPatch(config, { rotation })).toThrow(ZodError);
   }
 });

@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 import { SampledCurve } from '#src/curves/sampled-curve.js';
 import { EmitterPlayback } from '#src/runtime/emitter-playback.js';
 
@@ -35,11 +35,11 @@ it('accepts rotation curves, preserves them on unrelated edits, and allows numer
     version: 1,
     emitters: [{ ...source, initial: { ...source.initial, rotation } }],
   }).emitters[0];
-  expect(updateEmitterConfig(config, { initial: { rotationSpread: 20 } }).initial.rotation).toEqual(
+  expect(applyEmitterPatch(config, { initial: { rotationSpread: 20 } }).initial.rotation).toEqual(
     rotation,
   );
-  expect(updateEmitterConfig(config, { initial: { rotation: -30 } }).initial.rotation).toBe(-30);
-  expect(() => updateEmitterConfig(config, { initial: { rotation } })).toThrow(ZodError);
+  expect(applyEmitterPatch(config, { initial: { rotation: -30 } }).initial.rotation).toBe(-30);
+  expect(() => applyEmitterPatch(config, { initial: { rotation } })).toThrow(ZodError);
   expect(() =>
     parseEffectConfig({
       version: 1,

@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 import { SampledShape } from '#src/curves/sampled-shape.js';
 
 import skeleton from '../../../../docs/effect.example.json';
@@ -33,16 +33,16 @@ it.each(['circle', 'box', 'cone2d'])(
     expect(sampled.y.at(0.5)).toBe(type === 'circle' ? 0 : 80);
     expect(sampled.spreadY).toBe(type === 'circle' ? 0 : 20);
     const patch = type === 'circle' ? { diameterSpread: 10 } : { widthSpread: 10 };
-    const updated = updateEmitterConfig(config, { emission: { shape: patch } });
+    const updated = applyEmitterPatch(config, { emission: { shape: patch } });
     expect(new SampledShape(updated.emission.shape).x.at(0.25)).toBe(-50);
     expect(new SampledShape(updated.emission.shape).spreadX).toBe(10);
     expect(() =>
-      updateEmitterConfig(config, {
+      applyEmitterPatch(config, {
         emission: { shape: type === 'circle' ? { diameter: curve } : { width: curve } },
       }),
     ).toThrow(ZodError);
     expect(() =>
-      updateEmitterConfig(config, {
+      applyEmitterPatch(config, {
         emission: { shape: type === 'circle' ? { diameterSpread: -1 } : { widthSpread: -1 } },
       }),
     ).toThrow(ZodError);

@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -11,8 +11,8 @@ it('defaults to world and accepts both spaces with inheritance preserved', () =>
     const source = { ...skeleton.emitters[0]!, space, inheritVelocity: 1 };
     const config = parseEffectConfig({ version: 1, emitters: [source] }).emitters[0];
     expect(config.space).toBe(space ?? 'world');
-    expect(updateEmitterConfig(config, { inheritVelocity: 0.5 }).space).toBe(config.space);
-    expect(() => updateEmitterConfig(config, { space: 'local' })).toThrow(ZodError);
+    expect(applyEmitterPatch(config, { inheritVelocity: 0.5 }).space).toBe(config.space);
+    expect(() => applyEmitterPatch(config, { space: 'local' })).toThrow(ZodError);
   }
 });
 

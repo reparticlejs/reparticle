@@ -4,9 +4,9 @@ import type { EmitterConfig, EmitterParameters, ModifierConfig } from '#types/ef
 import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 import type { EmitterState, EmitterStateListener, StopOptions } from '#types/lifecycle.js';
 
+import { applyEmitterPatch } from '../config/apply-emitter-patch';
 import { emitterConfigSchema } from '../config/schemas/definition/emitter';
 import { modifiersSchema } from '../config/schemas/definition/modifiers';
-import { updateEmitterConfig } from '../config/update-emitter';
 import { sampleCurve } from '../curves/sample-curve';
 import { SampledCurve } from '../curves/sampled-curve';
 import { SampledShape } from '../curves/sampled-shape';
@@ -256,7 +256,7 @@ export class Emitter {
   }
   public setParameters(patch: EmitterParameters): void {
     this.assertAlive();
-    const settings = updateEmitterConfig(this.settings, patch);
+    const settings = applyEmitterPatch(this.settings, patch);
     const modifiers =
       patch.modifiers === undefined
         ? this.modifiers

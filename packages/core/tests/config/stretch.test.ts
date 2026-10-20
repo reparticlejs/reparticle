@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -24,14 +24,14 @@ it('accepts independent signed stretch curves and preserves them through spread 
       },
     ],
   }).emitters[0];
-  const changed = updateEmitterConfig(config, {
+  const changed = applyEmitterPatch(config, {
     initial: { stretchXSpread: 1, stretchYSpread: 2 },
   });
   expect(changed.initial.stretchX).toEqual(curve);
   expect(changed.initial.stretchY).toBe(-1);
   expect(changed.overLifetime.stretchX).toEqual(curve);
   expect(changed.overLifetime.stretchY).toBe(2);
-  expect(updateEmitterConfig(changed, { initial: { stretchX: -3 } }).initial.stretchX).toBe(-3);
+  expect(applyEmitterPatch(changed, { initial: { stretchX: -3 } }).initial.stretchX).toBe(-3);
   expect(config.initial.stretchXSpread).toBe(0);
   for (const initial of [
     { stretchX: curve },
@@ -39,7 +39,7 @@ it('accepts independent signed stretch curves and preserves them through spread 
     { stretchXSpread: -1 },
     { stretchYSpread: Infinity },
   ]) {
-    expect(() => updateEmitterConfig(config, { initial })).toThrow(ZodError);
+    expect(() => applyEmitterPatch(config, { initial })).toThrow(ZodError);
   }
 });
 
@@ -68,14 +68,14 @@ it('defaults velocity stretch off and supports live boolean toggles', () => {
     emitters: [{ ...source, stretchWithVelocity: undefined }],
   }).emitters[0];
   expect(config.stretchWithVelocity).toBe(false);
-  const enabled = updateEmitterConfig(config, { stretchWithVelocity: true });
+  const enabled = applyEmitterPatch(config, { stretchWithVelocity: true });
   expect(enabled.stretchWithVelocity).toBe(true);
-  expect(updateEmitterConfig(enabled, { initial: { stretchY: 2 } }).stretchWithVelocity).toBe(true);
-  expect(updateEmitterConfig(enabled, { stretchWithVelocity: false }).stretchWithVelocity).toBe(
+  expect(applyEmitterPatch(enabled, { initial: { stretchY: 2 } }).stretchWithVelocity).toBe(true);
+  expect(applyEmitterPatch(enabled, { stretchWithVelocity: false }).stretchWithVelocity).toBe(
     false,
   );
   expect(config.stretchWithVelocity).toBe(false);
   for (const stretchWithVelocity of [0, 1, 'true', null]) {
-    expect(() => updateEmitterConfig(config, { stretchWithVelocity })).toThrow(ZodError);
+    expect(() => applyEmitterPatch(config, { stretchWithVelocity })).toThrow(ZodError);
   }
 });

@@ -7,6 +7,7 @@ const accelerationSchema = strictObject({
   spread: number().nonnegative().default(0),
   rotation: number().default(0),
 });
+
 const vortexSchema = strictObject({
   rotation: number().default(0),
   magnitude: scalarPropertySchema.default(0),
@@ -15,6 +16,7 @@ const vortexSchema = strictObject({
   y: number().default(0),
   maxDistance: number().nonnegative().default(100),
 });
+
 const radialSchema = strictObject({
   magnitude: scalarPropertySchema.default(0),
   spread: number().nonnegative().default(0),
@@ -22,12 +24,14 @@ const radialSchema = strictObject({
   y: number().default(0),
   maxDistance: number().nonnegative().default(100),
 });
+
 const dragSchema = strictObject({
   magnitude: scalarPropertySchema.default(0),
   spread: number().nonnegative().default(0),
   useDirection: boolean().default(false),
   rotation: number().default(0),
 });
+
 export const modifierSchema = discriminatedUnion('type', [
   accelerationSchema.extend({ type: literal('acceleration') }),
   dragSchema.extend({ type: literal('drag') }),

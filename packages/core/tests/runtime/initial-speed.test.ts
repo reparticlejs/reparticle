@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 import { SampledCurve } from '#src/curves/sampled-curve.js';
 import { EmitterPlayback } from '#src/runtime/emitter-playback.js';
 
@@ -35,11 +35,9 @@ it('accepts speed curves, preserves them on unrelated edits, and allows numeric 
     version: 1,
     emitters: [{ ...source, initial: { ...source.initial, speed } }],
   }).emitters[0];
-  expect(updateEmitterConfig(config, { initial: { speedSpread: 20 } }).initial.speed).toEqual(
-    speed,
-  );
-  expect(updateEmitterConfig(config, { initial: { speed: -30 } }).initial.speed).toBe(-30);
-  expect(() => updateEmitterConfig(config, { initial: { speed } })).toThrow(ZodError);
+  expect(applyEmitterPatch(config, { initial: { speedSpread: 20 } }).initial.speed).toEqual(speed);
+  expect(applyEmitterPatch(config, { initial: { speed: -30 } }).initial.speed).toBe(-30);
+  expect(() => applyEmitterPatch(config, { initial: { speed } })).toThrow(ZodError);
   expect(() =>
     parseEffectConfig({
       version: 1,

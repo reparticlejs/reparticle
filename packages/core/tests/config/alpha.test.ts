@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
+import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { updateEmitterConfig } from '#src/config/update-emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -24,18 +24,18 @@ it('defaults initial and lifetime alpha to one for existing definitions', () => 
 
 it('accepts signed alpha factors so the product can be clamped after multiplication', () => {
   const config = parseEffectConfig(skeleton).emitters[0];
-  expect(updateEmitterConfig(config, { initial: { alpha: -2 } }).initial.alpha).toBe(-2);
-  expect(updateEmitterConfig(config, { initial: { alpha: 2 } }).initial.alpha).toBe(2);
+  expect(applyEmitterPatch(config, { initial: { alpha: -2 } }).initial.alpha).toBe(-2);
+  expect(applyEmitterPatch(config, { initial: { alpha: 2 } }).initial.alpha).toBe(2);
 });
 
 it('keeps alpha on unrelated updates and rejects invalid patches atomically', () => {
   const config = parseEffectConfig(skeleton).emitters[0];
-  const changed = updateEmitterConfig(config, { initial: { alpha: 0.25 } });
-  expect(updateEmitterConfig(changed, { initial: { size: 50 } }).initial.alpha).toBe(0.25);
+  const changed = applyEmitterPatch(config, { initial: { alpha: 0.25 } });
+  expect(applyEmitterPatch(changed, { initial: { size: 50 } }).initial.alpha).toBe(0.25);
   for (const alpha of [NaN, Infinity, undefined, null, '0.5']) {
-    expect(() => updateEmitterConfig(changed, { initial: { alpha } })).toThrow(ZodError);
+    expect(() => applyEmitterPatch(changed, { initial: { alpha } })).toThrow(ZodError);
   }
-  expect(() => updateEmitterConfig(changed, { overLifetime: { alpha: 0 } })).toThrow(ZodError);
+  expect(() => applyEmitterPatch(changed, { overLifetime: { alpha: 0 } })).toThrow(ZodError);
   expect(config.initial.alpha).toBe(1);
 });
 
