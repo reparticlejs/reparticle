@@ -29,13 +29,13 @@ it.each(['circle', 'box', 'cone2d'])(
     const sampled = new SampledShape(config.emission.shape);
     expect(sampled.dimensionX.at(0.25)).toBe(-50);
     expect(sampled.dimensionX.at(0.75)).toBe(50);
-    expect(sampled.spreadX).toBe(50);
+    expect(sampled.dimensionSpreadX).toBe(50);
     expect(sampled.dimensionY.at(0.5)).toBe(type === 'circle' ? 0 : 80);
-    expect(sampled.spreadY).toBe(type === 'circle' ? 0 : 20);
+    expect(sampled.dimensionSpreadY).toBe(type === 'circle' ? 0 : 20);
     const patch = type === 'circle' ? { diameterSpread: 10 } : { widthSpread: 10 };
     const updated = applyEmitterPatch(config, { emission: { shape: patch } });
     expect(new SampledShape(updated.emission.shape).dimensionX.at(0.25)).toBe(-50);
-    expect(new SampledShape(updated.emission.shape).spreadX).toBe(10);
+    expect(new SampledShape(updated.emission.shape).dimensionSpreadX).toBe(10);
     expect(() =>
       applyEmitterPatch(config, {
         emission: { shape: type === 'circle' ? { diameter: curve } : { width: curve } },

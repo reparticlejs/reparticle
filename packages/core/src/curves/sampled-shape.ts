@@ -26,10 +26,10 @@ export class SampledShape {
   public readonly dimensionY: SampledCurve;
 
   /** Random half-range added to the first dimension at particle birth. */
-  public readonly spreadX: number;
+  public readonly dimensionSpreadX: number;
 
   /** Random half-range added to the second dimension at particle birth. */
-  public readonly spreadY: number;
+  public readonly dimensionSpreadY: number;
 
   public constructor(shape: EmitterConfig['emission']['shape']) {
     this.type = SHAPE_TYPES[shape.type];
@@ -38,23 +38,23 @@ export class SampledShape {
       case 'point':
         this.dimensionX = new SampledCurve(0);
         this.dimensionY = new SampledCurve(0);
-        this.spreadX = 0;
-        this.spreadY = 0;
+        this.dimensionSpreadX = 0;
+        this.dimensionSpreadY = 0;
         break;
 
       case 'circle':
         this.dimensionX = new SampledCurve(shape.diameter);
         this.dimensionY = new SampledCurve(0);
-        this.spreadX = shape.diameterSpread;
-        this.spreadY = 0;
+        this.dimensionSpreadX = shape.diameterSpread;
+        this.dimensionSpreadY = 0;
         break;
 
       case 'box':
       case 'cone2d':
         this.dimensionX = new SampledCurve(shape.width);
         this.dimensionY = new SampledCurve(shape.height);
-        this.spreadX = shape.widthSpread;
-        this.spreadY = shape.heightSpread;
+        this.dimensionSpreadX = shape.widthSpread;
+        this.dimensionSpreadY = shape.heightSpread;
         break;
     }
   }
