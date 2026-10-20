@@ -11,12 +11,12 @@ class ModifierList {
   private readonly definitions: ModifierConfig[];
   private readonly magnitudes: SampledCurve[];
 
-  constructor(input: unknown) {
+  public constructor(input: unknown) {
     this.definitions = modifiersSchema.parse(input);
     this.magnitudes = this.definitions.map(({ magnitude }) => new SampledCurve(magnitude));
   }
 
-  write(
+  public write(
     values: Float32Array,
     age: number,
     x: number,
@@ -74,12 +74,12 @@ export class Modifiers {
   // Count and radial flag, then nine floats per entry: type, magnitude, spread, center XY, direction XY, cutoff, directional.
   private readonly values = new Float32Array(2 + 128 * 9);
 
-  constructor(local: unknown = [], shared: unknown = []) {
+  public constructor(local: unknown = [], shared: unknown = []) {
     this.local = new ModifierList(local);
     this.shared = new ModifierList(shared);
   }
 
-  sample(
+  public sample(
     age: number,
     localSpace: boolean,
     x: number,

@@ -9,13 +9,13 @@ export class ParticleSlots {
   private version = 0;
   private readonly order: ParticleOrder | undefined;
   private maximumLifetime = NaN;
-  readonly spawnMask: Float32Array;
+  public readonly spawnMask: Float32Array;
   private readonly free: Uint32Array;
   private readonly lifetimes: Float32Array;
   private freeCount: number;
   private batches: ParticleSlotBatch[] = [];
 
-  constructor(
+  public constructor(
     private readonly capacity: number,
     trackOrder = false,
   ) {
@@ -31,12 +31,12 @@ export class ParticleSlots {
     this.reset();
   }
 
-  get revision(): number {
+  public get revision(): number {
     return this.version;
   }
 
   /** Visit only live allocation metadata; no particle texture is inspected. */
-  forEachLifetime(visitor: ParticleLifetimeVisitor): void {
+  public forEachLifetime(visitor: ParticleLifetimeVisitor): void {
     for (const batch of this.batches) {
       for (let index = batch.next; index < batch.slots.length; index++) {
         const slot = batch.slots[index]!;
@@ -45,23 +45,23 @@ export class ParticleSlots {
     }
   }
 
-  copyOrder(target: Uint32Array): number {
+  public copyOrder(target: Uint32Array): number {
     if (!this.order) {
       throw new Error('Particle ordering is not enabled');
     }
     return this.order.copyTo(target);
   }
 
-  get count(): number {
+  public get count(): number {
     return this.capacity - this.freeCount;
   }
 
-  get empty(): boolean {
+  public get empty(): boolean {
     return this.freeCount === this.capacity;
   }
 
   /** Expire before admission. Excess requests are dropped, never queued or overwritten. */
-  advance(
+  public advance(
     seconds: number,
     requested: number,
     lifetime: number,
@@ -111,6 +111,17 @@ export class ParticleSlots {
     return count;
   }
 
+  public reset(): void {
+    this.version++;
+    this.order?.reset();
+    this.batches = [];
+    this.freeCount = this.capacity;
+    this.spawnMask.fill(0);
+    for (let index = 0; index < this.capacity; index++) {
+      this.free[index] = this.capacity - index - 1;
+    }
+  }
+
   private sort(): void {
     const order = this.order;
     if (!order) {
@@ -120,17 +131,6 @@ export class ParticleSlots {
       order.setLifetime(slot, age, lifetime, this.maximumLifetime);
     });
     order.sort();
-  }
-
-  reset(): void {
-    this.version++;
-    this.order?.reset();
-    this.batches = [];
-    this.freeCount = this.capacity;
-    this.spawnMask.fill(0);
-    for (let index = 0; index < this.capacity; index++) {
-      this.free[index] = this.capacity - index - 1;
-    }
   }
 
   private expire(seconds: number): void {

@@ -4,13 +4,13 @@ import { SampledCurve } from './sampled-curve';
 
 /** Shape dimensions are sampled per emitter frame; spreads are applied on the GPU at birth. */
 export class SampledShape {
-  readonly type: number;
-  readonly x: SampledCurve;
-  readonly y: SampledCurve;
-  readonly spreadX: number;
-  readonly spreadY: number;
+  public readonly type: number;
+  public readonly x: SampledCurve;
+  public readonly y: SampledCurve;
+  public readonly spreadX: number;
+  public readonly spreadY: number;
 
-  constructor(shape: EmitterConfig['emission']['shape']) {
+  public constructor(shape: EmitterConfig['emission']['shape']) {
     this.type = { point: 0, circle: 1, box: 2, cone2d: 3 }[shape.type];
     switch (shape.type) {
       case 'circle':

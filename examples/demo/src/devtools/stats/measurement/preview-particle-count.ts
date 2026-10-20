@@ -14,15 +14,15 @@ export class PreviewParticleCount {
   private spawnRate = new SpawnRate(0);
   private playback: EmitterPlayback | undefined;
 
-  constructor(capacity: number) {
+  public constructor(capacity: number) {
     this.particles = new LiveParticleCount(capacity);
   }
 
-  get count(): number {
+  public get count(): number {
     return this.particles.count;
   }
 
-  advance(seconds: number, controls: PreviewControls, emitting: boolean): void {
+  public advance(seconds: number, controls: PreviewControls, emitting: boolean): void {
     if (seconds === 0) {
       return;
     }

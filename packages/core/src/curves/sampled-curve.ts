@@ -6,20 +6,20 @@ import { CURVE_SEGMENTS, sampleCurve } from './sample-curve';
 export class SampledCurve {
   private readonly samples: Float32Array;
 
-  constructor(property: ScalarProperty) {
+  public constructor(property: ScalarProperty) {
     this.samples = sampleCurve(property);
   }
 
-  get maximum(): number {
+  public get maximum(): number {
     return Math.max(...this.samples);
   }
 
-  at(normalizedAge: number): number {
+  public at(normalizedAge: number): number {
     return this.extrapolate(Math.min(1, normalizedAge));
   }
 
   /** Continue the final sampled line beyond one for modifier curves. */
-  extrapolate(normalizedAge: number): number {
+  public extrapolate(normalizedAge: number): number {
     const position = Math.max(0, normalizedAge) * CURVE_SEGMENTS;
     const segment = Math.min(Math.floor(position), CURVE_SEGMENTS - 1);
     const left = this.samples[segment]!;

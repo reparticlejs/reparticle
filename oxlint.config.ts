@@ -17,9 +17,25 @@ export default defineConfig({
     typeAware: true,
   },
   plugins: ['typescript', 'vitest', 'promise', 'node', 'import'],
-  jsPlugins: [{ name: 'import-js', specifier: 'eslint-plugin-import-x' }],
+  jsPlugins: [
+    { name: 'import-js', specifier: 'eslint-plugin-import-x' },
+    { name: 'typescript-js', specifier: '@typescript-eslint/eslint-plugin' },
+  ],
   rules: {
     curly: 'error',
+    'typescript/explicit-member-accessibility': 'error',
+    'typescript-js/member-ordering': [
+      'error',
+      {
+        default: [
+          'field',
+          'constructor',
+          ['public-accessor', 'public-get', 'public-set', 'public-method'],
+          ['protected-accessor', 'protected-get', 'protected-set', 'protected-method'],
+          ['private-accessor', 'private-get', 'private-set', 'private-method'],
+        ],
+      },
+    ],
     'import-js/no-extraneous-dependencies': ['error', { includeTypes: true }],
     'no-restricted-imports': [
       'error',

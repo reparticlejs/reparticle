@@ -164,7 +164,7 @@ function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
 }
 /** WebGL2 particle draw resources; Pixi owns the render target and clipping state. */
 export class EmitterView extends RenderContainer {
-  readonly emitter: Emitter;
+  public readonly emitter: Emitter;
   private readonly host: WebGLRenderer;
   private readonly gl: WebGL2RenderingContext;
   private readonly program: WebGLProgram;
@@ -178,52 +178,12 @@ export class EmitterView extends RenderContainer {
   private readonly defaultTint: ParticleTint;
   private currentTint: ParticleTint;
 
-  getTint(): ParticleTint {
-    return { ...this.currentTint };
-  }
-
-  setTint(tint: ParticleTint): void {
-    this.currentTint = resolveTint(tint);
-  }
-
-  resetTint(): void {
-    this.currentTint = this.defaultTint;
-  }
-
   private textureFlip: [number, number] = [1, 1];
   private texturePivot: ParticlePivot = { x: 0, y: 0 };
   private frameTexture: WebGLTexture | null = null;
   private animationHalfStep = 0;
   private artwork: Texture | null = null;
-  /** Caller owns the texture. Atlas trim and rotation are respected. */
-  get texture(): Texture | null {
-    return this.artwork;
-  }
-  set texture(value: Texture | null) {
-    this.setTexture({ texture: value });
-  }
-  setTexture(options: ParticleTexture): void {
-    const pivot = resolvePivot(options.pivot);
-    const flip = resolveTextureFlip(options);
-    const flipbook = resolveFlipbook(options);
-    const texture = flipbook ? flipbook.frames[0]! : resolveTexture(options);
-    let frames: WebGLTexture | null = null;
-    try {
-      if (flipbook) {
-        frames = createFrameTexture(this.gl, flipbook.frames);
-      }
-    } finally {
-      restoreSimulationState(this.host);
-    }
-    this.gl.deleteTexture(this.frameTexture);
-    this.frameTexture = frames;
-    this.flipbook = flipbook;
-    this.texturePivot = pivot;
-    this.textureFlip = flip;
-    this.automaticSize = options.sizeMode === 'auto' && (flipbook?.frames.length ?? 0) > 1;
-    this.artwork = texture;
-  }
-  constructor(
+  public constructor(
     renderer: WebGLRenderer,
     config: EmitterConfig,
     options: ParticleRendering = { texture: null },
@@ -332,7 +292,47 @@ export class EmitterView extends RenderContainer {
       restoreSimulationState(renderer);
     }
   }
-  update(dt: number): void {
+
+  public getTint(): ParticleTint {
+    return { ...this.currentTint };
+  }
+
+  public setTint(tint: ParticleTint): void {
+    this.currentTint = resolveTint(tint);
+  }
+
+  public resetTint(): void {
+    this.currentTint = this.defaultTint;
+  }
+  /** Caller owns the texture. Atlas trim and rotation are respected. */
+  public get texture(): Texture | null {
+    return this.artwork;
+  }
+  public set texture(value: Texture | null) {
+    this.setTexture({ texture: value });
+  }
+  public setTexture(options: ParticleTexture): void {
+    const pivot = resolvePivot(options.pivot);
+    const flip = resolveTextureFlip(options);
+    const flipbook = resolveFlipbook(options);
+    const texture = flipbook ? flipbook.frames[0]! : resolveTexture(options);
+    let frames: WebGLTexture | null = null;
+    try {
+      if (flipbook) {
+        frames = createFrameTexture(this.gl, flipbook.frames);
+      }
+    } finally {
+      restoreSimulationState(this.host);
+    }
+    this.gl.deleteTexture(this.frameTexture);
+    this.frameTexture = frames;
+    this.flipbook = flipbook;
+    this.texturePivot = pivot;
+    this.textureFlip = flip;
+    this.automaticSize = options.sizeMode === 'auto' && (flipbook?.frames.length ?? 0) > 1;
+    this.artwork = texture;
+  }
+  public update(dt: number): void {
     try {
       this.emitter.update(dt);
       if (dt > 0 && Number.isFinite(dt)) {
@@ -342,7 +342,7 @@ export class EmitterView extends RenderContainer {
       restoreSimulationState(this.host);
     }
   }
-  play(): void {
+  public play(): void {
     try {
       this.emitter.play();
       this.animationHalfStep = 0;
@@ -351,7 +351,7 @@ export class EmitterView extends RenderContainer {
     }
   }
 
-  stop(options: StopOptions): void {
+  public stop(options: StopOptions): void {
     try {
       this.emitter.stop(options);
     } finally {
@@ -359,7 +359,7 @@ export class EmitterView extends RenderContainer {
     }
   }
 
-  reset(): void {
+  public reset(): void {
     try {
       this.emitter.reset();
       this.animationHalfStep = 0;
@@ -367,7 +367,7 @@ export class EmitterView extends RenderContainer {
       restoreSimulationState(this.host);
     }
   }
-  renderParticles(transform: Matrix, opacity: number): void {
+  public renderParticles(transform: Matrix, opacity: number): void {
     if (this.disposed || this.emitter.state === 'sleeping') {
       return;
     }
@@ -461,7 +461,7 @@ export class EmitterView extends RenderContainer {
       restoreDrawState(r);
     }
   }
-  override destroy(): void {
+  public override destroy(): void {
     if (this.disposed) {
       return;
     }

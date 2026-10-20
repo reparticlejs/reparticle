@@ -1,12 +1,12 @@
 /** Accumulates fractional emission; admission into free slots happens separately. */
 export class SpawnSchedule {
   private carry = 0;
-  constructor(readonly capacity: number) {
+  public constructor(public readonly capacity: number) {
     if (!Number.isInteger(capacity) || capacity < 1 || capacity > 1_000_000) {
       throw new RangeError('Capacity must be an integer from 1 to 1,000,000');
     }
   }
-  next(rate: number, dt: number): number {
+  public next(rate: number, dt: number): number {
     if (!Number.isFinite(dt) || dt < 0 || dt > 0.1) {
       throw new RangeError('Step must be between 0 and 0.1 seconds');
     }
@@ -18,7 +18,7 @@ export class SpawnSchedule {
     this.carry = Math.max(0, total - whole);
     return Math.min(whole, this.capacity);
   }
-  reset(): void {
+  public reset(): void {
     this.carry = 0;
   }
 }

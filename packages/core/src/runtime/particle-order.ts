@@ -8,22 +8,22 @@ export class ParticleOrder {
   private readonly bins = new Uint32Array(256);
   private count = 0;
 
-  constructor(capacity: number) {
+  public constructor(capacity: number) {
     this.slots = new Uint32Array(capacity);
     this.keys = new Uint32Array(capacity);
     this.scratch = new Uint32Array(capacity);
   }
 
-  add(slot: number): void {
+  public add(slot: number): void {
     this.slots[this.count++] = slot;
   }
 
-  expire(slot: number): void {
+  public expire(slot: number): void {
     this.keys[slot] = 65536;
   }
 
   /** Walk forward and recheck the swapped-in last entry, just like EraseSwap. */
-  removeExpired(): void {
+  public removeExpired(): void {
     let index = 0;
     while (index < this.count) {
       if (this.keys[this.slots[index]!] === 65536) {
@@ -34,17 +34,29 @@ export class ParticleOrder {
     }
   }
 
-  setLifetime(slot: number, age: number, lifetime: number, maximum: number): void {
+  public setLifetime(slot: number, age: number, lifetime: number, maximum: number): void {
     this.keys[slot] = particleSortKey(age, lifetime, maximum);
   }
 
   /** Two stable byte passes preserve the post-removal logical order for equal keys. */
-  sort(): void {
+  public sort(): void {
     if (this.count < 2) {
       return;
     }
     this.sortByte(this.slots, this.scratch, 0);
     this.sortByte(this.scratch, this.slots, 8);
+  }
+
+  public copyTo(target: Uint32Array): number {
+    if (target.length < this.count) {
+      throw new RangeError('Particle order destination is too small');
+    }
+    target.set(this.slots.subarray(0, this.count));
+    return this.count;
+  }
+
+  public reset(): void {
+    this.count = 0;
   }
 
   private sortByte(source: Uint32Array, target: Uint32Array, shift: number): void {
@@ -65,17 +77,5 @@ export class ParticleOrder {
       target[bins[bucket]!] = slot;
       bins[bucket]!++;
     }
-  }
-
-  copyTo(target: Uint32Array): number {
-    if (target.length < this.count) {
-      throw new RangeError('Particle order destination is too small');
-    }
-    target.set(this.slots.subarray(0, this.count));
-    return this.count;
-  }
-
-  reset(): void {
-    this.count = 0;
   }
 }

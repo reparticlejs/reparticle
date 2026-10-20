@@ -7,7 +7,7 @@ export class ParticleOrderBuffer {
   private count = 0;
   private readonly buffer: WebGLBuffer;
 
-  constructor(
+  public constructor(
     private readonly gl: WebGL2RenderingContext,
     capacity: number,
   ) {
@@ -25,7 +25,7 @@ export class ParticleOrderBuffer {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
-  update(source: ParticleOrderSource): number {
+  public update(source: ParticleOrderSource): number {
     if (this.revision !== source.particleRevision) {
       this.count = source.copyParticleOrder(this.slots);
       this.revision = source.particleRevision;
@@ -39,7 +39,7 @@ export class ParticleOrderBuffer {
     return this.count;
   }
 
-  destroy(): void {
+  public destroy(): void {
     this.gl.deleteBuffer(this.buffer);
   }
 }

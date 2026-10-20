@@ -11,7 +11,7 @@ export class PreviewScene {
   private settings: PreviewControls;
   private destroyed = false;
 
-  constructor(
+  public constructor(
     private readonly app: Application<WebGLRenderer>,
     private readonly host: HTMLDivElement,
     private readonly assets: PreviewAssets,
@@ -35,15 +35,15 @@ export class PreviewScene {
     }
   }
 
-  get controls(): Readonly<PreviewControls> {
+  public get controls(): Readonly<PreviewControls> {
     return this.settings;
   }
 
-  get emitting(): boolean {
+  public get emitting(): boolean {
     return this.view.emitter.emitting;
   }
 
-  setControls(patch: Partial<PreviewControls>): PreviewControls {
+  public setControls(patch: Partial<PreviewControls>): PreviewControls {
     const next = { ...this.settings, ...patch };
     if (
       next.initialRedCurve !== this.settings.initialRedCurve ||
@@ -122,11 +122,11 @@ export class PreviewScene {
     return { ...next };
   }
 
-  advance(seconds: number): void {
+  public advance(seconds: number): void {
     this.view.update(seconds);
   }
 
-  movePointer(clientX: number, clientY: number): void {
+  public movePointer(clientX: number, clientY: number): void {
     const bounds = this.host.getBoundingClientRect();
     if (!bounds.width || !bounds.height) {
       return;
@@ -137,11 +137,11 @@ export class PreviewScene {
     this.view.emitter.y = relativeY * this.app.screen.height;
   }
 
-  reset(): void {
+  public reset(): void {
     this.view.reset();
   }
 
-  destroy(): void {
+  public destroy(): void {
     if (this.destroyed) {
       return;
     }

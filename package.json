@@ -13,6 +13,8 @@
     "format:check": "oxfmt --check ."
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "catalog:",
+    "@typescript/native": "catalog:",
     "eslint-plugin-import-x": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",

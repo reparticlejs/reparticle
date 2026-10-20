@@ -22,10 +22,10 @@ import { SpawnSchedule } from './spawn-schedule';
 
 /** GPU.js simulation, independent of any renderer. Only slot allocation and lifetime metadata live on the CPU. */
 export class Emitter {
-  readonly width = 256;
-  readonly rows: number;
-  readonly capacity: number;
-  emitting = true;
+  public readonly width = 256;
+  public readonly rows: number;
+  public readonly capacity: number;
+  public emitting = true;
   private settings: EmitterConfig;
   private readonly velocity = new EmitterVelocity();
   private readonly schedule: SpawnSchedule;
@@ -56,16 +56,16 @@ export class Emitter {
   private needsPrewarm = true;
   private seed: number;
   private readonly initialSeed: number;
-  readonly gl: WebGL2RenderingContext;
+  public readonly gl: WebGL2RenderingContext;
   private readonly sharedModifiers: ModifierConfig[];
   private modifiers: Modifiers;
   private readonly canvas: HTMLCanvasElement;
 
-  constructor(
+  public constructor(
     context: EmitterContext,
     definition: EmitterConfig,
     sharedModifiers: unknown = [],
-    readonly effectTransform = new EffectTransform(),
+    public readonly effectTransform = new EffectTransform(),
   ) {
     this.settings = emitterConfigSchema.parse(definition);
     this.sharedModifiers = modifiersSchema.parse(sharedModifiers);
@@ -136,46 +136,46 @@ export class Emitter {
       throw error;
     }
   }
-  get worldX(): number {
+  public get worldX(): number {
     return this.effectTransform.applyX(this.x, this.y);
   }
-  get worldY(): number {
+  public get worldY(): number {
     return this.effectTransform.applyY(this.x, this.y);
   }
-  get worldRotation(): number {
+  public get worldRotation(): number {
     return this.effectTransform.rotation + this.effectTransform.handedness * this.rotation;
   }
-  get worldHandedness(): 1 | -1 {
+  public get worldHandedness(): 1 | -1 {
     return this.effectTransform.handedness;
   }
-  get worldScale(): number {
+  public get worldScale(): number {
     return this.effectTransform.scale * this.scale;
   }
 
-  get state(): EmitterState {
+  public get state(): EmitterState {
     return this.playback.state;
   }
 
-  onStateChange(listener: EmitterStateListener): () => void {
+  public onStateChange(listener: EmitterStateListener): () => void {
     this.assertAlive();
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
 
   /** Restart from the initial state, including delay, seed and prewarm. */
-  play(): void {
+  public play(): void {
     this.emitting = true;
     this.reset();
   }
 
   /** Finish the current cycle, then drain existing particles. */
-  retire(): void {
+  public retire(): void {
     this.assertAlive();
     this.playback.retire();
   }
 
   /** Stop spawning; existing particles drain unless clear is requested. */
-  stop({ clear = false }: StopOptions = {}): void {
+  public stop({ clear = false }: StopOptions = {}): void {
     this.assertAlive();
     if (clear) {
       this.output = this.run(0);
@@ -186,43 +186,23 @@ export class Emitter {
     this.notifyStateChanges();
   }
 
-  clear(): void {
+  public clear(): void {
     this.stop({ clear: true });
   }
 
-  private notifyStateChanges(): void {
-    if (this.notifying) {
-      return;
-    }
-    this.notifying = true;
-    try {
-      let transitions = this.playback.takeTransitions();
-      while (transitions.length > 0) {
-        for (const state of transitions) {
-          for (const listener of [...this.listeners]) {
-            listener({ emitterId: this.id, state });
-          }
-        }
-        transitions = this.playback.takeTransitions();
-      }
-    } finally {
-      this.notifying = false;
-    }
-  }
-
   /** Emission eligibility at the current clock, before any pending prewarm. */
-  get isEmitting(): boolean {
+  public get isEmitting(): boolean {
     return this.emitting && this.playback.emitting;
   }
-  get id(): string {
+  public get id(): string {
     return this.settings.id;
   }
   /** Emitter origin in effect coordinates; rotation and scale apply around this point. */
-  get x(): number {
+  public get x(): number {
     return this.settings.position.x;
   }
 
-  set x(value: number) {
+  public set x(value: number) {
     this.assertAlive();
     if (!Number.isFinite(value)) {
       throw new RangeError('Emitter position must be finite');
@@ -230,11 +210,11 @@ export class Emitter {
     this.settings.position.x = value;
   }
 
-  get y(): number {
+  public get y(): number {
     return this.settings.position.y;
   }
 
-  set y(value: number) {
+  public set y(value: number) {
     this.assertAlive();
     if (!Number.isFinite(value)) {
       throw new RangeError('Emitter position must be finite');
@@ -243,37 +223,37 @@ export class Emitter {
   }
 
   /** Uniform emitter scale; independent of particle size curves. */
-  get scale(): number {
+  public get scale(): number {
     return this.settings.scale;
   }
 
-  set scale(value: number) {
+  public set scale(value: number) {
     this.setParameters({ scale: value });
   }
 
   /** Emitter rotation in counterclockwise degrees. */
-  get rotation(): number {
+  public get rotation(): number {
     return this.settings.rotation;
   }
 
-  set rotation(value: number) {
+  public set rotation(value: number) {
     this.setParameters({ rotation: value });
   }
 
   /** Whether Y stretch follows the current simulation speed. */
-  get stretchWithVelocity(): boolean {
+  public get stretchWithVelocity(): boolean {
     return this.settings.stretchWithVelocity;
   }
 
-  get space(): EmitterConfig['space'] {
+  public get space(): EmitterConfig['space'] {
     return this.settings.space;
   }
 
   /** Owned snapshot for serialization or explicit recreation. */
-  get configuration(): EmitterConfig {
+  public get configuration(): EmitterConfig {
     return emitterConfigSchema.parse(this.settings);
   }
-  setParameters(patch: EmitterParameters): void {
+  public setParameters(patch: EmitterParameters): void {
     this.assertAlive();
     const settings = updateEmitterConfig(this.settings, patch);
     const modifiers =
@@ -345,22 +325,22 @@ export class Emitter {
     this.spawnRate = spawnRate;
   }
   /** Changes when allocation or particle ages change, including reset and clear. */
-  get particleRevision(): number {
+  public get particleRevision(): number {
     return this.slots.revision;
   }
 
   /** Copy the final logical order; simulation texels always remain in their original slots. */
-  copyParticleOrder(target: Uint32Array): number {
+  public copyParticleOrder(target: Uint32Array): number {
     this.assertAlive();
     return this.slots.copyOrder(target);
   }
 
   /** GPU resource handle for renderer adapters. Never calls toArray/readPixels. */
-  get texture(): WebGLTexture {
+  public get texture(): WebGLTexture {
     this.assertAlive();
     return this.output.texture;
   }
-  update(dt: number): void {
+  public update(dt: number): void {
     this.assertAlive();
     if (!Number.isFinite(this.x) || !Number.isFinite(this.y)) {
       throw new RangeError('Emitter position must be finite');
@@ -382,6 +362,52 @@ export class Emitter {
     this.velocity.update(this.worldX, this.worldY, dt);
     this.step(dt);
     this.notifyStateChanges();
+  }
+  public reset(): void {
+    this.assertAlive();
+    this.output = this.run(0);
+    this.schedule.reset();
+    this.slots.reset();
+    this.playback.reset();
+    this.velocity.reset();
+    this.needsPrewarm = true;
+    this.nextKernel = 1;
+    this.seed = this.initialSeed;
+    this.notifyStateChanges();
+  }
+  public destroy(): void {
+    if (this.disposed) {
+      return;
+    }
+    this.disposed = true;
+    this.listeners.clear();
+    // Do not call gpu.destroy(): the shared context belongs to the host renderer.
+    for (const kernel of this.kernels) {
+      kernel.destroy(true);
+    }
+    for (const vao of this.vaos) {
+      this.gl.deleteVertexArray(vao);
+    }
+  }
+
+  private notifyStateChanges(): void {
+    if (this.notifying) {
+      return;
+    }
+    this.notifying = true;
+    try {
+      let transitions = this.playback.takeTransitions();
+      while (transitions.length > 0) {
+        for (const state of transitions) {
+          for (const listener of [...this.listeners]) {
+            listener({ emitterId: this.id, state });
+          }
+        }
+        transitions = this.playback.takeTransitions();
+      }
+    } finally {
+      this.notifying = false;
+    }
   }
   private step(dt: number): void {
     if (this.state === 'sleeping') {
@@ -474,32 +500,6 @@ export class Emitter {
       this.seed = (this.seed + 1) % 65536;
     }
     this.nextKernel = this.nextKernel === 1 ? 2 : 1;
-  }
-  reset(): void {
-    this.assertAlive();
-    this.output = this.run(0);
-    this.schedule.reset();
-    this.slots.reset();
-    this.playback.reset();
-    this.velocity.reset();
-    this.needsPrewarm = true;
-    this.nextKernel = 1;
-    this.seed = this.initialSeed;
-    this.notifyStateChanges();
-  }
-  destroy(): void {
-    if (this.disposed) {
-      return;
-    }
-    this.disposed = true;
-    this.listeners.clear();
-    // Do not call gpu.destroy(): the shared context belongs to the host renderer.
-    for (const kernel of this.kernels) {
-      kernel.destroy(true);
-    }
-    for (const vao of this.vaos) {
-      this.gl.deleteVertexArray(vao);
-    }
   }
   private assertAlive(): void {
     if (this.disposed) {

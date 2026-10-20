@@ -42,7 +42,7 @@ export class ParticleView extends RenderContainer {
   private readonly states = new Map<string, EmitterState>();
   private readonly stateListeners = new Set<ParticleStateListener>();
 
-  constructor(
+  public constructor(
     renderer: WebGLRenderer,
     definition: unknown,
     options: ParticleRendering | ParticleViewOptions = { emitters: {} },
@@ -102,7 +102,7 @@ export class ParticleView extends RenderContainer {
     }
   }
 
-  get awakeEmitters(): number {
+  public get awakeEmitters(): number {
     let count = 0;
     for (const state of this.states.values()) {
       if (state !== 'sleeping') {
@@ -112,11 +112,11 @@ export class ParticleView extends RenderContainer {
     return count;
   }
 
-  get isSleeping(): boolean {
+  public get isSleeping(): boolean {
     return this.awakeEmitters === 0;
   }
 
-  onStateChange(listener: ParticleStateListener): () => void {
+  public onStateChange(listener: ParticleStateListener): () => void {
     if (this.disposed) {
       throw new Error('ParticleView has been destroyed');
     }
@@ -124,89 +124,89 @@ export class ParticleView extends RenderContainer {
     return () => this.stateListeners.delete(listener);
   }
 
-  play(): void {
+  public play(): void {
     for (const view of this.views.values()) {
       view.play();
     }
   }
 
-  retire(): void {
+  public retire(): void {
     for (const emitter of this.simulations.values()) {
       emitter.retire();
     }
   }
 
-  stop(options: StopOptions = {}): void {
+  public stop(options: StopOptions = {}): void {
     for (const view of this.views.values()) {
       view.stop(options);
     }
   }
 
-  clear(): void {
+  public clear(): void {
     this.stop({ clear: true });
   }
 
   /** Read-only lookup; use getEmitter to require a known ID. */
-  get emitters(): ReadonlyMap<string, Emitter> {
+  public get emitters(): ReadonlyMap<string, Emitter> {
     return this.simulations;
   }
 
-  getEmitter(id: string): Emitter {
+  public getEmitter(id: string): Emitter {
     return this.getView(id).emitter;
   }
 
-  setEmitterTint(id: string, tint: ParticleTint): void {
+  public setEmitterTint(id: string, tint: ParticleTint): void {
     this.getView(id).setTint(tint);
   }
 
-  getEmitterTint(id: string): ParticleTint {
+  public getEmitterTint(id: string): ParticleTint {
     return this.getView(id).getTint();
   }
 
   /** Remove the override and restore the authored rendering tint. */
-  resetEmitterTint(id: string): void {
+  public resetEmitterTint(id: string): void {
     this.getView(id).resetTint();
   }
 
-  setEmitterTexture(id: string, options: ParticleTexture): void {
+  public setEmitterTexture(id: string, options: ParticleTexture): void {
     this.getView(id).setTexture(options);
   }
 
-  getEmitterTexture(id: string): Texture | null {
+  public getEmitterTexture(id: string): Texture | null {
     return this.getView(id).texture;
   }
 
   /** Single-emitter convenience; multi-emitter callers must select by ID. */
-  get emitter(): Emitter {
+  public get emitter(): Emitter {
     return this.singleView.emitter;
   }
 
-  get texture(): Texture | null {
+  public get texture(): Texture | null {
     return this.singleView.texture;
   }
 
-  set texture(texture: Texture | null) {
+  public set texture(texture: Texture | null) {
     this.singleView.texture = texture;
   }
 
-  setTexture(options: ParticleTexture): void {
+  public setTexture(options: ParticleTexture): void {
     this.singleView.setTexture(options);
   }
 
-  update(seconds: number): void {
+  public update(seconds: number): void {
     this.syncSceneTransform();
     for (const view of this.views.values()) {
       view.update(seconds);
     }
   }
 
-  reset(): void {
+  public reset(): void {
     for (const view of this.views.values()) {
       view.reset();
     }
   }
 
-  override render(): void {
+  public override render(): void {
     // Particle positions already include the scene transform. Convert back to the
     // view's local coordinates, then use Pixi's current group and target transform.
     if (
@@ -230,7 +230,7 @@ export class ParticleView extends RenderContainer {
     }
   }
 
-  override destroy(): void {
+  public override destroy(): void {
     if (this.disposed) {
       return;
     }
