@@ -8,6 +8,7 @@ export { spawnCircle } from './emission/circle';
 export { spawnCone2D } from './emission/cone2d';
 export { spawnMotion } from './emission/motion';
 export { spawnRotation } from './emission/rotation';
+export { sampleShape } from './emission/shape';
 export { spawnVariation, spawnDirection } from './emission/direction';
 
 export { applyAcceleration } from './modifiers/acceleration';
@@ -20,3 +21,4 @@ export { advanceAge, particleAlive } from './particles/lifetime';
 export { advanceRotation } from './particles/angular-velocity';
 export { movementRotation } from './particles/movement-rotation';
 export { particleHeading } from './particles/heading';
+export { integrateMotion } from './particles/integrate-motion';

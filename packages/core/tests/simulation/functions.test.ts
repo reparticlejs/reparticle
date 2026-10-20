@@ -11,8 +11,10 @@ it('ships every GPU function as JavaScript source with its original name', () =>
 });
 
 it('preserves helper references inside compiled kernels', () => {
-  expect(functions.integrate).toContain('spawnBox(');
-  expect(functions.integrate).toContain('spawnCircle(');
+  expect(functions.integrate).toContain('sampleShape(');
+  expect(functions.integrate).toContain('integrateMotion(');
+  expect(functions.sampleShape).toContain('spawnBox(');
+  expect(functions.sampleShape).toContain('spawnCircle(');
   expect(functions.spawnBox).toContain('spawnVariation(');
   expect(functions.spawnCircle).toContain('spawnVariation(');
 });

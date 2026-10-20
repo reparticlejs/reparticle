@@ -1,8 +1,10 @@
 import type { IKernelRunShortcut, KernelVariable } from 'gpu.js';
 
 import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
+import type { SimulationParameters } from '#types/simulation.js';
 
 import { createKernels } from './create-kernels';
+import { SimulationInputs } from './inputs';
 import { isPipelineTexture } from './is-pipeline-texture';
 
 // Order returned by createKernels(). Each update kernel owns a reusable texture.
@@ -10,6 +12,7 @@ const INITIALIZE_KERNEL = 0;
 const UPDATE_KERNEL_A = 1;
 const UPDATE_KERNEL_B = 2;
 const PARTICLE_BANDS = 5;
+const NO_ARGUMENTS: KernelVariable[] = [];
 
 /**
  * Own GPU.js kernels, their alternating output textures, and simulation VAOs.
@@ -23,6 +26,7 @@ export class GpuSimulation {
   private readonly canvas: HTMLCanvasElement;
   private readonly kernels: IKernelRunShortcut[] = [];
   private readonly vaos: WebGLVertexArrayObject[] = [];
+  private readonly inputs = [new SimulationInputs(), new SimulationInputs()];
   private output!: PipelineTexture;
   private nextKernel = UPDATE_KERNEL_A;
   private disposed = false;
@@ -54,7 +58,7 @@ export class GpuSimulation {
 
   /** Clear state without changing which update kernel runs next. */
   public clear(): void {
-    this.output = this.run(INITIALIZE_KERNEL);
+    this.output = this.run(INITIALIZE_KERNEL, NO_ARGUMENTS);
   }
 
   /** Clear state and restart the alternating update sequence. */
@@ -65,11 +69,13 @@ export class GpuSimulation {
 
   /**
    * Read the previous output and write into the other update kernel's texture.
-   * Arguments follow the integrate kernel signature, excluding its state texture.
+   * Named parameters are packed into this kernel's reusable uniform buffers.
    * Switch outputs only after a successful run; no particle data is read back.
    */
-  public update(...args: KernelVariable[]): void {
-    this.output = this.run(this.nextKernel, this.output, ...args);
+  public update(parameters: SimulationParameters): void {
+    const inputs = this.inputs[this.nextKernel - UPDATE_KERNEL_A]!;
+    inputs.write(this.output, parameters);
+    this.output = this.run(this.nextKernel, inputs.args);
     this.nextKernel = this.nextKernel === UPDATE_KERNEL_A ? UPDATE_KERNEL_B : UPDATE_KERNEL_A;
   }
 
@@ -117,7 +123,7 @@ export class GpuSimulation {
    * Establish simulation GL state and restore any canvas resize from lazy compilation.
    * The renderer must restore its remaining GL state before drawing.
    */
-  private run(index: number, ...args: KernelVariable[]): PipelineTexture {
+  private run(index: number, args: KernelVariable[]): PipelineTexture {
     const gl = this.gl;
     const kernel = this.kernels[index]!;
     const canvasWidth = this.canvas.width;
@@ -125,7 +131,7 @@ export class GpuSimulation {
     this.prepareKernel(index, kernel);
 
     try {
-      const result = kernel(...args);
+      const result = kernel.apply(null, args);
       if (!isPipelineTexture(result, gl)) {
         throw new Error('GPU.js did not return a shared-context texture');
       }

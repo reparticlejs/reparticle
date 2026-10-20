@@ -4,6 +4,27 @@ import type { EmitterContext } from '#types/emitter.js';
 
 import functions from '../../simulation/functions.json';
 
+// Explicit vec4 types keep scalar groups in uniforms instead of textures.
+const INTEGRATION_ARGUMENT_TYPES: NonNullable<IGPUKernelSettings['argumentTypes']> = {
+  state: 'ArrayTexture(4)',
+  stepInput: 'Array(4)',
+  emissionInput: 'Array(4)',
+  shapeInput: 'Array(4)',
+  shapeSpreadInput: 'Array(4)',
+  appearanceInput: 'Array(4)',
+  colorInput: 'Array(4)',
+  motionSpreadInput: 'Array(4)',
+  colorSpreadInput: 'Array(4)',
+  geometrySpreadInput: 'Array(4)',
+  positionInput: 'Array(4)',
+  transformInput: 'Array(4)',
+  orientationInput: 'Array(4)',
+  spawnMask: 'Array',
+  rotationCurve: 'Array',
+  angularVelocityCurve: 'Array',
+  modifiers: 'Array',
+};
+
 /**
  * Create kernels on the renderer's existing WebGL2 context.
  *
@@ -41,8 +62,12 @@ export function createKernels(
   ];
   const kernels: IKernelRunShortcut[] = [];
   try {
-    for (const source of sources) {
-      kernels.push(gpu.createKernel(source, config));
+    for (const [index, source] of sources.entries()) {
+      const settings: IGPUKernelSettings = { ...config };
+      if (index > 0) {
+        settings.argumentTypes = INTEGRATION_ARGUMENT_TYPES;
+      }
+      kernels.push(gpu.createKernel(source, settings));
     }
     return kernels;
   } catch (error) {
@@ -65,6 +90,7 @@ function registerSimulationFunctions(gpu: GPU): void {
   gpu.addFunction(functions.spawnCircle);
   gpu.addFunction(functions.spawnBox);
   gpu.addFunction(functions.spawnCone2D);
+  gpu.addFunction(functions.sampleShape);
 
   // Particle age and orientation
   gpu.addFunction(functions.advanceAge);
@@ -80,4 +106,5 @@ function registerSimulationFunctions(gpu: GPU): void {
   gpu.addFunction(functions.applyRadial);
   gpu.addFunction(functions.applyVortex);
   gpu.addFunction(functions.applyModifiers);
+  gpu.addFunction(functions.integrateMotion);
 }

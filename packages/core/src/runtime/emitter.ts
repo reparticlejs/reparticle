@@ -9,6 +9,7 @@ import { modifiersSchema } from '../config/schemas/definition/modifiers';
 import { sampleCurve } from '../curves/sample-curve';
 import { sampleInitialProperties } from '../curves/sample-initial-properties';
 import { SampledShape } from '../curves/sampled-shape';
+import { createSimulationParameters } from './gpu/parameters';
 import { GpuSimulation } from './gpu/simulation';
 import { ModifierSampler } from './modifiers/sampler';
 import { ParticleSlots } from './particles/slots';
@@ -52,6 +53,7 @@ export class Emitter {
   private needsPrewarm = true;
 
   private readonly simulation: GpuSimulation;
+  private readonly simulationParameters = createSimulationParameters();
   private disposed = false;
 
   private readonly listeners = new Set<EmitterStateListener>();
@@ -403,70 +405,79 @@ export class Emitter {
     const initialRotation = this.initial.rotation.at(emitterAge) * handedness;
     const particleRotation =
       settings.orientation === 'movement-direction' ? initialRotation : initialRotation + rotation;
-    this.simulation.update(
-      // Time and births for this step
-      seconds,
-      this.slots.spawnMask,
-      birthCount,
-      // Birth position, motion, lifetime, and shape
-      worldSpace ? this.worldX : 0,
-      worldSpace ? this.worldY : 0,
-      this.initial.speed.at(emitterAge),
-      settings.initial.direction,
-      settings.initial.spread,
-      lifetime,
-      this.seed,
-      this.shape.type,
-      this.shape.dimensionX.at(emitterAge),
-      this.shape.dimensionY.at(emitterAge),
-      // Birth appearance
-      this.initial.size.at(emitterAge),
-      this.initial.alpha.at(emitterAge),
-      this.initial.red.at(emitterAge),
-      this.initial.green.at(emitterAge),
-      this.initial.blue.at(emitterAge),
-      particleRotation,
-      settings.orientation === 'initial-direction' ? 1 : 0,
-      // Per-particle variation
-      settings.initial.speedSpread,
-      settings.initial.lifetimeSpread,
-      settings.initial.sizeSpread,
-      settings.initial.rotationSpread,
-      settings.initial.redSpread,
-      settings.initial.greenSpread,
-      settings.initial.blueSpread,
-      settings.initial.alphaSpread,
-      this.shape.dimensionSpreadX,
-      this.shape.dimensionSpreadY,
-      // Inherited motion and emitter transform
-      worldSpace ? this.velocity.x * settings.inheritVelocity : 0,
-      worldSpace ? this.velocity.y * settings.inheritVelocity : 0,
-      Math.cos(radians),
-      Math.sin(radians),
-      scale,
-      // Orientation and angular motion
-      this.rotationSamples,
-      settings.orientation === 'movement-direction' ? 1 : 0,
-      this.initial.angularVelocity.at(emitterAge),
-      settings.initial.angularVelocitySpread,
-      this.angularVelocitySamples,
-      settings.orientation === 'angular-velocity' ? 1 : 0,
-      // Geometry and forces
-      this.initial.stretchX.at(emitterAge),
-      this.initial.stretchY.at(emitterAge),
-      settings.initial.stretchXSpread,
-      settings.initial.stretchYSpread,
-      this.modifiers.sample(
-        this.playback.modifierAge,
-        !worldSpace,
-        this.x,
-        this.y,
-        settings.rotation,
-        settings.scale,
-        this.effectTransform,
-      ),
-      handedness,
+    const parameters = this.simulationParameters;
+    parameters.step.seconds = seconds;
+    parameters.step.birthCount = birthCount;
+    parameters.step.seed = this.seed;
+
+    parameters.emission.speed = this.initial.speed.at(emitterAge);
+    parameters.emission.direction = settings.initial.direction;
+    parameters.emission.spread = settings.initial.spread;
+    parameters.emission.lifetime = lifetime;
+
+    parameters.shape.type = this.shape.type;
+    parameters.shape.dimensionX = this.shape.dimensionX.at(emitterAge);
+    parameters.shape.dimensionY = this.shape.dimensionY.at(emitterAge);
+
+    parameters.shapeSpread.dimensionX = this.shape.dimensionSpreadX;
+    parameters.shapeSpread.dimensionY = this.shape.dimensionSpreadY;
+
+    parameters.appearance.size = this.initial.size.at(emitterAge);
+    parameters.appearance.rotation = particleRotation;
+    parameters.appearance.stretchX = this.initial.stretchX.at(emitterAge);
+    parameters.appearance.stretchY = this.initial.stretchY.at(emitterAge);
+
+    parameters.color.red = this.initial.red.at(emitterAge);
+    parameters.color.green = this.initial.green.at(emitterAge);
+    parameters.color.blue = this.initial.blue.at(emitterAge);
+    parameters.color.alpha = this.initial.alpha.at(emitterAge);
+
+    parameters.motionSpread.speed = settings.initial.speedSpread;
+    parameters.motionSpread.lifetime = settings.initial.lifetimeSpread;
+    parameters.motionSpread.size = settings.initial.sizeSpread;
+    parameters.motionSpread.rotation = settings.initial.rotationSpread;
+
+    parameters.colorSpread.red = settings.initial.redSpread;
+    parameters.colorSpread.green = settings.initial.greenSpread;
+    parameters.colorSpread.blue = settings.initial.blueSpread;
+    parameters.colorSpread.alpha = settings.initial.alphaSpread;
+
+    parameters.geometrySpread.angularVelocity = settings.initial.angularVelocitySpread;
+    parameters.geometrySpread.stretchX = settings.initial.stretchXSpread;
+    parameters.geometrySpread.stretchY = settings.initial.stretchYSpread;
+
+    parameters.position.x = worldSpace ? this.worldX : 0;
+    parameters.position.y = worldSpace ? this.worldY : 0;
+    parameters.position.inheritedVelocityX = worldSpace
+      ? this.velocity.x * settings.inheritVelocity
+      : 0;
+    parameters.position.inheritedVelocityY = worldSpace
+      ? this.velocity.y * settings.inheritVelocity
+      : 0;
+
+    parameters.transform.cosine = Math.cos(radians);
+    parameters.transform.sine = Math.sin(radians);
+    parameters.transform.scale = scale;
+    parameters.transform.handedness = handedness;
+
+    parameters.orientation.direction = settings.orientation === 'initial-direction' ? 1 : 0;
+    parameters.orientation.movement = settings.orientation === 'movement-direction' ? 1 : 0;
+    parameters.orientation.angularVelocity = settings.orientation === 'angular-velocity' ? 1 : 0;
+    parameters.orientation.initialAngularVelocity = this.initial.angularVelocity.at(emitterAge);
+
+    parameters.spawnMask = this.slots.spawnMask;
+    parameters.rotationCurve = this.rotationSamples;
+    parameters.angularVelocityCurve = this.angularVelocitySamples;
+    parameters.modifiers = this.modifiers.sample(
+      this.playback.modifierAge,
+      !worldSpace,
+      this.x,
+      this.y,
+      settings.rotation,
+      settings.scale,
+      this.effectTransform,
     );
+    this.simulation.update(parameters);
   }
 
   private assertAlive(): void {
