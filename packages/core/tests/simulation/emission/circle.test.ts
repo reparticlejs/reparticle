@@ -1,14 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { circleAngle, circleRadius } from '#src/simulation/emission/circle-sampling.js';
 import { spawnCircle } from '#src/simulation/emission/circle.js';
-
-it('uses diameter and square-root radius sampling for uniform disk area', () => {
-  expect(circleRadius(0, 100)).toBe(0);
-  expect(circleRadius(0.25, 100)).toBe(25);
-  expect(circleRadius(1, 100)).toBe(50);
-  expect(circleAngle(0.25)).toBeCloseTo(Math.PI / 2);
-});
 
 it('spawns throughout the disk with outward velocity and exact scalar speed', () => {
   const quadrants = [0, 0, 0, 0];

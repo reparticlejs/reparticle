@@ -2,7 +2,6 @@
 export { initialize } from './kernels/initialize';
 export { integrate } from './kernels/integrate';
 
-export { circleAngle, circleRadius } from './emission/circle-sampling';
 export { propertyVariation } from './emission/variation';
 export { spawnBox } from './emission/box';
 export { spawnCircle } from './emission/circle';

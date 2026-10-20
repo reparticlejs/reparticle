@@ -14,7 +14,7 @@ it('preserves helper references inside compiled kernels', () => {
   expect(functions.integrate).toContain('spawnBox(');
   expect(functions.integrate).toContain('spawnCircle(');
   expect(functions.spawnBox).toContain('spawnVariation(');
-  expect(functions.spawnCircle).toContain('circleRadius(');
+  expect(functions.spawnCircle).toContain('spawnVariation(');
 });
 
 it('omits formatting whitespace from compiled function strings', () => {

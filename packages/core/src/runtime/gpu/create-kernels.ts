@@ -62,8 +62,6 @@ function registerSimulationFunctions(gpu: GPU): void {
   gpu.addFunction(functions.spawnDirection);
   gpu.addFunction(functions.spawnMotion);
   gpu.addFunction(functions.spawnRotation);
-  gpu.addFunction(functions.circleAngle);
-  gpu.addFunction(functions.circleRadius);
   gpu.addFunction(functions.spawnCircle);
   gpu.addFunction(functions.spawnBox);
   gpu.addFunction(functions.spawnCone2D);
