@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { effectConfigSchema } from '#src/config/schemas/effect.js';
+import { effectConfigSchema } from '#src/config/schemas/definition/effect.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 

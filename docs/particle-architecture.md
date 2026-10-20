@@ -30,7 +30,7 @@ The required fields are `version`, the nonempty `emitters` list, and each emitte
 `id`, `capacity`, `seed`, `emission.rate`, `emission.shape`, `initial.lifetime`,
 `initial.speed`, `initial.direction` and `initial.spread`. Shapes other than `point`
 also require their dimensions. Other defaults and accepted runtime patches are
-specified by `packages/core/src/config/schemas/effect.ts`; do not duplicate the schema as
+specified by `packages/core/src/config/schemas/definition/effect.ts`; do not duplicate the schema as
 an outdated required-field table here. Scalar properties can be constants or
 curves; spreads are explicit. Signed speed, size and sampled lifetime values are
 supported by their runtime semantics.

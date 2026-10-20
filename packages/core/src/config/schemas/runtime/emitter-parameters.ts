@@ -1,9 +1,9 @@
 import { boolean, number, strictObject } from 'zod';
 
-import { emissionParametersSchema } from './emission';
-import { blendModeSchema } from './emitter';
-import { initialParametersSchema } from './initial-properties';
-import { modifiersSchema } from './modifiers';
+import { blendModeSchema } from '../definition/emitter';
+import { modifiersSchema } from '../definition/modifiers';
+import { emissionParametersSchema } from './emission-parameters';
+import { initialParametersSchema } from './initial-parameters';
 
 /** Runtime values and flags; shape type, identity, capacity and seed require recreation. */
 export const emitterParametersSchema = strictObject({

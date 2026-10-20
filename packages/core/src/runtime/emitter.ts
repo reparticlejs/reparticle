@@ -4,8 +4,8 @@ import type { EmitterConfig, EmitterParameters, ModifierConfig } from '#types/ef
 import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
 import type { EmitterState, EmitterStateListener, StopOptions } from '#types/lifecycle.js';
 
-import { emitterConfigSchema } from '../config/schemas/emitter';
-import { modifiersSchema } from '../config/schemas/modifiers';
+import { emitterConfigSchema } from '../config/schemas/definition/emitter';
+import { modifiersSchema } from '../config/schemas/definition/modifiers';
 import { updateEmitterConfig } from '../config/update-emitter';
 import { sampleCurve } from '../curves/sample-curve';
 import { SampledCurve } from '../curves/sampled-curve';

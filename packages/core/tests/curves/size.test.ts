@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { scalarPropertySchema } from '#src/config/schemas/curve.js';
+import { scalarPropertySchema } from '#src/config/schemas/definition/curve.js';
 import { updateEmitterConfig } from '#src/config/update-emitter.js';
 import { evaluateCurve } from '#src/curves/evaluate-curve.js';
 import { sampleCurve } from '#src/curves/sample-curve.js';
