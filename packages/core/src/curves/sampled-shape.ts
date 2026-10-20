@@ -20,10 +20,10 @@ export class SampledShape {
   public readonly type: number;
 
   /** Circle diameter or box/cone width; zero for a point. Not a position. */
-  public readonly x: SampledCurve;
+  public readonly dimensionX: SampledCurve;
 
   /** Box/cone height; zero for a circle or point. Not a position. */
-  public readonly y: SampledCurve;
+  public readonly dimensionY: SampledCurve;
 
   /** Random half-range added to the first dimension at particle birth. */
   public readonly spreadX: number;
@@ -36,23 +36,23 @@ export class SampledShape {
 
     switch (shape.type) {
       case 'point':
-        this.x = new SampledCurve(0);
-        this.y = new SampledCurve(0);
+        this.dimensionX = new SampledCurve(0);
+        this.dimensionY = new SampledCurve(0);
         this.spreadX = 0;
         this.spreadY = 0;
         break;
 
       case 'circle':
-        this.x = new SampledCurve(shape.diameter);
-        this.y = new SampledCurve(0);
+        this.dimensionX = new SampledCurve(shape.diameter);
+        this.dimensionY = new SampledCurve(0);
         this.spreadX = shape.diameterSpread;
         this.spreadY = 0;
         break;
 
       case 'box':
       case 'cone2d':
-        this.x = new SampledCurve(shape.width);
-        this.y = new SampledCurve(shape.height);
+        this.dimensionX = new SampledCurve(shape.width);
+        this.dimensionY = new SampledCurve(shape.height);
         this.spreadX = shape.widthSpread;
         this.spreadY = shape.heightSpread;
         break;
