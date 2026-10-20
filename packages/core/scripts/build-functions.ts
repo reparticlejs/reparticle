@@ -1,9 +1,11 @@
 import { rename, writeFile } from 'node:fs/promises';
 
+import { minify } from 'terser';
 import { build } from 'tsdown';
 
 const compiledCode = await compileFunctions();
-const kernelSources = await extractSources(compiledCode);
+const compactCode = await mangleFunctions(compiledCode);
+const kernelSources = await extractSources(compactCode);
 await writeSources(kernelSources);
 
 async function compileFunctions(): Promise<string> {
@@ -13,7 +15,7 @@ async function compileFunctions(): Promise<string> {
     format: 'esm',
     platform: 'neutral',
     target: 'es2022',
-    // GPU.js needs the original names and expressions. Only remove whitespace.
+    // Leave identifier mangling to Terser, which supports our unique-name generator.
     minify: { compress: false, mangle: false, codegen: { removeWhitespace: true } },
     dts: false,
     write: false,
@@ -30,6 +32,36 @@ async function compileFunctions(): Promise<string> {
   } finally {
     await Promise.all(bundles.map((bundle) => bundle[Symbol.asyncDispose]()));
   }
+}
+
+async function mangleFunctions(code: string): Promise<string> {
+  // Kernel argument settings are keyed by parameter name. Read the compiled
+  // signatures so adding an input does not require maintaining a second list.
+  const functions = await extractSources(code);
+  const reserved = [functions.initialize!, functions.integrate!].flatMap((source) =>
+    source
+      .slice(source.indexOf('(') + 1, source.indexOf(')'))
+      .split(',')
+      .map((parameter) => parameter.trim())
+      .filter(Boolean),
+  );
+  let nextIdentifier = 0;
+  const result = await minify(code, {
+    module: true,
+    compress: false,
+    keep_fnames: true,
+    mangle: {
+      reserved,
+      // GPU.js confuses scalar/vector bindings when a minifier reuses a name in
+      // different block scopes. Give every renamed binding its own short name.
+      nth_identifier: { get: () => `v${(nextIdentifier++).toString(36)}` },
+    },
+    format: { comments: false },
+  });
+  if (!result.code) {
+    throw new Error('GPU function minification produced no code');
+  }
+  return result.code;
 }
 
 async function extractSources(code: string): Promise<Record<string, string>> {

@@ -24,6 +24,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "terser": "catalog:",
     "tsdown": "catalog:",
     "vitest": "catalog:"
   }

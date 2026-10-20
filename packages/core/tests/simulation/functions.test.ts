@@ -24,3 +24,31 @@ it('omits formatting whitespace from compiled function strings', () => {
     expect(source).not.toMatch(/[\n\r\t]/);
   }
 });
+
+it('preserves kernel parameters used by GPU.js argument settings', () => {
+  const kernels = [
+    [functions.initialize, implementations.initialize],
+    [functions.integrate, implementations.integrate],
+  ] as const;
+  for (const [source, implementation] of kernels) {
+    const parameters = (text: string) =>
+      text.slice(text.indexOf('('), text.indexOf(')') + 1).replace(/\s/g, '');
+    expect(parameters(source)).toBe(parameters(implementation.toString()));
+  }
+});
+
+it('mangles helpers and locals without reusing binding names across scopes', () => {
+  expect(functions.advanceAge).not.toMatch(/\b(age|seconds)\b/);
+  expect(functions.spawnCircle).not.toMatch(/\b(radiusSeedOffset|fullCircle)\b/);
+
+  const names: string[] = [];
+  for (const source of Object.values(functions)) {
+    const parameters = source.slice(source.indexOf('(') + 1, source.indexOf(')')).split(',');
+    names.push(...parameters.filter((name) => /^v[0-9a-z]+$/.test(name)));
+    for (const match of source.matchAll(/\b(?:const|let|var) (v[0-9a-z]+)\b/g)) {
+      names.push(match[1]!);
+    }
+  }
+  expect(names.length).toBeGreaterThan(100);
+  expect(new Set(names).size).toBe(names.length);
+});
