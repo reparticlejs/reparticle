@@ -3,11 +3,16 @@ import { rename, writeFile } from 'node:fs/promises';
 import { minify } from 'terser';
 import { build } from 'tsdown';
 
-const compiledCode = await compileFunctions();
-const compactCode = await mangleFunctions(compiledCode);
-const kernelSources = await extractSources(compactCode);
-await writeSources(kernelSources);
+// Run from packages/core. The output is shipped as data so consumer minifiers
+// cannot rename GPU.js helpers or rewrite their numeric expressions.
+const compiledModule = await compileFunctions();
+const originalSources = await extractSources(compiledModule);
+const kernelParameters = getKernelParameters(originalSources);
+const mangledModule = await mangleFunctions(compiledModule, kernelParameters);
+const sources = await extractSources(mangledModule);
+await writeSources(sources);
 
+/** Compile TypeScript and bundle every GPU helper into one in-memory ESM module. */
 async function compileFunctions(): Promise<string> {
   const bundles = await build({
     config: false,
@@ -34,26 +39,54 @@ async function compileFunctions(): Promise<string> {
   }
 }
 
-async function mangleFunctions(code: string): Promise<string> {
-  // Kernel argument settings are keyed by parameter name. Read the compiled
-  // signatures so adding an input does not require maintaining a second list.
-  const functions = await extractSources(code);
-  const reserved = [functions.initialize!, functions.integrate!].flatMap((source) =>
-    source
-      .slice(source.indexOf('(') + 1, source.indexOf(')'))
-      .split(',')
-      .map((parameter) => parameter.trim())
-      .filter(Boolean),
-  );
+/**
+ * Preserve the parameter names used by GPU.js's argumentTypes settings.
+ * Read them from the unmangled kernels so new inputs are included automatically.
+ */
+function getKernelParameters(sources: Record<string, string>): string[] {
+  const parameters: string[] = [];
+
+  for (const name of ['initialize', 'integrate']) {
+    const source = sources[name];
+    if (!source) {
+      throw new Error(`Missing GPU kernel: ${name}`);
+    }
+    parameters.push(...getParameterNames(source));
+  }
+
+  return parameters;
+}
+
+/**
+ * Read a compiled function's simple identifier parameters.
+ * GPU kernels use plain named functions without defaults, rest, or destructuring;
+ * this reads their signatures only and never rewrites function source.
+ */
+function getParameterNames(source: string): string[] {
+  const start = source.indexOf('(') + 1;
+  const end = source.indexOf(')', start);
+  const signature = source.slice(start, end).trim();
+
+  if (signature === '') {
+    return [];
+  }
+
+  return signature.split(',').map((parameter) => parameter.trim());
+}
+
+/**
+ * Shorten bindings without compression or function-name changes.
+ * A build-wide counter prevents short-name reuse across block scopes: GPU.js
+ * otherwise confuses scalar and vector bindings that share a minified name.
+ */
+async function mangleFunctions(code: string, kernelParameters: string[]): Promise<string> {
   let nextIdentifier = 0;
   const result = await minify(code, {
     module: true,
     compress: false,
     keep_fnames: true,
     mangle: {
-      reserved,
-      // GPU.js confuses scalar/vector bindings when a minifier reuses a name in
-      // different block scopes. Give every renamed binding its own short name.
+      reserved: kernelParameters,
       nth_identifier: { get: () => `v${(nextIdentifier++).toString(36)}` },
     },
     format: { comments: false },
@@ -64,6 +97,11 @@ async function mangleFunctions(code: string): Promise<string> {
   return result.code;
 }
 
+/**
+ * Load our compiled module and capture each named function as JavaScript text.
+ * Checking names both before and after mangling protects GPU.js registrations.
+ * Only the project's build output is executed; particle configuration is not.
+ */
 async function extractSources(code: string): Promise<Record<string, string>> {
   const encodedCode = Buffer.from(code).toString('base64');
   const functions: Record<string, unknown> = await import(
@@ -81,6 +119,7 @@ async function extractSources(code: string): Promise<Record<string, string>> {
   return sources;
 }
 
+/** Atomically replace the tracked JSON only after compilation and extraction succeed. */
 async function writeSources(sources: Record<string, string>): Promise<void> {
   const destination = 'src/simulation/functions.json';
   const temporaryFile = `src/simulation/functions.${process.pid}.json`;
