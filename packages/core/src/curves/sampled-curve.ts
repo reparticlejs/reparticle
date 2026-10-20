@@ -18,7 +18,7 @@ export class SampledCurve {
     return this.extrapolate(Math.min(1, normalizedAge));
   }
 
-  /** Continue the final sampled line beyond one, as Defold does for modifiers. */
+  /** Continue the final sampled line beyond one for modifier curves. */
   extrapolate(normalizedAge: number): number {
     const position = Math.max(0, normalizedAge) * CURVE_SEGMENTS;
     const segment = Math.min(Math.floor(position), CURVE_SEGMENTS - 1);

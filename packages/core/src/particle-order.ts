@@ -1,6 +1,6 @@
 import { particleSortKey } from './particle-sort-key';
 
-/** Defold's logical particle array, containing fixed GPU slot IDs instead of particles. */
+/** Logical particle order stored as fixed GPU slot IDs. */
 export class ParticleOrder {
   private readonly slots: Uint32Array;
   private readonly keys: Uint32Array;

@@ -13,7 +13,7 @@ function hermite(left: CurvePoint, right: CurvePoint, time: number): number {
   );
 }
 
-/** Defold Hermite interpolation; endpoint segments also provide extrapolation. */
+/** Hermite interpolation; endpoint segments also provide extrapolation. */
 export function evaluateCurve(property: ScalarProperty, time: number): number {
   if (typeof property === 'number') {
     return property;

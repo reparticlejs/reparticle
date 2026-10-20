@@ -1,4 +1,4 @@
-/** Defold radial acceleration: constant strength inside an inclusive distance cutoff. */
+/** Radial acceleration: constant strength inside an inclusive distance cutoff. */
 export function applyRadial(
   x: number,
   y: number,

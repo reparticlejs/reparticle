@@ -281,7 +281,7 @@ export class Emitter {
     this.setParameters({ scale: value });
   }
 
-  /** Emitter rotation in degrees, counterclockwise like Defold. */
+  /** Emitter rotation in counterclockwise degrees. */
   get rotation(): number {
     return this.settings.rotation;
   }

@@ -1,4 +1,4 @@
-/** Defold particle playback: once uses lifetime, loops use FPS, pingpong omits repeated endpoints. */
+/** Particle playback: once uses lifetime, loops use FPS, pingpong omits repeated endpoints. */
 export const flipbookShader = `
 uniform sampler2D animationFrames;
 uniform int frameCount;

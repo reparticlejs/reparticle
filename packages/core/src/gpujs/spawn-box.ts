@@ -2,7 +2,7 @@ import type { ParticleTexel } from '#types/layout.js';
 
 import { spawnVariation } from '../behaviors/spawn';
 
-/** Defold's zero-depth box: uniform interior, upward velocity in canvas coordinates. */
+/** Box emission: uniform interior, upward velocity in canvas coordinates. */
 export function spawnBox(
   particleId: number,
   seed: number,

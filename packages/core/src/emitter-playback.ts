@@ -77,7 +77,7 @@ export class EmitterPlayback {
     return this.authoredDuration === 0 ? 0 : this.elapsed / this.authoredDuration;
   }
 
-  /** Defold emits the whole boundary frame, then stops or restarts its timer. */
+  /** Emit the whole boundary frame, then stop or restart the timer. */
   advance(seconds: number): boolean {
     if (seconds === 0 || this.currentState === 'sleeping') {
       return false;
@@ -87,7 +87,7 @@ export class EmitterPlayback {
       return false;
     }
     if (this.waiting) {
-      // Defold checks the delay before advancing the frame clock.
+      // Check the delay before advancing the frame clock.
       if (!this.delayReached) {
         this.elapsed += seconds;
         return false;

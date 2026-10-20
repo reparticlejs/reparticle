@@ -3,7 +3,7 @@ import { array, number, strictObject, union } from 'zod';
 const pointSchema = strictObject({
   time: number().min(0).max(1),
   value: number(),
-  // Slope dy/dx: equivalent to Defold's tangent vector ty/tx.
+  // Slope dy/dx of the curve at this point.
   tangent: number().default(0),
 });
 

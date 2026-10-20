@@ -1,4 +1,4 @@
-/** Defold Z-axis vortex in canvas coordinates: positive magnitude turns counterclockwise. */
+/** Z-axis vortex in canvas coordinates: positive magnitude turns counterclockwise. */
 export function applyVortex(
   x: number,
   y: number,

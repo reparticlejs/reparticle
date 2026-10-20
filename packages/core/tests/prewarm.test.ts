@@ -4,7 +4,7 @@ import { EmitterPlayback } from '#src/emitter-playback.js';
 import { prewarm } from '#src/prewarm.js';
 import { SpawnSchedule } from '#src/spawn-schedule.js';
 
-it.each([0, 0.00001])('skips offsets below Defold epsilon: %s', (offset) => {
+it.each([0, 0.00001])('skips offsets below the prewarm threshold: %s', (offset) => {
   const steps: number[] = [];
   prewarm(offset, 2, (seconds) => steps.push(seconds));
   expect(steps).toEqual([]);

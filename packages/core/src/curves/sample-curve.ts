@@ -2,7 +2,7 @@ import type { ScalarProperty } from '#types/curve.js';
 
 import { evaluateCurve } from './evaluate-curve';
 
-/** Defold approximates each property with 64 linear segments over [0, 1]. */
+/** Approximate each property with 64 linear segments over [0, 1]. */
 export const CURVE_SEGMENTS = 64;
 
 export function sampleCurve(property: ScalarProperty): Float32Array {

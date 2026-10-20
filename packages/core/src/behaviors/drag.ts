@@ -1,4 +1,4 @@
-/** Defold drag: cap damping at one; negative magnitude accelerates. */
+/** Cap damping at one; negative drag magnitude accelerates. */
 export function applyDrag(
   velocity: number,
   projectedVelocity: number,

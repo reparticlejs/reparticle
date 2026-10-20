@@ -9,7 +9,7 @@ function read(order: ParticleOrder) {
   return Array.from(target.subarray(0, order.copyTo(target)));
 }
 
-describe('Defold logical order', () => {
+describe('Logical particle order', () => {
   it('uses the post-swap index for ties and rechecks swapped dead entries', () => {
     const order = new ParticleOrder(5);
     for (let slot = 0; slot < 5; slot++) {

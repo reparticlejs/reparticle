@@ -2,7 +2,7 @@ import type { ParticleTexel } from '#types/layout.js';
 
 import { spawnVariation } from '../behaviors/spawn';
 
-/** Defold's filled triangle: tip at the emitter, velocity away from the tip. */
+/** Filled triangle: tip at the emitter, velocity away from the tip. */
 export function spawnCone2D(
   particleId: number,
   seed: number,

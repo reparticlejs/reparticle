@@ -15,7 +15,7 @@ it('combines initial rotation with the lifetime rotation curve', () => {
   expect(heading[1]).toBeCloseTo(0);
 });
 
-it('follows movement with Defold low-speed and opposite-direction fallbacks', () => {
+it('follows movement with low-speed and opposite-direction fallbacks', () => {
   const curve = sampleCurve(0);
   const moving = particleHeading(0, 0, 2, curve, 10, 0, 1, 1);
   expect(moving[0]).toBeCloseTo(1);

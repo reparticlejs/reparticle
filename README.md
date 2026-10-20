@@ -2,6 +2,8 @@
 
 A GPU.js particle proof of concept: JavaScript-authored simulation with a separate PixiJS renderer. No editor or Replayable dependency.
 
+Particle concepts and behavior are inspired by [Defold](https://defold.com/).
+
 ## Run
 
 Use Node.js 24+ and pnpm 10.32.1.

@@ -11,7 +11,7 @@ export type AnimationPlayback =
 
 export type ParticleSizeMode = 'manual' | 'auto';
 
-/** Defold offset from the centered geometry: positive X right, positive Y up. */
+/** Offset from the centered geometry: positive X right, positive Y up. */
 export interface ParticlePivot {
   x: number;
   y: number;

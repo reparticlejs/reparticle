@@ -1,4 +1,4 @@
-/** Defold acceleration along one component of the modifier's direction. */
+/** Acceleration along one component of the modifier's direction. */
 export function applyAcceleration(
   direction: number,
   magnitude: number,

@@ -1,4 +1,4 @@
-/** Align local up to pre-modifier velocity, with Defold's rest and reversal fallbacks. */
+/** Align local up to pre-modifier velocity, with rest and reversal fallbacks. */
 export function movementRotation(velocityX: number, velocityY: number): number {
   const speedSquared = velocityX * velocityX + velocityY * velocityY;
   if (speedSquared <= 0.0001) {

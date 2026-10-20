@@ -66,7 +66,7 @@ void main() {
   vec4 colorScale = mix(colorCurve[segment], colorCurve[segment + 1], curvePosition - float(segment));
   particleColor = clamp(initialColor * colorScale, 0.0, 1.0);
   vec2 stretch = initialStretch + geometry.zw;
-  // Defold's fixed 60 FPS, 180-degree shutter factor applies only to Y stretch.
+  // The fixed 60 FPS, 180-degree shutter factor applies only to Y stretch.
   if (stretchWithVelocity) stretch.y *= length(motion.zw) / 120.0;
   vec2 baseSize = particleAspect * properties.z;
   vec4 trim = textureTrim;
@@ -85,7 +85,7 @@ void main() {
   vec2 size = baseSize * geometry.x * (vec2(1.0) + stretch);
   float rotation = geometry.y;
   if (orientToAngularVelocity) rotation = dynamics.w;
-  // Defold's positive Z rotation is counterclockwise; canvas Y points down.
+  // Positive Z rotation is counterclockwise; canvas Y points down.
   float movement = orientToMovement ? geometryData.w : 0.0;
   float angle = -radians(properties.w + rotation * initialHandedness + movement);
   float sine = sin(angle);
@@ -93,7 +93,7 @@ void main() {
   vec2 corner = (trim.xy + (uv * 0.5 + 0.5) * trim.zw - 0.5) * size;
   // Reflect trimmed artwork within its original extent; keep pivot translation unchanged.
   corner *= textureFlip;
-  // Defold composes pivot translation inside the particle rotation/scale transform.
+  // Compose pivot translation inside the particle rotation/scale transform.
   vec2 pivotScale = particleAspect * geometry.x * (vec2(1.0) + stretch);
   if (!automaticSize) pivotScale *= properties.z;
   corner += vec2(particlePivot.x, -particlePivot.y) * pivotScale;

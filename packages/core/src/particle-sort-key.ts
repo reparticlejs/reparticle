@@ -1,4 +1,4 @@
-/** Defold quantizes remaining lifetime against the emitter's authored maximum. */
+/** Quantize remaining lifetime against the emitter's authored maximum. */
 export function particleSortKey(age: number, lifetime: number, maximumLifetime: number): number {
   const remaining = Math.fround(lifetime - age);
   // A nonpositive maximum has no useful normalization range; keep ties stable.

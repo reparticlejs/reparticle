@@ -1,4 +1,4 @@
-/** Defold integrates birth angular velocity times the particle-lifetime multiplier. */
+/** Integrate birth angular velocity times the particle-lifetime multiplier. */
 export function advanceRotation(
   rotation: number,
   angularVelocity: number,

@@ -1,6 +1,6 @@
 import type { EmitterConfig } from '@reparticle/core';
 
-/** Defold's blend factors for premultiplied particle colors. */
+/** Blend factors for premultiplied particle colors. */
 export function setBlendMode(gl: WebGL2RenderingContext, mode: EmitterConfig['blendMode']): void {
   switch (mode) {
     case 'alpha':
