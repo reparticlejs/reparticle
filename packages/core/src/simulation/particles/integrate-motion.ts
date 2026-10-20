@@ -5,19 +5,24 @@ import { advanceRotation } from './angular-velocity';
 import { particleHeading } from './heading';
 
 /**
- * Apply modifiers to velocity, then advance position using that new velocity.
+ * Advance one particle with semi-implicit Euler integration:
+ * apply modifiers to velocity first, then move using the resulting velocity.
  *
  * Both newborn and surviving particles use this step. The caller supplies age
  * after this step and rotation accumulated before it; newborns start with age
  * equal to seconds and accumulated rotation zero. Expiration is handled by the
  * kernel so a newborn always receives its first step.
+ *
+ * Position is in simulation units, velocity in units per second, and rotations
+ * in degrees. Return [x, y, velocityX, velocityY]. This function does not update
+ * stored age or rotation; their texture bands are written separately.
  */
 export function integrateMotion(
   x: number,
   y: number,
   velocityX: number,
   velocityY: number,
-  age: number,
+  ageAfterStep: number,
   lifetime: number,
   initialRotation: number,
   accumulatedRotation: number,
@@ -31,45 +36,55 @@ export function integrateMotion(
   angularVelocityCurve: Float32Array,
   modifiers: Float32Array,
 ): ParticleTexel {
-  let velocity: [number, number] = [velocityX, velocityY];
-  if (modifiers[0]! > 0) {
-    let heading: [number, number] = [0, -1];
-    // Only radial modifiers need the particle's orientation-based heading.
-    if (modifiers[1]! > 0) {
-      let angularRotation = 0;
-      if (orientToAngularVelocity > 0.5) {
-        angularRotation =
-          advanceRotation(
-            accumulatedRotation,
-            initialAngularVelocity,
-            age,
-            lifetime,
-            angularVelocityCurve,
-            seconds,
-          ) * handedness;
-      }
-      heading = particleHeading(
-        initialRotation + angularRotation,
-        age,
+  const modifierCount = modifiers[0]!;
+  if (modifierCount === 0) {
+    return [x + velocityX * seconds, y + velocityY * seconds, velocityX, velocityY];
+  }
+
+  // Only radial modifiers need a heading for particles exactly at their center.
+  const containsRadial = modifiers[1]!;
+  let heading: [number, number] = [0, -1];
+  if (containsRadial > 0) {
+    let angularRotation = 0;
+    if (orientToAngularVelocity > 0.5) {
+      const rotationAfterStep = advanceRotation(
+        accumulatedRotation,
+        initialAngularVelocity,
+        ageAfterStep,
         lifetime,
-        rotationCurve,
-        velocityX,
-        velocityY,
-        orientToMovement,
-        handedness,
+        angularVelocityCurve,
+        seconds,
       );
+      angularRotation = rotationAfterStep * handedness;
     }
-    velocity = applyModifiers(
-      x,
-      y,
+
+    // Use this step's rotation but the velocity before modifiers change it.
+    const baseRotation = initialRotation + angularRotation;
+    heading = particleHeading(
+      baseRotation,
+      ageAfterStep,
+      lifetime,
+      rotationCurve,
       velocityX,
       velocityY,
-      heading[0],
-      heading[1],
-      spreadFactor,
-      seconds,
-      modifiers,
+      orientToMovement,
+      handedness,
     );
   }
-  return [x + velocity[0] * seconds, y + velocity[1] * seconds, velocity[0], velocity[1]];
+
+  const nextVelocity = applyModifiers(
+    x,
+    y,
+    velocityX,
+    velocityY,
+    heading[0],
+    heading[1],
+    spreadFactor,
+    seconds,
+    modifiers,
+  );
+  const nextX = x + nextVelocity[0] * seconds;
+  const nextY = y + nextVelocity[1] * seconds;
+
+  return [nextX, nextY, nextVelocity[0], nextVelocity[1]];
 }
