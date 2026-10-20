@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 
-import { EmitterPlayback } from '#src/runtime/emitter-playback.js';
-import { SpawnSchedule } from '#src/runtime/spawn-schedule.js';
+import { EmitterPlayback } from '#src/runtime/playback/emitter.js';
+import { SpawnSchedule } from '#src/runtime/playback/spawn-schedule.js';
 import { propertyVariation } from '#src/simulation/emission/variation.js';
 
 it('emits the complete boundary step before once stops', () => {

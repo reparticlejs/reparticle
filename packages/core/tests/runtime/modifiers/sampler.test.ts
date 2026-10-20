@@ -1,12 +1,12 @@
 import { expect, it } from 'vitest';
 
-import { EffectTransform } from '#src/runtime/effect-transform.js';
-import { Modifiers } from '#src/runtime/modifiers.js';
+import { ModifierSampler } from '#src/runtime/modifiers/sampler.js';
+import { EffectTransform } from '#src/runtime/transforms/effect.js';
 import { applyModifiers } from '#src/simulation/modifiers/apply-modifiers.js';
 
 const identity = new EffectTransform();
 const sample = (local: unknown, shared: unknown = []) =>
-  new Modifiers(local, shared).sample(0, false, 0, 0, 0, 1, identity);
+  new ModifierSampler(local, shared).sample(0, false, 0, 0, 0, 1, identity);
 const advance = (values: Float32Array, x = 10, y = 0, vx = 10, vy = 0, factor = 0) =>
   applyModifiers(x, y, vx, vy, 0, -1, factor, 0.1, values);
 
@@ -43,7 +43,7 @@ it('samples every curve on the receiving emitter timeline using one stable parti
       { time: 1, value: 20, tangent: 20 },
     ],
   };
-  const list = new Modifiers(
+  const list = new ModifierSampler(
     [{ type: 'acceleration', magnitude: curve, spread: 4 }],
     [{ type: 'acceleration', magnitude: curve, spread: 8 }],
   );
@@ -54,7 +54,7 @@ it('samples every curve on the receiving emitter timeline using one stable parti
 });
 
 it('transforms shared centers into local space without moving emitter-local centers', () => {
-  const modifiers = new Modifiers(
+  const modifiers = new ModifierSampler(
     [{ type: 'radial', x: 1, magnitude: 1 }],
     [{ type: 'radial', x: 10, y: 20, magnitude: 30, maxDistance: 80 }],
   );
@@ -67,7 +67,7 @@ it('transforms shared centers into local space without moving emitter-local cent
 });
 
 it('handles negative and collapsed local scale and restores the shared list afterward', () => {
-  const modifiers = new Modifiers([], [{ type: 'radial', magnitude: 10 }]);
+  const modifiers = new ModifierSampler([], [{ type: 'radial', magnitude: 10 }]);
   const reversed = modifiers.sample(0, true, 0, 0, 0, -2, identity);
   expect(advance(reversed, -1, 0, 0, 0)[0]).toBeCloseTo(-0.5);
   expect(modifiers.sample(0, true, 0, 0, 0, 0, identity)[0]).toBe(0);
@@ -91,7 +91,7 @@ it.each(['local', 'shared'])(
       { type: 'radial', x: 3, y: 5, magnitude: 4, maxDistance: 50 },
       { type: 'vortex', x: 3, y: 5, magnitude: 6, maxDistance: 50, rotation: 15 },
     ];
-    const list = new Modifiers(
+    const list = new ModifierSampler(
       scope === 'local' ? definitions : [],
       scope === 'shared' ? definitions : [],
     );
@@ -111,7 +111,7 @@ it.each(['local', 'shared'])(
 );
 
 it('keeps local-space forces unchanged when the whole effect is reflected', () => {
-  const list = new Modifiers(
+  const list = new ModifierSampler(
     [{ type: 'acceleration', rotation: 30, magnitude: 4 }],
     [{ type: 'vortex', x: 12, magnitude: 6 }],
   );

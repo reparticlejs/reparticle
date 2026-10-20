@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest';
 
 import { SampledCurve } from '#src/curves/sampled-curve.js';
-import { EffectTransform } from '#src/runtime/effect-transform.js';
-import { EmitterPlayback } from '#src/runtime/emitter-playback.js';
-import { Modifiers } from '#src/runtime/modifiers.js';
+import { ModifierSampler } from '#src/runtime/modifiers/sampler.js';
+import { EmitterPlayback } from '#src/runtime/playback/emitter.js';
+import { EffectTransform } from '#src/runtime/transforms/effect.js';
 import { propertyVariation } from '#src/simulation/emission/variation.js';
 
 const ramp = {
@@ -30,7 +30,7 @@ it.each([0, 1, 42])('separates authored and sampled clocks for seed %s', (seed) 
 it.each(['acceleration', 'drag', 'radial', 'vortex'] as const)(
   'extrapolates local and shared %s magnitudes beyond authored duration',
   (type) => {
-    const modifiers = new Modifiers([{ type, magnitude: ramp }], [{ type, magnitude: ramp }]);
+    const modifiers = new ModifierSampler([{ type, magnitude: ramp }], [{ type, magnitude: ramp }]);
     const values = modifiers.sample(1.5, false, 0, 0, 0, 1, identity);
     expect(values[3]).toBeCloseTo(40);
     expect(values[12]).toBeCloseTo(40);
@@ -54,7 +54,7 @@ it('extrapolates the last sampled line rather than the authored Hermite polynomi
 it('advances the modifier clock during draining and holds at sampled duration', () => {
   const playback = new EmitterPlayback(1, 'once', 0, { seed: 42, durationSpread: 0.8 });
   const duration = 1 + propertyVariation(0, 42, 9) * 0.8;
-  const modifiers = new Modifiers([{ type: 'acceleration', magnitude: ramp }]);
+  const modifiers = new ModifierSampler([{ type: 'acceleration', magnitude: ramp }]);
   playback.advance(0.1);
   playback.stop();
   playback.advance(0.1);

@@ -4,7 +4,7 @@ import { ZodError } from 'zod';
 import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
 import { SampledCurve } from '#src/curves/sampled-curve.js';
-import { EmitterPlayback } from '#src/runtime/emitter-playback.js';
+import { EmitterPlayback } from '#src/runtime/playback/emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 

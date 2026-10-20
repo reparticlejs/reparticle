@@ -1,66 +1,61 @@
-import type { IKernelRunShortcut, KernelVariable } from 'gpu.js';
-
 import type { EmitterConfig, EmitterParameters, ModifierConfig } from '#types/effect.js';
-import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
+import type { EmitterContext } from '#types/emitter.js';
+import type { InitialPropertyCurves } from '#types/initial-property-curves.js';
 import type { EmitterState, EmitterStateListener, StopOptions } from '#types/lifecycle.js';
 
 import { applyEmitterPatch } from '../config/apply-emitter-patch';
 import { emitterConfigSchema } from '../config/schemas/definition/emitter';
 import { modifiersSchema } from '../config/schemas/definition/modifiers';
 import { sampleCurve } from '../curves/sample-curve';
-import { SampledCurve } from '../curves/sampled-curve';
+import { sampleInitialProperties } from '../curves/sample-initial-properties';
 import { SampledShape } from '../curves/sampled-shape';
-import { createKernels } from './create-kernels';
-import { EffectTransform } from './effect-transform';
-import { EmitterPlayback } from './emitter-playback';
-import { EmitterVelocity } from './emitter-velocity';
-import { isPipelineTexture } from './is-pipeline-texture';
-import { Modifiers } from './modifiers';
-import { ParticleSlots } from './particle-slots';
-import { prewarm } from './prewarm';
-import { SpawnRate } from './spawn-rate';
-import { SpawnSchedule } from './spawn-schedule';
+import { GpuSimulation } from './gpu/simulation';
+import { ModifierSampler } from './modifiers/sampler';
+import { ParticleSlots } from './particles/slots';
+import { EmitterPlayback } from './playback/emitter';
+import { prewarm } from './playback/prewarm';
+import { SpawnRate } from './playback/spawn-rate';
+import { SpawnSchedule } from './playback/spawn-schedule';
+import { EffectTransform } from './transforms/effect';
+import { EmitterVelocity } from './transforms/velocity';
 
-/** GPU.js simulation, independent of any renderer. Only slot allocation and lifetime metadata live on the CPU. */
+/**
+ * Coordinate one emitter's playback, CPU slot metadata, and GPU simulation.
+ * Particle state stays in GPU textures; CPU metadata controls birth admission,
+ * expiration, and draw order without readbacks. The renderer owns the GL context.
+ */
 export class Emitter {
   public readonly width = 256;
   public readonly rows: number;
   public readonly capacity: number;
+  public readonly gl: WebGL2RenderingContext;
+  /** Gate new births without pausing the simulation or resetting playback. */
   public emitting = true;
+
+  // Validated configuration and sampled data.
   private settings: EmitterConfig;
-  private readonly velocity = new EmitterVelocity();
-  private readonly schedule: SpawnSchedule;
-  private readonly slots: ParticleSlots;
-  private readonly listeners = new Set<EmitterStateListener>();
-  private notifying = false;
-  private initialRed: SampledCurve;
-  private initialGreen: SampledCurve;
-  private initialBlue: SampledCurve;
-  private initialAlpha: SampledCurve;
-  private initialLifetime: SampledCurve;
-  private initialStretchX: SampledCurve;
-  private initialStretchY: SampledCurve;
-  private initialAngularVelocity: SampledCurve;
-  private readonly angularVelocitySamples: Float32Array;
-  private initialRotation: SampledCurve;
-  private initialSize: SampledCurve;
-  private initialSpeed: SampledCurve;
-  private readonly rotationSamples: Float32Array;
+  private readonly sharedModifiers: ModifierConfig[];
+  private modifiers: ModifierSampler;
+  private initial: InitialPropertyCurves;
   private spawnRate: SpawnRate;
   private shape: SampledShape;
+  private readonly angularVelocitySamples: Float32Array;
+  private readonly rotationSamples: Float32Array;
+
+  // Playback, birth allocation, and inherited motion.
   private readonly playback: EmitterPlayback;
-  private readonly kernels: IKernelRunShortcut[] = [];
-  private readonly vaos: WebGLVertexArrayObject[] = [];
-  private output!: PipelineTexture;
-  private nextKernel = 1;
-  private disposed = false;
-  private needsPrewarm = true;
+  private readonly schedule: SpawnSchedule;
+  private readonly slots: ParticleSlots;
+  private readonly velocity = new EmitterVelocity();
   private seed: number;
   private readonly initialSeed: number;
-  public readonly gl: WebGL2RenderingContext;
-  private readonly sharedModifiers: ModifierConfig[];
-  private modifiers: Modifiers;
-  private readonly canvas: HTMLCanvasElement;
+  private needsPrewarm = true;
+
+  private readonly simulation: GpuSimulation;
+  private disposed = false;
+
+  private readonly listeners = new Set<EmitterStateListener>();
+  private notifying = false;
 
   public constructor(
     context: EmitterContext,
@@ -70,31 +65,23 @@ export class Emitter {
   ) {
     this.settings = emitterConfigSchema.parse(definition);
     this.sharedModifiers = modifiersSchema.parse(sharedModifiers);
-    this.modifiers = new Modifiers(this.settings.modifiers, this.sharedModifiers);
+    this.modifiers = new ModifierSampler(this.settings.modifiers, this.sharedModifiers);
     this.spawnRate = new SpawnRate(
       this.settings.emission.rate,
       this.settings.emission.rateSpread,
       this.settings.seed,
     );
-    this.initialStretchX = new SampledCurve(this.settings.initial.stretchX);
-    this.initialStretchY = new SampledCurve(this.settings.initial.stretchY);
-    this.initialAngularVelocity = new SampledCurve(this.settings.initial.angularVelocity);
+    this.initial = sampleInitialProperties(this.settings.initial);
     this.angularVelocitySamples = sampleCurve(this.settings.overLifetime.angularVelocity);
-    this.initialRotation = new SampledCurve(this.settings.initial.rotation);
-    this.initialSize = new SampledCurve(this.settings.initial.size);
-    this.initialSpeed = new SampledCurve(this.settings.initial.speed);
-    this.initialRed = new SampledCurve(this.settings.initial.red);
-    this.initialGreen = new SampledCurve(this.settings.initial.green);
-    this.initialBlue = new SampledCurve(this.settings.initial.blue);
-    this.initialAlpha = new SampledCurve(this.settings.initial.alpha);
-    this.initialLifetime = new SampledCurve(this.settings.initial.lifetime);
     this.rotationSamples = sampleCurve(
       this.settings.orientation === 'angular-velocity' ? 0 : this.settings.overLifetime.rotation,
     );
     this.shape = new SampledShape(this.settings.emission.shape);
+
     this.gl = context.gl;
-    this.canvas = context.canvas;
     this.capacity = this.settings.capacity;
+    this.rows = Math.ceil(this.capacity / this.width);
+
     this.schedule = new SpawnSchedule(this.capacity);
     this.slots = new ParticleSlots(this.capacity, true);
     this.playback = new EmitterPlayback(
@@ -103,52 +90,37 @@ export class Emitter {
       this.settings.startDelay,
       this.settings,
     );
-    this.rows = Math.ceil(this.capacity / this.width);
-    this.seed = this.initialSeed = this.settings.seed;
+
+    this.initialSeed = this.settings.seed;
+    this.seed = this.initialSeed;
     if (!Number.isFinite(this.seed)) {
       throw new RangeError('Seed must be finite');
     }
-    const gl = this.gl;
-    if (
-      typeof gl.drawArraysInstanced !== 'function' ||
-      !gl.getExtension('EXT_color_buffer_float')
-    ) {
-      throw new Error('GPU simulation requires WebGL2 and EXT_color_buffer_float');
-    }
-    if (this.rows * 5 > gl.getParameter(gl.MAX_TEXTURE_SIZE)) {
-      throw new RangeError('Capacity exceeds GPU texture limits');
-    }
+    this.simulation = new GpuSimulation(context, this.width, this.rows, this.capacity);
     try {
-      this.kernels.push(...createKernels(context, this.width, this.rows, this.capacity));
-      for (let index = 0; index < this.kernels.length; index++) {
-        const vao = gl.createVertexArray();
-        if (!vao) {
-          throw new Error('Unable to allocate simulation VAO');
-        }
-        this.vaos.push(vao);
-      }
-      this.reset();
-      // Compile and allocate both mutable outputs before playback, then clear again.
-      this.update(0);
-      this.update(0);
-      this.reset();
+      this.warmSimulation();
     } catch (error) {
       this.destroy();
       throw error;
     }
   }
+
   public get worldX(): number {
     return this.effectTransform.applyX(this.x, this.y);
   }
+
   public get worldY(): number {
     return this.effectTransform.applyY(this.x, this.y);
   }
+
   public get worldRotation(): number {
     return this.effectTransform.rotation + this.effectTransform.handedness * this.rotation;
   }
+
   public get worldHandedness(): 1 | -1 {
     return this.effectTransform.handedness;
   }
+
   public get worldScale(): number {
     return this.effectTransform.scale * this.scale;
   }
@@ -157,6 +129,7 @@ export class Emitter {
     return this.playback.state;
   }
 
+  /** Subscribe to queued lifecycle transitions; returns an unsubscribe function. */
   public onStateChange(listener: EmitterStateListener): () => void {
     this.assertAlive();
     this.listeners.add(listener);
@@ -179,7 +152,7 @@ export class Emitter {
   public stop({ clear = false }: StopOptions = {}): void {
     this.assertAlive();
     if (clear) {
-      this.output = this.run(0);
+      this.simulation.clear();
       this.slots.reset();
     }
     this.needsPrewarm = false;
@@ -187,6 +160,7 @@ export class Emitter {
     this.notifyStateChanges();
   }
 
+  /** Stop emission and remove all particles immediately. */
   public clear(): void {
     this.stop({ clear: true });
   }
@@ -195,9 +169,11 @@ export class Emitter {
   public get isEmitting(): boolean {
     return this.emitting && this.playback.emitting;
   }
+
   public get id(): string {
     return this.settings.id;
   }
+
   /** Emitter origin in effect coordinates; rotation and scale apply around this point. */
   public get x(): number {
     return this.settings.position.x;
@@ -254,77 +230,31 @@ export class Emitter {
   public get configuration(): EmitterConfig {
     return emitterConfigSchema.parse(this.settings);
   }
+
+  /** Apply a validated patch atomically, rebuilding only affected sampled data. */
   public setParameters(patch: EmitterParameters): void {
     this.assertAlive();
     const settings = applyEmitterPatch(this.settings, patch);
     const modifiers =
       patch.modifiers === undefined
         ? this.modifiers
-        : new Modifiers(settings.modifiers, this.sharedModifiers);
+        : new ModifierSampler(settings.modifiers, this.sharedModifiers);
     const shape =
       patch.emission?.shape === undefined ? this.shape : new SampledShape(settings.emission.shape);
     const spawnRate =
       patch.emission?.rate === undefined
         ? this.spawnRate
         : new SpawnRate(settings.emission.rate, settings.emission.rateSpread, settings.seed);
-    const initialSpeed =
-      patch.initial?.speed === undefined
-        ? this.initialSpeed
-        : new SampledCurve(settings.initial.speed);
-    const initialSize =
-      patch.initial?.size === undefined
-        ? this.initialSize
-        : new SampledCurve(settings.initial.size);
-    const initialStretchX =
-      patch.initial?.stretchX === undefined
-        ? this.initialStretchX
-        : new SampledCurve(settings.initial.stretchX);
-    const initialStretchY =
-      patch.initial?.stretchY === undefined
-        ? this.initialStretchY
-        : new SampledCurve(settings.initial.stretchY);
-    const initialAngularVelocity =
-      patch.initial?.angularVelocity === undefined
-        ? this.initialAngularVelocity
-        : new SampledCurve(settings.initial.angularVelocity);
-    const initialRotation =
-      patch.initial?.rotation === undefined
-        ? this.initialRotation
-        : new SampledCurve(settings.initial.rotation);
-    const initialRed =
-      patch.initial?.red === undefined ? this.initialRed : new SampledCurve(settings.initial.red);
-    const initialGreen =
-      patch.initial?.green === undefined
-        ? this.initialGreen
-        : new SampledCurve(settings.initial.green);
-    const initialBlue =
-      patch.initial?.blue === undefined
-        ? this.initialBlue
-        : new SampledCurve(settings.initial.blue);
-    const initialAlpha =
-      patch.initial?.alpha === undefined
-        ? this.initialAlpha
-        : new SampledCurve(settings.initial.alpha);
-    const initialLifetime =
-      patch.initial?.lifetime === undefined
-        ? this.initialLifetime
-        : new SampledCurve(settings.initial.lifetime);
+    const initial = sampleInitialProperties(settings.initial, this.initial, patch.initial);
+
+    // Commit only after every replacement has been validated and sampled.
     this.settings = settings;
     this.modifiers = modifiers;
     this.shape = shape;
-    this.initialLifetime = initialLifetime;
-    this.initialRed = initialRed;
-    this.initialGreen = initialGreen;
-    this.initialBlue = initialBlue;
-    this.initialAlpha = initialAlpha;
-    this.initialStretchX = initialStretchX;
-    this.initialStretchY = initialStretchY;
-    this.initialAngularVelocity = initialAngularVelocity;
-    this.initialRotation = initialRotation;
-    this.initialSize = initialSize;
-    this.initialSpeed = initialSpeed;
+    this.initial = initial;
     this.spawnRate = spawnRate;
   }
+
   /** Changes when allocation or particle ages change, including reset and clear. */
   public get particleRevision(): number {
     return this.slots.revision;
@@ -339,58 +269,70 @@ export class Emitter {
   /** GPU resource handle for renderer adapters. Never calls toArray/readPixels. */
   public get texture(): WebGLTexture {
     this.assertAlive();
-    return this.output.texture;
+    return this.simulation.texture;
   }
-  public update(dt: number): void {
+
+  /**
+   * Advance by 0–0.1 seconds. The first positive step runs pending prewarm first.
+   * Zero-time updates initialize GPU output without advancing particle ages.
+   * State notifications are delivered after the simulation work completes.
+   */
+  public update(seconds: number): void {
     this.assertAlive();
     if (!Number.isFinite(this.x) || !Number.isFinite(this.y)) {
       throw new RangeError('Emitter position must be finite');
     }
-    if (!Number.isFinite(dt) || dt < 0 || dt > 0.1) {
+    if (!Number.isFinite(seconds) || seconds < 0 || seconds > 0.1) {
       throw new RangeError('Step must be between 0 and 0.1 seconds');
     }
     if (this.state === 'sleeping') {
       return;
     }
-    if (dt > 0 && this.needsPrewarm) {
+    if (seconds > 0 && this.needsPrewarm) {
       this.needsPrewarm = false;
       prewarm(
         this.settings.startOffset,
-        this.initialLifetime.maximum + this.settings.initial.lifetimeSpread,
-        (seconds) => this.step(seconds),
+        this.initial.lifetime.maximum + this.settings.initial.lifetimeSpread,
+        (stepSeconds) => this.step(stepSeconds),
       );
     }
-    this.velocity.update(this.worldX, this.worldY, dt);
-    this.step(dt);
+    this.velocity.update(this.worldX, this.worldY, seconds);
+    this.step(seconds);
     this.notifyStateChanges();
   }
+
+  /** Clear particles and restore the initial clock and seed; preserve the emitting gate. */
   public reset(): void {
     this.assertAlive();
-    this.output = this.run(0);
+    this.simulation.reset();
     this.schedule.reset();
     this.slots.reset();
     this.playback.reset();
     this.velocity.reset();
     this.needsPrewarm = true;
-    this.nextKernel = 1;
     this.seed = this.initialSeed;
     this.notifyStateChanges();
   }
+
+  /** Release owned resources once, leaving the shared WebGL context alive. */
   public destroy(): void {
     if (this.disposed) {
       return;
     }
     this.disposed = true;
     this.listeners.clear();
-    // Do not call gpu.destroy(): the shared context belongs to the host renderer.
-    for (const kernel of this.kernels) {
-      kernel.destroy(true);
-    }
-    for (const vao of this.vaos) {
-      this.gl.deleteVertexArray(vao);
-    }
+    this.simulation.destroy();
   }
 
+  /** Compile both update paths with zero-time steps, then restore fresh playback. */
+  private warmSimulation(): void {
+    this.reset();
+    this.update(0);
+    this.update(0);
+    this.reset();
+  }
+
+  /** Queue reentrant state changes until the current notification batch finishes. */
   private notifyStateChanges(): void {
     if (this.notifying) {
       return;
@@ -410,136 +352,126 @@ export class Emitter {
       this.notifying = false;
     }
   }
-  private step(dt: number): void {
+
+  /** Order matters: playback → birth requests → slot allocation → GPU update → draining. */
+  private step(seconds: number): void {
     if (this.state === 'sleeping') {
       return;
     }
-    const active = this.playback.advance(dt);
-    const rate = active && this.emitting ? this.spawnRate.at(this.playback.normalizedAge) : 0;
-    const requested = this.schedule.next(rate, dt);
-    const lifetime = this.initialLifetime.at(this.playback.normalizedAge);
-    const o = this.settings;
-    const count = this.slots.advance(
-      dt,
+    const shouldEmit = this.playback.advance(seconds);
+    const emitterAge = this.playback.normalizedAge;
+    const rate = shouldEmit && this.emitting ? this.spawnRate.at(emitterAge) : 0;
+    const requested = this.schedule.next(rate, seconds);
+    const lifetime = this.initial.lifetime.at(emitterAge);
+    const settings = this.settings;
+
+    const birthCount = this.slots.advance(
+      seconds,
       requested,
       lifetime,
-      o.initial.lifetimeSpread,
+      settings.initial.lifetimeSpread,
       this.seed,
-      Math.max(0, this.initialLifetime.maximum),
+      Math.max(0, this.initial.lifetime.maximum),
     );
-    const worldSpace = o.space === 'world';
+
+    this.integrate(seconds, birthCount, lifetime, emitterAge);
+
+    if (seconds > 0) {
+      this.playback.finish(this.slots.empty);
+    }
+    if (birthCount > 0) {
+      this.seed = (this.seed + 1) % 65536;
+    }
+  }
+
+  /**
+   * Bind the positional arguments expected by simulation/kernels/integrate.ts.
+   * This is one GPU pass; argument order is part of the kernel contract.
+   */
+  private integrate(
+    seconds: number,
+    birthCount: number,
+    lifetime: number,
+    emitterAge: number,
+  ): void {
+    const settings = this.settings;
+    const worldSpace = settings.space === 'world';
     const handedness = worldSpace ? this.worldHandedness : 1;
     const scale = worldSpace ? this.worldScale : 1;
     const rotation = worldSpace ? this.worldRotation : 0;
     const radians = (-rotation * Math.PI) / 180;
-    const initialRotation = this.initialRotation.at(this.playback.normalizedAge) * handedness;
+    const initialRotation = this.initial.rotation.at(emitterAge) * handedness;
     const particleRotation =
-      o.orientation === 'movement-direction' ? initialRotation : initialRotation + rotation;
-    this.output = this.run(
-      this.nextKernel,
-      this.output,
-      dt,
+      settings.orientation === 'movement-direction' ? initialRotation : initialRotation + rotation;
+    this.simulation.update(
+      // Time and births for this step
+      seconds,
       this.slots.spawnMask,
-      count,
+      birthCount,
+      // Birth position, motion, lifetime, and shape
       worldSpace ? this.worldX : 0,
       worldSpace ? this.worldY : 0,
-      this.initialSpeed.at(this.playback.normalizedAge),
-      o.initial.direction,
-      o.initial.spread,
+      this.initial.speed.at(emitterAge),
+      settings.initial.direction,
+      settings.initial.spread,
       lifetime,
       this.seed,
       this.shape.type,
-      this.shape.dimensionX.at(this.playback.normalizedAge),
-      this.shape.dimensionY.at(this.playback.normalizedAge),
-      this.initialSize.at(this.playback.normalizedAge),
-      this.initialAlpha.at(this.playback.normalizedAge),
-      this.initialRed.at(this.playback.normalizedAge),
-      this.initialGreen.at(this.playback.normalizedAge),
-      this.initialBlue.at(this.playback.normalizedAge),
+      this.shape.dimensionX.at(emitterAge),
+      this.shape.dimensionY.at(emitterAge),
+      // Birth appearance
+      this.initial.size.at(emitterAge),
+      this.initial.alpha.at(emitterAge),
+      this.initial.red.at(emitterAge),
+      this.initial.green.at(emitterAge),
+      this.initial.blue.at(emitterAge),
       particleRotation,
-      o.orientation === 'initial-direction' ? 1 : 0,
-      o.initial.speedSpread,
-      o.initial.lifetimeSpread,
-      o.initial.sizeSpread,
-      o.initial.rotationSpread,
-      o.initial.redSpread,
-      o.initial.greenSpread,
-      o.initial.blueSpread,
-      o.initial.alphaSpread,
+      settings.orientation === 'initial-direction' ? 1 : 0,
+      // Per-particle variation
+      settings.initial.speedSpread,
+      settings.initial.lifetimeSpread,
+      settings.initial.sizeSpread,
+      settings.initial.rotationSpread,
+      settings.initial.redSpread,
+      settings.initial.greenSpread,
+      settings.initial.blueSpread,
+      settings.initial.alphaSpread,
       this.shape.dimensionSpreadX,
       this.shape.dimensionSpreadY,
-      worldSpace ? this.velocity.x * o.inheritVelocity : 0,
-      worldSpace ? this.velocity.y * o.inheritVelocity : 0,
+      // Inherited motion and emitter transform
+      worldSpace ? this.velocity.x * settings.inheritVelocity : 0,
+      worldSpace ? this.velocity.y * settings.inheritVelocity : 0,
       Math.cos(radians),
       Math.sin(radians),
       scale,
+      // Orientation and angular motion
       this.rotationSamples,
-      o.orientation === 'movement-direction' ? 1 : 0,
-      this.initialAngularVelocity.at(this.playback.normalizedAge),
-      o.initial.angularVelocitySpread,
+      settings.orientation === 'movement-direction' ? 1 : 0,
+      this.initial.angularVelocity.at(emitterAge),
+      settings.initial.angularVelocitySpread,
       this.angularVelocitySamples,
-      o.orientation === 'angular-velocity' ? 1 : 0,
-      this.initialStretchX.at(this.playback.normalizedAge),
-      this.initialStretchY.at(this.playback.normalizedAge),
-      o.initial.stretchXSpread,
-      o.initial.stretchYSpread,
+      settings.orientation === 'angular-velocity' ? 1 : 0,
+      // Geometry and forces
+      this.initial.stretchX.at(emitterAge),
+      this.initial.stretchY.at(emitterAge),
+      settings.initial.stretchXSpread,
+      settings.initial.stretchYSpread,
       this.modifiers.sample(
         this.playback.modifierAge,
         !worldSpace,
         this.x,
         this.y,
-        o.rotation,
-        o.scale,
+        settings.rotation,
+        settings.scale,
         this.effectTransform,
       ),
       handedness,
     );
-    if (dt > 0) {
-      this.playback.finish(this.slots.empty);
-    }
-    if (count) {
-      this.seed = (this.seed + 1) % 65536;
-    }
-    this.nextKernel = this.nextKernel === 1 ? 2 : 1;
   }
+
   private assertAlive(): void {
     if (this.disposed) {
       throw new Error('Emitter has been destroyed');
-    }
-  }
-  private run(index: number, ...args: KernelVariable[]): PipelineTexture {
-    const gl = this.gl;
-    const kernel = this.kernels[index]!;
-    const width = this.canvas.width,
-      height = this.canvas.height;
-    gl.bindVertexArray(this.vaos[index]!);
-    gl.disable(gl.BLEND);
-    gl.disable(gl.DEPTH_TEST);
-    gl.disable(gl.STENCIL_TEST);
-    gl.disable(gl.SCISSOR_TEST);
-    gl.disable(gl.CULL_FACE);
-    gl.colorMask(true, true, true, true);
-    // Curve textures contain data, not colors; Pixi may leave alpha premultiplication enabled.
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-    // GPU.js does not declare this WebGL-specific internal field.
-    const size = (kernel.kernel as typeof kernel.kernel & { maxTexSize?: number[] }).maxTexSize;
-    gl.viewport(0, 0, size?.[0] ?? this.width, size?.[1] ?? this.rows * 5);
-    try {
-      const result = kernel(...args);
-      if (!isPipelineTexture(result, gl)) {
-        throw new Error('GPU.js did not return a shared-context texture');
-      }
-      return result;
-    } finally {
-      // GPU.js changes canvas dimensions on first compilation.
-      if (this.canvas.width !== width) {
-        this.canvas.width = width;
-      }
-      if (this.canvas.height !== height) {
-        this.canvas.height = height;
-      }
-      gl.bindVertexArray(null);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
   }
 }

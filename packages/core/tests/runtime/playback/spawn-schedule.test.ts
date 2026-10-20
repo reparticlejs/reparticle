@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { SpawnSchedule } from '#src/runtime/spawn-schedule.js';
+import { SpawnSchedule } from '#src/runtime/playback/spawn-schedule.js';
 describe('spawn scheduling', () => {
   it('retains fractional emission across frames', () => {
     const schedule = new SpawnSchedule(1000);

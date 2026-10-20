@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 
-import { EmitterPlayback } from '#src/runtime/emitter-playback.js';
-import { prewarm } from '#src/runtime/prewarm.js';
-import { SpawnSchedule } from '#src/runtime/spawn-schedule.js';
+import { EmitterPlayback } from '#src/runtime/playback/emitter.js';
+import { prewarm } from '#src/runtime/playback/prewarm.js';
+import { SpawnSchedule } from '#src/runtime/playback/spawn-schedule.js';
 
 it.each([0, 0.00001])('skips offsets below the prewarm threshold: %s', (offset) => {
   const steps: number[] = [];

@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 
-import { EffectTransform } from '#src/runtime/effect-transform.js';
-import { Modifiers } from '#src/runtime/modifiers.js';
+import { ModifierSampler } from '#src/runtime/modifiers/sampler.js';
+import { EffectTransform } from '#src/runtime/transforms/effect.js';
 
 it('composes scale, counterclockwise rotation and translation', () => {
   const transform = new EffectTransform();
@@ -25,7 +25,7 @@ it('rejects invalid patches atomically and supports zero and negative scale', ()
 it('moves shared modifier centers and rotates/scales world forces', () => {
   const transform = new EffectTransform();
   transform.set({ x: 100, y: 50, rotation: 90, scale: 2 });
-  const shared = new Modifiers(
+  const shared = new ModifierSampler(
     [],
     [
       { type: 'acceleration', magnitude: 10 },

@@ -13,9 +13,21 @@ import { advanceAge, particleAlive } from '../particles/lifetime';
 import { movementRotation } from '../particles/movement-rotation';
 
 /**
- * GPU storage adapter: map this output texel to a particle, then apply its behavior.
- * All five bands read the previous texture so position and lifetime agree on spawning.
- * The texture dimensions guarantee these indices; non-null assertions express that contract.
+ * Write one RGBA texel of the next particle-state texture.
+ * A particle occupies the same column and row in five stacked bands:
+ *   motion     [x, y, velocityX, velocityY]
+ *   properties [age, lifetime, initialSize, initialRotation]
+ *   color      [initialRed, initialGreen, initialBlue, initialAlpha]
+ *   dynamics   [active, spreadFactor, initialAngularVelocity, accumulatedRotation]
+ *   geometry   [initialStretchX, initialStretchY, initialHandedness, movementRotation]
+ *
+ * Every band reads the previous state. The CPU spawn mask decides births; newborns
+ * receive a full step of age and motion, even when their lifetime is nonpositive.
+ * Existing particles survive while their advanced age is <= their lifetime.
+ *
+ * This function is compiled by GPU.js. Keep its operations within the supported
+ * numeric subset and its positional arguments aligned with Emitter.integrate().
+ * Texture dimensions guarantee indexed reads; non-null assertions express that contract.
  */
 export function integrate(
   this: KernelContext,
@@ -31,8 +43,8 @@ export function integrate(
   lifetime: number,
   seed: number,
   shapeType: number,
-  sizeX: number,
-  sizeY: number,
+  dimensionX: number,
+  dimensionY: number,
   initialSize: number,
   initialAlpha: number,
   initialRed: number,
@@ -48,8 +60,8 @@ export function integrate(
   greenSpread: number,
   blueSpread: number,
   alphaSpread: number,
-  emitterSizeSpreadX: number,
-  emitterSizeSpreadY: number,
+  dimensionSpreadX: number,
+  dimensionSpreadY: number,
   inheritedVelocityX: number,
   inheritedVelocityY: number,
   emitterCosine: number,
@@ -68,9 +80,12 @@ export function integrate(
   modifiers: Float32Array,
   handedness: number,
 ): ParticleTexel {
+  // Map this band's texel back to its fixed particle slot.
   const particleRow = this.thread.y % this.constants.rows;
   const particleId = particleRow * this.constants.width + this.thread.x;
   const properties = state[particleRow + this.constants.rows]![this.thread.x]!;
+
+  // One float32 mask word packs 24 exact birth bits.
   const spawnWord = spawnMask[Math.floor(particleId / 24)]!;
   const spawnBit = Math.floor(spawnWord / Math.pow(2, particleId % 24)) % 2;
   const isSpawning = particleId < this.constants.capacity && spawnCount > 0 && spawnBit > 0.5;
@@ -79,9 +94,11 @@ export function integrate(
   if (seconds === 0 && !isSpawning) {
     return state[this.thread.y]![this.thread.x]!;
   }
+
   const dynamics = state[particleRow + this.constants.rows * 3]![this.thread.x]!;
   const active = dynamics[0] * particleAlive(advanceAge(properties[0], seconds), properties[1]);
 
+  // Existing geometry: preserve birth values; capture movement heading before forces.
   if (this.thread.y >= this.constants.rows * 4 && !isSpawning) {
     const geometry = state[particleRow + this.constants.rows * 4]![this.thread.x]!;
     if (orientToMovement > 0.5 && active > 0.5) {
@@ -96,6 +113,7 @@ export function integrate(
     return geometry;
   }
 
+  // Dynamics: active flag, stable modifier variation, and accumulated angular rotation.
   if (this.thread.y >= this.constants.rows * 3 && this.thread.y < this.constants.rows * 4) {
     if (isSpawning) {
       const angularVelocity =
@@ -132,7 +150,7 @@ export function integrate(
     return [active, dynamics[1], dynamics[2], dynamics[3]];
   }
 
-  // Color texel: initialRed, initialGreen, initialBlue, initialAlpha.
+  // Color is captured at birth; rendering applies color/alpha curves later.
   if (this.thread.y >= this.constants.rows * 2 && this.thread.y < this.constants.rows * 3) {
     if (isSpawning) {
       return [
@@ -145,73 +163,102 @@ export function integrate(
     return state[particleRow + this.constants.rows * 2]![this.thread.x]!;
   }
 
+  // Remaining birth outputs are properties, geometry, and motion.
   if (isSpawning) {
     const sampledLifetime = lifetime + propertyVariation(particleId, seed, 2) * lifetimeSpread;
-    const sampledX = sizeX + propertyVariation(particleId, seed, 12) * emitterSizeSpreadX;
-    const sampledY = sizeY + propertyVariation(particleId, seed, 13) * emitterSizeSpreadY;
+    const sampledDimensionX =
+      dimensionX + propertyVariation(particleId, seed, 12) * dimensionSpreadX;
+    const sampledDimensionY =
+      dimensionY + propertyVariation(particleId, seed, 13) * dimensionSpreadY;
+
     // Unit-speed motion preserves the shape direction even when actual speed is zero.
-    let spawned = spawnMotion(particleId, seed, 0, 0, 1, direction, spread);
+    let spawnMotionState = spawnMotion(particleId, seed, 0, 0, 1, direction, spread);
     if (shapeType === 1) {
-      spawned = spawnCircle(particleId, seed, 0, 0, 1, sampledX);
+      spawnMotionState = spawnCircle(particleId, seed, 0, 0, 1, sampledDimensionX);
     } else if (shapeType === 2) {
-      spawned = spawnBox(particleId, seed, 0, 0, 1, sampledX, sampledY);
+      spawnMotionState = spawnBox(particleId, seed, 0, 0, 1, sampledDimensionX, sampledDimensionY);
     } else if (shapeType === 3) {
-      spawned = spawnCone2D(particleId, seed, 0, 0, 1, sampledX, sampledY);
+      spawnMotionState = spawnCone2D(
+        particleId,
+        seed,
+        0,
+        0,
+        1,
+        sampledDimensionX,
+        sampledDimensionY,
+      );
     }
+
     let rotation =
       initialRotation + propertyVariation(particleId, seed, 4) * rotationSpread * handedness;
     if (orientToDirection > 0.5) {
-      rotation += spawnRotation(spawned[2], spawned[3]) * handedness;
+      rotation += spawnRotation(spawnMotionState[2], spawnMotionState[3]) * handedness;
     }
+    // Properties start at one full step of age; scale is captured at birth.
     if (this.thread.y >= this.constants.rows && this.thread.y < this.constants.rows * 2) {
       const sampledSize = initialSize + propertyVariation(particleId, seed, 3) * sizeSpread;
       return [seconds, sampledLifetime, sampledSize * emitterScale, rotation];
     }
+
+    // Transform unit direction into simulation velocity, then add inherited motion.
     const sampledSpeed =
       (speed + propertyVariation(particleId, seed, 1) * speedSpread) * emitterScale;
-    const birthFactor = propertyVariation(particleId, seed, 14);
-    const birthX =
-      (emitterCosine * spawned[2] * handedness - emitterSine * spawned[3]) * sampledSpeed +
+    const birthSpreadFactor = propertyVariation(particleId, seed, 14);
+    const birthVelocityX =
+      (emitterCosine * spawnMotionState[2] * handedness - emitterSine * spawnMotionState[3]) *
+        sampledSpeed +
       inheritedVelocityX;
-    const birthY =
-      (emitterSine * spawned[2] * handedness + emitterCosine * spawned[3]) * sampledSpeed +
+    const birthVelocityY =
+      (emitterSine * spawnMotionState[2] * handedness + emitterCosine * spawnMotionState[3]) *
+        sampledSpeed +
       inheritedVelocityY;
+
+    // New geometry captures the unmodified birth-velocity heading.
     if (this.thread.y >= this.constants.rows * 4) {
       return [
         initialStretchX + propertyVariation(particleId, seed, 16) * stretchXSpread,
         initialStretchY + propertyVariation(particleId, seed, 17) * stretchYSpread,
         handedness,
-        orientToMovement > 0.5 ? movementRotation(birthX, birthY) : 0,
+        orientToMovement > 0.5 ? movementRotation(birthVelocityX, birthVelocityY) : 0,
       ];
     }
+
+    // Apply forces to the birth velocity before advancing the newborn position.
     const positionX =
       emitterX +
-      (emitterCosine * spawned[0] * handedness - emitterSine * spawned[1]) * emitterScale;
+      (emitterCosine * spawnMotionState[0] * handedness - emitterSine * spawnMotionState[1]) *
+        emitterScale;
     const positionY =
       emitterY +
-      (emitterSine * spawned[0] * handedness + emitterCosine * spawned[1]) * emitterScale;
-    let velocity: [number, number] = [birthX, birthY];
+      (emitterSine * spawnMotionState[0] * handedness + emitterCosine * spawnMotionState[1]) *
+        emitterScale;
+    let velocity: [number, number] = [birthVelocityX, birthVelocityY];
     if (modifiers[0]! > 0) {
       let heading: [number, number] = [0, -1];
+      // Only radial modifiers need the particle's orientation-based heading.
       if (modifiers[1]! > 0) {
+        let accumulatedRotation = 0;
+        if (orientToAngularVelocity > 0.5) {
+          const angularVelocity =
+            initialAngularVelocity +
+            propertyVariation(particleId, seed, 15) * angularVelocitySpread;
+          accumulatedRotation =
+            advanceRotation(
+              0,
+              angularVelocity,
+              seconds,
+              sampledLifetime,
+              angularVelocityCurve,
+              seconds,
+            ) * handedness;
+        }
         heading = particleHeading(
-          rotation +
-            (orientToAngularVelocity > 0.5
-              ? advanceRotation(
-                  0,
-                  initialAngularVelocity +
-                    propertyVariation(particleId, seed, 15) * angularVelocitySpread,
-                  seconds,
-                  sampledLifetime,
-                  angularVelocityCurve,
-                  seconds,
-                ) * handedness
-              : 0),
+          rotation + accumulatedRotation,
           seconds,
           sampledLifetime,
           rotationCurve,
-          birthX,
-          birthY,
+          birthVelocityX,
+          birthVelocityY,
           orientToMovement,
           handedness,
         );
@@ -219,11 +266,11 @@ export function integrate(
       velocity = applyModifiers(
         positionX,
         positionY,
-        birthX,
-        birthY,
+        birthVelocityX,
+        birthVelocityY,
         heading[0],
         heading[1],
-        birthFactor,
+        birthSpreadFactor,
         seconds,
         modifiers,
       );
@@ -241,6 +288,7 @@ export function integrate(
     return [advanceAge(properties[0], seconds), properties[1], properties[2], properties[3]];
   }
 
+  // Existing motion: expired particles keep their position but lose velocity.
   const motion = state[particleRow]![this.thread.x]!;
   const x = motion[0];
   const y = motion[1];
@@ -255,20 +303,23 @@ export function integrate(
   let velocity: [number, number] = [velocityX, velocityY];
   if (modifiers[0]! > 0) {
     let heading: [number, number] = [0, -1];
+    // Only radial modifiers need the particle's orientation-based heading.
     if (modifiers[1]! > 0) {
       const geometry = state[particleRow + this.constants.rows * 4]![this.thread.x]!;
+      let accumulatedRotation = 0;
+      if (orientToAngularVelocity > 0.5) {
+        accumulatedRotation =
+          advanceRotation(
+            dynamics[3],
+            dynamics[2],
+            age + seconds,
+            particleLifetime,
+            angularVelocityCurve,
+            seconds,
+          ) * geometry[2];
+      }
       heading = particleHeading(
-        properties[3] +
-          (orientToAngularVelocity > 0.5
-            ? advanceRotation(
-                dynamics[3],
-                dynamics[2],
-                age + seconds,
-                particleLifetime,
-                angularVelocityCurve,
-                seconds,
-              ) * geometry[2]
-            : 0),
+        properties[3] + accumulatedRotation,
         age + seconds,
         particleLifetime,
         rotationCurve,

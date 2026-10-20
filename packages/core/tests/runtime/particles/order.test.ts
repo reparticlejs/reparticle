@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { ParticleOrder } from '#src/runtime/particle-order.js';
-import { ParticleSlots } from '#src/runtime/particle-slots.js';
-import { particleSortKey } from '#src/runtime/particle-sort-key.js';
+import { ParticleOrder } from '#src/runtime/particles/order.js';
+import { ParticleSlots } from '#src/runtime/particles/slots.js';
+import { particleSortKey } from '#src/runtime/particles/sort-key.js';
 
 function read(order: ParticleOrder) {
   const target = new Uint32Array(10);

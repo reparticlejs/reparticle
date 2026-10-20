@@ -3,9 +3,9 @@ import { ZodError } from 'zod';
 
 import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { EmitterVelocity } from '#src/runtime/emitter-velocity.js';
+import { EmitterVelocity } from '#src/runtime/transforms/velocity.js';
 
-import skeleton from '../../../../docs/effect.example.json';
+import skeleton from '../../../../../docs/effect.example.json';
 
 it('estimates motion after the first sample and stops inheriting when stationary', () => {
   const motion = new EmitterVelocity();

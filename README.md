@@ -25,7 +25,7 @@ Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error;
 
 - `packages/core`: GPU.js 2.24.1 simulation, mathematical behaviors, bounded spawn scheduling. No Pixi dependency. Takes a host WebGL2 context; this GPU backend is browser-based, not a headless CPU implementation.
 - `packages/core/src/simulation`: numeric emission, modifier, and particle functions, plus the kernels that combine them. `functions.ts` is the build entry; tracked `functions.json` contains the compiled strings.
-- `packages/core/src/runtime`: emitter orchestration, GPU.js kernel creation, playback, slot allocation, and draw ordering.
+- `packages/core/src/runtime`: `emitter.ts` coordinates `gpu/` execution, `playback/` timing and spawn requests, `particles/` allocation and ordering, `modifiers/` sampling, and `transforms/` positioning and velocity.
 - `packages/core/src/index.ts`: public exports only.
 - `packages/pixi`: shares Pixi's WebGL2 context and renders directly from the simulation texture with one instanced draw. No Sprite per particle or CPU copy of particle positions.
 - `examples/demo`: React/TypeScript UI with a Pixi preview. React owns controls and status; Pixi owns the animation loop.

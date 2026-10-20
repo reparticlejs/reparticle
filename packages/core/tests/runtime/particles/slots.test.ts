@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 
-import { EmitterPlayback } from '#src/runtime/emitter-playback.js';
-import { ParticleSlots } from '#src/runtime/particle-slots.js';
-import { SpawnSchedule } from '#src/runtime/spawn-schedule.js';
+import { ParticleSlots } from '#src/runtime/particles/slots.js';
+import { EmitterPlayback } from '#src/runtime/playback/emitter.js';
+import { SpawnSchedule } from '#src/runtime/playback/spawn-schedule.js';
 import { propertyVariation } from '#src/simulation/emission/variation.js';
 
 function selected(mask: Float32Array, capacity: number): number[] {
