@@ -9,8 +9,6 @@ it('ages newborns on their first step and expires them at their original lifetim
   expect(tracker.count).toBe(15);
   tracker.recordStep(0.1, 0, 10);
   expect(tracker.count).toBe(5);
-  tracker.reset();
-  expect(tracker.count).toBe(0);
 });
 
 it('reuses expired slots and caps births at remaining capacity', () => {
@@ -23,7 +21,7 @@ it('reuses expired slots and caps births at remaining capacity', () => {
   expect(tracker.count).toBe(10);
 });
 
-it('preserves fractional spawn carry across rate changes and clears it on reset', () => {
+it('preserves fractional spawn carry across rate changes', () => {
   const tracker = new LiveParticleCount(10);
   tracker.advance(0.1, 5, 10);
   expect(tracker.count).toBe(0);
@@ -31,9 +29,8 @@ it('preserves fractional spawn carry across rate changes and clears it on reset'
   tracker.advance(0.1, 5, 10);
   expect(tracker.count).toBe(1);
   tracker.advance(0.1, 5, 10);
-  tracker.reset();
   tracker.advance(0.1, 5, 10);
-  expect(tracker.count).toBe(0);
+  expect(tracker.count).toBe(2);
   tracker.advance(0.1, 1000, 10);
   expect(tracker.count).toBe(10);
 });

@@ -27,9 +27,4 @@ export class LiveParticleCount {
   ): number {
     return this.slots.advance(seconds, requested, lifetime, spread, seed);
   }
-
-  public reset(): void {
-    this.slots.reset();
-    this.schedule.reset();
-  }
 }
