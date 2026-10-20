@@ -1,5 +1,9 @@
 node_modules/
-dist/
-.turbo/
 .pnpm-store/
-.generated/
+dist/
+coverage/
+exports/
+.turbo/
+.DS_Store
+docs/.vitepress/cache/
+docs/public/demos/
