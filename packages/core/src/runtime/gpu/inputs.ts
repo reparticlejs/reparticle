@@ -6,7 +6,7 @@ import type { SimulationParameters } from '#types/simulation.js';
 import { UniformBuffer } from './uniform-buffer';
 
 // Positional boundary required by GPU.js. Keep this order aligned with integrate()
-// and the argument types in create-kernels.ts. Each uniform occupies one vec4.
+// and the argument types in arguments.ts. Each uniform occupies one vec4.
 const ARGUMENT = {
   state: 0,
   step: 1,

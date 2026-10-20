@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { INTEGRATION_ARGUMENT_TYPES } from '#src/runtime/gpu/argument-types.js';
+import { INTEGRATION_ARGUMENT_TYPES } from '#src/runtime/gpu/arguments.js';
 import * as implementations from '#src/simulation/functions.js';
 import functions from '#src/simulation/functions.json';
 

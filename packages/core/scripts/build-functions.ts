@@ -3,7 +3,7 @@ import { rename, writeFile } from 'node:fs/promises';
 import { minify } from 'terser';
 import { build } from 'tsdown';
 
-import { INTEGRATION_ARGUMENT_TYPES } from '../src/runtime/gpu/argument-types.ts';
+import { INTEGRATION_ARGUMENT_TYPES } from '../src/runtime/gpu/arguments.ts';
 
 // Run from packages/core. The output is shipped as data so consumer minifiers
 // cannot rename GPU.js helpers or rewrite their numeric expressions.

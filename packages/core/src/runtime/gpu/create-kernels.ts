@@ -3,7 +3,7 @@ import { GPU, type IGPUKernelSettings, type IKernelRunShortcut } from 'gpu.js';
 import type { EmitterContext } from '#types/emitter.js';
 
 import functions from '../../simulation/functions.json';
-import { INTEGRATION_ARGUMENT_TYPES } from './argument-types';
+import { INTEGRATION_ARGUMENT_TYPES } from './arguments';
 
 /**
  * Create kernels on the renderer's existing WebGL2 context.
