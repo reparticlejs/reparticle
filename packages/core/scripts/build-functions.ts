@@ -3,12 +3,12 @@ import { rename, writeFile } from 'node:fs/promises';
 import { minify } from 'terser';
 import { build } from 'tsdown';
 
+import { INTEGRATION_ARGUMENT_TYPES } from '../src/runtime/gpu/argument-types.ts';
+
 // Run from packages/core. The output is shipped as data so consumer minifiers
 // cannot rename GPU.js helpers or rewrite their numeric expressions.
 const compiledModule = await compileFunctions();
-const originalSources = await extractSources(compiledModule);
-const kernelParameters = getKernelParameters(originalSources);
-const mangledModule = await mangleFunctions(compiledModule, kernelParameters);
+const mangledModule = await mangleFunctions(compiledModule);
 const sources = await extractSources(mangledModule);
 await writeSources(sources);
 
@@ -40,53 +40,18 @@ async function compileFunctions(): Promise<string> {
 }
 
 /**
- * Preserve the parameter names used by GPU.js's argumentTypes settings.
- * Read them from the unmangled kernels so new inputs are included automatically.
- */
-function getKernelParameters(sources: Record<string, string>): string[] {
-  const parameters: string[] = [];
-
-  for (const name of ['initialize', 'integrate']) {
-    const source = sources[name];
-    if (!source) {
-      throw new Error(`Missing GPU kernel: ${name}`);
-    }
-    parameters.push(...getParameterNames(source));
-  }
-
-  return parameters;
-}
-
-/**
- * Read a compiled function's simple identifier parameters.
- * GPU kernels use plain named functions without defaults, rest, or destructuring;
- * this reads their signatures only and never rewrites function source.
- */
-function getParameterNames(source: string): string[] {
-  const start = source.indexOf('(') + 1;
-  const end = source.indexOf(')', start);
-  const signature = source.slice(start, end).trim();
-
-  if (signature === '') {
-    return [];
-  }
-
-  return signature.split(',').map((parameter) => parameter.trim());
-}
-
-/**
  * Shorten bindings without compression or function-name changes.
  * A build-wide counter prevents short-name reuse across block scopes: GPU.js
  * otherwise confuses scalar and vector bindings that share a minified name.
  */
-async function mangleFunctions(code: string, kernelParameters: string[]): Promise<string> {
+async function mangleFunctions(code: string): Promise<string> {
   let nextIdentifier = 0;
   const result = await minify(code, {
     module: true,
     compress: false,
     keep_fnames: true,
     mangle: {
-      reserved: kernelParameters,
+      reserved: Object.keys(INTEGRATION_ARGUMENT_TYPES),
       nth_identifier: { get: () => `v${(nextIdentifier++).toString(36)}` },
     },
     format: { comments: false },
@@ -99,7 +64,7 @@ async function mangleFunctions(code: string, kernelParameters: string[]): Promis
 
 /**
  * Load our compiled module and capture each named function as JavaScript text.
- * Checking names both before and after mangling protects GPU.js registrations.
+ * Checking exported names after mangling protects GPU.js registrations.
  * Only the project's build output is executed; particle configuration is not.
  */
 async function extractSources(code: string): Promise<Record<string, string>> {

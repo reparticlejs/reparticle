@@ -3,27 +3,7 @@ import { GPU, type IGPUKernelSettings, type IKernelRunShortcut } from 'gpu.js';
 import type { EmitterContext } from '#types/emitter.js';
 
 import functions from '../../simulation/functions.json';
-
-// Explicit vec4 types keep scalar groups in uniforms instead of textures.
-const INTEGRATION_ARGUMENT_TYPES: NonNullable<IGPUKernelSettings['argumentTypes']> = {
-  state: 'ArrayTexture(4)',
-  stepInput: 'Array(4)',
-  emissionInput: 'Array(4)',
-  shapeInput: 'Array(4)',
-  shapeSpreadInput: 'Array(4)',
-  appearanceInput: 'Array(4)',
-  colorInput: 'Array(4)',
-  motionSpreadInput: 'Array(4)',
-  colorSpreadInput: 'Array(4)',
-  geometrySpreadInput: 'Array(4)',
-  positionInput: 'Array(4)',
-  transformInput: 'Array(4)',
-  orientationInput: 'Array(4)',
-  spawnMask: 'Array',
-  rotationCurve: 'Array',
-  angularVelocityCurve: 'Array',
-  modifiers: 'Array',
-};
+import { INTEGRATION_ARGUMENT_TYPES } from './argument-types';
 
 /**
  * Create kernels on the renderer's existing WebGL2 context.

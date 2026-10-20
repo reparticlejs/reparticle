@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest';
 
+import { INTEGRATION_ARGUMENT_TYPES } from '#src/runtime/gpu/argument-types.js';
 import * as implementations from '#src/simulation/functions.js';
 import functions from '#src/simulation/functions.json';
 
@@ -35,6 +36,15 @@ it('preserves kernel parameters used by GPU.js argument settings', () => {
       text.slice(text.indexOf('('), text.indexOf(')') + 1).replace(/\s/g, '');
     expect(parameters(source)).toBe(parameters(implementation.toString()));
   }
+});
+
+it('keeps the shared argument contract aligned with the integration kernel', () => {
+  const source = functions.integrate;
+  const parameters = source
+    .slice(source.indexOf('(') + 1, source.indexOf(')'))
+    .split(',')
+    .map((parameter) => parameter.trim());
+  expect(parameters).toEqual(Object.keys(INTEGRATION_ARGUMENT_TYPES));
 });
 
 it('mangles helpers and locals without reusing binding names across scopes', () => {
