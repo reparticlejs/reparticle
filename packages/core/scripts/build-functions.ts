@@ -9,7 +9,7 @@ await writeSources(kernelSources);
 async function compileFunctions(): Promise<string> {
   const bundles = await build({
     config: false,
-    entry: ['src/gpujs/functions.ts'],
+    entry: ['src/simulation/functions.ts'],
     format: 'esm',
     platform: 'neutral',
     target: 'es2022',
@@ -50,8 +50,8 @@ async function extractSources(code: string): Promise<Record<string, string>> {
 }
 
 async function writeSources(sources: Record<string, string>): Promise<void> {
-  const destination = 'src/gpujs/functions.json';
-  const temporaryFile = `src/gpujs/functions.${process.pid}.json`;
+  const destination = 'src/simulation/functions.json';
+  const temporaryFile = `src/simulation/functions.${process.pid}.json`;
   const json = `${JSON.stringify(sources, null, 2)}\n`;
 
   // Concurrent builds must never read a partially written file.

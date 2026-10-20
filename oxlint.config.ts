@@ -10,7 +10,7 @@ export default defineConfig({
     '**/coverage/**',
     '.pnpm-store/**',
     '.generated/**',
-    'packages/core/src/gpujs/functions.json',
+    'packages/core/src/simulation/functions.json',
     '.turbo/**',
   ],
   options: {

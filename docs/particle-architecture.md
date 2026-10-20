@@ -12,7 +12,7 @@ The configuration boundary uses strict Zod schemas to validate unknown input bef
 
 Core has no Pixi dependency. GPU.js remains the simulation backend. Pixi owns visual output and resolves asset identifiers through the host. Host texture objects do not belong in JSON. Shared GPU textures remain resident; normal playback must not read particle state back to the CPU.
 
-Keep ordinary typed kernel functions and explicit helper registration. The package build compiles their source strings into tracked `src/gpujs/functions.json`; consumers need no build plugin, source rewriting or minifier configuration. Test kernels after production minification.
+Keep ordinary typed kernel functions and explicit helper registration. The package build compiles their source strings into tracked `src/simulation/functions.json`; consumers need no build plugin, source rewriting or minifier configuration. Test kernels after production minification.
 
 Capacity is explicit. No automatic bounds, hit-area calculation, particle scanning, or hidden CPU fallback. Consumers supply bounds and hit areas. Resource destruction respects the renderer's ownership of the shared GL context.
 

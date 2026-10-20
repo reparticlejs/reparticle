@@ -141,7 +141,7 @@ replacement.
 
 - `/tmp/reparticle-packed/core/src/index.ts`: packed emitter adapter.
 - `/tmp/reparticle-packed/core/src/gpujs/integrate.ts`: mapped reads, dense writes.
-- `/tmp/reparticle-packed/core/src/gpujs/functions.json`: compiled candidate kernels.
+- `/tmp/reparticle-packed/core/src/simulation/functions.json`: compiled candidate kernels.
 - `/tmp/reparticle-packed/packed.js`: isolated renderer/core bundle.
 - `/tmp/reparticle-json-runtime/profile-packed.js` and `build-profile-packed.mjs`:
   benchmark and bundler; `profile-packed.html`: runner.

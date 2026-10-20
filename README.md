@@ -24,7 +24,9 @@ Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error;
 ## Structure
 
 - `packages/core`: GPU.js 2.24.1 simulation, mathematical behaviors, bounded spawn scheduling. No Pixi dependency. Takes a host WebGL2 context; this GPU backend is browser-based, not a headless CPU implementation.
-- `packages/core/src/gpujs`: typed GPU storage adapters. Readable motion and spawning math lives in `src/behaviors`. GPU.js receives ordinary functions directly through `createKernel` and `addFunction`, using its published types.
+- `packages/core/src/simulation`: numeric emission, modifier, and particle functions, plus the kernels that combine them. `functions.ts` is the build entry; tracked `functions.json` contains the compiled strings.
+- `packages/core/src/runtime`: emitter orchestration, GPU.js kernel creation, playback, slot allocation, and draw ordering.
+- `packages/core/src/index.ts`: public exports only.
 - `packages/pixi`: shares Pixi's WebGL2 context and renders directly from the simulation texture with one instanced draw. No Sprite per particle or CPU copy of particle positions.
 - `examples/demo`: React/TypeScript UI with a Pixi preview. React owns controls and status; Pixi owns the animation loop.
 
@@ -32,7 +34,7 @@ GPU state contains position, velocity, age, lifetime, and appearance data. Built
 
 Positions, velocities, modifiers, and rendering remain on the GPU, with no readback or extra simulation pass. Allocation work visits birth batches and slots being born or expired, rather than every allocated particle each frame. Lifetime spread orders each new batch by sampled lifetime so expiration can stop at the first survivor. The demo's optional live counter replays the same allocation rules separately; the UI displays live count separately from capacity.
 
-Pixi orders living particles by Defold’s 16-bit remaining-lifetime key: longer remaining lifetimes draw first. Core sorts logical slot IDs every simulation step, including prewarm, using existing CPU lifetime metadata. Pixi uploads only the final order on each draw: one uint per living instance (4 bytes each), without moving simulation texels or reading the GPU. Expired entries use Defold’s forward swap-removal, births append in allocation order, and equal keys use the resulting logical index. Sorting costs O(live particles × log(live particles)) per simulation step; paused draws reuse the buffer. Emitters still draw in definition order.
+Pixi orders living particles by Defold’s 16-bit remaining-lifetime key: longer remaining lifetimes draw first. Core sorts logical slot IDs every simulation step, including prewarm, using existing CPU lifetime metadata. Pixi uploads only the final order on each draw: one uint per living instance (4 bytes each), without moving simulation texels or reading the GPU. Expired entries use Defold’s forward swap-removal, births append in allocation order, and equal keys use the resulting logical index. Stable two-pass radix sorting costs O(live particles + 256) per simulation step; paused draws reuse the buffer. Emitters still draw in definition order.
 
 Core owns simulation resources; the Pixi view owns its core emitter and drawing resources. Destroy the view before destroying the renderer. Core never destroys the host GL context. GPU.js canvas-size changes during compilation and GL-state restoration are handled at the integration boundary.
 
@@ -84,11 +86,11 @@ The overlay shows FPS, living particle count, frame interval, browser JS heap wh
 
 ## Authoring simulation behavior
 
-Edit ordinary TypeScript functions in `packages/core/src/behaviors/motion.ts` and `spawn.ts`. They have type checking, autocomplete and direct numerical tests. The `src/gpujs/integrate.ts` adapter handles the five-texel particle layout and calls those functions.
+Edit ordinary TypeScript functions in `packages/core/src/simulation/emission`, `simulation/modifiers`, and `simulation/particles`. They have type checking, autocomplete and direct numerical tests. The `src/simulation/kernels/integrate.ts` adapter handles the five-texel particle layout and calls those functions.
 
-Core uses its normal TypeScript package build. The package build compiles the numeric functions into tracked `src/gpujs/functions.json` source strings; consumers need no build plugin or minifier configuration. The demo imports the built packages in both development and production. `pnpm dev` builds the libraries before starting the demo. After library changes, rebuild them or run `pnpm --filter @reparticle/core exec tsdown --watch` and `pnpm --filter @reparticle/pixi exec tsdown --watch` in separate terminals.
+Core uses its normal TypeScript package build. The package build compiles the numeric functions into tracked `src/simulation/functions.json` source strings; consumers need no build plugin or minifier configuration. The demo imports the built packages in both development and production. `pnpm dev` builds the libraries before starting the demo. After library changes, rebuild them or run `pnpm --filter @reparticle/core exec tsdown --watch` and `pnpm --filter @reparticle/pixi exec tsdown --watch` in separate terminals.
 
-GPU.js compiles the packaged function strings at runtime, so the functions must stay within its supported numeric subset. Keep spawn locals in the separate `src/gpujs/spawn-motion.ts` helper: GPU.js can misidentify block-local variables when a minifier gives them the same name as a parameter. The current functions were checked under default Rolldown and Terser minification in a plain HTML page, including nonzero spawn velocity, gravity, reset, expiration, and playback GPU residency. New kernel changes should be checked in a minified browser build as well as unit tests.
+GPU.js compiles the packaged function strings at runtime, so the functions must stay within its supported numeric subset. Keep spawn locals in the separate `src/simulation/emission/motion.ts` helper: GPU.js can misidentify block-local variables when a minifier gives them the same name as a parameter. The current functions were checked under default Rolldown and Terser minification in a plain HTML page, including nonzero spawn velocity, gravity, reset, expiration, and playback GPU residency. New kernel changes should be checked in a minified browser build as well as unit tests.
 
 ## Effect configuration and runtime parameters
 
@@ -148,7 +150,7 @@ Numeric width/height updates affect future births without recompiling or clearin
 
 Core's package build compiles the typed GPU functions and kernels into JavaScript source strings before minification. The generated strings are bundled into `dist/index.js`; GPU.js compiles them on the device. Consumers do not need a build plugin or minifier settings. There is no runtime source rewriting.
 
-Edit the TypeScript behaviors and kernels, then rebuild core. `src/gpujs/functions.ts` lists the build inputs; `src/gpujs/functions.json` is committed so fresh checkouts have valid imports. Regenerate it rather than editing it by hand, and include its changes when committing kernel changes. Core's build command regenerates it automatically; typecheck and tests use the committed file.
+Edit the TypeScript behaviors and kernels, then rebuild core. `src/simulation/functions.ts` lists the build inputs; `src/simulation/functions.json` is committed so fresh checkouts have valid imports. Regenerate it rather than editing it by hand, and include its changes when committing kernel changes. Core's build command regenerates it automatically; typecheck and tests use the committed file.
 
 ### 2D cone emitter
 
