@@ -1,6 +1,6 @@
 import type { ParticleTexel } from '#types/layout.js';
 
-import { applyModifiers } from '../modifiers/apply-modifiers';
+import { applyModifiers } from '../modifiers/list';
 import { advanceRotation } from './angular-velocity';
 import { particleHeading } from './heading';
 

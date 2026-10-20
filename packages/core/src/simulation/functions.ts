@@ -12,8 +12,9 @@ export { sampleShape } from './emission/shape';
 export { spawnVariation, spawnDirection } from './emission/direction';
 
 export { applyAcceleration } from './modifiers/acceleration';
-export { applyDrag } from './modifiers/drag';
-export { applyModifiers } from './modifiers/apply-modifiers';
+export { applyDrag, applyDragVelocity } from './modifiers/drag';
+export { dispatchModifier } from './modifiers/dispatch';
+export { applyModifiers } from './modifiers/list';
 export { applyRadial } from './modifiers/radial';
 export { applyVortex } from './modifiers/vortex';
 

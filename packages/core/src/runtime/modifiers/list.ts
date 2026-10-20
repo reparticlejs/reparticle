@@ -27,7 +27,7 @@ export const MODIFIER_BUFFER_SIZE = HEADER_SIZE + MAX_MODIFIERS * MODIFIER_STRID
 
 // Buffer header: [active count, contains radial modifier]. Each entry stores:
 // [type, magnitude, spread, centerX, centerY, directionX, directionY, cutoff, directional].
-// This layout must match simulation/modifiers/apply-modifiers.ts.
+// This layout must match simulation/modifiers/dispatch.ts.
 
 /**
  * One authored scope of modifiers, validated and sampled at construction.

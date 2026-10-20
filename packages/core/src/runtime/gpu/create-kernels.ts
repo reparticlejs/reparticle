@@ -103,8 +103,10 @@ function registerSimulationFunctions(gpu: GPU): void {
   // Forces applied during integration
   gpu.addFunction(functions.applyAcceleration);
   gpu.addFunction(functions.applyDrag);
+  gpu.addFunction(functions.applyDragVelocity);
   gpu.addFunction(functions.applyRadial);
   gpu.addFunction(functions.applyVortex);
   gpu.addFunction(functions.applyModifiers);
+  gpu.addFunction(functions.dispatchModifier);
   gpu.addFunction(functions.integrateMotion);
 }

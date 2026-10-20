@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 
 import { ModifierSampler } from '#src/runtime/modifiers/sampler.js';
 import { EffectTransform } from '#src/runtime/transforms/effect.js';
-import { applyModifiers } from '#src/simulation/modifiers/apply-modifiers.js';
+import { applyModifiers } from '#src/simulation/modifiers/list.js';
 
 const identity = new EffectTransform();
 const sample = (local: unknown, shared: unknown = []) =>
