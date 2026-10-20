@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import type { curveSchema, scalarPropertySchema } from '../config/curve';
+import type { curveSchema, scalarPropertySchema } from '../config/schemas/curve';
 
 export type Curve = z.infer<typeof curveSchema>;
 export type CurvePoint = Curve['points'][number];

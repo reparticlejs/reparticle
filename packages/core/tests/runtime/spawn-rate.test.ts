@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
-import { parseEffectConfig } from '#src/config/effect.js';
+import { parseEffectConfig } from '#src/config/parse-effect.js';
 import { updateEmitterConfig } from '#src/config/update-emitter.js';
 import { EmitterPlayback } from '#src/runtime/emitter-playback.js';
 import { SpawnRate } from '#src/runtime/spawn-rate.js';

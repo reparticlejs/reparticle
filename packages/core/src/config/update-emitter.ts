@@ -1,6 +1,7 @@
 import type { EmitterConfig } from '#types/effect.js';
 
-import { emitterConfigSchema, emitterParametersSchema } from './schema';
+import { emitterConfigSchema } from './schemas/emitter';
+import { emitterParametersSchema } from './schemas/emitter-parameters';
 
 /** Validate the complete candidate before replacing runtime settings. */
 export function updateEmitterConfig(current: EmitterConfig, input: unknown): EmitterConfig {

@@ -1,7 +1,8 @@
 export { Emitter } from './runtime/emitter';
 export type { EmitterContext } from '#types/emitter.js';
-export { parseEffectConfig } from './config/effect';
-export { effectConfigSchema, emitterConfigSchema } from './config/schema';
+export { parseEffectConfig } from './config/parse-effect';
+export { effectConfigSchema } from './config/schemas/effect';
+export { emitterConfigSchema } from './config/schemas/emitter';
 export type { EffectConfig, EmitterConfig, EmitterParameters } from '#types/effect.js';
 
 export { EmitterPlayback } from './runtime/emitter-playback';

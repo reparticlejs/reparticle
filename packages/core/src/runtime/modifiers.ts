@@ -1,6 +1,6 @@
 import type { ModifierConfig } from '#types/effect.js';
 
-import { modifiersSchema } from '../config/schema';
+import { modifiersSchema } from '../config/schemas/modifiers';
 import { SampledCurve } from '../curves/sampled-curve';
 import type { EffectTransform } from './effect-transform';
 
