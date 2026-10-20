@@ -1,33 +1,61 @@
 import type { CurvePoint, ScalarProperty } from '#types/curve.js';
 
-function hermite(left: CurvePoint, right: CurvePoint, time: number): number {
-  const width = right.time - left.time;
-  const t = (time - left.time) / width;
-  const squared = t * t;
-  const cubed = squared * t;
+/**
+ * Blend two points using their values and slopes (cubic Hermite interpolation).
+ * Tangents are slopes per unit of curve time, so their contributions are scaled
+ * by the segment duration. Progress is not clamped, allowing extrapolation.
+ */
+function interpolateSegment(left: CurvePoint, right: CurvePoint, time: number): number {
+  const duration = right.time - left.time;
+  const progress = (time - left.time) / duration;
+  const squared = progress * progress;
+  const cubed = squared * progress;
+
+  const leftValueWeight = 2 * cubed - 3 * squared + 1;
+  const leftSlopeWeight = cubed - 2 * squared + progress;
+  const rightValueWeight = -2 * cubed + 3 * squared;
+  const rightSlopeWeight = cubed - squared;
+
   return (
-    (2 * cubed - 3 * squared + 1) * left.value +
-    (cubed - 2 * squared + t) * width * left.tangent +
-    (-2 * cubed + 3 * squared) * right.value +
-    (cubed - squared) * width * right.tangent
+    leftValueWeight * left.value +
+    leftSlopeWeight * duration * left.tangent +
+    rightValueWeight * right.value +
+    rightSlopeWeight * duration * right.tangent
   );
 }
 
-/** Hermite interpolation; endpoint segments also provide extrapolation. */
+/**
+ * Evaluate a constant or an authored curve at the supplied time.
+ *
+ * Expects validated data: at least one point, with strictly increasing times.
+ * A single point defines a straight line through its value with its tangent.
+ * Multiple points use the segment containing time, including its left endpoint.
+ * The final segment is the fallback when no earlier segment matches, including
+ * times before the first point or after the last. Neither time nor output is clamped.
+ */
 export function evaluateCurve(property: ScalarProperty, time: number): number {
   if (typeof property === 'number') {
     return property;
   }
+
   const points = property.points;
   const first = points[0]!;
+
   if (points.length === 1) {
-    return first.value + (time - first.time) * first.tangent;
+    const elapsed = time - first.time;
+    return first.value + elapsed * first.tangent;
   }
-  for (let index = 1; index < points.length; index++) {
+
+  const lastIndex = points.length - 1;
+  for (let index = 1; index < lastIndex; index++) {
+    const left = points[index - 1]!;
     const right = points[index]!;
-    if ((time >= points[index - 1]!.time && time < right.time) || index === points.length - 1) {
-      return hermite(points[index - 1]!, right, time);
+    const containsTime = time >= left.time && time < right.time;
+
+    if (containsTime) {
+      return interpolateSegment(left, right, time);
     }
   }
-  return first.value;
+
+  return interpolateSegment(points[lastIndex - 1]!, points[lastIndex]!, time);
 }
