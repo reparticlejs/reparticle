@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "slash_knife",
+      "capacity": 1,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "once",
+      "space": "world",
+      "emission": {
+        "rate": 1,
+        "shape": {
+          "type": "box",
+          "width": 0,
+          "height": 0
+        }
+      },
+      "initial": {
+        "lifetime": 0.8,
+        "speed": 0,
+        "size": 200,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1,
+        "rotation": 90,
+        "stretchX": 1
+      },
+      "overLifetime": {
+        "scale": 1,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": -0.015513,
+              "tangent": 0.5850961140250944
+            },
+            {
+              "time": 0.078723,
+              "value": 1.039916,
+              "tangent": 0.2865645233114523
+            },
+            {
+              "time": 0.286495,
+              "value": -0.014878,
+              "tangent": -0.27432560999573297
+            },
+            {
+              "time": 1,
+              "value": -0.015545,
+              "tangent": 0.000968074084037042
+            }
+          ]
+        },
+        "rotation": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": -908.6843469486133
+            },
+            {
+              "time": 1,
+              "value": -313.254,
+              "tangent": -106.08514432251656
+            }
+          ]
+        },
+        "stretchX": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 9.094018863104646
+            },
+            {
+              "time": 0.065958,
+              "value": 1.771697,
+              "tangent": 0.0
+            },
+            {
+              "time": 0.219149,
+              "value": -0.078695,
+              "tangent": -2.1039690452673363
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": -0.33204957691504294
+            }
+          ]
+        },
+        "stretchY": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.089688,
+              "tangent": 0.0
+            },
+            {
+              "time": 0.056029,
+              "value": 0.018768,
+              "tangent": 0.3460921492298287
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0.0
+            }
+          ]
+        }
+      },
+      "rendering": {
+        "blendMode": "add"
+      }
+    }
+  ]
+}

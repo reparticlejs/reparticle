@@ -13,7 +13,7 @@ Port each effect in the source README's order:
 - [x] Candle flame (`fire`)
 - [x] Loading (`loading`)
 - [x] Slash (`slash`)
-- [ ] Knife slash (`slash_knife`)
+- [x] Knife slash (`slash_knife`)
 - [ ] Smoke (`smoke`)
 - [ ] Twirl (`twirl`)
 - [ ] Fog (`fog`)
@@ -132,3 +132,17 @@ Alpha and both stretch curves retain all values and tangent slopes, including
 the steep stretch-Y tangents. Seed 1 uses Reparticle's random sequence.
 **Restart** replays the once-only effect; the original emission rate is retained,
 so the slash appears around one second after playback starts.
+
+## Knife slash
+
+`slash-knife.json` translates `assets/fx/slash_knife.particlefx`, reusing the
+original `circle-05-up.png` artwork. It retains one slot, once playback for
+1 second at 1 birth/second, lifetime 0.8 seconds, size 200, initial rotation
+90 degrees, initial stretch X=1, and additive blending. Omitted speed and box
+dimensions are explicitly zero: the texture rotates and stretches in place.
+
+Alpha, rotation, and both stretch curves retain their source values and tangent
+slopes, including negative alpha values and steep rotation tangents. The renderer
+clamps final opacity, leaving the underlying curve intact. **Restart** replays
+the brief visible sweep around one second after starting. Seed 1 and the shared
+gray background follow the other examples.
