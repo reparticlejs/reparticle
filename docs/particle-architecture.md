@@ -736,8 +736,8 @@ temporarily detaches the rendered subtree or overrides its root transform. This
 keeps world/local simulation coordinates separate from the requested projection.
 The prerender listener is removed when the view is destroyed.
 
-After drawing, only geometry, shader, texture and blend/depth state caches are
-reset; render-target and stencil stacks remain intact. After GPU.js simulation,
+Particle draws use Pixi's encoder and retain its geometry, shader, texture and
+blend/depth state caches for subsequent draws. After GPU.js simulation,
 its scissor test is disabled before the usual renderer state reset. Neither path
 reads GPU particle data. Bounds and filter areas remain explicitly caller-owned.
 Core configuration, simulation textures and particle slot allocation are unchanged.

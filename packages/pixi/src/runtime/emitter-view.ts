@@ -11,7 +11,6 @@ import {
 
 import { ParticleOrderBuffer } from '../rendering/order-buffer';
 import { resolveTint } from '../rendering/resolve-tint';
-import { restoreDrawState } from '../rendering/restore-draw-state';
 import { restoreSimulationState } from '../rendering/restore-simulation-state';
 import { createUniforms } from '../rendering/uniforms';
 import { vertex, fragment } from '../shaders/particle';
@@ -185,77 +184,73 @@ export class EmitterView {
     }
     const r = this.host,
       u = this.uniforms.uniforms;
-    try {
-      const count = this.order.update(this.emitter);
-      u.textureFlip.set(this.textureFlip);
-      u.particlePivot[0] = this.texturePivot.x;
-      u.particlePivot[1] = this.texturePivot.y;
-      u.automaticSize = this.automaticSize ? 1 : 0;
-      const animation = this.flipbook;
-      this.shader.resources.particles = this.particleSources.get(this.emitter.texture);
-      this.shader.resources.animationFrames = this.frameSource ?? Texture.EMPTY.source;
-      u.frameCount = animation?.frames.length ?? 0;
-      u.animationFps = animation?.fps ?? 0;
-      u.animationHalfStep = this.animationHalfStep;
-      u.animationOnce = animation?.once ? 1 : 0;
-      u.animationBackward = animation?.backward ? 1 : 0;
-      u.animationPingpong = animation?.pingpong ? 1 : 0;
-      const texture = this.artwork;
-      this.shader.resources.artwork = texture?.source ?? Texture.EMPTY.source;
-      u.textured = texture ? 1 : 0;
-      u.straightAlpha = texture?.source.alphaMode === 'no-premultiply-alpha' ? 1 : 0;
-      if (texture) {
-        const uv = texture.uvs;
-        u.frameTop[0] = uv.x0;
-        u.frameTop[1] = uv.y0;
-        u.frameTop[2] = uv.x1;
-        u.frameTop[3] = uv.y1;
-        u.frameBottom[0] = uv.x3;
-        u.frameBottom[1] = uv.y3;
-        u.frameBottom[2] = uv.x2;
-        u.frameBottom[3] = uv.y2;
-        const trim = texture.trim;
-        u.textureTrim[0] = trim ? trim.x / texture.orig.width : 0;
-        u.textureTrim[1] = trim ? trim.y / texture.orig.height : 0;
-        u.textureTrim[2] = trim ? trim.width / texture.orig.width : 1;
-        u.textureTrim[3] = trim ? trim.height / texture.orig.height : 1;
-        const longest = Math.max(texture.orig.width, texture.orig.height);
-        u.particleAspect[0] = animation?.aspect.x ?? texture.orig.width / longest;
-        u.particleAspect[1] = animation?.aspect.y ?? texture.orig.height / longest;
-      } else {
-        u.particleAspect[0] = 1;
-        u.particleAspect[1] = 1;
-        u.textureTrim[0] = 0;
-        u.textureTrim[1] = 0;
-        u.textureTrim[2] = 1;
-        u.textureTrim[3] = 1;
-      }
-      u.width = this.emitter.width;
-      u.rows = this.emitter.rows;
-      const localSpace = this.emitter.space === 'local';
-      u.stretchWithVelocity = this.emitter.stretchWithVelocity ? 1 : 0;
-      u.emitterScale = localSpace ? this.emitter.worldScale : 1;
-      u.emitterHandedness = localSpace ? this.emitter.worldHandedness : 1;
-      const radians = localSpace ? (-this.emitter.worldRotation * Math.PI) / 180 : 0;
-      u.emitterRotation[0] = Math.cos(radians);
-      u.emitterRotation[1] = Math.sin(radians);
-      u.emitterOffset[0] = localSpace ? this.emitter.worldX : 0;
-      u.emitterOffset[1] = localSpace ? this.emitter.worldY : 0;
-      transform.toArray(true, u.transform);
-
-      u.opacity = opacity;
-      const tint = this.currentTint;
-      u.tint[0] = tint.red;
-      u.tint[1] = tint.green;
-      u.tint[2] = tint.blue;
-      u.tint[3] = tint.alpha;
-      // Reuse the draw command; Pixi binds the shader, textures, geometry, and state.
-      this.state.blendMode = this.emitter.configuration.blendMode;
-      this.drawOptions.instanceCount = count;
-      r.encoder.draw(this.drawOptions);
-    } finally {
-      restoreDrawState(r);
+    const count = this.order.update(this.emitter);
+    u.textureFlip.set(this.textureFlip);
+    u.particlePivot[0] = this.texturePivot.x;
+    u.particlePivot[1] = this.texturePivot.y;
+    u.automaticSize = this.automaticSize ? 1 : 0;
+    const animation = this.flipbook;
+    this.shader.resources.particles = this.particleSources.get(this.emitter.texture);
+    this.shader.resources.animationFrames = this.frameSource ?? Texture.EMPTY.source;
+    u.frameCount = animation?.frames.length ?? 0;
+    u.animationFps = animation?.fps ?? 0;
+    u.animationHalfStep = this.animationHalfStep;
+    u.animationOnce = animation?.once ? 1 : 0;
+    u.animationBackward = animation?.backward ? 1 : 0;
+    u.animationPingpong = animation?.pingpong ? 1 : 0;
+    const texture = this.artwork;
+    this.shader.resources.artwork = texture?.source ?? Texture.EMPTY.source;
+    u.textured = texture ? 1 : 0;
+    u.straightAlpha = texture?.source.alphaMode === 'no-premultiply-alpha' ? 1 : 0;
+    if (texture) {
+      const uv = texture.uvs;
+      u.frameTop[0] = uv.x0;
+      u.frameTop[1] = uv.y0;
+      u.frameTop[2] = uv.x1;
+      u.frameTop[3] = uv.y1;
+      u.frameBottom[0] = uv.x3;
+      u.frameBottom[1] = uv.y3;
+      u.frameBottom[2] = uv.x2;
+      u.frameBottom[3] = uv.y2;
+      const trim = texture.trim;
+      u.textureTrim[0] = trim ? trim.x / texture.orig.width : 0;
+      u.textureTrim[1] = trim ? trim.y / texture.orig.height : 0;
+      u.textureTrim[2] = trim ? trim.width / texture.orig.width : 1;
+      u.textureTrim[3] = trim ? trim.height / texture.orig.height : 1;
+      const longest = Math.max(texture.orig.width, texture.orig.height);
+      u.particleAspect[0] = animation?.aspect.x ?? texture.orig.width / longest;
+      u.particleAspect[1] = animation?.aspect.y ?? texture.orig.height / longest;
+    } else {
+      u.particleAspect[0] = 1;
+      u.particleAspect[1] = 1;
+      u.textureTrim[0] = 0;
+      u.textureTrim[1] = 0;
+      u.textureTrim[2] = 1;
+      u.textureTrim[3] = 1;
     }
+    u.width = this.emitter.width;
+    u.rows = this.emitter.rows;
+    const localSpace = this.emitter.space === 'local';
+    u.stretchWithVelocity = this.emitter.stretchWithVelocity ? 1 : 0;
+    u.emitterScale = localSpace ? this.emitter.worldScale : 1;
+    u.emitterHandedness = localSpace ? this.emitter.worldHandedness : 1;
+    const radians = localSpace ? (-this.emitter.worldRotation * Math.PI) / 180 : 0;
+    u.emitterRotation[0] = Math.cos(radians);
+    u.emitterRotation[1] = Math.sin(radians);
+    u.emitterOffset[0] = localSpace ? this.emitter.worldX : 0;
+    u.emitterOffset[1] = localSpace ? this.emitter.worldY : 0;
+    transform.toArray(true, u.transform);
+
+    u.opacity = opacity;
+    const tint = this.currentTint;
+    u.tint[0] = tint.red;
+    u.tint[1] = tint.green;
+    u.tint[2] = tint.blue;
+    u.tint[3] = tint.alpha;
+    // Reuse the draw command; Pixi binds the shader, textures, geometry, and state.
+    this.state.blendMode = this.emitter.configuration.blendMode;
+    this.drawOptions.instanceCount = count;
+    r.encoder.draw(this.drawOptions);
   }
   public destroy(): void {
     if (this.disposed) {

@@ -93,6 +93,8 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
     try {
       for (const [id, emitter] of view.emitters) {
         emitter.initialize({ gl: this.renderer.gl, canvas: this.renderer.canvas });
+        // GPU.js initialization changes GL bindings before EmitterView binds its shader.
+        this.restoreState();
         resources.set(id, new EmitterView(this.renderer, emitter, view.getRendering(id)));
       }
       this.resources.set(view, resources);
