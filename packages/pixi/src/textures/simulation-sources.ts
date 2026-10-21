@@ -1,8 +1,18 @@
 import { ExternalSource, type WebGLRenderer } from 'pixi.js';
 
-/** Borrow GPU.js outputs without copying pixels or transferring texture ownership. */
+/**
+ * Adapt GPU.js simulation textures for Pixi's shader resources.
+ *
+ * GPU.js supplies raw WebGLTexture handles; Pixi binds them through ExternalSource.
+ * Each handle gets one cached wrapper, reused whenever that output becomes current.
+ * No particle data is copied, uploaded, or read back by this adapter.
+ *
+ * One emitter view owns this cache. GPU.js owns the underlying textures, and both
+ * libraries must use the same WebGL context. Width and height describe the full
+ * simulation texture, including every particle-state row band.
+ */
 export class SimulationSources {
-  private readonly sources = new Map<WebGLTexture, ExternalSource>();
+  private readonly sourcesByTexture = new Map<WebGLTexture, ExternalSource>();
 
   public constructor(
     private readonly renderer: WebGLRenderer,
@@ -11,31 +21,35 @@ export class SimulationSources {
   ) {}
 
   /**
-   * Each kernel keeps its output handle: initialization and the two update paths.
-   * Wrap each on first use, then reuse it. Distinct source identities let Pixi's
-   * binding cache follow texture switches without per-frame wrapper allocation.
+   * Return the cached source, creating it only on the handle's first use.
+   * Simulation reuses its initialization output and two alternating update outputs.
+   * Separate wrappers let Pixi detect texture switches through source identity.
    */
   public get(texture: WebGLTexture): ExternalSource {
-    let source = this.sources.get(texture);
-    if (!source) {
-      source = new ExternalSource({
-        resource: texture,
-        renderer: this.renderer,
-        width: this.width,
-        height: this.height,
-        label: 'particle simulation',
-      });
-      source.style.scaleMode = 'nearest';
-      this.sources.set(texture, source);
+    const cachedSource = this.sourcesByTexture.get(texture);
+    if (cachedSource) {
+      return cachedSource;
     }
+
+    const source = new ExternalSource({
+      resource: texture,
+      renderer: this.renderer,
+      width: this.width,
+      height: this.height,
+      label: 'particle simulation',
+    });
+    // Texels hold numeric particle state, so neighboring values must not be blended.
+    source.style.scaleMode = 'nearest';
+
+    this.sourcesByTexture.set(texture, source);
     return source;
   }
 
-  /** ExternalSource releases its wrapper; only GPU.js deletes the borrowed texture. */
+  /** Release Pixi wrappers when the emitter view is disposed; GPU.js deletes its own textures. */
   public destroy(): void {
-    for (const source of this.sources.values()) {
+    for (const source of this.sourcesByTexture.values()) {
       source.destroy();
     }
-    this.sources.clear();
+    this.sourcesByTexture.clear();
   }
 }
