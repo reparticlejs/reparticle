@@ -84,4 +84,12 @@ export const examples: readonly Example[] = [
     file: 'particle-examples/fog.json',
     artwork: { fog: { source: 'particle-examples/particle-blob.png' } },
   },
+  {
+    id: 'confetti',
+    name: 'Confetti',
+    file: 'particle-examples/confetti.json',
+    verticalPosition: 0,
+    fullWidth: true,
+    artwork: { emitter: { source: 'particle-examples/ta.png' } },
+  },
 ];

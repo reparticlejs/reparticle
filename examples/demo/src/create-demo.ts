@@ -63,11 +63,19 @@ export async function createDemo(host: HTMLDivElement, example: Example, signal:
     effect = particles;
     app.stage.addChild(particles);
 
-    function center() {
-      particles.position.set(app.screen.width / 2, app.screen.height * 0.7);
+    function layout() {
+      particles.position.set(
+        app.screen.width / 2,
+        app.screen.height * (example.verticalPosition ?? 0.7),
+      );
+      if (example.fullWidth) {
+        for (const emitter of particles.emitters.values()) {
+          emitter.setParameters({ emission: { shape: { width: app.screen.width } } });
+        }
+      }
     }
-    app.renderer.on('resize', center);
-    center();
+    app.renderer.on('resize', layout);
+    layout();
     host.appendChild(app.canvas);
     stats = createDemoStats(app, host, particles);
     app.start();

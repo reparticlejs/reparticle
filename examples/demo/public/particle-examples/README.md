@@ -17,7 +17,7 @@ Port each effect in the source README's order:
 - [x] Smoke (`smoke`)
 - [x] Twirl (`twirl`)
 - [x] Fog (`fog`)
-- [ ] Confetti (`confetti`)
+- [x] Confetti (`confetti`)
 
 ## Dust
 
@@ -185,3 +185,24 @@ values and tangent slopes, including negative samples. Playback loops with
 1-second duration and no prewarm. Capacity remains 32 even though rate × lifetime
 is 80: living particles are retained and excess births are dropped. Seed 1 and
 the shared gray background follow the other examples.
+
+## Confetti
+
+`confetti.json` adapts `assets/fx/confetti.particlefx`: 128 slots, a 1280×10
+box, 16 births/second, 5-second lifetime, size 20, zero initial speed, RGB spread,
+and initial rotation/spread of 360 degrees. Playback loops with duration 3 seconds.
+Default orientation is retained; the authored angular velocity is stored but not
+integrated. Rotation instead follows the original rotation-over-lifetime curve.
+
+The single alpha point retains its nonzero tangent, producing a linear fade-in;
+it must not become a constant zero. The rotation and stretch-Y curves preserve
+all values and slopes. Downward acceleration (-50 ± 10) precedes radial force
+(5 ± 20, radius 1500), with its center reflected to canvas Y=-214.
+
+The full-screen demo variant spawns at the top edge and updates box width to
+match the canvas on resize. It increases downward acceleration to -75 and adds
+40 units/second of initial downward speed (negative box speed). Lifetime is
+extended to 10 seconds so particles reach the bottom of tall canvases; capacity
+is raised to 256 to accommodate the longer fall. The original curves and color
+spread remain unchanged. It reuses CC0 `ta.png`, normal blending, seed 1, and
+the shared gray background.
