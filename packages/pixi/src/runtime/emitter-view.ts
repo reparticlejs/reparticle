@@ -241,17 +241,7 @@ export class EmitterView {
       u.emitterRotation[1] = Math.sin(radians);
       u.emitterOffset[0] = localSpace ? this.emitter.worldX : 0;
       u.emitterOffset[1] = localSpace ? this.emitter.worldY : 0;
-      const t = transform,
-        m = u.transform;
-      m[0] = t.a;
-      m[1] = t.b;
-      m[2] = 0;
-      m[3] = t.c;
-      m[4] = t.d;
-      m[5] = 0;
-      m[6] = t.tx;
-      m[7] = t.ty;
-      m[8] = 1;
+      transform.toArray(true, u.transform);
 
       u.opacity = opacity;
       const tint = this.currentTint;
