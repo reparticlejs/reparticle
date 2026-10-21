@@ -157,7 +157,8 @@
       ],
       "rendering": {
         "blendMode": "screen"
-      }
+      },
+      "startOffset": 4
     }
   ]
 }

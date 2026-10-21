@@ -68,7 +68,8 @@
       },
       "rendering": {
         "blendMode": "add"
-      }
+      },
+      "startOffset": 2.5
     }
   ]
 }

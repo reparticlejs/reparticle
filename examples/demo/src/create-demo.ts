@@ -66,7 +66,7 @@ export async function createDemo(host: HTMLDivElement, example: Example, signal:
     function layout() {
       particles.position.set(
         app.screen.width / 2,
-        app.screen.height * (example.verticalPosition ?? 0.7),
+        app.screen.height * (example.verticalPosition ?? 0.5),
       );
       if (example.fullWidth) {
         for (const emitter of particles.emitters.values()) {

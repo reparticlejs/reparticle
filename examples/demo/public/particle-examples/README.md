@@ -105,7 +105,9 @@ in Defold; the port sets it explicitly rather than taking Reparticle's default 1
 Size, red, green, and alpha curves retain all source values and tangent slopes.
 Upward acceleration 150 runs before drag 3; the acceleration's authored position
 has no effect on this uniform force. Playback loops with duration 1 second,
-using Reparticle seed 1. The common gray background is unchanged.
+using Reparticle seed 1. The demo adds a 2-second start offset (one particle
+lifetime) so the flame is fully developed on its first visible frame. The common
+gray background is unchanged.
 
 ## Loading
 
@@ -117,7 +119,9 @@ source values and tangent slopes, including the near-360-degree rotation.
 
 `circle-05-up.png` is an unmodified copy of `assets/img/particle/circle_05_up.png`
 from the CC0 source pack. This single atlas image rotates and fades; it is not a
-flipbook animation. Artwork stays in Pixi settings, with the shared gray background.
+flipbook animation. The demo adds a 2.5-second start offset (one particle lifetime)
+so the full spinner is visible immediately. Artwork stays in Pixi settings, with
+the shared gray background.
 
 ## Slash
 
@@ -158,7 +162,9 @@ All seven modifiers remain in authored order: upward acceleration 80, drag 3,
 radial force 36 ± 36 within 500 units, then four localized vortices. Vortex
 positions reflect source Y into canvas coordinates; strengths, spreads, and
 radii remain unchanged. These opposing vortices produce the swaying motion.
-Playback loops with duration 1 second and seed 1, on the shared gray background.
+Playback loops with duration 1 second and seed 1. The demo adds a 4-second start
+offset (one particle lifetime) so the smoke is fully developed immediately, on
+the shared gray background.
 
 ## Twirl
 
@@ -182,7 +188,8 @@ stretch values/spreads. Omitted speed is explicitly zero; no modifiers are added
 
 All seven alpha points and both six-point stretch curves retain their authored
 values and tangent slopes, including negative samples. Playback loops with
-1-second duration and no prewarm. Capacity remains 32 even though rate × lifetime
+1-second duration and a 10-second start offset (one particle lifetime) so the fog
+is already developed on its first visible frame. Capacity remains 32 even though rate × lifetime
 is 80: living particles are retained and excess births are dropped. Seed 1 and
 the shared gray background follow the other examples.
 
