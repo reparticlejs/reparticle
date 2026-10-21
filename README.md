@@ -67,11 +67,11 @@ import { Assets } from 'pixi.js';
 import { ParticleEffect } from '@reparticle/pixi';
 
 const definition = await fetch('/effect.json').then((response) => response.json());
-const particles = new ParticleEffect(definition);
+const particles = new ParticleEffect(definition, { emitters: {}, ticker: app.ticker });
 particles.texture = await Assets.load('/textures/spark.png');
 particles.emitter.setParameters({ initial: { size: 24 } }); // future births; longest edge
 app.stage.addChild(particles);
-app.ticker.add((ticker) => particles.update(Math.min(ticker.deltaMS / 1000, 0.05)));
+// The effect updates automatically before app.ticker renders.
 ```
 
 Use a WebGL renderer. Textures are ordinary Pixi `Texture` instances loaded through `Assets`. The example includes original SVG artwork rasterized by Pixi; PNG and other Pixi-supported image formats work through the same API. Images upload on first use, then the shader samples them directly on the GPU. Switching `particles.texture` changes the artwork for all particles without restarting simulation. Set it to `null` for the procedural circle.
@@ -494,3 +494,19 @@ A view stays attached to its first renderer: transferring live GPU state between
 ### Shared GPU texture sources
 
 Pixi wraps GPU.js output textures with `ExternalSource` and binds them through `Shader.resources`, alongside artwork and animation-frame metadata. Each kernel output gets one reusable wrapper on first use; paused draws and subsequent alternating updates reuse it. No pixel upload, copy, or readback is needed for simulation textures. Destroying a wrapper does not delete its borrowed texture; GPU.js retains ownership. Missing artwork and animation metadata bind Pixi’s empty texture.
+
+### Automatic and manual updates
+
+Effects default to `autoUpdate: true` on `Ticker.shared`. Pass `ticker: app.ticker`
+to follow your application's clock. Automatic updates use `ticker.deltaMS / 1000`
+and run at normal priority, before Pixi's application render listener.
+
+For your own simulation loop, pass `autoUpdate: false` and call
+`effect.update(seconds)` explicitly. Do not also advance an automatically updated
+effect manually, or it will advance twice. The demo uses manual updates for its
+pause controls, timestep limit and synchronized debugging statistics.
+
+Both `effect.autoUpdate` and `effect.ticker` can change at runtime. Switching
+tickers transfers the listener; disabling automatic updates or destroying the
+effect removes it. The effect never destroys its ticker. Updates still wait for
+the first render to initialize GPU resources.

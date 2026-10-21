@@ -15,7 +15,7 @@ export function createParticleEffect(
 ): ParticleEffect {
   const emitter = applyControls(definition, controls);
   const effect = { version: 1, emitters: [emitter], modifiers };
-  return new ParticleEffect(effect, textures[controls.texture]);
+  return new ParticleEffect(effect, { ...textures[controls.texture], autoUpdate: false });
 }
 
 /** Keeps the old view intact until its replacement is ready and attached. */

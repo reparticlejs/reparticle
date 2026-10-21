@@ -6,7 +6,15 @@ import {
   type EffectConfig,
   type StopOptions,
 } from '@reparticle/core';
-import { Matrix, ViewContainer, type Bounds, type PointData, type Texture } from 'pixi.js';
+import {
+  Matrix,
+  Ticker,
+  UPDATE_PRIORITY,
+  ViewContainer,
+  type Bounds,
+  type PointData,
+  type Texture,
+} from 'pixi.js';
 
 import type { ParticleEffectOptions } from '#types/particle-effect-options.js';
 import type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
@@ -28,20 +36,57 @@ export class ParticleEffect extends ViewContainer {
   private readonly sceneTransform = new Matrix();
   private readonly drawTransform = new Matrix();
   private pipe: ParticlePipe | null = null;
+  private currentTicker: Ticker;
+  private automaticUpdates = false;
+  private readonly tickListener: (ticker: Ticker) => void;
   private readonly renderingByEmitter = new Map<string, ParticleRendering>();
   private readonly defaultTints = new Map<string, ParticleTint>();
   private readonly simulations = new Map<string, Emitter>();
   private disposed = false;
   private readonly emitterStates = new Map<string, EmitterState>();
 
-  public constructor(
-    definition: unknown,
-    options: ParticleRendering | ParticleEffectOptions = { emitters: {} },
-  ) {
+  public constructor(definition: unknown, options: ParticleEffectOptions = { emitters: {} }) {
     super({});
     const effect = parseEffectConfig(definition);
     this.configureRendering(effect, options);
     this.createEmitters(effect);
+    this.tickListener = this.onTick.bind(this);
+    this.currentTicker = options.ticker ?? Ticker.shared;
+    this.autoUpdate = options.autoUpdate ?? true;
+  }
+
+  /** Disable automatic updates before driving update(seconds) yourself. */
+  public get autoUpdate(): boolean {
+    return this.automaticUpdates;
+  }
+
+  public set autoUpdate(enabled: boolean) {
+    if (this.disposed || enabled === this.automaticUpdates) {
+      return;
+    }
+    this.automaticUpdates = enabled;
+    if (enabled) {
+      // Normal updates run before Pixi's application render listener (LOW priority).
+      this.currentTicker.add(this.tickListener, this, UPDATE_PRIORITY.NORMAL);
+    } else {
+      this.currentTicker.remove(this.tickListener, this);
+    }
+  }
+
+  public get ticker(): Ticker {
+    return this.currentTicker;
+  }
+
+  /** Transfer the listener without starting, stopping or destroying either ticker. */
+  public set ticker(ticker: Ticker) {
+    if (this.disposed || ticker === this.currentTicker) {
+      return;
+    }
+    this.currentTicker.remove(this.tickListener, this);
+    this.currentTicker = ticker;
+    if (this.automaticUpdates) {
+      ticker.add(this.tickListener, this, UPDATE_PRIORITY.NORMAL);
+    }
   }
 
   /** Read-only lookup; use getEmitter to require a known ID. */
@@ -208,6 +253,7 @@ export class ParticleEffect extends ViewContainer {
       return;
     }
     this.pipe?.assertAvailable();
+    this.autoUpdate = false;
     this.disposed = true;
     this.pipe?.destroyRenderable(this);
     for (const emitter of this.simulations.values()) {
@@ -228,11 +274,13 @@ export class ParticleEffect extends ViewContainer {
     this.addBounds(this._bounds);
   }
 
+  /** Pixi deltaMS includes ticker speed and its configured elapsed-time limit. */
+  private onTick(ticker: Ticker): void {
+    this.update(ticker.deltaMS / 1000);
+  }
+
   /** Validate all artwork selections before creating core emitters. */
-  private configureRendering(
-    effect: EffectConfig,
-    options: ParticleRendering | ParticleEffectOptions,
-  ): void {
+  private configureRendering(effect: EffectConfig, options: ParticleEffectOptions): void {
     if ('emitters' in options) {
       const ids = new Set(effect.emitters.map((emitter) => emitter.id));
       for (const [id, rendering] of Object.entries(options.emitters)) {

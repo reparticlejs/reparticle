@@ -33,6 +33,7 @@ export async function createMultiplePreview(
       return null;
     }
     const view = new ParticleEffect(effect, {
+      autoUpdate: false,
       emitters: {
         smoke: { texture: null },
         fire: { texture: null },
