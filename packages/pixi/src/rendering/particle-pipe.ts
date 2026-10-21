@@ -6,7 +6,7 @@ import {
   type WebGLRenderer,
 } from 'pixi.js';
 
-import { EmitterView } from '../runtime/emitter-view';
+import { EmitterRenderer } from '../runtime/emitter-renderer';
 import { ParticleView } from '../runtime/particle-view';
 import { restoreSimulationState } from './restore-simulation-state';
 import { SimulationBoundary } from './simulation-boundary';
@@ -18,7 +18,7 @@ import { SimulationBoundary } from './simulation-boundary';
  * During rendering, insert particle draws into Pixi's instruction order so masks,
  * filters, and sibling layering remain under Pixi's control.
  *
- * The pipe owns EmitterView draw resources; ParticleView owns its core emitters.
+ * The pipe owns EmitterRenderer draw resources; ParticleView owns its core emitters.
  * Resources remain attached when a view leaves the stage, until the view or renderer
  * is destroyed. This lets initialized effects continue simulating while offstage.
  */
@@ -30,7 +30,7 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
   private readonly boundary: SimulationBoundary;
   private readonly assertContextAvailable: () => void;
   private readonly restoreContextState: () => void;
-  private readonly emittersByView = new Map<ParticleView, Map<string, EmitterView>>();
+  private readonly emittersByView = new Map<ParticleView, Map<string, EmitterRenderer>>();
 
   public constructor(private readonly renderer: WebGLRenderer) {
     // GPU.js changes framebuffers while compiling. Prepare before renderStart binds
@@ -70,14 +70,14 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
       return;
     }
 
-    const emitterViews = this.emittersByView.get(view);
-    if (emitterViews) {
-      view.draw(emitterViews);
+    const emitterRenderers = this.emittersByView.get(view);
+    if (emitterRenderers) {
+      view.draw(emitterRenderers);
     }
   }
 
   /** Undefined until the view's first render has prepared its resources. */
-  public getEmitterView(view: ParticleView, id: string): EmitterView | undefined {
+  public getEmitterRenderer(view: ParticleView, id: string): EmitterRenderer | undefined {
     return this.emittersByView.get(view)?.get(id);
   }
 
@@ -94,13 +94,13 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
   /** Release draw resources; ParticleView separately destroys its core simulations. */
   public destroyRenderable(view: ParticleView): void {
     this.assertAvailable();
-    const emitterViews = this.emittersByView.get(view);
-    if (!emitterViews) {
+    const emitterRenderers = this.emittersByView.get(view);
+    if (!emitterRenderers) {
       return;
     }
     this.emittersByView.delete(view);
-    for (const emitterView of emitterViews.values()) {
-      emitterView.destroy();
+    for (const emitterRenderer of emitterRenderers.values()) {
+      emitterRenderer.destroy();
     }
   }
 
@@ -130,7 +130,7 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
 
   /** Publish resources only after every emitter succeeds; dispose partial work on failure. */
   private initializeView(view: ParticleView): void {
-    const emitterViews = new Map<string, EmitterView>();
+    const emitterRenderers = new Map<string, EmitterRenderer>();
     try {
       for (const [id, emitter] of view.emitters) {
         emitter.initialize({
@@ -139,14 +139,17 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
           assertAvailable: this.assertContextAvailable,
           restoreState: this.restoreContextState,
         });
-        // GPU.js initialization changes GL bindings before EmitterView binds its shader.
+        // GPU.js initialization changes GL bindings before EmitterRenderer binds its shader.
         this.restoreState();
-        emitterViews.set(id, new EmitterView(this.renderer, emitter, view.getRendering(id)));
+        emitterRenderers.set(
+          id,
+          new EmitterRenderer(this.renderer, emitter, view.getRendering(id)),
+        );
       }
-      this.emittersByView.set(view, emitterViews);
+      this.emittersByView.set(view, emitterRenderers);
     } catch (error) {
-      for (const emitterView of emitterViews.values()) {
-        emitterView.destroy();
+      for (const emitterRenderer of emitterRenderers.values()) {
+        emitterRenderer.destroy();
       }
       view.destroy();
       throw error;

@@ -17,7 +17,7 @@ import { resolveFlipbook } from '../textures/resolve-flipbook';
 import { resolvePivot } from '../textures/resolve-pivot';
 import { resolveTexture } from '../textures/resolve-texture';
 import { resolveTextureFlip } from '../textures/resolve-texture-flip';
-import type { EmitterView } from './emitter-view';
+import type { EmitterRenderer } from './emitter-renderer';
 
 /** An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller. */
 export class ParticleView extends RenderContainer {
@@ -110,9 +110,9 @@ export class ParticleView extends RenderContainer {
   public play(): void {
     this.pipe?.assertAvailable();
     for (const emitter of this.simulations.values()) {
-      const view = this.pipe?.getEmitterView(this, emitter.id);
-      if (view) {
-        view.play();
+      const renderer = this.pipe?.getEmitterRenderer(this, emitter.id);
+      if (renderer) {
+        renderer.play();
       } else {
         emitter.play();
       }
@@ -128,9 +128,9 @@ export class ParticleView extends RenderContainer {
   public stop(options: StopOptions = {}): void {
     this.pipe?.assertAvailable();
     for (const emitter of this.simulations.values()) {
-      const view = this.pipe?.getEmitterView(this, emitter.id);
-      if (view) {
-        view.stop(options);
+      const renderer = this.pipe?.getEmitterRenderer(this, emitter.id);
+      if (renderer) {
+        renderer.stop(options);
       } else {
         emitter.stop(options);
       }
@@ -157,7 +157,7 @@ export class ParticleView extends RenderContainer {
   public setEmitterTint(id: string, tint: ParticleTint): void {
     const rendering = this.getRendering(id);
     const value = resolveTint(tint);
-    this.pipe?.getEmitterView(this, id)?.setTint(value);
+    this.pipe?.getEmitterRenderer(this, id)?.setTint(value);
     this.selections.set(id, { ...rendering, tint: value });
   }
 
@@ -179,7 +179,7 @@ export class ParticleView extends RenderContainer {
     if (!resolveFlipbook(options)) {
       resolveTexture(options);
     }
-    this.pipe?.getEmitterView(this, id)?.setTexture(options);
+    this.pipe?.getEmitterRenderer(this, id)?.setTexture(options);
     this.selections.set(id, { ...options, tint: resolveTint(rendering.tint) });
   }
 
@@ -210,9 +210,9 @@ export class ParticleView extends RenderContainer {
     this.pipe?.assertAvailable();
     this.syncSceneTransform();
     for (const emitter of this.simulations.values()) {
-      const view = this.pipe?.getEmitterView(this, emitter.id);
-      if (view) {
-        view.update(seconds);
+      const renderer = this.pipe?.getEmitterRenderer(this, emitter.id);
+      if (renderer) {
+        renderer.update(seconds);
       } else {
         emitter.update(seconds);
       }
@@ -222,9 +222,9 @@ export class ParticleView extends RenderContainer {
   public reset(): void {
     this.pipe?.assertAvailable();
     for (const emitter of this.simulations.values()) {
-      const view = this.pipe?.getEmitterView(this, emitter.id);
-      if (view) {
-        view.reset();
+      const renderer = this.pipe?.getEmitterRenderer(this, emitter.id);
+      if (renderer) {
+        renderer.reset();
       } else {
         emitter.reset();
       }
@@ -232,7 +232,7 @@ export class ParticleView extends RenderContainer {
   }
 
   /** @internal Invoked by the particle pipe inside Pixi's draw instruction sequence. */
-  public draw(views: ReadonlyMap<string, EmitterView>): void {
+  public draw(renderers: ReadonlyMap<string, EmitterRenderer>): void {
     // Particle positions already include the scene transform. Convert back to the
     // view's local coordinates, then use Pixi's current group and target transform.
     if (
@@ -250,8 +250,8 @@ export class ParticleView extends RenderContainer {
     }
     // A render-group root already contributes its tint and alpha through global uniforms.
     const relativeColor = this.renderGroup ? 0xffffffff : this.groupColorAlpha;
-    for (const view of views.values()) {
-      view.renderParticles(this.drawTransform, relativeColor);
+    for (const renderer of renderers.values()) {
+      renderer.renderParticles(this.drawTransform, relativeColor);
     }
   }
 
