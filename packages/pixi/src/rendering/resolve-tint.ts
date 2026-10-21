@@ -2,7 +2,7 @@ import type { ParticleTint } from '#types/particle-rendering.js';
 
 /**
  * Resolve a per-emitter RGBA multiplier. White with alpha 1 leaves colors unchanged.
- * This is separate from ParticleView.tint and inherited Pixi tint; the shader
+ * This is separate from ParticleEffect.tint and inherited Pixi tint; the shader
  * combines them with the particle's own color and artwork.
  *
  * Components must be finite, but are not clamped: negative and above-one values

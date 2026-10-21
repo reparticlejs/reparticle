@@ -24,7 +24,7 @@ Two timelines are distinct: emitter elapsed time controls emission and the initi
 
 Modifiers change velocity sequentially in authored array order: emitter-local entries first, then shared effect entries. Living-particle position advances once using the resulting velocity, as in Defold. Newborns age by the full simulation step and advance from their sampled birth position using the modified velocity, as in Defold.
 
-The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and loads through `ParticleView(definition)` or the core `Emitter` constructor after parsing. Unsupported fields, shapes, and versions fail explicitly. Effects accept one or more emitters with unique IDs.
+The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and loads through `ParticleEffect(definition)` or the core `Emitter` constructor after parsing. Unsupported fields, shapes, and versions fail explicitly. Effects accept one or more emitters with unique IDs.
 
 The required fields are `version`, the nonempty `emitters` list, and each emitter's
 `id`, `capacity`, `seed`, `emission.rate`, `emission.shape`, `initial.lifetime`,
@@ -186,9 +186,9 @@ Emitter `durationSpread` and `startDelaySpread` default to zero and are nonnegat
 
 Emitter shape dimensions accept either a number or an emitter-time Hermite curve: circle `diameter`, box/cone2d `width` and `height`. Each dimension has its own nonnegative spread (`diameterSpread`, `widthSpread`, `heightSpread`, default zero). Following Defold, curves are sampled at the current emitter age and independent signed spread is added per particle at birth, before shape position and direction are calculated. Signed dimensions are preserved, including negative curve samples and spread results. Point emitters have no size properties. Existing particles are unaffected. Numeric dimensions and spreads can change at runtime; replacing a curve requires recreation. GPU seed streams 12 and 13 provide independent X/Y variation without additional particle storage or readback. The demo provides separate dimension curves and spread controls.
 
-`inheritVelocity` defaults to zero and is a finite scalar that can be changed at runtime. Following [Defold](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp), emitter velocity is estimated as position delta divided by frame time, then multiplied by the inheritance factor and added to each newborn particle's configured velocity. The first position sample contributes zero velocity; reset clears motion history. Zero-time updates record position without recomputing velocity. Prewarm starts with zero inherited motion. Existing particles retain their velocity. Initial-direction orientation remains based on shape direction, while movement-direction orientation uses the resulting particle velocity. Motion is measured from the transformed emitter origin; ParticleView now includes its current Pixi parent hierarchy automatically. Inheritance applies only in world emission space; local space ignores the factor.
+`inheritVelocity` defaults to zero and is a finite scalar that can be changed at runtime. Following [Defold](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp), emitter velocity is estimated as position delta divided by frame time, then multiplied by the inheritance factor and added to each newborn particle's configured velocity. The first position sample contributes zero velocity; reset clears motion history. Zero-time updates record position without recomputing velocity. Prewarm starts with zero inherited motion. Existing particles retain their velocity. Initial-direction orientation remains based on shape direction, while movement-direction orientation uses the resulting particle velocity. Motion is measured from the transformed emitter origin; ParticleEffect now includes its current Pixi parent hierarchy automatically. Inheritance applies only in world emission space; local space ignores the factor.
 
-`space` selects `world` (default) or `local` and requires recreation to change. World particles capture the emitter position at birth and remain behind when `emitter.x/y` moves. Local particles simulate around the origin; the Pixi adapter adds the current emitter position at draw time, so existing particles follow even without another simulation step. Inheritance is ignored in local space, as in Defold. Emitter translation, rotation and uniform scale are supported. The ParticleView/parent Pixi transform now drives the shared simulation transform, so world particles stay behind and local particles follow. Gravity and particle orientation operate in the selected simulation space. No extra per-particle data or GPU readback is required. The demo exposes both modes and restarts when switching.
+`space` selects `world` (default) or `local` and requires recreation to change. World particles capture the emitter position at birth and remain behind when `emitter.x/y` moves. Local particles simulate around the origin; the Pixi adapter adds the current emitter position at draw time, so existing particles follow even without another simulation step. Inheritance is ignored in local space, as in Defold. Emitter translation, rotation and uniform scale are supported. The ParticleEffect/parent Pixi transform now drives the shared simulation transform, so world particles stay behind and local particles follow. Gravity and particle orientation operate in the selected simulation space. No extra per-particle data or GPU readback is required. The demo exposes both modes and restarts when switching.
 
 Top-level `rotation` sets emitter rotation in degrees, positive counterclockwise like Defold. It defaults to zero and supports numeric runtime updates or `emitter.rotation = degrees`. World-space births rotate shape offsets and configured velocities about the emitter before adding inherited world velocity. Default and initial-direction particle orientation include the emitter rotation at birth; movement-direction orientation uses the resulting velocity without adding the emitter angle twice. Existing world particles retain their state. Local-space particles keep local coordinates and the Pixi renderer rotates their positions and artwork using the current emitter rotation, including when simulation is paused. Particle `initial.rotation` and its curves remain independent. Gravity stays in the selected simulation coordinate system. The demo exposes an emitter rotation slider.
 
@@ -250,7 +250,7 @@ JSON. Load a Pixi spritesheet in the host, then select a named frame:
 
 ```ts
 const atlas = await Assets.load<Spritesheet>('textures/particles.json');
-const view = new ParticleView(effectConfig, { atlas, frame: 'star' });
+const view = new ParticleEffect(effectConfig, { atlas, frame: 'star' });
 view.setTexture({ atlas, frame: 'leaf' });
 ```
 
@@ -273,7 +273,7 @@ pass is added. The demo's three artwork choices now share `textures/particles.js
 Animation is also a Pixi texture option, never part of the core effect config:
 
 ```ts
-const view = new ParticleView(effectConfig, {
+const view = new ParticleEffect(effectConfig, {
   atlas,
   animation: 'flames', // name in atlas.animations
   playback: 'loop-forward',
@@ -322,7 +322,7 @@ finished once emitter does not stop looping siblings or remove its living partic
 Core validates the whole effect before any GPU allocation. Texture data stays in Pixi:
 
 ```ts
-const view = new ParticleView(effectConfig, {
+const view = new ParticleEffect(effectConfig, {
   emitters: {
     smoke: { texture: smokeTexture },
     fire: { atlas, animation: 'flames', playback: 'loop-forward', fps: 30 },
@@ -391,10 +391,10 @@ World-space emitters apply the effect transform; local-space emitters inverse-tr
 them by their origin, rotation, and scale. Moving an emitter does not move a shared
 radial/vortex center. Force and distance conversion preserves effect-space strength
 under local scale, including negative scale. A collapsed zero-scale local emitter
-skips shared forces because its transform has no inverse. ParticleView synchronizes the effect transform from its Pixi hierarchy automatically.
+skips shared forces because its transform has no inverse. ParticleEffect synchronizes the effect transform from its Pixi hierarchy automatically.
 
 Core's `Emitter` accepts the shared definition as its third argument:
-`new Emitter(context, effect.emitters[0], effect.modifiers)`. ParticleView passes it
+`new Emitter(context, effect.emitters[0], effect.modifiers)`. ParticleEffect passes it
 to every emitter automatically. Shared configuration is validated and sampled at
 construction; recreate the effect to change it. Per-emitter `configuration` and
 `setParameters` remain local and do not absorb or override the shared definition.
@@ -456,7 +456,7 @@ which may already be later in that sequence. Subscribers do not receive an initi
 snapshot. Listeners may unsubscribe or restart/destroy an emitter; destruction
 removes subscriptions without synthesizing a completion event.
 
-Pixi `ParticleView` emits `statechange` through its inherited event emitter. Use
+Pixi `ParticleEffect` emits `statechange` through its inherited event emitter. Use
 `on`, `once`, and `off` to manage subscriptions. Events include `emitterId`, `state`, and
 `awakeEmitters`. Pixi removes the listeners when the view is destroyed. Subscriptions
 follow Pixi's event semantics, including repeated registration of the same listener.
@@ -489,7 +489,7 @@ The demo's debug counter replays `ParticleSlots` with its own allocation metadat
 keeping admitted birth counts, seed progression, expiry, and lifecycle completion
 consistent without exposing a live-count instrumentation API on `Emitter`.
 
-`ParticleView` forwards controls to every emitter and forwards state events with
+`ParticleEffect` forwards controls to every emitter and forwards state events with
 `emitterId`, `state`, and the number of awake emitters at that transition.
 `awakeEmitters === 0` on a sleeping event signals whole-effect completion.
 Renderer state is restored before forwarding callbacks. Texture configuration
@@ -549,7 +549,7 @@ texture replacement. The demo includes a bottom-pivot leaf selection.
 
 ### Retire after the current cycle
 
-`Emitter.retire()` and `ParticleView.retire()` follow [Defold's RetireEmitter and
+`Emitter.retire()` and `ParticleEffect.retire()` follow [Defold's RetireEmitter and
 IsEmitterLooping](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp):
 set a retirement flag that disables looping without changing the timer, emission
 gate, particles, prewarm, or current state. Each emitter finishes its own sampled
@@ -592,7 +592,7 @@ transform and velocity inheritance as described below.
 Core `EffectTransform` owns finite runtime x/y, counterclockwise degree rotation,
 uniform scale and handedness (`1` or `-1`), with atomic partial `set()` and scalar
 accessors. Handedness reflects local X before rotation; identity is zero
-translation/rotation, scale one and handedness one. ParticleView shares one private instance with all
+translation/rotation, scale one and handedness one. ParticleEffect shares one private instance with all
 its emitters and synchronizes it from the Pixi scene hierarchy. Authored emitter positions remain relative
 to that effect. Transform composition scales and rotates the emitter origin before
 adding effect translation; world rotation is effect rotation plus handedness times
@@ -613,7 +613,7 @@ Initialization/reset clear velocity history, and pending prewarm uses the curren
 transform. Local inheritance stays disabled. Runtime values support zero and
 negative scale consistently with existing emitter transforms.
 
-ParticleView now owns the simulation transform privately and synchronizes it from
+ParticleEffect now owns the simulation transform privately and synchronizes it from
 `getGlobalTransform` before every update and draw. This computes current nested
 parent transforms even before Pixi's render traversal. Translation, rotation and
 uniform scale are decomposed into the core transform. Drawing uses an identity
@@ -628,7 +628,7 @@ before update. Reset/play retain scene placement and clear velocity history.
 All ancestors, including camera-style containers, are part of simulation world
 coordinates; old world particles do not follow later changes to those ancestors.
 The renderer supports rotation and equal-magnitude signed axis scales, including
-one-axis reflection on ParticleView or any ancestor. Non-uniform scale and skew
+one-axis reflection on ParticleEffect or any ancestor. Non-uniform scale and skew
 are rejected before simulation rather than silently approximated. Zero uniform
 scale is supported. Core-only callers may still supply their
 own shared EffectTransform. The composed demo now uses normal Pixi transforms.
@@ -788,7 +788,7 @@ order. No GPU readback or particle simulation change is involved.
 
 ### Pixi render pipe and initialization
 
-`ParticleView` is constructed with effect and rendering configuration only. Its CPU emitters are available immediately. `ParticlePipe` is a registered WebGL extension instantiated by Pixi with the renderer. It owns per-view drawing resources and inserts particle draw instructions between Pixi batch boundaries.
+`ParticleEffect` is constructed with effect and rendering configuration only. Its CPU emitters are available immediately. `ParticlePipe` is a registered WebGL extension instantiated by Pixi with the renderer. It owns per-view drawing resources and inserts particle draw instructions between Pixi batch boundaries.
 
 The pipe prepares particle views in the rendered subtree during `prerender`, before temporary root transforms, framebuffer binding, filters, or masks. This is necessary because GPU.js kernel compilation changes GL state. The draw instruction only renders existing textures; it never advances simulation.
 

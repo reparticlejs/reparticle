@@ -1,0 +1,320 @@
+import {
+  parseEffectConfig,
+  EffectTransform,
+  Emitter,
+  type EmitterState,
+  type EffectConfig,
+  type StopOptions,
+} from '@reparticle/core';
+import { Matrix, ViewContainer, type Bounds, type PointData, type Texture } from 'pixi.js';
+
+import type { ParticleEffectOptions } from '#types/particle-effect-options.js';
+import type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
+import type { ParticleTexture } from '#types/particle-texture.js';
+
+import type { ParticlePipe } from '../rendering/particle-pipe';
+import { resolveTint } from '../rendering/resolve-tint';
+import { resolveFlipbook } from '../textures/resolve-flipbook';
+import { resolvePivot } from '../textures/resolve-pivot';
+import { resolveTexture } from '../textures/resolve-texture';
+import { resolveTextureFlip } from '../textures/resolve-texture-flip';
+import type { EmitterRenderer } from './emitter-renderer';
+
+/** An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller. */
+export class ParticleEffect extends ViewContainer {
+  public override readonly renderPipeId = 'reparticle';
+  public readonly batched = false;
+  private readonly effectTransform = new EffectTransform();
+  private readonly sceneTransform = new Matrix();
+  private readonly drawTransform = new Matrix();
+  private pipe: ParticlePipe | null = null;
+  private readonly renderingByEmitter = new Map<string, ParticleRendering>();
+  private readonly defaultTints = new Map<string, ParticleTint>();
+  private readonly simulations = new Map<string, Emitter>();
+  private disposed = false;
+  private readonly emitterStates = new Map<string, EmitterState>();
+
+  public constructor(
+    definition: unknown,
+    options: ParticleRendering | ParticleEffectOptions = { emitters: {} },
+  ) {
+    super({});
+    const effect = parseEffectConfig(definition);
+    this.configureRendering(effect, options);
+    this.createEmitters(effect);
+  }
+
+  /** Read-only lookup; use getEmitter to require a known ID. */
+  public get emitters(): ReadonlyMap<string, Emitter> {
+    return this.simulations;
+  }
+
+  /** Single-emitter convenience; multi-emitter callers must select by ID. */
+  public get emitter(): Emitter {
+    return this.getEmitter(this.singleEmitterId);
+  }
+
+  public get texture(): Texture | null {
+    return this.getEmitterTexture(this.singleEmitterId);
+  }
+
+  public set texture(texture: Texture | null) {
+    this.setTexture({ texture });
+  }
+
+  public get awakeEmitters(): number {
+    let count = 0;
+    for (const state of this.emitterStates.values()) {
+      if (state !== 'sleeping') {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  public get isSleeping(): boolean {
+    return this.awakeEmitters === 0;
+  }
+
+  /** Override to supply local bounds; particle positions are never scanned or read back. */
+  public addBounds(_bounds: Bounds): void {}
+
+  /** Automatic particle hit testing is disabled; consumers can assign Pixi's hitArea. */
+  public override containsPoint(_point: PointData): boolean {
+    return false;
+  }
+
+  public play(): void {
+    this.pipe?.assertAvailable();
+    for (const emitter of this.simulations.values()) {
+      this.playbackFor(emitter).play();
+    }
+  }
+
+  public retire(): void {
+    for (const emitter of this.simulations.values()) {
+      emitter.retire();
+    }
+  }
+
+  public stop(options: StopOptions = {}): void {
+    this.pipe?.assertAvailable();
+    for (const emitter of this.simulations.values()) {
+      this.playbackFor(emitter).stop(options);
+    }
+  }
+
+  public clear(): void {
+    this.stop({ clear: true });
+  }
+
+  /** Advance initialized simulations. Playback waits for the first render. */
+  public update(seconds: number): void {
+    this.pipe?.assertAvailable();
+    this.syncSceneTransform();
+    for (const emitter of this.simulations.values()) {
+      this.playbackFor(emitter).update(seconds);
+    }
+  }
+
+  public reset(): void {
+    this.pipe?.assertAvailable();
+    for (const emitter of this.simulations.values()) {
+      this.playbackFor(emitter).reset();
+    }
+  }
+
+  public getEmitter(id: string): Emitter {
+    const emitter = this.simulations.get(id);
+    if (!emitter) {
+      throw new Error(`Unknown particle emitter: ${id}`);
+    }
+    return emitter;
+  }
+
+  public setEmitterTint(id: string, tint: ParticleTint): void {
+    const rendering = this.getRendering(id);
+    const value = resolveTint(tint);
+    this.pipe?.getEmitterRenderer(this, id)?.setTint(value);
+    this.renderingByEmitter.set(id, { ...rendering, tint: value });
+  }
+
+  public getEmitterTint(id: string): ParticleTint {
+    return { ...this.getRendering(id).tint! };
+  }
+
+  /** Remove the override and restore the authored rendering tint. */
+  public resetEmitterTint(id: string): void {
+    this.getEmitter(id);
+    this.setEmitterTint(id, this.defaultTints.get(id)!);
+  }
+
+  public setEmitterTexture(id: string, options: ParticleTexture): void {
+    this.pipe?.assertAvailable();
+    const rendering = this.getRendering(id);
+    this.validateTexture(options);
+    this.pipe?.getEmitterRenderer(this, id)?.setTexture(options);
+    this.renderingByEmitter.set(id, { ...options, tint: resolveTint(rendering.tint) });
+  }
+
+  public getEmitterTexture(id: string): Texture | null {
+    const rendering = this.getRendering(id);
+    return resolveFlipbook(rendering)?.frames[0] ?? resolveTexture(rendering);
+  }
+
+  public setTexture(options: ParticleTexture): void {
+    this.setEmitterTexture(this.singleEmitterId, options);
+  }
+
+  /** @internal Called before Pixi changes the rendered root's transform. */
+  public prepare(pipe: ParticlePipe): void {
+    if (this.pipe && this.pipe !== pipe) {
+      throw new Error('ParticleEffect cannot move between renderers');
+    }
+    this.syncSceneTransform();
+    this.pipe = pipe;
+  }
+
+  /** @internal Rendering configuration is independent of core simulation. */
+  public getRendering(id: string): ParticleRendering {
+    this.getEmitter(id);
+    return this.renderingByEmitter.get(id)!;
+  }
+
+  /** @internal Invoked by the particle pipe inside Pixi's draw instruction sequence. */
+  public draw(renderers: ReadonlyMap<string, EmitterRenderer>): void {
+    // Particle positions already include the scene transform. Convert back to the
+    // effect's local coordinates, then use Pixi's current group and target transform.
+    const { a, b, c, d } = this.sceneTransform;
+    const determinant = a * d - b * c;
+    if (determinant === 0) {
+      return;
+    }
+    this.drawTransform.copyFrom(this.sceneTransform).invert();
+    // An effect rendered as its own group has no transform relative to that group.
+    // Pixi may still retain its previous relative transform from a parent draw.
+    if (!this.renderGroup) {
+      this.drawTransform.prepend(this.relativeGroupTransform);
+    }
+    // A render-group root already contributes its tint and alpha through global uniforms.
+    const relativeColor = this.renderGroup ? 0xffffffff : this.groupColorAlpha;
+    for (const renderer of renderers.values()) {
+      renderer.renderParticles(this.drawTransform, relativeColor);
+    }
+  }
+
+  public override destroy(): void {
+    if (this.disposed) {
+      return;
+    }
+    this.pipe?.assertAvailable();
+    this.disposed = true;
+    this.pipe?.destroyRenderable(this);
+    for (const emitter of this.simulations.values()) {
+      emitter.destroy();
+    }
+    this.pipe?.restoreState();
+    this.pipe = null;
+    this.emitterStates.clear();
+    this.renderingByEmitter.clear();
+    this.defaultTints.clear();
+    this.simulations.clear();
+    super.destroy();
+  }
+
+  /** Rebuild only explicitly supplied bounds, preserving the empty default. */
+  protected override updateBounds(): void {
+    this._bounds.clear();
+    this.addBounds(this._bounds);
+  }
+
+  /** Validate all artwork selections before creating core emitters. */
+  private configureRendering(
+    effect: EffectConfig,
+    options: ParticleRendering | ParticleEffectOptions,
+  ): void {
+    if ('emitters' in options) {
+      const ids = new Set(effect.emitters.map((emitter) => emitter.id));
+      for (const [id, rendering] of Object.entries(options.emitters)) {
+        if (!ids.has(id)) {
+          throw new Error(`Unknown particle emitter: ${id}`);
+        }
+        this.renderingByEmitter.set(id, rendering);
+      }
+    } else {
+      if (effect.emitters.length !== 1) {
+        throw new Error('Select textures by emitter ID for a multi-emitter effect');
+      }
+      this.renderingByEmitter.set(effect.emitters[0].id, options);
+    }
+    // Validate every selection before allocating any emitter resources.
+    for (const rendering of this.renderingByEmitter.values()) {
+      resolveTint(rendering.tint);
+      this.validateTexture(rendering);
+    }
+  }
+
+  /** Validate artwork even when no renderer has been attached yet. */
+  private validateTexture(options: ParticleTexture): void {
+    resolvePivot(options.pivot);
+    resolveTextureFlip(options);
+    if (!resolveFlipbook(options)) {
+      resolveTexture(options);
+    }
+  }
+
+  /** Core emitters share the effect transform and report lifecycle changes through Pixi. */
+  private createEmitters(effect: EffectConfig): void {
+    for (const config of effect.emitters) {
+      const emitter = new Emitter(null, config, effect.modifiers, this.effectTransform);
+      const rendering = this.renderingByEmitter.get(emitter.id) ?? { texture: null };
+      const tint = resolveTint(rendering.tint);
+      this.renderingByEmitter.set(emitter.id, { ...rendering, tint });
+      this.defaultTints.set(emitter.id, tint);
+      this.simulations.set(emitter.id, emitter);
+      this.emitterStates.set(emitter.id, emitter.state);
+      emitter.onStateChange((event) => {
+        this.emitterStates.set(event.emitterId, event.state);
+        const change = { ...event, awakeEmitters: this.awakeEmitters };
+        this.emit('statechange', change);
+      });
+    }
+  }
+
+  /** Before first render only core exists; afterward the renderer also tracks animation timing. */
+  private playbackFor(emitter: Emitter): Emitter | EmitterRenderer {
+    return this.pipe?.getEmitterRenderer(this, emitter.id) ?? emitter;
+  }
+
+  /** Read the current hierarchy before simulation, even before Pixi's render traversal. */
+  private syncSceneTransform(): void {
+    const matrix = this.getGlobalTransform(this.sceneTransform);
+    const scale = Math.hypot(matrix.a, matrix.b);
+    // Decompose as rotation × uniform scale × optional local-X reflection.
+    const handedness = matrix.a * matrix.d - matrix.b * matrix.c < 0 ? -1 : 1;
+    const tolerance = 1e-6 * Math.max(1, scale);
+    const expectedC = -matrix.b * handedness;
+    const expectedD = matrix.a * handedness;
+    const uniformScale =
+      Math.abs(matrix.c - expectedC) <= tolerance && Math.abs(matrix.d - expectedD) <= tolerance;
+    if (!uniformScale) {
+      throw new Error(
+        'ParticleEffect requires equal-magnitude scene scale on both axes without skew',
+      );
+    }
+    this.effectTransform.set({
+      x: matrix.tx,
+      y: matrix.ty,
+      rotation: (-Math.atan2(matrix.b * handedness, matrix.a * handedness) * 180) / Math.PI,
+      scale,
+      handedness,
+    });
+  }
+
+  private get singleEmitterId(): string {
+    if (this.simulations.size !== 1) {
+      throw new Error('Select an emitter by ID for a multi-emitter effect');
+    }
+    return this.simulations.keys().next().value!;
+  }
+}

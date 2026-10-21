@@ -1,5 +1,5 @@
 import type { Transform } from '@reparticle/core';
-import { ParticleView, type ParticleTint, type ParticleStateListener } from '@reparticle/pixi';
+import { ParticleEffect, type ParticleTint, type ParticleStateListener } from '@reparticle/pixi';
 import { Application, Assets, type Spritesheet, type WebGLRenderer } from 'pixi.js';
 
 import { destroyApplication } from './destroy-application';
@@ -32,7 +32,7 @@ export async function createMultiplePreview(
     if (signal.aborted) {
       return null;
     }
-    const view = new ParticleView(effect, {
+    const view = new ParticleEffect(effect, {
       emitters: {
         smoke: { texture: null },
         fire: { texture: null },

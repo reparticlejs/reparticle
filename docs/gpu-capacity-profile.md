@@ -29,7 +29,7 @@ radix ordering, and GPU.js submission. CPU rendering includes draw-order upload 
 Pixi submission. The CPU live-count check is outside both timed sections.
 
 No particle data, buffers, or framebuffer pixels are read back. `readPixels` and
-`getBufferSubData` are trapped after Pixi initialization, including ParticleView
+`getBufferSubData` are trapped after Pixi initialization, including ParticleEffect
 creation and all benchmark steps. **Zero calls, zero GL errors, no disjoint or
 missing queries.** Reading timer-query results retrieves timing metadata only.
 

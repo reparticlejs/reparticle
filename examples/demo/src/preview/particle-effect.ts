@@ -1,5 +1,5 @@
 import type { EmitterConfig, ModifierConfig } from '@reparticle/core';
-import { ParticleView } from '@reparticle/pixi';
+import { ParticleEffect } from '@reparticle/pixi';
 import type { Application, WebGLRenderer } from 'pixi.js';
 
 import type { PreviewControls } from '../types/preview';
@@ -7,27 +7,27 @@ import type { PreviewAssets } from '../types/preview-scene';
 import { applyControls } from './apply-controls';
 
 /** Creates a configured view without transferring ownership to the stage. */
-export function createParticleView(
+export function createParticleEffect(
   definition: EmitterConfig,
   textures: PreviewAssets['textures'],
   controls: PreviewControls,
   modifiers?: ModifierConfig[],
-): ParticleView {
+): ParticleEffect {
   const emitter = applyControls(definition, controls);
   const effect = { version: 1, emitters: [emitter], modifiers };
-  return new ParticleView(effect, textures[controls.texture]);
+  return new ParticleEffect(effect, textures[controls.texture]);
 }
 
 /** Keeps the old view intact until its replacement is ready and attached. */
-export function replaceParticleView(
+export function replaceParticleEffect(
   app: Application<WebGLRenderer>,
-  current: ParticleView,
+  current: ParticleEffect,
   textures: PreviewAssets['textures'],
   controls: PreviewControls,
   definition: EmitterConfig,
   modifiers?: ModifierConfig[],
-): ParticleView {
-  const replacement = createParticleView(definition, textures, controls, modifiers);
+): ParticleEffect {
+  const replacement = createParticleEffect(definition, textures, controls, modifiers);
   try {
     replacement.emitter.x = current.emitter.x;
     replacement.emitter.y = current.emitter.y;

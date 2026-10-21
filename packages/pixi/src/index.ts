@@ -5,7 +5,7 @@ import { ParticlePipe } from './rendering/particle-pipe';
 extensions.add(ParticlePipe);
 
 // Effect display object.
-export { ParticleView } from './runtime/particle-view';
+export { ParticleEffect } from './runtime/particle-effect';
 
 // Renderer configuration and lifecycle events.
 export type {
@@ -17,4 +17,4 @@ export type {
 } from '#types/particle-texture.js';
 export type { ParticleStateChange, ParticleStateListener } from '#types/particle-state-change.js';
 export type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
-export type { ParticleViewOptions } from '#types/particle-view-options.js';
+export type { ParticleEffectOptions } from '#types/particle-effect-options.js';

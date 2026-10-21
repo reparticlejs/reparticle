@@ -1,13 +1,13 @@
-import type { ParticleView } from '@reparticle/pixi';
+import type { ParticleEffect } from '@reparticle/pixi';
 import type { Application, WebGLRenderer } from 'pixi.js';
 
 import type { PreviewControls } from '../types/preview';
 import type { PreviewAssets } from '../types/preview-scene';
 import { initialControls, emitterParameters } from './apply-controls';
-import { createParticleView, replaceParticleView } from './particle-view';
+import { createParticleEffect, replaceParticleEffect } from './particle-effect';
 
 export class PreviewScene {
-  private view: ParticleView;
+  private view: ParticleEffect;
   private settings: PreviewControls;
   private destroyed = false;
 
@@ -18,7 +18,7 @@ export class PreviewScene {
   ) {
     const definition = assets.effect.emitters[0];
     this.settings = initialControls(definition);
-    this.view = createParticleView(
+    this.view = createParticleEffect(
       definition,
       assets.textures,
       this.settings,
@@ -107,7 +107,7 @@ export class PreviewScene {
       next.startDelaySpread !== this.settings.startDelaySpread ||
       next.playMode !== this.settings.playMode
     ) {
-      this.view = replaceParticleView(
+      this.view = replaceParticleEffect(
         this.app,
         this.view,
         this.assets.textures,

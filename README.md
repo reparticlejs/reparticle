@@ -64,10 +64,10 @@ The shared-context/ping-pong integration was adapted from the local GPU.js–Pix
 
 ```ts
 import { Assets } from 'pixi.js';
-import { ParticleView } from '@reparticle/pixi';
+import { ParticleEffect } from '@reparticle/pixi';
 
 const definition = await fetch('/effect.json').then((response) => response.json());
-const particles = new ParticleView(definition);
+const particles = new ParticleEffect(definition);
 particles.texture = await Assets.load('/textures/spark.png');
 particles.emitter.setParameters({ initial: { size: 24 } }); // future births; longest edge
 app.stage.addChild(particles);
@@ -94,7 +94,7 @@ GPU.js compiles the packaged function strings at runtime, so the functions must 
 
 ## Effect configuration and runtime parameters
 
-Pass an effect JSON object to `new ParticleView(definition)`. Validation happens before GPU allocation. See [the JSON skeleton](docs/effect.example.json); the demo loads `examples/demo/public/effect.json`. Core-only consumers can pass `parseEffectConfig(definition).emitters[0]` to `new Emitter({ gl, canvas }, emitterDefinition)`.
+Pass an effect JSON object to `new ParticleEffect(definition)`. Validation happens before GPU allocation. See [the JSON skeleton](docs/effect.example.json); the demo loads `examples/demo/public/effect.json`. Core-only consumers can pass `parseEffectConfig(definition).emitters[0]` to `new Emitter({ gl, canvas }, emitterDefinition)`.
 
 ```ts
 particles.emitter.setParameters({ emission: { rate: 1500 } });
@@ -112,7 +112,7 @@ Updates are validated atomically. Capacity, seed, ID and shape type cannot be ch
 
 ## Demo UI
 
-The demo uses React with the official Vite React plugin. `src/app.tsx` owns UI settings and status. `App` creates a shared preview controller. UI event handlers call its setControls/reset commands, and `ParticlePreview` uses `useEmitterDrag` to forward press-and-drag movement to it. `usePreviewRenderer` mounts the renderer, attaches it to the controller, then detaches and destroys it on cleanup. Only `useMountEffect` imports `useEffect`; settings are applied directly from events. `EmitterControls` edits settings, and `PreviewStatus` displays status and errors. `src/preview/create-preview.ts` assembles the Pixi application, scene, ticker, and cleanup. `load-preview-assets.ts` loads JSON and textures; `PreviewScene` manages scene settings and movement; `particle-view.ts` creates and replaces views; `devtools/create-preview-stats.ts` owns stats and debug counting. Types live in `src/types`; tests live in `tests`. React dependencies belong only to the demo.
+The demo uses React with the official Vite React plugin. `src/app.tsx` owns UI settings and status. `App` creates a shared preview controller. UI event handlers call its setControls/reset commands, and `ParticlePreview` uses `useEmitterDrag` to forward press-and-drag movement to it. `usePreviewRenderer` mounts the renderer, attaches it to the controller, then detaches and destroys it on cleanup. Only `useMountEffect` imports `useEffect`; settings are applied directly from events. `EmitterControls` edits settings, and `PreviewStatus` displays status and errors. `src/preview/create-preview.ts` assembles the Pixi application, scene, ticker, and cleanup. `load-preview-assets.ts` loads JSON and textures; `PreviewScene` manages scene settings and movement; `particle-effect.ts` creates and replaces views; `devtools/create-preview-stats.ts` owns stats and debug counting. Types live in `src/types`; tests live in `tests`. React dependencies belong only to the demo.
 
 GPU updates run on Pixi's ticker without React state updates per frame. Controls are disabled until asynchronous initialization succeeds. Unmounting, Strict Mode remounts, failed startup, and hot reload release the owned GPU scene and stats. Shared artwork remains owned by Pixi's asset cache.
 
@@ -206,7 +206,7 @@ Points must be ordered with unique times in `[0, 1]`. Each `tangent` is a slope 
 
 Like Defold, curves are baked into 64 linear segments. Pixi uploads the 65 endpoint samples once when creating a view and evaluates the curve in the vertex shader. Initial size occupies the third properties channel, with no extra simulation pass or readback. Curve changes require recreation. The demo offers the JSON curve, constant scale, shrink, and grow-then-shrink presets.
 
-This implements scalar initial size and lifetime scale. Initial-size spread, emitter-time size curves, and automatic animated-frame sizing remain separate features. The former `ParticleView.particleSize` renderer override is replaced by `initial.size` in configuration or `emitter.setParameters`.
+This implements scalar initial size and lifetime scale. Initial-size spread, emitter-time size curves, and automatic animated-frame sizing remain separate features. The former `ParticleEffect.particleSize` renderer override is replaced by `initial.size` in configuration or `emitter.setParameters`.
 
 References: [Defold particle properties](https://defold.com/manuals/particlefx/#keyable-emitter-properties), [Hermite curve sampling](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L120-L175), and [64-segment resolution](https://github.com/defold/defold/blob/dev/engine/particle/src/particle_private.h#L27).
 
@@ -402,7 +402,7 @@ rocket.x += speed * seconds;
 view.update(seconds);
 ```
 
-ParticleView automatically reads the current Pixi parent hierarchy before
+ParticleEffect automatically reads the current Pixi parent hierarchy before
 simulation. World-space particles stay behind; new births follow the rocket.
 Local-space particles follow the current hierarchy, including while paused.
 Position, rotation, uniform scale (including X/Y flips) and pivot offsets compose normally through
@@ -434,7 +434,7 @@ fourth constructor argument. Pixi manages this runtime transform internally.
 Tint belongs to Pixi rendering options, separately from the core effect definition:
 
 ```ts
-const particles = new ParticleView(effect, {
+const particles = new ParticleEffect(effect, {
   emitters: {
     fire: { texture: null, tint: { red: 1, green: 0.8, blue: 0.5, alpha: 1 } },
   },
@@ -451,7 +451,7 @@ The multiple-emitter demo includes fire-only RGBA controls.
 
 ## Pixi filters, masks, and render textures
 
-`ParticleView` uses Pixi’s active render target, projection, filter offset and mask
+`ParticleEffect` uses Pixi’s active render target, projection, filter offset and mask
 state. Filters and masks can be assigned to the view or its parent, including
 nested combinations. These are Pixi settings, not core effect JSON properties.
 
@@ -485,7 +485,7 @@ and render textures according to their normal Pixi ownership rules.
 
 ### Renderer-free construction
 
-`new ParticleView(effect, renderingOptions)` validates configuration and creates CPU emitter controls without a renderer. Importing `@reparticle/pixi` registers its WebGL particle pipe with Pixi. On the first render, the pipe attaches the renderer’s shared context and prepares GPU.js before Pixi binds the render target.
+`new ParticleEffect(effect, renderingOptions)` validates configuration and creates CPU emitter controls without a renderer. Importing `@reparticle/pixi` registers its WebGL particle pipe with Pixi. On the first render, the pipe attaches the renderer’s shared context and prepares GPU.js before Pixi binds the render target.
 
 Emitter access, parameter changes, texture/tint changes, and playback controls work immediately. `update(seconds)` validates its input but does not advance playback until that first render; it does not queue elapsed time. Afterwards, updates run independently of rendering, including when the view is offstage. Start offset/prewarm runs on the first positive update after initialization. GPU texture access before initialization throws.
 

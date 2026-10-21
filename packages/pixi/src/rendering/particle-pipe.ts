@@ -7,22 +7,22 @@ import {
 } from 'pixi.js';
 
 import { EmitterRenderer } from '../runtime/emitter-renderer';
-import { ParticleView } from '../runtime/particle-view';
+import { ParticleEffect } from '../runtime/particle-effect';
 import { restoreSimulationState } from './restore-simulation-state';
 import { SimulationBoundary } from './simulation-boundary';
 
 /**
- * Connect ParticleView to one Pixi WebGL renderer.
+ * Connect ParticleEffect to one Pixi WebGL renderer.
  *
  * Before rendering, capture scene transforms and initialize each view's GPU resources.
  * During rendering, insert particle draws into Pixi's instruction order so masks,
  * filters, and sibling layering remain under Pixi's control.
  *
- * The pipe owns EmitterRenderer draw resources; ParticleView owns its core emitters.
+ * The pipe owns EmitterRenderer draw resources; ParticleEffect owns its core emitters.
  * Resources remain attached when a view leaves the stage, until the view or renderer
  * is destroyed. This lets initialized effects continue simulating while offstage.
  */
-export class ParticlePipe implements RenderPipe<ParticleView> {
+export class ParticlePipe implements RenderPipe<ParticleEffect> {
   public static readonly extension = {
     type: ExtensionType.WebGLPipes,
     name: 'reparticle',
@@ -30,7 +30,7 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
   private readonly boundary: SimulationBoundary;
   private readonly assertContextAvailable: () => void;
   private readonly restoreContextState: () => void;
-  private readonly emittersByView = new Map<ParticleView, Map<string, EmitterRenderer>>();
+  private readonly emittersByView = new Map<ParticleEffect, Map<string, EmitterRenderer>>();
 
   public constructor(private readonly renderer: WebGLRenderer) {
     // GPU.js changes framebuffers while compiling. Prepare before renderStart binds
@@ -52,7 +52,7 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
   }
 
   /** Finish pending sprite batches before inserting the particle draw. */
-  public addRenderable(view: ParticleView, instructions: InstructionSet): void {
+  public addRenderable(view: ParticleEffect, instructions: InstructionSet): void {
     this.renderer.renderPipes.batch.break(instructions);
     instructions.add(view);
   }
@@ -65,7 +65,7 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
     return false;
   }
 
-  public execute(view: ParticleView): void {
+  public execute(view: ParticleEffect): void {
     if (!view.isRenderable) {
       return;
     }
@@ -77,7 +77,7 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
   }
 
   /** Undefined until the view's first render has prepared its resources. */
-  public getEmitterRenderer(view: ParticleView, id: string): EmitterRenderer | undefined {
+  public getEmitterRenderer(view: ParticleEffect, id: string): EmitterRenderer | undefined {
     return this.emittersByView.get(view)?.get(id);
   }
 
@@ -91,8 +91,8 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
     restoreSimulationState(this.renderer);
   }
 
-  /** Release draw resources; ParticleView separately destroys its core simulations. */
-  public destroyRenderable(view: ParticleView): void {
+  /** Release draw resources; ParticleEffect separately destroys its core simulations. */
+  public destroyRenderable(view: ParticleEffect): void {
     this.assertAvailable();
     const emitterRenderers = this.emittersByView.get(view);
     if (!emitterRenderers) {
@@ -117,7 +117,7 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
   }
 
   private prepareSubtree(container: Container): void {
-    if (container instanceof ParticleView) {
+    if (container instanceof ParticleEffect) {
       container.prepare(this);
       if (!this.emittersByView.has(container)) {
         this.initializeView(container);
@@ -129,7 +129,7 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
   }
 
   /** Publish resources only after every emitter succeeds; dispose partial work on failure. */
-  private initializeView(view: ParticleView): void {
+  private initializeView(view: ParticleEffect): void {
     const emitterRenderers = new Map<string, EmitterRenderer>();
     try {
       for (const [id, emitter] of view.emitters) {
