@@ -750,6 +750,22 @@ its scissor test is disabled before the usual renderer state reset. Neither path
 reads GPU particle data. Bounds and filter areas remain explicitly caller-owned.
 Core configuration, simulation textures and particle slot allocation are unchanged.
 
+Simulation operations must finish before rendering starts. The particle pipe wraps
+its renderer's `render()` call with a guard cleared in `finally`, because Pixi does
+not emit `postrender` when rendering throws. Its own prerender preparation is the
+only initialization window inside that call. Nested calls to the same renderer's
+`render()` are rejected before entering Pixi.
+
+During rendering, particle update/play/reset/stop/clear, texture replacement, and
+destruction throw before changing resources. The borrowed core `EmitterContext`
+also supplies `assertAvailable` and `restoreState` callbacks, protecting direct
+`view.emitter` operations without importing Pixi into core. Rejected operations do
+not run a reset in a `finally` block. Completed or failed GPU work restores state
+before lifecycle notifications; a state listener may then render synchronously.
+These callbacks are optional for other core consumers. CPU-only parameter and tint
+changes do not run GPU.js. The guard does not repair Pixi's own partially completed
+render pass if unrelated rendering code throws.
+
 ### Artwork flipping (Pixi only)
 
 `ParticleTexture.flipX` and `flipY` are validated booleans, default false.

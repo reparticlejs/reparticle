@@ -146,40 +146,26 @@ export class EmitterView {
     this.artwork = texture;
   }
   public update(dt: number): void {
-    try {
-      this.emitter.update(dt);
-      if (dt > 0 && Number.isFinite(dt)) {
-        this.animationHalfStep = dt * 0.5;
-      }
-    } finally {
-      restoreSimulationState(this.host);
+    this.emitter.update(dt);
+    if (dt > 0 && Number.isFinite(dt)) {
+      this.animationHalfStep = dt * 0.5;
     }
   }
+
   public play(): void {
-    try {
-      this.emitter.play();
-      this.animationHalfStep = 0;
-    } finally {
-      restoreSimulationState(this.host);
-    }
+    this.emitter.play();
+    this.animationHalfStep = 0;
   }
 
   public stop(options: StopOptions): void {
-    try {
-      this.emitter.stop(options);
-    } finally {
-      restoreSimulationState(this.host);
-    }
+    this.emitter.stop(options);
   }
 
   public reset(): void {
-    try {
-      this.emitter.reset();
-      this.animationHalfStep = 0;
-    } finally {
-      restoreSimulationState(this.host);
-    }
+    this.emitter.reset();
+    this.animationHalfStep = 0;
   }
+
   public renderParticles(transform: Matrix, displayColor: number): void {
     if (this.disposed || this.emitter.state === 'sleeping') {
       return;

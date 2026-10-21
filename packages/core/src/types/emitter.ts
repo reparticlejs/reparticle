@@ -11,6 +11,12 @@ export interface EmitterContext {
 
   /** Canvas belonging to gl, passed to GPU.js and preserved across kernel compilation. */
   canvas: HTMLCanvasElement;
+
+  /** Optional host guard, called before simulation operations mutate CPU or GPU state. */
+  assertAvailable?: () => void;
+
+  /** Restore the host's graphics state after GPU work, including failures, before notifications. */
+  restoreState?: () => void;
 }
 
 /**

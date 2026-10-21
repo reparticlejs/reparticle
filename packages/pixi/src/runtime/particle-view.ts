@@ -71,7 +71,6 @@ export class ParticleView extends RenderContainer {
       this.simulations.set(emitter.id, emitter);
       this.states.set(emitter.id, emitter.state);
       emitter.onStateChange((event) => {
-        this.pipe?.restoreState();
         this.states.set(event.emitterId, event.state);
         const change = { ...event, awakeEmitters: this.awakeEmitters };
         this.emit('statechange', change);
@@ -109,6 +108,7 @@ export class ParticleView extends RenderContainer {
   }
 
   public play(): void {
+    this.pipe?.assertAvailable();
     for (const emitter of this.simulations.values()) {
       const view = this.pipe?.getEmitterView(this, emitter.id);
       if (view) {
@@ -126,6 +126,7 @@ export class ParticleView extends RenderContainer {
   }
 
   public stop(options: StopOptions = {}): void {
+    this.pipe?.assertAvailable();
     for (const emitter of this.simulations.values()) {
       const view = this.pipe?.getEmitterView(this, emitter.id);
       if (view) {
@@ -171,6 +172,7 @@ export class ParticleView extends RenderContainer {
   }
 
   public setEmitterTexture(id: string, options: ParticleTexture): void {
+    this.pipe?.assertAvailable();
     const rendering = this.getRendering(id);
     resolvePivot(options.pivot);
     resolveTextureFlip(options);
@@ -205,6 +207,7 @@ export class ParticleView extends RenderContainer {
 
   /** Advance initialized simulations. Playback waits for the first render. */
   public update(seconds: number): void {
+    this.pipe?.assertAvailable();
     this.syncSceneTransform();
     for (const emitter of this.simulations.values()) {
       const view = this.pipe?.getEmitterView(this, emitter.id);
@@ -217,6 +220,7 @@ export class ParticleView extends RenderContainer {
   }
 
   public reset(): void {
+    this.pipe?.assertAvailable();
     for (const emitter of this.simulations.values()) {
       const view = this.pipe?.getEmitterView(this, emitter.id);
       if (view) {
@@ -255,6 +259,7 @@ export class ParticleView extends RenderContainer {
     if (this.disposed) {
       return;
     }
+    this.pipe?.assertAvailable();
     this.disposed = true;
     this.pipe?.destroyRenderable(this);
     for (const emitter of this.simulations.values()) {

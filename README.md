@@ -288,6 +288,12 @@ next positive update, including when stopped during start delay. `view.isSleepin
 and `view.awakeEmitters` expose effect completion; each core emitter exposes `state`
 and `onStateChange()`. Subscriptions report changes, not an initial snapshot.
 
+Advance particles before rendering. Calling particle playback, update, clear,
+texture replacement, or destruction from a render/filter callback throws before
+changing GPU state. This also protects direct `view.emitter` simulation operations.
+Nested calls to the same renderer's `render()` are rejected. State-change listeners
+run after simulation restores Pixi's state, so they may render synchronously.
+
 Construction still starts playback automatically for compatibility. `play()`
 restarts this effect's existing simulations, clearing old particles; it does not
 allocate overlapping playback instances. `reset()` retains its previous restart

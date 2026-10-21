@@ -9,6 +9,7 @@ import {
 import { EmitterView } from '../runtime/emitter-view';
 import { ParticleView } from '../runtime/particle-view';
 import { restoreSimulationState } from './restore-simulation-state';
+import { SimulationBoundary } from './simulation-boundary';
 
 /**
  * Connect ParticleView to one Pixi WebGL renderer.
@@ -26,17 +27,28 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
     type: ExtensionType.WebGLPipes,
     name: 'reparticle',
   } as const;
+  private readonly boundary: SimulationBoundary;
+  private readonly assertContextAvailable: () => void;
+  private readonly restoreContextState: () => void;
   private readonly emittersByView = new Map<ParticleView, Map<string, EmitterView>>();
 
   public constructor(private readonly renderer: WebGLRenderer) {
     // GPU.js changes framebuffers while compiling. Prepare before renderStart binds
     // Pixi's target, and before traversal temporarily detaches a rendered subtree.
+    this.boundary = new SimulationBoundary(renderer);
+    this.assertContextAvailable = this.assertAvailable.bind(this);
+    this.restoreContextState = this.restoreState.bind(this);
     renderer.runners.prerender.add(this);
   }
 
   /** Pixi runner hook: prepare resources before render targets and subtree transforms change. */
   public prerender({ container }: { container: Container }): void {
-    this.prepareSubtree(container);
+    this.boundary.beginPreparation();
+    try {
+      this.prepareSubtree(container);
+    } finally {
+      this.boundary.endPreparation();
+    }
   }
 
   /** Finish pending sprite batches before inserting the particle draw. */
@@ -69,13 +81,19 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
     return this.emittersByView.get(view)?.get(id);
   }
 
+  public assertAvailable(): void {
+    this.boundary.assertAvailable();
+  }
+
   /** Return control to Pixi after GPU.js changes WebGL state. */
   public restoreState(): void {
+    this.assertAvailable();
     restoreSimulationState(this.renderer);
   }
 
   /** Release draw resources; ParticleView separately destroys its core simulations. */
   public destroyRenderable(view: ParticleView): void {
+    this.assertAvailable();
     const emitterViews = this.emittersByView.get(view);
     if (!emitterViews) {
       return;
@@ -88,12 +106,14 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
 
   /** Renderer disposal also destroys attached effects, including those currently offstage. */
   public destroy(): void {
+    this.assertAvailable();
     this.renderer.runners.prerender.remove(this);
     // Simulation textures belong to this renderer too; a live view cannot migrate
     // them to another context without losing its particle state.
     for (const view of this.emittersByView.keys()) {
       view.destroy();
     }
+    this.boundary.destroy();
   }
 
   private prepareSubtree(container: Container): void {
@@ -113,7 +133,12 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
     const emitterViews = new Map<string, EmitterView>();
     try {
       for (const [id, emitter] of view.emitters) {
-        emitter.initialize({ gl: this.renderer.gl, canvas: this.renderer.canvas });
+        emitter.initialize({
+          gl: this.renderer.gl,
+          canvas: this.renderer.canvas,
+          assertAvailable: this.assertContextAvailable,
+          restoreState: this.restoreContextState,
+        });
         // GPU.js initialization changes GL bindings before EmitterView binds its shader.
         this.restoreState();
         emitterViews.set(id, new EmitterView(this.renderer, emitter, view.getRendering(id)));

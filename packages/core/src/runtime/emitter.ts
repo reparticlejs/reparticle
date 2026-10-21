@@ -111,19 +111,24 @@ export class Emitter {
       }
       return;
     }
-    const simulation = new GpuSimulation(context, this.width, this.rows, this.capacity);
-    this.simulation = simulation;
+    context.assertAvailable?.();
     try {
-      // Compile both paths without changing playback, seeds, or queued controls.
-      simulation.reset();
-      this.integrate(0, 0, this.initial.lifetime.at(0), 0);
-      this.integrate(0, 0, this.initial.lifetime.at(0), 0);
-      simulation.reset();
-      this.context = context;
-    } catch (error) {
-      simulation.destroy();
-      this.simulation = null;
-      throw error;
+      const simulation = new GpuSimulation(context, this.width, this.rows, this.capacity);
+      this.simulation = simulation;
+      try {
+        // Compile both paths without changing playback, seeds, or queued controls.
+        simulation.reset();
+        this.integrate(0, 0, this.initial.lifetime.at(0), 0);
+        this.integrate(0, 0, this.initial.lifetime.at(0), 0);
+        simulation.reset();
+        this.context = context;
+      } catch (error) {
+        simulation.destroy();
+        this.simulation = null;
+        throw error;
+      }
+    } finally {
+      context.restoreState?.();
     }
   }
 
@@ -171,6 +176,7 @@ export class Emitter {
 
   /** Restart from the initial state, including delay, seed and prewarm. */
   public play(): void {
+    this.context?.assertAvailable?.();
     this.emitting = true;
     this.reset();
   }
@@ -184,8 +190,13 @@ export class Emitter {
   /** Stop spawning; existing particles drain unless clear is requested. */
   public stop({ clear = false }: StopOptions = {}): void {
     this.assertAlive();
+    this.context?.assertAvailable?.();
     if (clear) {
-      this.simulation?.clear();
+      try {
+        this.simulation?.clear();
+      } finally {
+        this.context?.restoreState?.();
+      }
       this.slots.reset();
     }
     this.needsPrewarm = false;
@@ -316,6 +327,7 @@ export class Emitter {
    */
   public update(seconds: number): void {
     this.assertAlive();
+    this.context?.assertAvailable?.();
     if (!Number.isFinite(this.x) || !Number.isFinite(this.y)) {
       throw new RangeError('Emitter position must be finite');
     }
@@ -325,23 +337,32 @@ export class Emitter {
     if (!this.simulation || this.state === 'sleeping') {
       return;
     }
-    if (seconds > 0 && this.needsPrewarm) {
-      this.needsPrewarm = false;
-      prewarm(
-        this.settings.startOffset,
-        this.initial.lifetime.maximum + this.settings.initial.lifetimeSpread,
-        (stepSeconds) => this.step(stepSeconds),
-      );
+    try {
+      if (seconds > 0 && this.needsPrewarm) {
+        this.needsPrewarm = false;
+        prewarm(
+          this.settings.startOffset,
+          this.initial.lifetime.maximum + this.settings.initial.lifetimeSpread,
+          (stepSeconds) => this.step(stepSeconds),
+        );
+      }
+      this.velocity.update(this.worldX, this.worldY, seconds);
+      this.step(seconds);
+    } finally {
+      this.context?.restoreState?.();
     }
-    this.velocity.update(this.worldX, this.worldY, seconds);
-    this.step(seconds);
     this.notifyStateChanges();
   }
 
   /** Clear particles and restore the initial clock and seed; preserve the emitting gate. */
   public reset(): void {
     this.assertAlive();
-    this.simulation?.reset();
+    this.context?.assertAvailable?.();
+    try {
+      this.simulation?.reset();
+    } finally {
+      this.context?.restoreState?.();
+    }
     this.schedule.reset();
     this.slots.reset();
     this.playback.reset();
@@ -356,9 +377,14 @@ export class Emitter {
     if (this.disposed) {
       return;
     }
+    this.context?.assertAvailable?.();
     this.disposed = true;
     this.listeners.clear();
-    this.simulation?.destroy();
+    try {
+      this.simulation?.destroy();
+    } finally {
+      this.context?.restoreState?.();
+    }
   }
 
   /** Queue reentrant state changes until the current notification batch finishes. */

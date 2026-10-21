@@ -99,3 +99,74 @@ it('releases failed initialization and permits a clean retry', () => {
   expect(emitter.initialized).toBe(true);
   emitter.destroy();
 });
+
+it('rejects host-prohibited operations before CPU or GPU state changes', () => {
+  let blocked = false;
+  const assertAvailable = () => {
+    if (blocked) {
+      throw new Error('host is rendering');
+    }
+  };
+  const restoreState = vi.fn<() => void>();
+  const emitter = new Emitter(null, definition);
+  const guardedContext = { ...context, assertAvailable, restoreState };
+
+  blocked = true;
+  expect(() => emitter.initialize(guardedContext)).toThrow('host is rendering');
+  expect(gpu.construct).not.toHaveBeenCalled();
+  expect(restoreState).not.toHaveBeenCalled();
+
+  blocked = false;
+  emitter.initialize(guardedContext);
+  emitter.emitting = false;
+  const revision = emitter.particleRevision;
+  const state = emitter.state;
+  vi.clearAllMocks();
+  blocked = true;
+
+  for (const operation of [
+    () => emitter.update(0.01),
+    () => emitter.play(),
+    () => emitter.reset(),
+    () => emitter.stop(),
+    () => emitter.clear(),
+    () => emitter.destroy(),
+  ]) {
+    expect(operation).toThrow('host is rendering');
+    expect(emitter.particleRevision).toBe(revision);
+    expect(emitter.state).toBe(state);
+    expect(emitter.emitting).toBe(false);
+  }
+  expect(gpu.update).not.toHaveBeenCalled();
+  expect(gpu.reset).not.toHaveBeenCalled();
+  expect(gpu.clear).not.toHaveBeenCalled();
+  expect(gpu.destroy).not.toHaveBeenCalled();
+  expect(restoreState).not.toHaveBeenCalled();
+
+  blocked = false;
+  emitter.play();
+  emitter.update(0.01);
+  emitter.destroy();
+  expect(gpu.destroy).toHaveBeenCalledOnce();
+});
+
+it('restores host state before notifications and when simulation fails', () => {
+  let restored = false;
+  const restoreState = vi.fn<() => void>(() => {
+    restored = true;
+  });
+  const emitter = new Emitter({ ...context, restoreState }, definition);
+  const listener = vi.fn<() => void>(() => expect(restored).toBe(true));
+  emitter.onStateChange(listener);
+  restored = false;
+  emitter.update(0.1);
+  expect(listener).toHaveBeenCalled();
+
+  restored = false;
+  gpu.update.mockImplementationOnce(() => {
+    throw new Error('GPU failure');
+  });
+  expect(() => emitter.update(0.1)).toThrow('GPU failure');
+  expect(restored).toBe(true);
+  emitter.destroy();
+});
