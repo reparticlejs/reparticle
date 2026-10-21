@@ -17,7 +17,7 @@ export function createStatsDefinitions(
     {
       key: 'particleCount',
       label: 'Particles',
-      description: 'Living particles, tracked by spawn batch without GPU readbacks.',
+      description: 'Living particles from CPU draw ordering, without GPU readbacks.',
       ceiling: 10000,
       decimals: 0,
       initiallyAvailable: true,

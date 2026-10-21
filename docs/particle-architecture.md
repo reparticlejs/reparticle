@@ -134,7 +134,7 @@ The emitter clock is independent of particle lifetime. Once stops after emitting
 
 Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844). Duration spread, timeline curves, and lifecycle callbacks were added in subsequent steps below.
 
-Start delay: `startDelay` is finite and nonnegative, defaults to zero, and is structural. Defold checks the existing timer against the delay before adding the current step. The crossing step does not emit; the next step emits its full frame, carrying any delay overshoot into the duration timer. Loop wrap does not reenter the waiting state. Reset restores the delay, and zero-time warmup does not consume it. The pre-step emission eligibility used by demo stats follows the same boundary. Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844).
+Start delay: `startDelay` is finite and nonnegative, defaults to zero, and is structural. Defold checks the existing timer against the delay before adding the current step. The crossing step does not emit; the next step emits its full frame, carrying any delay overshoot into the duration timer. Loop wrap does not reenter the waiting state. Reset restores the delay, and zero-time warmup does not consume it. Reference: [Defold UpdateEmitterState](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844).
 
 Start offset: `startOffset` is a finite nonnegative structural setting, default zero. Match Defold StartInstance: ignore offsets below 0.0001 and clamp simulated time to maximum sampled initial-lifetime curve value plus lifetime spread. Fast-forward in full float32 1/60-second steps with float32 elapsed accumulation, including delay and once/loop transitions. The last step is not shortened. Reparticle defers this work until the first positive update so consumers can position an emitter before its world-space particles are born. Reset queues it again; zero-time kernel warmup does not consume it. The debug overlay replays the shared timing utilities independently, keeping the debug display separate from core allocation bookkeeping. Reference: [Defold StartInstance](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L407-L429) and [FastForwardEmitter](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L313-L324).
 
@@ -176,23 +176,23 @@ Example emission rate ramp over the emitter's configured duration:
 
 `initial.rotation` accepts a constant (default zero) or an emitter-time Hermite curve with absolute degree values. Cached samples use the same post-advance emitter clock as initial size and speed. Each newborn adds its independent `rotationSpread`, then applies initial-direction alignment when selected. The resulting initial rotation is captured in the existing properties channel; later emitter curve values do not rotate existing particles. Rendering adds `overLifetime.rotation` at the particle's own age and, in movement-direction mode, its current velocity heading. Signed and multi-turn values remain unwrapped. Numeric rotation patches replace the curve for future births; unrelated patches preserve it. The demo separates **Initial rotation over emitter lifetime** from **Rotation over particle lifetime**.
 
-`initial.red`, `green`, `blue`, and `alpha` each accept a constant (default one) or an independent emitter-time Hermite curve. Cached samples use the shared post-advance emitter clock. Each newborn adds the corresponding spread and captures its RGBA values in the existing color texel, without clamping. Rendering computes `clamp(capturedChannel * particleLifetimeCurve, 0, 1)`, matching Defold; negative values and values above one must remain intact until this multiplication. Existing particles keep their captured values as emitter time progresses. Numeric channel updates replace only that channel's emitter curve for future births; unrelated updates preserve all curves. Demo selectors distinguish initial channel curves over emitter lifetime from color/alpha over particle lifetime. No extra per-particle storage or debug counting is required.
+`initial.red`, `green`, `blue`, and `alpha` each accept a constant (default one) or an independent emitter-time Hermite curve. Cached samples use the shared post-advance emitter clock. Each newborn adds the corresponding spread and captures its RGBA values in the existing color texel, without clamping. Rendering computes `clamp(capturedChannel * particleLifetimeCurve, 0, 1)`, matching Defold; negative values and values above one must remain intact until this multiplication. Existing particles keep their captured values as emitter time progresses. Numeric channel updates replace only that channel's emitter curve for future births; unrelated updates preserve all curves. No extra per-particle storage or debug counting is required.
 
-`initial.lifetime` accepts a constant or an emitter-time Hermite curve in seconds. Each newborn captures the evaluated value plus its independent lifetime spread; existing particles keep their stored expiry time and use that lifetime to normalize all particle-time curves. Nonpositive sampled lifetimes survive their birth frame and expire on the next positive-time update. Prewarm caps its replay using the maximum of the cached lifetime samples plus spread, including Hermite overshoot between authored points. Debug counting evaluates the same lifetime curve on the same emitter clock and retains each birth's sampled lifetime. Numeric lifetime patches replace the curve for future births; unrelated updates preserve it. Demo controls provide constant, ramp-up, fade-out and authored JSON choices.
+`initial.lifetime` accepts a constant or an emitter-time Hermite curve in seconds. Each newborn captures the evaluated value plus its independent lifetime spread; existing particles keep their stored expiry time and use that lifetime to normalize all particle-time curves. Nonpositive sampled lifetimes survive their birth frame and expire on the next positive-time update. Prewarm caps its replay using the maximum of the cached lifetime samples plus spread, including Hermite overshoot between authored points. Debug counting evaluates the same lifetime curve on the same emitter clock and retains each birth's sampled lifetime. Numeric lifetime patches replace the curve for future births; unrelated updates preserve it.
 
 Emitter `durationSpread` and `startDelaySpread` default to zero and are nonnegative seconds. Following [Defold's emitter initialization and reset behavior](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp), each is an independent signed variation sampled once at creation: `duration = max(0, duration + random * durationSpread)` and `startDelay = startDelay + random * startDelaySpread`. Negative sampled delay advances the initial emitter clock; it is not clamped. Looping and reset retain both samples, and delay applies only before the first loop. Emitter-time curves use the sampled duration. Reparticle uses its own deterministic seed streams (9 for duration, 10 for delay), not Defold's exact random sequence. These settings require emitter recreation; the demo exposes both spreads and mirrors the sampled timing in its debug count and prewarm.
 
-`emission.rateSpread` is a nonnegative particles-per-second amount, defaulting to zero. As in [Defold](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp), one signed offset is sampled at emitter creation and applied after evaluating the emitter-time spawn-rate curve: `max(0, curve(age) + offset)`. The offset persists across loops, resets, and numeric rate updates. Changing spread requires recreation. Reparticle uses deterministic seed stream 11; its random sequence is not Defold's. The demo exposes emission spread and includes it in prewarm and live-count tracking.
+`emission.rateSpread` is a nonnegative particles-per-second amount, defaulting to zero. As in [Defold](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp), one signed offset is sampled at emitter creation and applied after evaluating the emitter-time spawn-rate curve: `max(0, curve(age) + offset)`. The offset persists across loops, resets, and numeric rate updates. Changing spread requires recreation. Reparticle uses deterministic seed stream 11; its random sequence is not Defold's.
 
-Emitter shape dimensions accept either a number or an emitter-time Hermite curve: circle `diameter`, box/cone2d `width` and `height`. Each dimension has its own nonnegative spread (`diameterSpread`, `widthSpread`, `heightSpread`, default zero). Following Defold, curves are sampled at the current emitter age and independent signed spread is added per particle at birth, before shape position and direction are calculated. Signed dimensions are preserved, including negative curve samples and spread results. Point emitters have no size properties. Existing particles are unaffected. Numeric dimensions and spreads can change at runtime; replacing a curve requires recreation. GPU seed streams 12 and 13 provide independent X/Y variation without additional particle storage or readback. The demo provides separate dimension curves and spread controls.
+Emitter shape dimensions accept either a number or an emitter-time Hermite curve: circle `diameter`, box/cone2d `width` and `height`. Each dimension has its own nonnegative spread (`diameterSpread`, `widthSpread`, `heightSpread`, default zero). Following Defold, curves are sampled at the current emitter age and independent signed spread is added per particle at birth, before shape position and direction are calculated. Signed dimensions are preserved, including negative curve samples and spread results. Point emitters have no size properties. Existing particles are unaffected. Numeric dimensions and spreads can change at runtime; replacing a curve requires recreation. GPU seed streams 12 and 13 provide independent X/Y variation without additional particle storage or readback.
 
 `inheritVelocity` defaults to zero and is a finite scalar that can be changed at runtime. Following [Defold](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp), emitter velocity is estimated as position delta divided by frame time, then multiplied by the inheritance factor and added to each newborn particle's configured velocity. The first position sample contributes zero velocity; reset clears motion history. Zero-time updates record position without recomputing velocity. Prewarm starts with zero inherited motion. Existing particles retain their velocity. Initial-direction orientation remains based on shape direction, while movement-direction orientation uses the resulting particle velocity. Motion is measured from the transformed emitter origin; ParticleEffect now includes its current Pixi parent hierarchy automatically. Inheritance applies only in world emission space; local space ignores the factor.
 
-`space` selects `world` (default) or `local` and requires recreation to change. World particles capture the emitter position at birth and remain behind when `emitter.x/y` moves. Local particles simulate around the origin; the Pixi adapter adds the current emitter position at draw time, so existing particles follow even without another simulation step. Inheritance is ignored in local space, as in Defold. Emitter translation, rotation and uniform scale are supported. The ParticleEffect/parent Pixi transform now drives the shared simulation transform, so world particles stay behind and local particles follow. Gravity and particle orientation operate in the selected simulation space. No extra per-particle data or GPU readback is required. The demo exposes both modes and restarts when switching.
+`space` selects `world` (default) or `local` and requires recreation to change. World particles capture the emitter position at birth and remain behind when `emitter.x/y` moves. Local particles simulate around the origin; the Pixi adapter adds the current emitter position at draw time, so existing particles follow even without another simulation step. Inheritance is ignored in local space, as in Defold. Emitter translation, rotation and uniform scale are supported. The ParticleEffect/parent Pixi transform now drives the shared simulation transform, so world particles stay behind and local particles follow. Gravity and particle orientation operate in the selected simulation space. No extra per-particle data or GPU readback is required.
 
-Top-level `rotation` sets emitter rotation in degrees, positive counterclockwise like Defold. It defaults to zero and supports numeric runtime updates or `emitter.rotation = degrees`. World-space births rotate shape offsets and configured velocities about the emitter before adding inherited world velocity. Default and initial-direction particle orientation include the emitter rotation at birth; movement-direction orientation uses the resulting velocity without adding the emitter angle twice. Existing world particles retain their state. Local-space particles keep local coordinates and the Pixi renderer rotates their positions and artwork using the current emitter rotation, including when simulation is paused. Particle `initial.rotation` and its curves remain independent. Gravity stays in the selected simulation coordinate system. The demo exposes an emitter rotation slider.
+Top-level `rotation` sets emitter rotation in degrees, positive counterclockwise like Defold. It defaults to zero and supports numeric runtime updates or `emitter.rotation = degrees`. World-space births rotate shape offsets and configured velocities about the emitter before adding inherited world velocity. Default and initial-direction particle orientation include the emitter rotation at birth; movement-direction orientation uses the resulting velocity without adding the emitter angle twice. Existing world particles retain their state. Local-space particles keep local coordinates and the Pixi renderer rotates their positions and artwork using the current emitter rotation, including when simulation is paused. Particle `initial.rotation` and its curves remain independent. Gravity stays in the selected simulation coordinate system.
 
-Top-level `scale` is a finite uniform factor, defaults to 1, and supports runtime updates or `emitter.scale = factor`. Following Defold, world-space births scale shape offsets, initial speed (including spread), and initial particle size (including spread) before storing them. Inherited world velocity is added afterward, without scaling. Existing world particles retain birth size and velocity; the acceleration magnitude uses the current world scale, so changing scale can change their subsequent acceleration. Local simulation remains unscaled; rendering scales existing particle positions and artwork around the emitter before rotation and translation, including while paused. Zero collapses the effect and signed scales are retained. Particle size curves remain independent. The demo slider updates scale live without restarting.
+Top-level `scale` is a finite uniform factor, defaults to 1, and supports runtime updates or `emitter.scale = factor`. Following Defold, world-space births scale shape offsets, initial speed (including spread), and initial particle size (including spread) before storing them. Inherited world velocity is added afterward, without scaling. Existing world particles retain birth size and velocity; the acceleration magnitude uses the current world scale, so changing scale can change their subsequent acceleration. Local simulation remains unscaled; rendering scales existing particle positions and artwork around the emitter before rotation and translation, including while paused. Zero collapses the effect and signed scales are retained. Particle size curves remain independent.
 
 `{ type: "drag", ... }` in `modifiers` supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), `useDirection` (default false), and `rotation` (degrees, default 0). Defold's drag formula subtracts the selected velocity component multiplied by `min((magnitude + spread * particleFactor) * dt, 1)`. Negative sampled drag accelerates; positive drag cannot reverse velocity. Directional drag projects onto the modifier's rotated X axis, including emitter rotation in world space. Drag does not scale with emitter scale. Drag acts on the velocity produced by earlier entries. Replacing the modifier list updates living particles, including curve changes.
 
@@ -202,21 +202,19 @@ The fourth RGBA row band, `dynamics`, stores `[active, spreadFactor, initialAngu
 
 `{ type: "radial", ... }` in `modifiers` supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), center `x`/`y` (emitter-relative logical units, default 0), and `maxDistance` (nonnegative logical units, default 100). Positive magnitude repels and negative magnitude attracts. Following Defold, strength has no distance falloff; the cutoff includes its boundary, and zero distance affects only particles exactly at the center. At the center, the particle's current orientation supplies the direction, including lifetime rotation and movement orientation. The existing shared spread factor stays fixed for each birth. World-space center offsets rotate and scale with the emitter, while magnitude/spread and cutoff use its scale; local simulation leaves those values untransformed. Replacing the modifier list affects living particles, including magnitude curves. Defold samples maximum distance only at its first curve point, so this API represents it as a constant number.
 
-Radial applies at its authored list position. All modifiers contribute to velocity before the single position step. No additional particle texture band or CPU readback is introduced. Orientation is evaluated only when a radial modifier is active. The demo exposes magnitude/curve, spread, center, and cutoff; radial defaults to disabled in both example JSON files.
+Radial applies at its authored list position. All modifiers contribute to velocity before the single position step. No additional particle texture band or CPU readback is introduced. Orientation is evaluated only when a radial modifier is active.
 
 `{ type: "vortex", ... }` in `modifiers` adds the 2D form of Defold's Z-axis vortex. It supports `magnitude` (number or emitter-time curve, default 0), `spread` (nonnegative, default 0), emitter-relative center `x`/`y` (default 0), `maxDistance` (nonnegative, default 100), and `rotation` (degrees, default 0). Positive magnitude accelerates counterclockwise in canvas coordinates; negative reverses it. Tangential acceleration has constant strength inside the inclusive cutoff. At the exact center, Defold's rotated negative-X direction supplies the fallback, independent of particle orientation; in 2D, modifier rotation only changes this fallback. World-space offsets rotate/scale with the emitter; magnitude, spread, and cutoff scale with it. Local simulation leaves the emitter transform to rendering. Maximum distance is constant, matching Defold's first-sample-only evaluation.
 
-Vortex shares the existing per-birth spread factor and applies at its authored list position. List replacement changes living-particle forces. No new particle storage or CPU readback is needed. The demo includes magnitude/curve, spread, center, distance, and center-fallback rotation controls.
+Vortex shares the existing per-birth spread factor and applies at its authored list position. List replacement changes living-particle forces. No new particle storage or CPU readback is needed.
 
 `orientation: "angular-velocity"` follows Defold's dedicated spin mode. `initial.angularVelocity` is a number or emitter-time curve in degrees/second (default 0); `initial.angularVelocitySpread` is a nonnegative signed ± range (default 0), sampled once per birth with stream 15. `overLifetime.angularVelocity` is a dimensionless multiplier curve (default 1), despite the editor's angular-velocity naming. Each step accumulates `birthAngularVelocity × lifetimeMultiplier × seconds`. Positive spins counterclockwise, negative clockwise. Initial rotation and world-space emitter rotation establish the starting angle. This mode ignores `overLifetime.rotation` and does not align to movement or spawn direction; the other orientation modes ignore angular velocity. These rules follow Defold's `EvaluateParticleProperties` angular-velocity branch.
 
 The fourth texture band now uses two previously reserved channels for captured angular velocity and accumulated rotation; this step did not increase the then-current 64 bytes per slot per texture. Pixi reads the accumulated angle only in spin mode, and radial's center fallback uses that same updated angle. No CPU readback or additional simulation pass is added. Numeric birth-speed/spread updates affect future births; curves and orientation require recreation. Spin advances on the birth frame using the multiplier at the advanced normalized age and the sampled particle lifetime. Subsequent steps sample the multiplier at the updated normalized age. Reset and slot reuse clear accumulated spin. Constant spin is frame-rate independent; nonconstant curves use Defold-style per-step numerical integration, so timestep changes can slightly alter the result. Prewarm uses the existing fixed 1/60-second step.
 
-In the demo, choose **Orientation → Angular velocity** to expose initial spin, emitter-time curve/spread, and particle-lifetime multiplier presets. The ordinary lifetime rotation control is hidden in this mode. JSON examples retain zero initial spin for backward-compatible visuals.
-
 `initial.stretchX` and `initial.stretchY` accept numbers or emitter-time curves, defaulting to 0. Their nonnegative `stretchXSpread`/`stretchYSpread` ranges default to 0 and use independent birth streams 16/17. Captured values persist until a slot is reused; numeric edits affect future births. `overLifetime.stretchX` and `overLifetime.stretchY` are additive particle-lifetime curves, also defaulting to 0. Defold's formula for each axis is `initialSize × lifetimeScale × (1 + initialStretch + lifetimeStretch)`, with texture aspect ratio and emitter scale applied as usual. These are dimensionless factors: 0 is unchanged, 1 doubles, −1 collapses, and values below −1 flip that axis. No clamping, timestep accumulation, or velocity dependency is applied. Stretch operates before particle orientation/rotation. Curve edits require recreation.
 
-The fifth RGBA row band, `geometry`, stores `[initialStretchX, initialStretchY, initialHandedness, movementRotation]`, increasing allocation from 64 to 80 bytes per slot per texture (25%, before row padding). Simulation still uses one GPU pass and rendering reads the texture directly. Pixi packs scale, rotation, stretch X, and stretch Y samples into one 65-entry vec4 array; together with packed color curves this fits WebGL2's minimum vertex uniform budget. The demo's Stretch panel exposes each axis's initial curve, value, spread, and lifetime curve. Both example JSON files use zero stretch. Velocity-dependent stretch is described below.
+The fifth RGBA row band, `geometry`, stores `[initialStretchX, initialStretchY, initialHandedness, movementRotation]`, increasing allocation from 64 to 80 bytes per slot per texture (25%, before row padding). Simulation still uses one GPU pass and rendering reads the texture directly. Pixi packs scale, rotation, stretch X, and stretch Y samples into one 65-entry vec4 array; together with packed color curves this fits WebGL2's minimum vertex uniform budget. Both example JSON files use zero stretch. Velocity-dependent stretch is described below.
 
 Top-level `stretchWithVelocity` defaults to false and accepts live boolean updates through `setParameters`. When enabled, Defold's formula changes only the Y factor to `1 + (initialStretchY + lifetimeStretchY) × length(currentVelocity) / 120`. X retains ordinary stretch. The fixed `1/120` factor corresponds to Defold's 60 FPS, 180-degree shutter convention, not the current timestep or display refresh rate. Velocity is read after simulation modifiers: stationary particles have no added Y stretch, and speed 120 produces the ordinary Y stretch amount. Signed stretch still supports collapse and flips. This does not select movement orientation automatically; choose `movement-direction` to align the stretched local Y axis to motion.
 
@@ -240,7 +238,7 @@ premultiplied source color. The previous `alpha` blend-mode name is no longer
 accepted; existing effect JSON must use `normal`. Opacity properties remain `alpha`.
 `effect.setEmitterBlendMode(emitterId, 'add')` affects the next render, including
 existing particles while paused. It does not restart simulation or add particle
-state. The demo exposes this under Appearance. Procedural particles now default
+state. Procedural particles now default
 to Normal too; choose Add explicitly for their previous additive appearance.
 
 ### Pixi atlas frames
@@ -264,7 +262,7 @@ image's proportions and center. Initial size still controls the longest original
 dimension; automatic sizing is described below. Flipbook playback is described below. Switching
 frames affects all existing particles immediately without restarting simulation,
 including while paused. No simulation state, CPU particle readback, or extra draw
-pass is added. The demo's three artwork choices now share `textures/particles.json`.
+pass is added. Both demo effects use `textures/particles.json`.
 
 ### Pixi flipbook animation
 
@@ -351,10 +349,9 @@ partial construction failure and destruction; caller-owned artwork survives.
 Shared effect-root modifiers are described below. Effect-wide resource budgets are a host-level concern outside the current contract.
 This adds independent composition, not changes to the documented simulation integrator.
 
-The demo's **Multiple emitters example** link (`?multiple`) loads
-`public/multiple-emitters.json`: looping fire, delayed smoke, and a once-only spark
-burst. Pause and restart operate on the whole effect. Texture selection is in the
-Pixi host example, not that JSON.
+The **Multi-emitter** dropdown option loads `public/multiple-emitters.json`:
+looping fire, delayed smoke, and a once-only spark burst. The Pixi host supplies
+artwork separately. The sidebar offers effect selection, Pause/Resume, and Restart. Compact stats remain inside the canvas area.
 
 ### Shared effect modifiers
 
@@ -397,7 +394,6 @@ Core's `Emitter` accepts the shared definition as its third argument:
 to every emitter automatically. Shared configuration is validated and sampled at
 construction; recreate the effect to change it. Per-emitter `configuration` and
 `setParameters` remain local and do not absorb or override the shared definition.
-The demo forwards root modifiers during single-emitter recreation too.
 
 All modifiers execute inside the existing GPU integration pass, with one reusable
 parameter buffer per emitter. No additional particle storage, readback, simulation
@@ -411,8 +407,6 @@ including order, count, values, and curves. `[]` removes all local modifiers. Th
 root list is immutable for an existing effect. The former named-object format is
 no longer accepted; migrate each object member to an array entry with `type`.
 
-The demo edits the first entry of each type and preserves later entries and their
-order. Its multi-emitter example uses two independent shared accelerations. Living and newborn
 positions advance once using final velocity after every modifier. Newborn age is
 the full simulation step, so lifetime curves also advance on that first frame.
 This follows [Defold’s update order](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp):
@@ -424,7 +418,7 @@ Zero-time updates do not prune them. Expired slots stop moving and spinning.
 The `dynamics` band's first channel stores `active`: initialization
 and clear set it to zero, spawning sets it to one, and expiration clears it.
 Pixi uses that flag for visibility, independently of lifetime curves and alpha.
-Lifecycle batch tracking and the demo live count use the same cutoff and newborn
+Lifecycle batch tracking use the same cutoff and newborn
 exception, so `sleeping` is announced when the last active slot is removed. This
 adds no texture allocation, GPU pass, or readback. Ages remain float32 accumulated
 ages in Reparticle rather than Defold's decremented remaining lifetime.
@@ -484,16 +478,11 @@ allocation memory and an input upload, but no GPU readback, compaction pass, or 
 particle-state channel. Slot reuse and random sequences are deterministic within
 Reparticle; Defold's compacting storage order and PRNG sequence are not reproduced.
 
-The demo's debug counter replays `ParticleSlots` with its own allocation metadata,
-keeping admitted birth counts, seed progression, expiry, and lifecycle completion
-consistent without exposing a live-count instrumentation API on `Emitter`.
-
 `ParticleEffect` forwards controls to every emitter and forwards state events with
 `emitterId`, `state`, and the number of awake emitters at that transition.
 `awakeEmitters === 0` on a sleeping event signals whole-effect completion.
 Renderer state is restored before forwarding callbacks. Texture configuration
-remains separate and is unaffected by playback. The `?multiple` demo displays
-notifications and provides restart, stop, clear and pause controls.
+remains separate and is unaffected by playback. The host can subscribe to lifecycle notifications.
 
 ### Automatic frame sizing (Pixi only)
 
@@ -517,8 +506,7 @@ apply. No per-particle CPU work, GPU readback or additional draw pass is introdu
 
 Switching texture options updates living particles immediately, including while
 paused. Texture dimensions are Pixi logical dimensions (`orig`), so high-resolution
-assets and renderer DPR retain their normal logical-unit semantics. The demo has
-an explicit automatic-size animation selection beside its manual animations.
+assets and renderer DPR retain their normal logical-unit semantics.
 
 ### Particle pivot (Pixi only)
 
@@ -544,7 +532,7 @@ Pixi display transforms apply to both corners and pivot translation.
 The implementation adds one vec2 uniform, no particle storage, readbacks, or
 additional draw calls. Each emitter owns its pivot selection; changing one texture
 configuration does not alter another emitter. Omitted pivot restores zero on
-texture replacement. The demo includes a bottom-pivot leaf selection.
+texture replacement.
 
 ### Retire after the current cycle
 
@@ -666,10 +654,9 @@ applying their tint or alpha twice. It affects living and future particles on th
 next render, including when simulation is paused. No simulation update, restart,
 particle readback, extra texture band, or additional draw is needed. Overrides
 survive texture/animation replacement and playback resets. Rendering while paused
-remains the host's responsibility; the demo requests a render after a tint edit.
+remains the host's responsibility.
 
-The multiple-emitter demo exposes fire RGBA controls, leaving smoke and sparks
-unchanged. This implements the built-in tint constant only, not arbitrary custom
+This implements the built-in tint constant only, not arbitrary custom
 materials or consumer shader functions.
 
 ## Particle draw ordering
@@ -692,8 +679,7 @@ Sorting runs during every simulation step, including all prewarm steps and steps
 between renders. Core exposes an order revision and `copyParticleOrder(target)`;
 Pixi copies and uploads only the completed order when rendering. Paused renders
 reuse the buffer, and reset or clear invalidates it. Initial lifetime edits affect
-the normalization on the next simulation step. The optional debug counter keeps
-allocation tracking without logical sorting.
+the normalization on the next simulation step.
 
 Stable two-pass radix sorting takes O(n + 256) CPU work for n living particles per step; rendering uploads
 4n bytes once per changed draw. Pixi issues one draw per emitter, using its

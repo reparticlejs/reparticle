@@ -13,7 +13,9 @@ pnpm install --ignore-scripts
 pnpm dev
 ```
 
-Open the local URL printed by Vite. For mobile testing, connect your phone to the same Wi-Fi and open the **Network** URL printed by `pnpm dev`. Both Vite dev and preview servers listen on the local network. Press and drag inside the preview to position the emitter. Adjust emission, gravity, and lifetime; pause or reset the simulation. Choose a gold star, leaf, blue spark, or procedural circle and adjust particle size.
+Open the local URL printed by Vite. The sidebar has an effect dropdown, Pause/Resume, and Restart:
+**Star fountain** (default) or **Multi-emitter**. Effects run automatically, with compact stats over the canvas.
+For mobile testing, use Vite's Network URL on the same Wi-Fi network.
 
 Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error; there is no silent CPU fallback.
 
@@ -28,11 +30,11 @@ Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error;
 - `packages/core/src/runtime`: `emitter.ts` coordinates `gpu/` execution, `playback/` timing and spawn requests, `particles/` allocation and ordering, `modifiers/` sampling, and `transforms/` positioning and velocity.
 - `packages/core/src/index.ts`: public exports only.
 - `packages/pixi`: shares Pixi's WebGL2 context and renders directly from the simulation texture with one instanced draw. No Sprite per particle or CPU copy of particle positions.
-- `examples/demo`: React/TypeScript UI with a Pixi preview. React owns controls and status; Pixi owns the animation loop.
+- `examples/demo`: React/TypeScript effect selector with a Pixi canvas. Pixi owns the animation loop.
 
 GPU state contains position, velocity, age, lifetime, and appearance data. Built-in behaviors execute together in one update pass. Two mutable update kernels alternate output textures; both are allocated and warmed before playback. The CPU sends time, emitter parameters, and a compact spawn bitmask. Allocation metadata tracks free slots and captured lifetimes: existing particles expire before new births are admitted, living slots are never overwritten, and excess births are dropped without a backlog. Fractional emission carry remains intact. The bitmask packs 24 slots per float (16,668 bytes for 100,000 slots).
 
-Positions, velocities, modifiers, and rendering remain on the GPU, with no readback or extra simulation pass. Allocation work visits birth batches and slots being born or expired, rather than every allocated particle each frame. Lifetime spread orders each new batch by sampled lifetime so expiration can stop at the first survivor. The demo's optional live counter replays the same allocation rules separately; the UI displays live count separately from capacity.
+Positions, velocities, modifiers, and rendering remain on the GPU, with no readback or extra simulation pass. Allocation work visits birth batches and slots being born or expired, rather than every allocated particle each frame. Lifetime spread orders each new batch by sampled lifetime so expiration can stop at the first survivor.
 
 Pixi orders living particles by Defold’s 16-bit remaining-lifetime key: longer remaining lifetimes draw first. Core sorts logical slot IDs every simulation step, including prewarm, using existing CPU lifetime metadata. Pixi uploads only the final order on each draw: one uint per living instance (4 bytes each), without moving simulation texels or reading the GPU. Expired entries use Defold’s forward swap-removal, births append in allocation order, and equal keys use the resulting logical index. Stable two-pass radix sorting costs O(live particles + 256) per simulation step; paused draws reuse the buffer. Emitters still draw in definition order.
 
@@ -53,7 +55,7 @@ pnpm format
 - Main-canvas and RenderTexture rendering, including Pixi filters, graphics masks, sprite masks, and effects on parent containers. Supply bounds or a filter area explicitly; particle bounds are never scanned. Context-loss recovery is not supported yet.
 - GPU.js's browser compiler is included at runtime, increasing bundle size. Precompiled kernels are future work.
 - Core requires an explicit capacity; the demo starts at 8192 slots. Construction accepts up to 1,000,000 subject to GPU texture limits. This is a capacity limit, not a cross-device performance guarantee.
-- Updates accept 0–0.1 seconds. The demo clamps long frames to 0.05 seconds, avoiding a large catch-up after tab suspension.
+- Updates accept 0–0.1 seconds. Automatic updates split longer ticker deltas into bounded steps.
 - No editor, serialization, public custom-behavior API, WebGPU backend, or new comparative benchmark is included.
 
 ## Provenance
@@ -80,12 +82,6 @@ app.stage.addChild(particles);
 Use a WebGL renderer. Textures are ordinary Pixi `Texture` instances loaded through `Assets`. The example includes original SVG artwork rasterized by Pixi; PNG and other Pixi-supported image formats work through the same API. Images upload on first use, then the shader samples them directly on the GPU. Switching `particles.texture` changes the artwork for all particles without restarting simulation. Set it to `null` for the procedural circle.
 
 Atlas frames support trim offsets and UV rotation. Multiple frames support flipbook animation. The caller owns the texture; destroying a view does not destroy shared artwork. No automatic bounds calculation or hit testing is added.
-
-## Development stats
-
-The demo uses a source copy of Replayable's stats module in `examples/demo/src/devtools`, with its MIT license retained. It has no Replayable dependency and is not included in the core or Pixi library packages. D3 supplies the copied history graphs; Sass compiles their stylesheet.
-
-The overlay shows FPS, living particle count, frame interval, browser JS heap when available, and WebGL draw calls, texture binds, and program uses. Sampling runs after Pixi renders. Draw counts include GPU.js simulation draws, particle rendering, and any other Pixi scene objects; they are API submissions, not GPU execution timings. Hide stats suspends sampling and removes instrumentation.
 
 ## Authoring simulation behavior
 
@@ -115,13 +111,21 @@ Updates are validated atomically. Capacity, seed, ID and shape type cannot be ch
 
 ## Demo UI
 
-The demo uses React with the official Vite React plugin. `src/app.tsx` owns UI settings and status. `App` creates a shared preview controller. UI event handlers call its setControls/reset commands, and `ParticlePreview` uses `useEmitterDrag` to forward press-and-drag movement to it. `usePreviewRenderer` mounts the renderer, attaches it to the controller, then detaches and destroys it on cleanup. Only `useMountEffect` imports `useEffect`; settings are applied directly from events. `EmitterControls` edits settings, and `PreviewStatus` displays status and errors. `src/preview/create-preview.ts` assembles the Pixi application, scene, ticker, and cleanup. `load-preview-assets.ts` loads JSON and textures; `PreviewScene` manages scene settings and movement; `particle-effect.ts` creates and replaces views; `devtools/create-preview-stats.ts` owns stats and debug counting. Types live in `src/types`; tests live in `tests`. React dependencies belong only to the demo.
+Compact stats sit at the canvas’s top right. Click the overlay to cycle metrics,
+including FPS and the combined live particle count. Counts use CPU ordering data
+without reading GPU textures.
 
-GPU updates run on Pixi's ticker without React state updates per frame. Controls are disabled until asynchronous initialization succeeds. Unmounting, Strict Mode remounts, failed startup, and hot reload release the owned GPU scene and stats. Shared artwork remains owned by Pixi's asset cache.
+The demo uses React with the official Vite React plugin. `App` owns the effect
+selection, `Demo` provides the sidebar and mounts one Pixi application, and `create-demo.ts`
+loads JSON and artwork. Switching the keyed demo disposes the old application.
+`ParticleEffect` uses `app.ticker` for automatic updates. Only `useMountEffect`
+imports `useEffect`; no controller or settings synchronization layer is needed.
+
+GPU updates run on Pixi's ticker without React state updates per frame. Unmounting, Strict Mode remounts, failed startup, and hot reload release the owned GPU scene. Shared artwork remains owned by Pixi's asset cache.
 
 ### Circle emitter
 
-The demo offers Point, Circle, Box, and 2D Cone shapes.
+Core supports Point, Circle, Box, and 2D Cone shapes.
 
 ```json
 "shape": { "type": "circle", "diameter": 100 }
@@ -135,7 +139,7 @@ Update diameter for future births without resetting living particles:
 emitter.setParameters({ emission: { shape: { diameter: 200 } } });
 ```
 
-Changing shape type recreates the emitter and clears particles in the demo. Changing diameter does not. All spawning stays in the existing GPU update pass; no per-particle CPU work or texture readbacks are added.
+Changing shape type requires recreating the emitter. Diameter can change at runtime. All spawning stays in the existing GPU update pass; no per-particle CPU work or texture readbacks are added.
 
 ### Box emitter
 
@@ -173,9 +177,9 @@ Each emitter accepts `"duration": 1` (seconds) and `"playMode": "once"` or `"loo
 
 Following [Defold's emitter timing](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844), once emits through the entire update that reaches duration, then stops spawning. Existing particles continue moving and aging. Loops restart the emitter timer without clearing particles, fractional emission, or the random sequence. Zero-duration once emits for one positive update; zero-duration loop emits continuously. Zero-time warm-up updates do not consume playback.
 
-`emitter.isEmitting` reports emission eligibility at the current playback clock; pending prewarm has not yet advanced that clock. The existing `emitter.emitting` boolean remains a manual emission gate; turning it off does not pause the clock or restart a completed effect. Pause by skipping updates. `reset()` clears particles and restarts the timer, spawn schedule, and seed. Duration/mode changes require recreation; the demo restarts the effect when either control changes.
+`emitter.isEmitting` reports emission eligibility at the current playback clock; pending prewarm has not yet advanced that clock. The existing `emitter.emitting` boolean remains a manual emission gate; turning it off does not pause the clock or restart a completed effect. Pause by skipping updates. `reset()` clears particles and restarts the timer, spawn schedule, and seed. Duration/mode changes require recreation.
 
-`startDelay` defaults to `0` seconds. Following Defold, the delay is checked before advancing each frame: the frame reaching the delay still waits, and the next frame emits. Delay overshoot contributes to the duration clock. Loops do not repeat the delay; reset does. Changing start delay in the demo restarts the effect. Like duration, it is a structural setting rather than a runtime parameter patch.
+`startDelay` defaults to `0` seconds. Following Defold, the delay is checked before advancing each frame: the frame reaching the delay still waits, and the next frame emits. Delay overshoot contributes to the duration clock. Loops do not repeat the delay; reset does. Like duration, it is a structural setting rather than a runtime parameter patch.
 
 ### Start offset / prewarm
 
@@ -183,9 +187,9 @@ Following [Defold's emitter timing](https://github.com/defold/defold/blob/dev/en
 
 Prewarm includes start delay and normal once/loop timing. A once emitter can finish emission during prewarm, leaving only its surviving particles. The simulation advances on the GPU, including position, velocity, age, spawn carry, and random sequence; there is no particle readback.
 
-Reparticle applies prewarm before the first positive `update`, after you have set the emitter position. `update(0)` does not consume it. `reset()` clears the simulation and schedules prewarm again at the current position. The normal update runs after the prewarm steps. Changing start offset requires recreation; the demo does this automatically and includes prewarmed particles in its stats.
+Reparticle applies prewarm before the first positive `update`, after you have set the emitter position. `update(0)` does not consume it. `reset()` clears the simulation and schedules prewarm again at the current position. The normal update runs after the prewarm steps. Changing start offset requires recreation.
 
-Prewarm has a one-time startup cost proportional to the simulated steps and allocated capacity. `EmitterPlayback` and `prewarm` expose the shared timing logic; the demo uses them for its separate debug counter, without putting particle counting into the runtime.
+Prewarm has a one-time startup cost proportional to the simulated steps and allocated capacity. `EmitterPlayback` and `prewarm` expose the shared timing logic.
 
 ### Size over lifetime
 
@@ -207,7 +211,7 @@ Prewarm has a one-time startup cost proportional to the simulated steps and allo
 
 Points must be ordered with unique times in `[0, 1]`. Each `tangent` is a slope (`dy/dx`, equivalent to Defold's `ty/tx`); omitted tangents default to zero. Interpolation uses cubic Hermite curves. A single point uses its tangent as a line. Values and slopes may be signed; scale is not clamped, matching Defold. Use endpoints at `0` and `1` to define the full life interval explicitly.
 
-Like Defold, curves are baked into 64 linear segments. Pixi uploads the 65 endpoint samples once when creating a view and evaluates the curve in the vertex shader. Initial size occupies the third properties channel, with no extra simulation pass or readback. Curve changes require recreation. The demo offers the JSON curve, constant scale, shrink, and grow-then-shrink presets.
+Like Defold, curves are baked into 64 linear segments. Pixi uploads the 65 endpoint samples once when creating a view and evaluates the curve in the vertex shader. Initial size occupies the third properties channel, with no extra simulation pass or readback. Curve changes require recreation.
 
 This implements scalar initial size and lifetime scale. Initial-size spread, emitter-time size curves, and automatic animated-frame sizing remain separate features. The former `ParticleEffect.particleSize` renderer override is replaced by `initial.size` in configuration or `emitter.setParameters`.
 
@@ -219,7 +223,7 @@ References: [Defold particle properties](https://defold.com/manuals/particlefx/#
 
 Initial alpha is captured at birth, so `emitter.setParameters({ initial: { alpha: 0.5 } })` only affects new particles. Lifetime curve changes require recreation. Both textured and procedural particles fade with premultiplied RGB and alpha, avoiding bright fringes. Transparent particles still move, age, and count as alive until their lifetime expires.
 
-The properties texel stores `[age, lifetime, initialSize, initialRotation]`; motion and initial RGBA occupy separate texels. Positive lifetime identifies initialized slots. The curve is uploaded once and sampled in the vertex shader alongside size; no extra simulation pass or GPU readback is added. The demo includes constant, fade-out, and fade-in/out presets.
+The properties texel stores `[age, lifetime, initialSize, initialRotation]`; motion and initial RGBA occupy separate texels. Positive lifetime identifies initialized slots. The curve is uploaded once and sampled in the vertex shader alongside size; no extra simulation pass or GPU readback is added.
 
 Reference: [Defold lifetime color evaluation](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L1247-L1270).
 
@@ -227,7 +231,7 @@ Reference: [Defold lifetime color evaluation](https://github.com/defold/defold/b
 
 `initial.red`, `initial.green`, and `initial.blue` default to `1` (white). `overLifetime.red`, `.green`, and `.blue` each accept a constant or the existing Hermite curve format, defaulting to `1`. As in Defold, every channel is `clamp(initialChannel × lifetimeChannel, 0, 1)`. These are independent RGB multipliers, with no HSV interpolation or extra gamma conversion. Texture RGB is then multiplied by the resulting tint; texture and particle alpha retain correct premultiplied blending. A colored texture still influences the result—use a white texture or procedural circle to see the tint directly.
 
-Initial RGB changes through `setParameters` affect future births only. Existing particles retain their initial values; curve changes require recreation. The procedural circle now uses the configured RGB directly, replacing its old hardcoded mint color. The demo includes initial RGB sliders, yellow-to-red and blue-to-pink presets, and the curves loaded from JSON.
+Initial RGB changes through `setParameters` affect future births only. Existing particles retain their initial values; curve changes require recreation. The procedural circle now uses the configured RGB directly, replacing its old hardcoded mint color.
 
 Initial RGB needs an additional RGBA texel per slot: motion, properties, and `[initialRed, initialGreen, initialBlue, initialAlpha]`. This raises state texture storage and simulation output from 32 to 48 bytes per allocated slot per texture (50% more). The kernel still runs once per step; no extra pass or readback is introduced. RGBA lifetime samples are packed into 65 `vec4` uniforms alongside the size samples and uploaded only at view creation, staying within WebGL2's minimum vertex-uniform budget.
 
@@ -237,7 +241,7 @@ Reference: [Defold per-channel lifetime multiplication and clamp](https://github
 
 `initial.rotation` is captured at birth in degrees, defaulting to `0`. `overLifetime.rotation` is a constant or Hermite curve of additional degrees over normalized particle age, also defaulting to `0`. Defold combines these as **initial rotation + lifetime rotation**, not a multiplier or accumulated angular velocity. Values are not wrapped or clamped, so negative angles and multiple turns work.
 
-Positive angles rotate counterclockwise, matching Defold's positive Z rotation; the shader accounts for canvas Y pointing downward. It rotates the sized, aspect-correct quad around the particle center before applying the Pixi object's transform. It does not rotate the particle's velocity. Initial rotation updates affect future births only; curve changes require recreation. The demo provides initial degrees and clockwise/counterclockwise full-turn presets.
+Positive angles rotate counterclockwise, matching Defold's positive Z rotation; the shader accounts for canvas Y pointing downward. It rotates the sized, aspect-correct quad around the particle center before applying the Pixi object's transform. It does not rotate the particle's velocity. Initial rotation updates affect future births only; curve changes require recreation.
 
 Initial rotation occupies the fourth properties channel, so storage remains three texels per particle. Curves upload once, and rotation is evaluated in the vertex shader without another simulation pass or readback. This implements Defold's default particle orientation; initial/movement-direction alignment, angular velocity, rotation spread, and emitter transforms remain separate features.
 
@@ -302,7 +306,7 @@ restarts this effect's existing simulations, clearing old particles; it does not
 allocate overlapping playback instances. `reset()` retains its previous restart
 behavior and manual emission gate; `play()` also enables that gate. Pausing means
 skipping updates, whereas stopping lets particles continue moving. The composed
-example at `?multiple` includes stop, clear, restart and emitter-state indicators.
+example is selected with the **Multi-emitter** dropdown option.
 
 ### Automatic frame sizing
 
@@ -325,7 +329,7 @@ retain manual sizing. FPS zero freezes the first frame but retains Auto sizing.
 Trimmed frames keep their original extent and trim offset; atlas rotation does not
 swap particle dimensions. Dimensions use Pixi's logical texture units, independent
 of renderer device pixel ratio. Switching modes affects existing particles without
-restarting the simulation. Select **Atlas animation · automatic size** in the demo.
+restarting the simulation.
 
 ### Artwork flipping
 
@@ -360,7 +364,7 @@ Defold's Auto mode applies pivot against the animation's base aspect without
 multiplying by frame dimensions or initial size; `0.5` is therefore **not** a
 half-frame anchor in Auto mode. Switching options changes living particles,
 including while paused, without touching simulation state. Omitting pivot on a
-later texture selection restores the center. Try **Leaf · bottom pivot** in the demo.
+later texture selection restores the center.
 
 To finish the current emission cycle instead of stopping births immediately:
 
@@ -375,7 +379,6 @@ by `sleeping` when particles expire. During start delay it waits and runs one cy
 a once emitter keeps its normal schedule. Calling it after a loop has wrapped
 finishes the new cycle. `play()`/`reset()` cancel retirement; `stop()` and `clear()`
 still stop immediately. Continue updating to finish and receive notifications.
-The composed demo has a **Finish current loops** button.
 
 ### Authored emitter position
 
@@ -448,7 +451,6 @@ particles.resetEmitterTint('fire'); // Restore the authored tint, not necessaril
 Tint multiplies the emitter's existing particle color immediately on the next render,
 including living particles while simulation is paused. All channels must be finite;
 values are not clamped. Texture changes and simulation resets retain the override.
-The multiple-emitter demo includes fire-only RGBA controls.
 
 ## Pixi filters, masks, and render textures
 
@@ -506,8 +508,7 @@ render listener. Manual `update(seconds)` calls still require a value from 0 to 
 
 For your own simulation loop, pass `autoUpdate: false` and call
 `effect.update(seconds)` explicitly. Do not also advance an automatically updated
-effect manually, or it will advance twice. The demo uses manual updates for its
-pause controls, timestep limit and synchronized debugging statistics.
+effect manually, or it will advance twice. The demo uses automatic updates.
 
 Both `effect.autoUpdate` and `effect.ticker` can change at runtime. Switching
 tickers transfers the listener; disabling automatic updates or destroying the
