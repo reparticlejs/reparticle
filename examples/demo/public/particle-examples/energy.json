@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "energy",
+      "capacity": 128,
+      "seed": 1,
+      "duration": 0,
+      "playMode": "loop",
+      "space": "world",
+      "orientation": "initial-direction",
+      "emission": {
+        "rate": 50,
+        "rateSpread": 14,
+        "shape": {
+          "type": "circle",
+          "diameter": 150,
+          "diameterSpread": 50
+        }
+      },
+      "initial": {
+        "lifetime": 0.8,
+        "lifetimeSpread": 0.2,
+        "speed": 20,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "size": 60,
+        "sizeSpread": 15,
+        "red": 1,
+        "redSpread": 0.5,
+        "green": 1,
+        "greenSpread": 0.2,
+        "blue": 1,
+        "blueSpread": 0.5,
+        "alpha": 1,
+        "stretchX": 1,
+        "stretchXSpread": 0.2,
+        "stretchY": 1,
+        "stretchYSpread": 0.1
+      },
+      "overLifetime": {
+        "scale": 1,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 13.863328960598407
+            },
+            {
+              "time": 0.11320755,
+              "value": 0.99277455,
+              "tangent": 0.10831956702606171
+            },
+            {
+              "time": 0.7112546,
+              "value": 0.555656,
+              "tangent": -1.443614635730293
+            },
+            {
+              "time": 1,
+              "value": 0.0072254334,
+              "tangent": -1.8589258152871404
+            }
+          ]
+        },
+        "angularVelocity": 1
+      },
+      "modifiers": [
+        {
+          "type": "vortex",
+          "magnitude": 125,
+          "spread": 500,
+          "maxDistance": 500
+        },
+        {
+          "type": "radial",
+          "magnitude": -400,
+          "maxDistance": 500
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      }
+    }
+  ]
+}

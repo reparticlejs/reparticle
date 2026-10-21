@@ -19,4 +19,10 @@ export const examples: readonly Example[] = [
     file: 'particle-examples/dust.json',
     artwork: { dust: { source: 'particle-examples/particle-blob.png' } },
   },
+  {
+    id: 'energy',
+    name: 'Energy',
+    file: 'particle-examples/energy.json',
+    artwork: { energy: { source: 'particle-examples/particle-blob.png' } },
+  },
 ];

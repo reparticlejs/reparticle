@@ -7,7 +7,7 @@ the original license is included as `LICENSE`.
 Port each effect in the source README's order:
 
 - [x] Dust (`dust`)
-- [ ] Energy (`energy`)
+- [x] Energy (`energy`)
 - [ ] Explosion (`exp1`)
 - [ ] Celebration cracker (`exp2`)
 - [ ] Candle flame (`fire`)
@@ -37,3 +37,16 @@ Copyright 2020 The Defold Foundation. Its separate license is included as
 `DEFOLD-LICENSE.txt`; it is not part of ParticleExamples' CC0 artwork.
 
 Artwork remains in Pixi's example settings, separate from effect JSON.
+
+## Energy
+
+`energy.json` translates `assets/fx/energy.particlefx`, reusing the same blob
+texture. It retains 128 slots, a circular emitter with diameter 150 ± 50,
+spawn rate 50 ± 14, lifetime 0.8 ± 0.2 seconds, speed 20, size 60 ± 15,
+RGB and stretch spread, initial-direction orientation, and additive blending.
+The four alpha curve points retain their tangent slopes (`t_y / t_x`).
+
+Modifiers remain in authored order: vortex (125 with spread 500, radius 500),
+then inward radial acceleration (-400, radius 500). The omitted source duration
+is explicitly zero, matching its continuous looping behavior. Seed 1 uses
+Reparticle's deterministic random sequence. All effects share the gray background.
