@@ -19,7 +19,7 @@ import { resolveTint } from '../rendering/resolve-tint';
 import { restoreSimulationState } from '../rendering/restore-simulation-state';
 import { createUniforms } from '../rendering/uniforms';
 import { vertex, fragment } from '../shaders/particle';
-import { createFrameSource } from '../textures/create-frame-source';
+import { createAnimationFrameSource } from '../textures/create-animation-frame-source';
 import { resolveFlipbook } from '../textures/resolve-flipbook';
 import { resolvePivot } from '../textures/resolve-pivot';
 import { resolveTexture } from '../textures/resolve-texture';
@@ -100,7 +100,7 @@ export class EmitterView {
           instanceCount: 0,
         };
         if (animation) {
-          this.frameSource = createFrameSource(
+          this.frameSource = createAnimationFrameSource(
             animation.frames,
             gl.getParameter(gl.MAX_TEXTURE_SIZE),
           );
@@ -135,7 +135,7 @@ export class EmitterView {
     const flipbook = resolveFlipbook(options);
     const texture = flipbook ? flipbook.frames[0]! : resolveTexture(options);
     const frames = flipbook
-      ? createFrameSource(flipbook.frames, this.gl.getParameter(this.gl.MAX_TEXTURE_SIZE))
+      ? createAnimationFrameSource(flipbook.frames, this.gl.getParameter(this.gl.MAX_TEXTURE_SIZE))
       : null;
     this.frameSource?.destroy();
     this.frameSource = frames;
