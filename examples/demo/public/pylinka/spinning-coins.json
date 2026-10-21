@@ -1,0 +1,1048 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "spinning-coins-gold",
+      "capacity": 58,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 3.4,
+      "scale": 1,
+      "emission": {
+        "rate": 4.285714285714286,
+        "shape": {
+          "type": "box",
+          "width": 520,
+          "height": 10
+        }
+      },
+      "initial": {
+        "lifetime": 2.8,
+        "lifetimeSpread": 0.5999999999999999,
+        "speed": -10.0,
+        "speedSpread": 50.0,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "size": 32,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1,
+        "rotation": -180.0,
+        "rotationSpread": 180.0,
+        "angularVelocity": 0.0,
+        "angularVelocitySpread": 160.0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 2.0,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.125,
+              "value": 1.975,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.25,
+              "value": 1.95,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.375,
+              "value": 1.925,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.5,
+              "value": 1.9,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.625,
+              "value": 1.875,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.75,
+              "value": 1.85,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.875,
+              "value": 1.825,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 1.0,
+              "value": 1.8,
+              "tangent": -0.19999999999999996
+            }
+          ]
+        },
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        },
+        "angularVelocity": 1
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 150.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      },
+      "orientation": "angular-velocity"
+    },
+    {
+      "id": "spinning-coins-ruby",
+      "capacity": 58,
+      "seed": 2,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 3.4,
+      "scale": 1,
+      "emission": {
+        "rate": 4.285714285714286,
+        "shape": {
+          "type": "box",
+          "width": 520,
+          "height": 10
+        }
+      },
+      "initial": {
+        "lifetime": 2.8,
+        "lifetimeSpread": 0.5999999999999999,
+        "speed": -10.0,
+        "speedSpread": 50.0,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "size": 32,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1,
+        "rotation": -180.0,
+        "rotationSpread": 180.0,
+        "angularVelocity": 0.0,
+        "angularVelocitySpread": 160.0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 2.0,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.125,
+              "value": 1.975,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.25,
+              "value": 1.95,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.375,
+              "value": 1.925,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.5,
+              "value": 1.9,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.625,
+              "value": 1.875,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.75,
+              "value": 1.85,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.875,
+              "value": 1.825,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 1.0,
+              "value": 1.8,
+              "tangent": -0.19999999999999996
+            }
+          ]
+        },
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        },
+        "angularVelocity": 1
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 150.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      },
+      "orientation": "angular-velocity"
+    },
+    {
+      "id": "spinning-coins-emerald",
+      "capacity": 58,
+      "seed": 3,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 3.4,
+      "scale": 1,
+      "emission": {
+        "rate": 4.285714285714286,
+        "shape": {
+          "type": "box",
+          "width": 520,
+          "height": 10
+        }
+      },
+      "initial": {
+        "lifetime": 2.8,
+        "lifetimeSpread": 0.5999999999999999,
+        "speed": -10.0,
+        "speedSpread": 50.0,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "size": 32,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1,
+        "rotation": -180.0,
+        "rotationSpread": 180.0,
+        "angularVelocity": 0.0,
+        "angularVelocitySpread": 160.0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 2.0,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.125,
+              "value": 1.975,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.25,
+              "value": 1.95,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.375,
+              "value": 1.925,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.5,
+              "value": 1.9,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.625,
+              "value": 1.875,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.75,
+              "value": 1.85,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.875,
+              "value": 1.825,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 1.0,
+              "value": 1.8,
+              "tangent": -0.19999999999999996
+            }
+          ]
+        },
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        },
+        "angularVelocity": 1
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 150.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      },
+      "orientation": "angular-velocity"
+    },
+    {
+      "id": "spinning-coins-sapphire",
+      "capacity": 58,
+      "seed": 4,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 3.4,
+      "scale": 1,
+      "emission": {
+        "rate": 4.285714285714286,
+        "shape": {
+          "type": "box",
+          "width": 520,
+          "height": 10
+        }
+      },
+      "initial": {
+        "lifetime": 2.8,
+        "lifetimeSpread": 0.5999999999999999,
+        "speed": -10.0,
+        "speedSpread": 50.0,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "size": 32,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1,
+        "rotation": -180.0,
+        "rotationSpread": 180.0,
+        "angularVelocity": 0.0,
+        "angularVelocitySpread": 160.0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 2.0,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.125,
+              "value": 1.975,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.25,
+              "value": 1.95,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.375,
+              "value": 1.925,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.5,
+              "value": 1.9,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.625,
+              "value": 1.875,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.75,
+              "value": 1.85,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.875,
+              "value": 1.825,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 1.0,
+              "value": 1.8,
+              "tangent": -0.19999999999999996
+            }
+          ]
+        },
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        },
+        "angularVelocity": 1
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 150.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      },
+      "orientation": "angular-velocity"
+    },
+    {
+      "id": "spinning-coins-amethyst",
+      "capacity": 58,
+      "seed": 5,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 3.4,
+      "scale": 1,
+      "emission": {
+        "rate": 4.285714285714286,
+        "shape": {
+          "type": "box",
+          "width": 520,
+          "height": 10
+        }
+      },
+      "initial": {
+        "lifetime": 2.8,
+        "lifetimeSpread": 0.5999999999999999,
+        "speed": -10.0,
+        "speedSpread": 50.0,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "size": 32,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1,
+        "rotation": -180.0,
+        "rotationSpread": 180.0,
+        "angularVelocity": 0.0,
+        "angularVelocitySpread": 160.0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 2.0,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.125,
+              "value": 1.975,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.25,
+              "value": 1.95,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.375,
+              "value": 1.925,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.5,
+              "value": 1.9,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.625,
+              "value": 1.875,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.75,
+              "value": 1.85,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.875,
+              "value": 1.825,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 1.0,
+              "value": 1.8,
+              "tangent": -0.19999999999999996
+            }
+          ]
+        },
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        },
+        "angularVelocity": 1
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 150.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      },
+      "orientation": "angular-velocity"
+    },
+    {
+      "id": "spinning-coins-rose",
+      "capacity": 58,
+      "seed": 6,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 3.4,
+      "scale": 1,
+      "emission": {
+        "rate": 4.285714285714286,
+        "shape": {
+          "type": "box",
+          "width": 520,
+          "height": 10
+        }
+      },
+      "initial": {
+        "lifetime": 2.8,
+        "lifetimeSpread": 0.5999999999999999,
+        "speed": -10.0,
+        "speedSpread": 50.0,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "size": 32,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1,
+        "rotation": -180.0,
+        "rotationSpread": 180.0,
+        "angularVelocity": 0.0,
+        "angularVelocitySpread": 160.0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 2.0,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.125,
+              "value": 1.975,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.25,
+              "value": 1.95,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.375,
+              "value": 1.925,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.5,
+              "value": 1.9,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.625,
+              "value": 1.875,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.75,
+              "value": 1.85,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.875,
+              "value": 1.825,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 1.0,
+              "value": 1.8,
+              "tangent": -0.19999999999999996
+            }
+          ]
+        },
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        },
+        "angularVelocity": 1
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 150.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      },
+      "orientation": "angular-velocity"
+    },
+    {
+      "id": "spinning-coins-silver",
+      "capacity": 58,
+      "seed": 7,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 3.4,
+      "scale": 1,
+      "emission": {
+        "rate": 4.285714285714286,
+        "shape": {
+          "type": "box",
+          "width": 520,
+          "height": 10
+        }
+      },
+      "initial": {
+        "lifetime": 2.8,
+        "lifetimeSpread": 0.5999999999999999,
+        "speed": -10.0,
+        "speedSpread": 50.0,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "size": 32,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1,
+        "rotation": -180.0,
+        "rotationSpread": 180.0,
+        "angularVelocity": 0.0,
+        "angularVelocitySpread": 160.0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 2.0,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.125,
+              "value": 1.975,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.25,
+              "value": 1.95,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.375,
+              "value": 1.925,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.5,
+              "value": 1.9,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.625,
+              "value": 1.875,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.75,
+              "value": 1.85,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 0.875,
+              "value": 1.825,
+              "tangent": -0.19999999999999996
+            },
+            {
+              "time": 1.0,
+              "value": 1.8,
+              "tangent": -0.19999999999999996
+            }
+          ]
+        },
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        },
+        "angularVelocity": 1
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 150.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      },
+      "orientation": "angular-velocity"
+    }
+  ]
+}

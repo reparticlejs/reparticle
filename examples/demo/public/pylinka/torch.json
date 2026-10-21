@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "torch",
+      "capacity": 3000,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 0.8,
+      "emission": {
+        "rate": 600,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 0.6,
+        "lifetimeSpread": 0.2,
+        "speed": 130,
+        "speedSpread": 40,
+        "size": 9.6,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "direction": -1.5707963267948966,
+        "spread": 0.12292191176553192
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -3
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "red": 1,
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.9529411764705882,
+              "tangent": -1.7999999999999996
+            },
+            {
+              "time": 1,
+              "value": 0.35294117647058826,
+              "tangent": 0
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.6901960784313725,
+              "tangent": -2.0705882352941174
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -3
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 60
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      },
+      "scale": 4
+    }
+  ]
+}

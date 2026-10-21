@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "ember-rise",
+      "capacity": 2000,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 2.2,
+      "emission": {
+        "rate": 110,
+        "shape": {
+          "type": "box",
+          "width": 140,
+          "height": 20
+        }
+      },
+      "initial": {
+        "lifetime": 1.7,
+        "lifetimeSpread": 0.5,
+        "speed": 67.5,
+        "speedSpread": 27.5,
+        "size": 4,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "direction": -1.5707963267948966,
+        "spread": 0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1.0,
+              "tangent": -1.5707963267948966
+            },
+            {
+              "time": 0.25,
+              "value": 0.6173165676349102,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.5,
+              "value": 0.29289321881345254,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.75,
+              "value": 0.07612046748871326,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 1,
+              "value": 0.0,
+              "tangent": 0
+            }
+          ]
+        },
+        "red": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1.0,
+              "tangent": -1.016397623220227
+            },
+            {
+              "time": 0.25,
+              "value": 0.7523813084696478,
+              "tangent": -0.9390289609862863
+            },
+            {
+              "time": 0.5,
+              "value": 0.5424603180557634,
+              "tangent": -0.718701651760912
+            },
+            {
+              "time": 0.75,
+              "value": 0.402195596610344,
+              "tangent": -0.3889585311016358
+            },
+            {
+              "time": 1,
+              "value": 0.3529411764705883,
+              "tangent": 0
+            }
+          ]
+        },
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.47843137254901963,
+              "tangent": -0.591358617146314
+            },
+            {
+              "time": 0.25,
+              "value": 0.3343623156586329,
+              "tangent": -0.5463441227556576
+            },
+            {
+              "time": 0.5,
+              "value": 0.21222646669055473,
+              "tangent": -0.418153688297258
+            },
+            {
+              "time": 0.75,
+              "value": 0.13061790148594699,
+              "tangent": -0.22630314536822452
+            },
+            {
+              "time": 1,
+              "value": 0.10196078431372552,
+              "tangent": 0
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.16470588235294117,
+              "tangent": -0.25871939500151236
+            },
+            {
+              "time": 0.25,
+              "value": 0.10167566996339697,
+              "tangent": -0.2390255537056002
+            },
+            {
+              "time": 0.5,
+              "value": 0.04824123603986277,
+              "tangent": -0.18294223863005038
+            },
+            {
+              "time": 0.75,
+              "value": 0.012537488762846882,
+              "tangent": -0.09900762609859821
+            },
+            {
+              "time": 1,
+              "value": 0.0,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1.0,
+              "tangent": -1.5707963267948966
+            },
+            {
+              "time": 0.25,
+              "value": 0.6173165676349102,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.5,
+              "value": 0.29289321881345254,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.75,
+              "value": 0.07612046748871326,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 1,
+              "value": 0.0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 25
+        },
+        {
+          "type": "drag",
+          "magnitude": 0.5
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      },
+      "scale": 4
+    }
+  ]
+}

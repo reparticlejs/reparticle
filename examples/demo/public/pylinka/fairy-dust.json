@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "fairy-dust",
+      "capacity": 2600,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 2,
+      "emission": {
+        "rate": 260,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 1.5,
+        "lifetimeSpread": 0.5,
+        "speed": 21.213203435596427,
+        "speedSpread": 21.213203435596427,
+        "size": 8,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "direction": 0,
+        "spread": 6.283185307179586
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -3
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "red": 1,
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.9647058823529412,
+              "tangent": 0
+            },
+            {
+              "time": 0.25,
+              "value": 0.9428824660491938,
+              "tangent": -0.1655191682843313
+            },
+            {
+              "time": 0.5,
+              "value": 0.8901960784313726,
+              "tangent": -0.234079452620416
+            },
+            {
+              "time": 0.75,
+              "value": 0.8375096908135513,
+              "tangent": -0.16551916828433133
+            },
+            {
+              "time": 1,
+              "value": 0.8156862745098039,
+              "tangent": 0
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.6588235294117647,
+              "tangent": 0
+            },
+            {
+              "time": 0.25,
+              "value": 0.6209197010947297,
+              "tangent": -0.2874806607043648
+            },
+            {
+              "time": 0.5,
+              "value": 0.5294117647058824,
+              "tangent": -0.40655904928809083
+            },
+            {
+              "time": 0.75,
+              "value": 0.43790382831703506,
+              "tangent": -0.28748066070436484
+            },
+            {
+              "time": 1,
+              "value": 0.4,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1.0,
+              "tangent": 0
+            },
+            {
+              "time": 0.25,
+              "value": 0.8535533905932737,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.5,
+              "value": 0.5,
+              "tangent": -1.5707963267948966
+            },
+            {
+              "time": 0.75,
+              "value": 0.14644660940672627,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 1,
+              "value": 0.0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 40,
+          "rotation": 180
+        },
+        {
+          "type": "drag",
+          "magnitude": 0.6
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      },
+      "scale": 4
+    }
+  ]
+}

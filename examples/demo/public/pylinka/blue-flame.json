@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "blue-flame",
+      "capacity": 3000,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 0.9,
+      "emission": {
+        "rate": 560,
+        "shape": {
+          "type": "cone2d",
+          "width": 8,
+          "height": 24
+        }
+      },
+      "initial": {
+        "lifetime": 0.65,
+        "lifetimeSpread": 0.25,
+        "speed": 140,
+        "speedSpread": 40,
+        "size": 10.4,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "direction": -1.5707963267948966,
+        "spread": 0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -3
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "red": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.7019607843137254,
+              "tangent": -1.611764705882353
+            },
+            {
+              "time": 1,
+              "value": 0.16470588235294117,
+              "tangent": 0
+            }
+          ]
+        },
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.9411764705882353,
+              "tangent": -1.564705882352941
+            },
+            {
+              "time": 1,
+              "value": 0.4196078431372549,
+              "tangent": 0
+            }
+          ]
+        },
+        "blue": 1,
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -3
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 70
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      },
+      "scale": 4
+    }
+  ]
+}

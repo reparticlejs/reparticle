@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "healing-glow",
+      "capacity": 2200,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 1.8,
+      "emission": {
+        "rate": 190,
+        "shape": {
+          "type": "box",
+          "width": 60,
+          "height": 20
+        }
+      },
+      "initial": {
+        "lifetime": 1.4,
+        "lifetimeSpread": 0.4,
+        "speed": 80,
+        "speedSpread": 30,
+        "size": 8,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "direction": -1.5707963267948966,
+        "spread": 0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -3
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "red": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.7215686274509804,
+              "tangent": -0.8993578969100191
+            },
+            {
+              "time": 0.25,
+              "value": 0.5024636034301839,
+              "tangent": -0.8308983533575625
+            },
+            {
+              "time": 0.5,
+              "value": 0.316715333124565,
+              "tangent": -0.6359420676187465
+            },
+            {
+              "time": 0.75,
+              "value": 0.19260230687589075,
+              "tangent": -0.3441693669141747
+            },
+            {
+              "time": 1,
+              "value": 0.14901960784313728,
+              "tangent": 0
+            }
+          ]
+        },
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1.0,
+              "tangent": -0.19095955345349724
+            },
+            {
+              "time": 0.25,
+              "value": 0.9534777003791459,
+              "tangent": -0.1764236229731811
+            },
+            {
+              "time": 0.5,
+              "value": 0.9140379991498707,
+              "tangent": -0.1350287951793229
+            },
+            {
+              "time": 0.75,
+              "value": 0.8876852333025494,
+              "tangent": -0.07307705735848917
+            },
+            {
+              "time": 1,
+              "value": 0.8784313725490196,
+              "tangent": 0
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.8,
+              "tangent": -0.5051188188124766
+            },
+            {
+              "time": 0.25,
+              "value": 0.676941013906128,
+              "tangent": -0.4666689381871242
+            },
+            {
+              "time": 0.5,
+              "value": 0.5726166429125612,
+              "tangent": -0.3571729420872412
+            },
+            {
+              "time": 0.75,
+              "value": 0.5029093268002922,
+              "tangent": -0.19330060333535845
+            },
+            {
+              "time": 1,
+              "value": 0.47843137254901963,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1.0,
+              "tangent": -1.5707963267948966
+            },
+            {
+              "time": 0.25,
+              "value": 0.6173165676349102,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.5,
+              "value": 0.29289321881345254,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.75,
+              "value": 0.07612046748871326,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 1,
+              "value": 0.0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 40
+        }
+      ],
+      "rendering": {
+        "blendMode": "screen"
+      },
+      "scale": 4
+    }
+  ]
+}

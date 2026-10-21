@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "will-o-wisp",
+      "capacity": 2500,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 1,
+      "emission": {
+        "rate": 400,
+        "shape": {
+          "type": "cone2d",
+          "width": 6,
+          "height": 20
+        }
+      },
+      "initial": {
+        "lifetime": 0.75,
+        "lifetimeSpread": 0.25,
+        "speed": 90,
+        "speedSpread": 30,
+        "size": 9.6,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "direction": -1.5707963267948966,
+        "spread": 0
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -3
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "red": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.7843137254901961,
+              "tangent": -2.0
+            },
+            {
+              "time": 1,
+              "value": 0.11764705882352941,
+              "tangent": 0
+            }
+          ]
+        },
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -1.1411764705882352
+            },
+            {
+              "time": 1,
+              "value": 0.6196078431372549,
+              "tangent": 0
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.792156862745098,
+              "tangent": -1.3176470588235292
+            },
+            {
+              "time": 1,
+              "value": 0.35294117647058826,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -3
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 60
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      },
+      "scale": 4
+    }
+  ]
+}

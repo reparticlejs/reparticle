@@ -1,0 +1,656 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "coin-fountain-gold",
+      "capacity": 72,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 2.6,
+      "scale": 4,
+      "emission": {
+        "rate": 8.571428571428571,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 2.1,
+        "lifetimeSpread": 0.5,
+        "speed": 225.0,
+        "speedSpread": 141.50971698084905,
+        "direction": -1.5707963267948966,
+        "spread": 0.9799146525074566,
+        "size": 8,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1
+      },
+      "overLifetime": {
+        "scale": 3.4,
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 460.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "coin-fountain-ruby",
+      "capacity": 72,
+      "seed": 2,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 2.6,
+      "scale": 4,
+      "emission": {
+        "rate": 8.571428571428571,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 2.1,
+        "lifetimeSpread": 0.5,
+        "speed": 225.0,
+        "speedSpread": 141.50971698084905,
+        "direction": -1.5707963267948966,
+        "spread": 0.9799146525074566,
+        "size": 8,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1
+      },
+      "overLifetime": {
+        "scale": 3.4,
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 460.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "coin-fountain-emerald",
+      "capacity": 72,
+      "seed": 3,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 2.6,
+      "scale": 4,
+      "emission": {
+        "rate": 8.571428571428571,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 2.1,
+        "lifetimeSpread": 0.5,
+        "speed": 225.0,
+        "speedSpread": 141.50971698084905,
+        "direction": -1.5707963267948966,
+        "spread": 0.9799146525074566,
+        "size": 8,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1
+      },
+      "overLifetime": {
+        "scale": 3.4,
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 460.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "coin-fountain-sapphire",
+      "capacity": 72,
+      "seed": 4,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 2.6,
+      "scale": 4,
+      "emission": {
+        "rate": 8.571428571428571,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 2.1,
+        "lifetimeSpread": 0.5,
+        "speed": 225.0,
+        "speedSpread": 141.50971698084905,
+        "direction": -1.5707963267948966,
+        "spread": 0.9799146525074566,
+        "size": 8,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1
+      },
+      "overLifetime": {
+        "scale": 3.4,
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 460.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "coin-fountain-amethyst",
+      "capacity": 72,
+      "seed": 5,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 2.6,
+      "scale": 4,
+      "emission": {
+        "rate": 8.571428571428571,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 2.1,
+        "lifetimeSpread": 0.5,
+        "speed": 225.0,
+        "speedSpread": 141.50971698084905,
+        "direction": -1.5707963267948966,
+        "spread": 0.9799146525074566,
+        "size": 8,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1
+      },
+      "overLifetime": {
+        "scale": 3.4,
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 460.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "coin-fountain-rose",
+      "capacity": 72,
+      "seed": 6,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 2.6,
+      "scale": 4,
+      "emission": {
+        "rate": 8.571428571428571,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 2.1,
+        "lifetimeSpread": 0.5,
+        "speed": 225.0,
+        "speedSpread": 141.50971698084905,
+        "direction": -1.5707963267948966,
+        "spread": 0.9799146525074566,
+        "size": 8,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1
+      },
+      "overLifetime": {
+        "scale": 3.4,
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 460.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "coin-fountain-silver",
+      "capacity": 72,
+      "seed": 7,
+      "duration": 1,
+      "playMode": "loop",
+      "startOffset": 2.6,
+      "scale": 4,
+      "emission": {
+        "rate": 8.571428571428571,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 2.1,
+        "lifetimeSpread": 0.5,
+        "speed": 225.0,
+        "speedSpread": 141.50971698084905,
+        "direction": -1.5707963267948966,
+        "spread": 0.9799146525074566,
+        "size": 8,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1
+      },
+      "overLifetime": {
+        "scale": 3.4,
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "tangent": -0.0
+            },
+            {
+              "time": 0.125,
+              "value": 0.9807852804032304,
+              "tangent": -0.3064471612161678
+            },
+            {
+              "time": 0.25,
+              "value": 0.9238795325112867,
+              "tangent": -0.6011177298843463
+            },
+            {
+              "time": 0.375,
+              "value": 0.8314696123025452,
+              "tangent": -0.8726876813037758
+            },
+            {
+              "time": 0.5,
+              "value": 0.7071067811865476,
+              "tangent": -1.1107207345395915
+            },
+            {
+              "time": 0.625,
+              "value": 0.5555702330196023,
+              "tangent": -1.3060694128464148
+            },
+            {
+              "time": 0.75,
+              "value": 0.38268343236508984,
+              "tangent": -1.4512265760697154
+            },
+            {
+              "time": 0.875,
+              "value": 0.1950903220161283,
+              "tangent": -1.540613915831897
+            },
+            {
+              "time": 1.0,
+              "value": 1.1102230246251565e-16,
+              "tangent": -1.5707963267948966
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 460.0,
+          "rotation": 180.0
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    }
+  ]
+}

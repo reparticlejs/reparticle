@@ -1,9 +1,11 @@
 import { parseEffectConfig } from '@reparticle/core';
-import { ParticleEffect, type ParticleTexture } from '@reparticle/pixi';
-import { Application, Assets, type Spritesheet, type Texture, type WebGLRenderer } from 'pixi.js';
+import { ParticleEffect } from '@reparticle/pixi';
+import { Application, type WebGLRenderer } from 'pixi.js';
 
+import { animateEmitter } from './animate-emitter';
 import { createDemoStats } from './devtools/create-demo-stats';
 import type { Stats } from './devtools/types/stats';
+import { loadArtwork } from './load-artwork';
 import type { Example } from './types/example';
 
 /** Mount one fixed effect. Switching demos disposes the previous application. */
@@ -45,13 +47,7 @@ export async function createDemo(host: HTMLDivElement, example: Example, signal:
       throw new Error(`Unable to load ${file}: ${response.status}`);
     }
     const definition = parseEffectConfig(await response.json());
-    const artwork: Record<string, ParticleTexture> = {};
-    for (const [id, { source, frame }] of Object.entries(example.artwork)) {
-      const texture = frame
-        ? (await Assets.load<Spritesheet>(`${base}${source}`)).textures[frame]!
-        : await Assets.load<Texture>(`${base}${source}`);
-      artwork[id] = { textures: [texture] };
-    }
+    const artwork = await loadArtwork(example);
     if (signal.aborted) {
       return;
     }
@@ -76,6 +72,9 @@ export async function createDemo(host: HTMLDivElement, example: Example, signal:
     }
     app.renderer.on('resize', layout);
     layout();
+    const restartMotion = example.motion
+      ? animateEmitter(app, particles, example.motion)
+      : undefined;
     host.appendChild(app.canvas);
     stats = createDemoStats(app, host, particles);
     app.start();
@@ -86,6 +85,7 @@ export async function createDemo(host: HTMLDivElement, example: Example, signal:
         particles.autoUpdate = !paused;
       },
       restart() {
+        restartMotion?.();
         particles.reset();
         particles.autoUpdate = true;
       },

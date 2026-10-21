@@ -1,3 +1,5 @@
+import type { AnimationPlayback } from '@reparticle/pixi';
+
 /** Fixed scene and artwork selection; effect parameters stay in public JSON files. */
 export interface Example {
   id: string;
@@ -7,5 +9,17 @@ export interface Example {
   verticalPosition?: number;
   /** Stretch box emission across the canvas width on resize. */
   fullWidth?: boolean;
-  artwork: Record<string, { source: string; frame?: string }>;
+  /** Demo-only display-object movement; simulation stays unchanged. */
+  motion?: 'figure-eight' | 'pendulum';
+  artwork: Record<
+    string,
+    {
+      source: string;
+      frame?: string;
+      /** Named Pixi spritesheet animation; playback stays in renderer configuration. */
+      animation?: string;
+      playback?: AnimationPlayback;
+      fps?: number;
+    }
+  >;
 }
