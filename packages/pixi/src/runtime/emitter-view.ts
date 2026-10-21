@@ -1,5 +1,6 @@
 import type { Emitter, StopOptions } from '@reparticle/core';
 import {
+  color32BitToUniform,
   GlProgram,
   Shader,
   State,
@@ -178,7 +179,7 @@ export class EmitterView {
       restoreSimulationState(this.host);
     }
   }
-  public renderParticles(transform: Matrix, opacity: number): void {
+  public renderParticles(transform: Matrix, displayColor: number): void {
     if (this.disposed || this.emitter.state === 'sleeping') {
       return;
     }
@@ -241,7 +242,7 @@ export class EmitterView {
     u.emitterOffset[1] = localSpace ? this.emitter.worldY : 0;
     transform.toArray(true, u.transform);
 
-    u.opacity = opacity;
+    color32BitToUniform(displayColor, u.displayColor, 0);
     const tint = this.currentTint;
     u.tint[0] = tint.red;
     u.tint[1] = tint.green;

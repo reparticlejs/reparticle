@@ -17,8 +17,8 @@ uniform float emitterScale;
 uniform float emitterHandedness;
 ${globalUniformsBitGl.vertex.header}
 uniform mat3 transform;
-uniform float opacity;
-out float renderOpacity;
+uniform vec4 displayColor;
+out vec4 renderColor;
 uniform vec2 particleAspect;
 uniform bool automaticSize;
 uniform vec2 particlePivot;
@@ -91,7 +91,8 @@ void main() {
   position = vec2(emitterRotation.x * position.x - emitterRotation.y * position.y,
                   emitterRotation.y * position.x + emitterRotation.x * position.y);
   vec2 clip = (uProjectionMatrix * uWorldTransformMatrix * transform * vec3(position + emitterOffset, 1.0)).xy;
-  renderOpacity = opacity * uWorldColorAlpha.a;
+  // Both colors are premultiplied by Pixi; apply inherited alpha exactly once.
+  renderColor = displayColor * uWorldColorAlpha;
   gl_Position = dynamics.x > 0.5 ? vec4(clip, 0, 1) : vec4(2,2,0,1);
 }`;
 export const fragment = `#version 300 es
@@ -99,7 +100,7 @@ precision highp float;
 in vec2 artworkUv;
 in vec2 uv;
 in vec4 particleColor;
-in float renderOpacity;
+in vec4 renderColor;
 uniform vec4 tint;
 uniform sampler2D artwork;
 uniform bool textured;
@@ -110,9 +111,9 @@ void main() {
   if (textured) {
     vec4 pixel = texture(artwork, artworkUv);
     if (straightAlpha) pixel.rgb *= pixel.a;
-    color = vec4(pixel.rgb * particleColor.rgb, pixel.a) * (renderOpacity * particleColor.a) * premultipliedTint;
+    color = vec4(pixel.rgb * particleColor.rgb, pixel.a) * particleColor.a * premultipliedTint * renderColor;
     return;
   }
-  float alpha = max(0.0, 1.0 - dot(uv, uv)) * renderOpacity * particleColor.a;
-  color = vec4(particleColor.rgb * alpha, alpha) * premultipliedTint;
+  float alpha = max(0.0, 1.0 - dot(uv, uv)) * particleColor.a;
+  color = vec4(particleColor.rgb * alpha, alpha) * premultipliedTint * renderColor;
 }`;

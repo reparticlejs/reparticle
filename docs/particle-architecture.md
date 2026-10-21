@@ -662,7 +662,9 @@ Unknown IDs and invalid updates throw without altering the current tint.
 
 Tint multiplies texture color and the particle's initial/lifetime color in the
 fragment shader. Tint alpha multiplies both premultiplied RGB and alpha; Pixi
-hierarchy alpha composes with it. It affects living and future particles on the
+display-object tint and hierarchy tint/alpha compose with it through Pixi's
+premultiplied group colors. Render-group roots use the global color alone to avoid
+applying their tint or alpha twice. It affects living and future particles on the
 next render, including when simulation is paused. No simulation update, restart,
 particle readback, extra texture band, or additional draw is needed. Overrides
 survive texture/animation replacement and playback resets. Rendering while paused

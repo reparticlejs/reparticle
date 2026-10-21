@@ -243,9 +243,10 @@ export class ParticleView extends RenderContainer {
     if (!this.renderGroup) {
       this.drawTransform.prepend(this.relativeGroupTransform);
     }
-    const relativeAlpha = this.renderGroup ? 1 : this.groupAlpha;
+    // A render-group root already contributes its tint and alpha through global uniforms.
+    const relativeColor = this.renderGroup ? 0xffffffff : this.groupColorAlpha;
     for (const view of views.values()) {
-      view.renderParticles(this.drawTransform, relativeAlpha);
+      view.renderParticles(this.drawTransform, relativeColor);
     }
   }
 

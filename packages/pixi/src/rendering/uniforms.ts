@@ -19,7 +19,7 @@ export function createUniforms(config: EmitterConfig) {
     emitterHandedness: { value: 1, type: 'f32' },
     transform: { value: new Float32Array(9), type: 'mat3x3<f32>' },
 
-    opacity: { value: 1, type: 'f32' },
+    displayColor: { value: new Float32Array([1, 1, 1, 1]), type: 'vec4<f32>' },
     tint: { value: new Float32Array([1, 1, 1, 1]), type: 'vec4<f32>' },
     textured: { value: 0, type: 'i32' },
     straightAlpha: { value: 0, type: 'i32' },
