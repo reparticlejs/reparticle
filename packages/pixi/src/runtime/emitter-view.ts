@@ -3,7 +3,7 @@ import {
   GlProgram,
   Shader,
   State,
-  type Texture,
+  Texture,
   type BufferImageSource,
   type WebGLRenderer,
   type Matrix,
@@ -21,15 +21,19 @@ import { resolveFlipbook } from '../textures/resolve-flipbook';
 import { resolvePivot } from '../textures/resolve-pivot';
 import { resolveTexture } from '../textures/resolve-texture';
 import { resolveTextureFlip } from '../textures/resolve-texture-flip';
+import { SimulationSources } from '../textures/simulation-sources';
 import type { Flipbook } from '../types/flipbook';
 import type { ParticleRendering, ParticleTint } from '../types/particle-rendering';
 import type { ParticleTexture, ParticlePivot } from '../types/particle-texture';
+
+const PARTICLE_BANDS = 5;
 
 /** WebGL2 particle draw resources; Pixi owns the render target and clipping state. */
 export class EmitterView {
   private readonly host: WebGLRenderer;
   private readonly gl: WebGL2RenderingContext;
   private readonly shader: Shader;
+  private readonly particleSources: SimulationSources;
   private readonly state = State.for2d();
   private readonly order: ParticleOrderBuffer;
   private readonly uniforms: ReturnType<typeof createUniforms>;
@@ -62,13 +66,23 @@ export class EmitterView {
     this.uniforms = createUniforms(emitter.configuration);
     const gl = renderer.gl;
     this.gl = gl;
+    this.particleSources = new SimulationSources(
+      renderer,
+      emitter.width,
+      emitter.rows * PARTICLE_BANDS,
+    );
     try {
       let shader: Shader | undefined;
       let order: ParticleOrderBuffer | undefined;
       try {
         shader = new Shader({
           glProgram: GlProgram.from({ vertex, fragment, name: 'reparticle' }),
-          resources: { particleUniforms: this.uniforms },
+          resources: {
+            particleUniforms: this.uniforms,
+            particles: this.particleSources.get(emitter.texture),
+            artwork: Texture.EMPTY.source,
+            animationFrames: Texture.EMPTY.source,
+          },
         });
         this.shader = shader;
         // Pixi compiles lazily. Bind here so construction still reports shader errors.
@@ -86,6 +100,7 @@ export class EmitterView {
         order?.destroy();
         shader?.destroy();
         this.frameSource?.destroy();
+        this.particleSources.destroy();
         throw error;
       }
     } finally {
@@ -159,8 +174,7 @@ export class EmitterView {
     if (this.disposed || this.emitter.state === 'sleeping') {
       return;
     }
-    const gl = this.gl,
-      r = this.host,
+    const r = this.host,
       u = this.uniforms.uniforms;
     try {
       const count = this.order.update(this.emitter);
@@ -169,14 +183,8 @@ export class EmitterView {
       u.particlePivot[1] = this.texturePivot.y;
       u.automaticSize = this.automaticSize ? 1 : 0;
       const animation = this.flipbook;
-      if (this.frameSource) {
-        r.texture.bind(this.frameSource, 2);
-      } else {
-        // Keep the sampler complete even when animation is disabled.
-        gl.activeTexture(gl.TEXTURE2);
-        gl.bindTexture(gl.TEXTURE_2D, this.emitter.texture);
-      }
-      u.animationFrames = 2;
+      this.shader.resources.particles = this.particleSources.get(this.emitter.texture);
+      this.shader.resources.animationFrames = this.frameSource ?? Texture.EMPTY.source;
       u.frameCount = animation?.frames.length ?? 0;
       u.animationFps = animation?.fps ?? 0;
       u.animationHalfStep = this.animationHalfStep;
@@ -184,10 +192,7 @@ export class EmitterView {
       u.animationBackward = animation?.backward ? 1 : 0;
       u.animationPingpong = animation?.pingpong ? 1 : 0;
       const texture = this.artwork;
-      if (texture) {
-        r.texture.bind(texture.source, 1);
-      }
-      u.artwork = 1;
+      this.shader.resources.artwork = texture?.source ?? Texture.EMPTY.source;
       u.textured = texture ? 1 : 0;
       u.straightAlpha = texture?.source.alphaMode === 'no-premultiply-alpha' ? 1 : 0;
       if (texture) {
@@ -216,9 +221,6 @@ export class EmitterView {
         u.textureTrim[2] = 1;
         u.textureTrim[3] = 1;
       }
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, this.emitter.texture);
-      u.particles = 0;
       u.width = this.emitter.width;
       u.rows = this.emitter.rows;
       const localSpace = this.emitter.space === 'local';
@@ -248,8 +250,7 @@ export class EmitterView {
       u.tint[1] = tint.green;
       u.tint[2] = tint.blue;
       u.tint[3] = tint.alpha;
-      // Bind after updating values. Sampler uniforms select our manually bound
-      // texture units; only the particle-state texture remains owned by GPU.js.
+      // Pixi binds all shader textures, including the borrowed GPU.js output.
       r.shader.bind(this.shader);
       applyState(r, this.state, this.emitter.configuration.blendMode);
       r.geometry.bind(this.order.geometry, this.shader.glProgram);
@@ -267,6 +268,7 @@ export class EmitterView {
     this.frameSource?.destroy();
     // GlProgram.from() is shared; Pixi owns the compiled program cache.
     this.shader.destroy();
+    this.particleSources.destroy();
     restoreSimulationState(this.host);
   }
 }

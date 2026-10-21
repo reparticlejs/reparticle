@@ -712,9 +712,10 @@ binding, and uniform uploads. Emitters share the cached program and own separate
 dynamic uniform groups, including reusable vector and curve arrays. Groups sync
 on each draw so values from another emitter cannot leak across draws. Destroying
 an emitter destroys its shader bindings, leaving the shared program cache to Pixi.
-GPU.js particle textures remain directly bound WebGL textures. Artwork and
-animation-frame sources use Pixi's texture system on their assigned units;
-sampler uniforms select those units without readbacks.
+GPU.js particle textures are borrowed through cached Pixi `ExternalSource` wrappers.
+Particle state, artwork, and animation-frame sources use `Shader.resources`; Pixi
+assigns and binds their sampler units. GPU.js retains ownership of simulation
+textures, with no copies or readbacks. Each kernel output is wrapped once on first use.
 
 Particle draw state uses Pixi's reusable `State.for2d()` and state system for
 blending, depth, culling, and blend equations. Normal, add, multiply, and screen

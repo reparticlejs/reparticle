@@ -6,16 +6,11 @@ import { sampleGeometryCurves } from '../curves/sample-geometry-curves';
 
 /**
  * Per-emitter values uploaded by Pixi's shader system. Vector storage is reused.
- * Samplers are integer texture-unit selectors because GPU.js owns the state
- * texture. Artwork and frame metadata use Pixi texture binding on fixed units.
+ * Texture samplers live in Shader.resources; Pixi assigns their texture units.
  * Keep the group dynamic: emitters share a program but have different curves.
  */
 export function createUniforms(config: EmitterConfig) {
   return new UniformGroup({
-    particles: { value: 0, type: 'i32' },
-    artwork: { value: 1, type: 'i32' },
-    animationFrames: { value: 2, type: 'i32' },
-
     width: { value: 0, type: 'i32' },
     rows: { value: 0, type: 'i32' },
     emitterOffset: { value: new Float32Array(2), type: 'vec2<f32>' },

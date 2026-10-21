@@ -481,3 +481,7 @@ and render textures according to their normal Pixi ownership rules.
 Emitter access, parameter changes, texture/tint changes, and playback controls work immediately. `update(seconds)` validates its input but does not advance playback until that first render; it does not queue elapsed time. Afterwards, updates run independently of rendering, including when the view is offstage. Start offset/prewarm runs on the first positive update after initialization. GPU texture access before initialization throws.
 
 A view stays attached to its first renderer: transferring live GPU state between contexts is unsupported. Destroying the view releases its resources; destroying the renderer also destroys its attached particle views. Caller-owned artwork is preserved.
+
+### Shared GPU texture sources
+
+Pixi wraps GPU.js output textures with `ExternalSource` and binds them through `Shader.resources`, alongside artwork and animation-frame metadata. Each kernel output gets one reusable wrapper on first use; paused draws and subsequent alternating updates reuse it. No pixel upload, copy, or readback is needed for simulation textures. Destroying a wrapper does not delete its borrowed texture; GPU.js retains ownership. Missing artwork and animation metadata bind Pixi’s empty texture.
