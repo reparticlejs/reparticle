@@ -1,4 +1,5 @@
 import type { EmitterConfig, ScalarProperty } from '@reparticle/core';
+import type { ParticleRendering } from '@reparticle/pixi';
 
 export type ColorCurves = Pick<EmitterConfig['overLifetime'], 'red' | 'green' | 'blue'>;
 
@@ -61,7 +62,7 @@ export interface PreviewControls {
   initialRotationCurve: 'constant' | 'effect' | 'ramp-up' | 'fade-out';
   effectRotation: EmitterConfig['initial']['rotation'];
   rotationCurve: 'effect' | 'constant' | 'full-turn' | 'reverse-turn';
-  blendMode: EmitterConfig['blendMode'];
+  blendMode: NonNullable<ParticleRendering['blendMode']>;
   stretchWithVelocity: boolean;
   stretchX: number;
   stretchXSpread: number;

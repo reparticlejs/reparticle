@@ -1,10 +1,15 @@
-import type { Texture } from 'pixi.js';
+import { Texture } from 'pixi.js';
 
 import type { Flipbook } from '#types/flipbook.js';
-import type { AnimationPlayback, AnimationSize, ParticleTexture } from '#types/particle-texture.js';
+import type {
+  AnimationFrames,
+  AnimationPlayback,
+  AnimationSize,
+  ParticleTexture,
+} from '#types/particle-texture.js';
 
 /**
- * Resolve an atlas animation into frame references and vertex-shader settings.
+ * Resolve a texture sequence into frame references and vertex-shader settings.
  * Returns null for a static texture selection. Size mode is checked for both paths.
  *
  * This prepares playback; it does not advance it. The shader chooses each particle's
@@ -13,12 +18,28 @@ import type { AnimationPlayback, AnimationSize, ParticleTexture } from '#types/p
  */
 export function resolveFlipbook(options: ParticleTexture): Flipbook | null {
   validateSizeMode(options.sizeMode);
-  if (options.animation === undefined) {
+  const frames = options.textures;
+  if (frames !== undefined) {
+    if (
+      !Array.isArray(frames) ||
+      frames.length === 0 ||
+      frames.some((frame) => !(frame instanceof Texture))
+    ) {
+      throw new Error('Particle textures must be a nonempty array of Pixi textures');
+    }
+  }
+  if (!frames || frames.length === 1) {
+    if (
+      options.playback !== undefined ||
+      options.fps !== undefined ||
+      options.animationSize !== undefined
+    ) {
+      throw new Error('Animation settings require at least two textures');
+    }
     return null;
   }
-
-  const frames = findAnimationFrames(options.atlas.animations, options.animation);
-  const aspect = resolveAspect(options.animationSize ?? frames[0]!.orig);
+  validateAnimationFrames(frames);
+  const aspect = resolveAspect(options.animationSize ?? frames[0].orig);
   const fps = options.fps ?? 30;
   if (!Number.isFinite(fps) || fps < 0) {
     throw new Error('Particle animation FPS must be finite and nonnegative');
@@ -29,7 +50,7 @@ export function resolveFlipbook(options: ParticleTexture): Flipbook | null {
 
   return {
     // Disabled playback displays the first authored frame, regardless of particle age.
-    frames: playback === 'none' ? [frames[0]!] : [...frames],
+    frames: playback === 'none' ? [frames[0]] : [...frames],
     aspect,
     fps,
     ...playbackFlags,
@@ -42,19 +63,17 @@ function validateSizeMode(sizeMode: ParticleTexture['sizeMode']): void {
   }
 }
 
-/** One emitter draw binds one artwork source, so all frames must share that source. */
-function findAnimationFrames(animations: Record<string, Texture[]>, name: string): Texture[] {
-  const frames = Object.hasOwn(animations, name) ? animations[name] : undefined;
-  if (!frames?.length) {
-    throw new Error(`Unknown or empty particle animation: ${name}`);
+/** Validate loaded arrays and narrow them for animation bindings. Textures stay caller-owned. */
+export function validateAnimationFrames(
+  frames: readonly Texture[],
+): asserts frames is AnimationFrames {
+  if (frames.length < 2 || frames.some((frame) => !(frame instanceof Texture))) {
+    throw new Error('Particle animation requires at least two Pixi textures');
   }
-
   const source = frames[0]!.source;
   if (frames.some((frame) => frame.source !== source)) {
     throw new Error('Particle animation frames must share one texture source');
   }
-
-  return frames;
 }
 
 /** Normalize reference dimensions so the longest side is 1; playback order cannot change them. */

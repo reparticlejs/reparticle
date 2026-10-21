@@ -55,11 +55,13 @@
       },
       "id": "smoke",
       "startDelay": 0.3,
-      "blendMode": "normal",
       "modifiers": [],
       "position": {
         "x": 0,
         "y": 0
+      },
+      "rendering": {
+        "blendMode": "normal"
       }
     },
     {
@@ -101,11 +103,13 @@
         }
       },
       "id": "fire",
-      "blendMode": "add",
       "modifiers": [],
       "position": {
         "x": -35,
         "y": 0
+      },
+      "rendering": {
+        "blendMode": "add"
       }
     },
     {
@@ -148,7 +152,6 @@
       },
       "id": "sparks",
       "startDelay": 0.15,
-      "blendMode": "add",
       "modifiers": [
         {
           "type": "acceleration",
@@ -159,6 +162,9 @@
       "position": {
         "x": 35,
         "y": 0
+      },
+      "rendering": {
+        "blendMode": "add"
       }
     }
   ],

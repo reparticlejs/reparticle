@@ -21,7 +21,6 @@ export function applyEmitterPatch(current: EmitterConfig, input: unknown): Emitt
     inheritVelocity: patch.inheritVelocity ?? current.inheritVelocity,
 
     stretchWithVelocity: patch.stretchWithVelocity ?? current.stretchWithVelocity,
-    blendMode: patch.blendMode ?? current.blendMode,
 
     emission,
     initial,

@@ -4,7 +4,7 @@ Reviewed 2026-10-19 against Defold **1.13.2**, the stable version reported by it
 
 ## Scope and references
 
-Compare portable 2D simulation and particle rendering behavior. Keep texture configuration in Pixi, simulation in core, consumer-authored GPU code out of the API, and normal playback free of GPU readbacks. Sphere, 3D cone, box depth and 3D orientation remain deferred. Defold materials, resource loading, Lua messaging and project settings are engine integration features, not missing Reparticle simulation modules.
+Compare portable 2D simulation and particle rendering behavior. Keep the shared rendering contract in core, Pixi asset objects in runtime bindings, simulation in core, consumer-authored GPU code out of the API, and normal playback free of GPU readbacks. Sphere, 3D cone, box depth and 3D orientation remain deferred. Defold materials, resource loading, Lua messaging and project settings are engine integration features, not missing Reparticle simulation modules.
 
 References pinned where possible:
 

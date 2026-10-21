@@ -4,8 +4,7 @@ import { emissionSchema } from './emission';
 import { initialPropertiesSchema } from './initial-properties';
 import { modifiersSchema } from './modifiers';
 import { overLifetimeSchema } from './over-lifetime';
-
-export const blendModeSchema = enumSchema(['normal', 'add', 'multiply', 'screen']);
+import { renderingSchema } from './rendering';
 
 const emitterIdSchema = string().refine(
   (id) => id.trim().length > 0,
@@ -50,11 +49,13 @@ export const emitterConfigSchema = strictObject({
   // Particle appearance
   orientation: orientationSchema.default('default'),
   stretchWithVelocity: boolean().default(false),
-  blendMode: blendModeSchema.default('normal'),
 
   // Emission and particle behavior
   emission: emissionSchema,
   initial: initialPropertiesSchema,
   overLifetime: overLifetimeSchema,
   modifiers: modifiersSchema.default([]),
+
+  // Rendering
+  rendering: renderingSchema,
 });

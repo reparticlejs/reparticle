@@ -235,11 +235,13 @@ it('applies velocity stretch through both initial configuration and runtime upda
 
 it('preserves blend modes in initial controls, definitions, and runtime patches', () => {
   const definition = parseEffectConfig(effect).emitters[0];
-  definition.blendMode = 'multiply';
+  definition.rendering = { ...definition.rendering, blendMode: 'multiply' };
   const controls = initialControls(definition);
   expect(controls.blendMode).toBe('multiply');
-  expect(applyControls(definition, { ...controls, blendMode: 'screen' }).blendMode).toBe('screen');
-  expect(emitterParameters({ ...controls, blendMode: 'add' }).blendMode).toBe('add');
+  expect(applyControls(definition, { ...controls, blendMode: 'screen' }).rendering?.blendMode).toBe(
+    'screen',
+  );
+  expect(emitterParameters({ ...controls, blendMode: 'add' })).not.toHaveProperty('blendMode');
 });
 
 it('preserves repeated modifiers and their order when demo controls edit the first instance', () => {

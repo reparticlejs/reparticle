@@ -1,3 +1,4 @@
+import { parseEffectConfig } from '@reparticle/core';
 import type { Transform } from '@reparticle/core';
 import { ParticleEffect, type ParticleTint, type ParticleStateListener } from '@reparticle/pixi';
 import { Application, Assets, type Spritesheet, type WebGLRenderer } from 'pixi.js';
@@ -32,13 +33,10 @@ export async function createMultiplePreview(
     if (signal.aborted) {
       return null;
     }
-    const view = new ParticleEffect(effect, {
+    const definition = parseEffectConfig(effect);
+    const view = new ParticleEffect(definition, {
       autoUpdate: false,
-      emitters: {
-        smoke: { texture: null },
-        fire: { texture: null },
-        sparks: { atlas, frame: 'spark' },
-      },
+      emitters: { sparks: { textures: [atlas.textures.spark!] } },
     });
     view.position.set(app.screen.width / 2, app.screen.height * 0.7);
     app.stage.addChild(view);

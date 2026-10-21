@@ -36,7 +36,7 @@ export class Emitter {
   private settings: EmitterConfig;
   private readonly sharedModifiers: ModifierConfig[];
   private modifiers: ModifierSampler;
-  private initial: InitialPropertyCurves;
+  private initialProperties: InitialPropertyCurves;
   private spawnRate: SpawnRate;
   private shape: SampledShape;
   private readonly angularVelocitySamples: Float32Array;
@@ -44,10 +44,10 @@ export class Emitter {
 
   // Playback, birth allocation, and inherited motion.
   private readonly playback: EmitterPlayback;
-  private readonly schedule: SpawnSchedule;
-  private readonly slots: ParticleSlots;
-  private readonly velocity = new EmitterVelocity();
-  private seed: number;
+  private readonly spawnSchedule: SpawnSchedule;
+  private readonly particleSlots: ParticleSlots;
+  private readonly emitterVelocity = new EmitterVelocity();
+  private spawnSeed: number;
   private readonly initialSeed: number;
   private needsPrewarm = true;
 
@@ -73,7 +73,7 @@ export class Emitter {
       this.settings.emission.rateSpread,
       this.settings.seed,
     );
-    this.initial = sampleInitialProperties(this.settings.initial);
+    this.initialProperties = sampleInitialProperties(this.settings.initial);
     this.angularVelocitySamples = sampleCurve(this.settings.overLifetime.angularVelocity);
     this.rotationSamples = sampleCurve(
       this.settings.orientation === 'angular-velocity' ? 0 : this.settings.overLifetime.rotation,
@@ -83,8 +83,8 @@ export class Emitter {
     this.capacity = this.settings.capacity;
     this.rows = Math.ceil(this.capacity / this.width);
 
-    this.schedule = new SpawnSchedule(this.capacity);
-    this.slots = new ParticleSlots(this.capacity, true);
+    this.spawnSchedule = new SpawnSchedule(this.capacity);
+    this.particleSlots = new ParticleSlots(this.capacity, true);
     this.playback = new EmitterPlayback(
       this.settings.duration,
       this.settings.playMode,
@@ -93,8 +93,8 @@ export class Emitter {
     );
 
     this.initialSeed = this.settings.seed;
-    this.seed = this.initialSeed;
-    if (!Number.isFinite(this.seed)) {
+    this.spawnSeed = this.initialSeed;
+    if (!Number.isFinite(this.spawnSeed)) {
       throw new RangeError('Seed must be finite');
     }
     if (context) {
@@ -118,8 +118,8 @@ export class Emitter {
       try {
         // Compile both paths without changing playback, seeds, or queued controls.
         simulation.reset();
-        this.integrate(0, 0, this.initial.lifetime.at(0), 0);
-        this.integrate(0, 0, this.initial.lifetime.at(0), 0);
+        this.integrate(0, 0, this.initialProperties.lifetime.at(0), 0);
+        this.integrate(0, 0, this.initialProperties.lifetime.at(0), 0);
         simulation.reset();
         this.context = context;
       } catch (error) {
@@ -197,7 +197,7 @@ export class Emitter {
       } finally {
         this.context?.restoreState?.();
       }
-      this.slots.reset();
+      this.particleSlots.reset();
     }
     this.needsPrewarm = false;
     this.playback.stop();
@@ -279,35 +279,46 @@ export class Emitter {
   public setParameters(patch: EmitterParameters): void {
     this.assertAlive();
     const settings = applyEmitterPatch(this.settings, patch);
-    const modifiers =
-      patch.modifiers === undefined
-        ? this.modifiers
-        : new ModifierSampler(settings.modifiers, this.sharedModifiers);
-    const shape =
-      patch.emission?.shape === undefined ? this.shape : new SampledShape(settings.emission.shape);
-    const spawnRate =
-      patch.emission?.rate === undefined
-        ? this.spawnRate
-        : new SpawnRate(settings.emission.rate, settings.emission.rateSpread, settings.seed);
-    const initial = sampleInitialProperties(settings.initial, this.initial, patch.initial);
+    let modifiers = this.modifiers;
+    let shape = this.shape;
+    let spawnRate = this.spawnRate;
+
+    if (patch.modifiers !== undefined) {
+      modifiers = new ModifierSampler(settings.modifiers, this.sharedModifiers);
+    }
+    if (patch.emission?.shape !== undefined) {
+      shape = new SampledShape(settings.emission.shape);
+    }
+    if (patch.emission?.rate !== undefined) {
+      spawnRate = new SpawnRate(
+        settings.emission.rate,
+        settings.emission.rateSpread,
+        settings.seed,
+      );
+    }
+    const initial = sampleInitialProperties(
+      settings.initial,
+      this.initialProperties,
+      patch.initial,
+    );
 
     // Commit only after every replacement has been validated and sampled.
     this.settings = settings;
     this.modifiers = modifiers;
     this.shape = shape;
-    this.initial = initial;
+    this.initialProperties = initial;
     this.spawnRate = spawnRate;
   }
 
   /** Changes when allocation or particle ages change, including reset and clear. */
   public get particleRevision(): number {
-    return this.slots.revision;
+    return this.particleSlots.revision;
   }
 
   /** Copy the final logical order; simulation texels always remain in their original slots. */
   public copyParticleOrder(target: Uint32Array): number {
     this.assertAlive();
-    return this.slots.copyOrder(target);
+    return this.particleSlots.copyOrder(target);
   }
 
   /** GPU resource handle for renderer adapters. Never calls toArray/readPixels. */
@@ -342,11 +353,11 @@ export class Emitter {
         this.needsPrewarm = false;
         prewarm(
           this.settings.startOffset,
-          this.initial.lifetime.maximum + this.settings.initial.lifetimeSpread,
+          this.initialProperties.lifetime.maximum + this.settings.initial.lifetimeSpread,
           (stepSeconds) => this.step(stepSeconds),
         );
       }
-      this.velocity.update(this.worldX, this.worldY, seconds);
+      this.emitterVelocity.update(this.worldX, this.worldY, seconds);
       this.step(seconds);
     } finally {
       this.context?.restoreState?.();
@@ -363,12 +374,12 @@ export class Emitter {
     } finally {
       this.context?.restoreState?.();
     }
-    this.schedule.reset();
-    this.slots.reset();
+    this.spawnSchedule.reset();
+    this.particleSlots.reset();
     this.playback.reset();
-    this.velocity.reset();
+    this.emitterVelocity.reset();
     this.needsPrewarm = true;
-    this.seed = this.initialSeed;
+    this.spawnSeed = this.initialSeed;
     this.notifyStateChanges();
   }
 
@@ -416,54 +427,57 @@ export class Emitter {
     const shouldEmit = this.playback.advance(seconds);
     const emitterAge = this.playback.normalizedAge;
     const rate = shouldEmit && this.emitting ? this.spawnRate.at(emitterAge) : 0;
-    const requested = this.schedule.next(rate, seconds);
-    const lifetime = this.initial.lifetime.at(emitterAge);
+    const requested = this.spawnSchedule.next(rate, seconds);
+    const lifetime = this.initialProperties.lifetime.at(emitterAge);
     const settings = this.settings;
 
-    const birthCount = this.slots.advance(
+    const birthCount = this.particleSlots.advance(
       seconds,
       requested,
       lifetime,
       settings.initial.lifetimeSpread,
-      this.seed,
-      Math.max(0, this.initial.lifetime.maximum),
+      this.spawnSeed,
+      Math.max(0, this.initialProperties.lifetime.maximum),
     );
 
     this.integrate(seconds, birthCount, lifetime, emitterAge);
 
     if (seconds > 0) {
-      this.playback.finish(this.slots.empty);
+      this.playback.finish(this.particleSlots.empty);
     }
     if (birthCount > 0) {
-      this.seed = (this.seed + 1) % 65536;
+      this.spawnSeed = (this.spawnSeed + 1) % 65536;
     }
   }
 
-  /**
-   * Bind the positional arguments expected by simulation/kernels/integrate.ts.
-   * This is one GPU pass; argument order is part of the kernel contract.
-   */
+  /** Fill reusable input groups, then run one GPU pass. No particle data returns to the CPU. */
   private integrate(
     seconds: number,
     birthCount: number,
     lifetime: number,
     emitterAge: number,
   ): void {
-    const settings = this.settings;
-    const worldSpace = settings.space === 'world';
-    const handedness = worldSpace ? this.worldHandedness : 1;
-    const scale = worldSpace ? this.worldScale : 1;
-    const rotation = worldSpace ? this.worldRotation : 0;
-    const radians = (-rotation * Math.PI) / 180;
-    const initialRotation = this.initial.rotation.at(emitterAge) * handedness;
-    const particleRotation =
-      settings.orientation === 'movement-direction' ? initialRotation : initialRotation + rotation;
     const parameters = this.simulationParameters;
     parameters.step.seconds = seconds;
     parameters.step.birthCount = birthCount;
-    parameters.step.seed = this.seed;
+    parameters.step.seed = this.spawnSeed;
 
-    parameters.emission.speed = this.initial.speed.at(emitterAge);
+    this.sampleBirthProperties(emitterAge, lifetime);
+    this.copyBirthSpread();
+    this.prepareBirthTransform(emitterAge);
+    this.sampleModifiers();
+
+    parameters.spawnMask = this.particleSlots.spawnMask;
+    parameters.rotationCurve = this.rotationSamples;
+    parameters.angularVelocityCurve = this.angularVelocitySamples;
+    this.simulation!.update(parameters);
+  }
+
+  /** Birth properties use the emitter's normalized age, not each particle's age. */
+  private sampleBirthProperties(emitterAge: number, lifetime: number): void {
+    const settings = this.settings;
+    const parameters = this.simulationParameters;
+    parameters.emission.speed = this.initialProperties.speed.at(emitterAge);
     parameters.emission.direction = settings.initial.direction;
     parameters.emission.spread = settings.initial.spread;
     parameters.emission.lifetime = lifetime;
@@ -475,16 +489,26 @@ export class Emitter {
     parameters.shapeSpread.dimensionX = this.shape.dimensionSpreadX;
     parameters.shapeSpread.dimensionY = this.shape.dimensionSpreadY;
 
-    parameters.appearance.size = this.initial.size.at(emitterAge);
-    parameters.appearance.rotation = particleRotation;
-    parameters.appearance.stretchX = this.initial.stretchX.at(emitterAge);
-    parameters.appearance.stretchY = this.initial.stretchY.at(emitterAge);
+    parameters.appearance.size = this.initialProperties.size.at(emitterAge);
+    parameters.appearance.stretchX = this.initialProperties.stretchX.at(emitterAge);
+    parameters.appearance.stretchY = this.initialProperties.stretchY.at(emitterAge);
 
-    parameters.color.red = this.initial.red.at(emitterAge);
-    parameters.color.green = this.initial.green.at(emitterAge);
-    parameters.color.blue = this.initial.blue.at(emitterAge);
-    parameters.color.alpha = this.initial.alpha.at(emitterAge);
+    parameters.color.red = this.initialProperties.red.at(emitterAge);
+    parameters.color.green = this.initialProperties.green.at(emitterAge);
+    parameters.color.blue = this.initialProperties.blue.at(emitterAge);
+    parameters.color.alpha = this.initialProperties.alpha.at(emitterAge);
 
+    parameters.orientation.direction = settings.orientation === 'initial-direction' ? 1 : 0;
+    parameters.orientation.movement = settings.orientation === 'movement-direction' ? 1 : 0;
+    parameters.orientation.angularVelocity = settings.orientation === 'angular-velocity' ? 1 : 0;
+    parameters.orientation.initialAngularVelocity =
+      this.initialProperties.angularVelocity.at(emitterAge);
+  }
+
+  /** Spread is copied separately from the sampled base values. */
+  private copyBirthSpread(): void {
+    const settings = this.settings;
+    const parameters = this.simulationParameters;
     parameters.motionSpread.speed = settings.initial.speedSpread;
     parameters.motionSpread.lifetime = settings.initial.lifetimeSpread;
     parameters.motionSpread.size = settings.initial.sizeSpread;
@@ -498,29 +522,42 @@ export class Emitter {
     parameters.geometrySpread.angularVelocity = settings.initial.angularVelocitySpread;
     parameters.geometrySpread.stretchX = settings.initial.stretchXSpread;
     parameters.geometrySpread.stretchY = settings.initial.stretchYSpread;
+  }
+
+  /** World-space births capture the transform; local-space births follow it when rendered. */
+  private prepareBirthTransform(emitterAge: number): void {
+    const settings = this.settings;
+    const worldSpace = settings.space === 'world';
+    const handedness = worldSpace ? this.worldHandedness : 1;
+    const scale = worldSpace ? this.worldScale : 1;
+    const rotation = worldSpace ? this.worldRotation : 0;
+    const radians = (-rotation * Math.PI) / 180;
+    const initialRotation = this.initialProperties.rotation.at(emitterAge) * handedness;
+    const particleRotation =
+      settings.orientation === 'movement-direction' ? initialRotation : initialRotation + rotation;
+    const parameters = this.simulationParameters;
+    parameters.appearance.rotation = particleRotation;
 
     parameters.position.x = worldSpace ? this.worldX : 0;
     parameters.position.y = worldSpace ? this.worldY : 0;
     parameters.position.inheritedVelocityX = worldSpace
-      ? this.velocity.x * settings.inheritVelocity
+      ? this.emitterVelocity.x * settings.inheritVelocity
       : 0;
     parameters.position.inheritedVelocityY = worldSpace
-      ? this.velocity.y * settings.inheritVelocity
+      ? this.emitterVelocity.y * settings.inheritVelocity
       : 0;
 
     parameters.transform.cosine = Math.cos(radians);
     parameters.transform.sine = Math.sin(radians);
     parameters.transform.scale = scale;
     parameters.transform.handedness = handedness;
+  }
 
-    parameters.orientation.direction = settings.orientation === 'initial-direction' ? 1 : 0;
-    parameters.orientation.movement = settings.orientation === 'movement-direction' ? 1 : 0;
-    parameters.orientation.angularVelocity = settings.orientation === 'angular-velocity' ? 1 : 0;
-    parameters.orientation.initialAngularVelocity = this.initial.angularVelocity.at(emitterAge);
-
-    parameters.spawnMask = this.slots.spawnMask;
-    parameters.rotationCurve = this.rotationSamples;
-    parameters.angularVelocityCurve = this.angularVelocitySamples;
+  /** Modifiers use their own playback clock and the particle simulation's coordinate space. */
+  private sampleModifiers(): void {
+    const settings = this.settings;
+    const parameters = this.simulationParameters;
+    const worldSpace = settings.space === 'world';
     parameters.modifiers = this.modifiers.sample(
       this.playback.modifierAge,
       !worldSpace,
@@ -530,7 +567,6 @@ export class Emitter {
       settings.scale,
       this.effectTransform,
     );
-    this.simulation!.update(parameters);
   }
 
   private assertAlive(): void {

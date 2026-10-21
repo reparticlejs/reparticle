@@ -10,11 +10,18 @@ export { ParticleEffect } from './runtime/particle-effect';
 // Renderer configuration and lifecycle events.
 export type {
   ParticleTexture,
+  AnimationFrames,
   AnimationPlayback,
   AnimationSize,
   ParticleSizeMode,
   ParticlePivot,
 } from '#types/particle-texture.js';
 export type { ParticleStateChange, ParticleStateListener } from '#types/particle-state-change.js';
-export type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
+export type {
+  ParticleRendering,
+  ParticleTint,
+  ParticleBlendMode,
+} from '#types/particle-rendering.js';
 export type { ParticleEffectOptions } from '#types/particle-effect-options.js';
+
+export { validateAnimationFrames } from './textures/resolve-flipbook';

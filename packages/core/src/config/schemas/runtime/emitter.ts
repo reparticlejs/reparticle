@@ -1,6 +1,5 @@
 import { boolean, number, strictObject } from 'zod';
 
-import { blendModeSchema } from '../definition/emitter';
 import { modifiersSchema } from '../definition/modifiers';
 import { emissionSchema } from './emission';
 import { initialPropertiesSchema } from './initial-properties';
@@ -20,7 +19,6 @@ export const emitterSchema = strictObject({
 
   // Particle appearance
   stretchWithVelocity: boolean().optional(),
-  blendMode: blendModeSchema.optional(),
 
   // Emission and particle behavior
   emission: emissionSchema.optional(),

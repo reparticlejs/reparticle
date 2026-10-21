@@ -1,4 +1,5 @@
 import { parseEffectConfig } from '@reparticle/core';
+import { validateAnimationFrames } from '@reparticle/pixi';
 import { Assets, type Spritesheet } from 'pixi.js';
 
 import type { PreviewAssets } from '../types/preview-scene';
@@ -28,21 +29,22 @@ async function loadTextures(): Promise<PreviewAssets['textures']> {
   const atlas = await Assets.load<Spritesheet>(
     `${import.meta.env.BASE_URL}textures/particles.json`,
   );
+  const frames = atlas.animations.shapes!;
+  validateAnimationFrames(frames);
   return {
-    star: { atlas, frame: 'star' },
-    leaf: { atlas, frame: 'leaf' },
-    'leaf-pivot': { atlas, frame: 'leaf', pivot: { x: 0, y: 0.5 } },
-    spark: { atlas, frame: 'spark' },
-    flipbook: { atlas, animation: 'shapes', playback: 'loop-forward', fps: 6 },
+    star: { textures: [atlas.textures.star!] },
+    leaf: { textures: [atlas.textures.leaf!] },
+    'leaf-pivot': { textures: [atlas.textures.leaf!], pivot: { x: 0, y: 0.5 } },
+    spark: { textures: [atlas.textures.spark!] },
+    flipbook: { textures: frames, playback: 'loop-forward', fps: 6 },
     'flipbook-auto': {
-      atlas,
-      animation: 'shapes',
+      textures: frames,
       playback: 'loop-forward',
       fps: 6,
       sizeMode: 'auto',
     },
-    'flipbook-once': { atlas, animation: 'shapes', playback: 'once-forward' },
-    'flipbook-pingpong': { atlas, animation: 'shapes', playback: 'loop-pingpong', fps: 6 },
-    procedural: { texture: null },
+    'flipbook-once': { textures: frames, playback: 'once-forward' },
+    'flipbook-pingpong': { textures: frames, playback: 'loop-pingpong', fps: 6 },
+    procedural: {},
   };
 }

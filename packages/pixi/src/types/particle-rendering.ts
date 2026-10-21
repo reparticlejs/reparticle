@@ -1,12 +1,16 @@
+import type { ParticleBlendMode, ParticleTint } from '@reparticle/core';
+
 import type { ParticleTexture } from '#types/particle-texture.js';
 
-/** Straight RGBA multiplier, applied after the particle's own color. */
-export interface ParticleTint {
-  red: number;
-  green: number;
-  blue: number;
-  alpha: number;
-}
+export type { ParticleBlendMode, ParticleTint } from '@reparticle/core';
 
-/** Renderer-owned settings; tint is independent of texture replacement and simulation. */
-export type ParticleRendering = ParticleTexture & { tint?: ParticleTint };
+/** Resolved Pixi artwork for drawing, never stored in the core effect definition. */
+export type ParticleRendering = ParticleTexture & {
+  tint?: ParticleTint | undefined;
+  blendMode?: ParticleBlendMode | undefined;
+};
+
+/** Validated renderer settings with the default blend mode applied. */
+export type ResolvedParticleRendering = ParticleRendering & {
+  blendMode: ParticleBlendMode;
+};

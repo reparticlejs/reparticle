@@ -1,14 +1,14 @@
 import type { Ticker } from 'pixi.js';
 
-import type { ParticleRendering } from '#types/particle-rendering.js';
+import type { ParticleTexture } from './particle-texture';
 
-/** Artwork can target one emitter directly or select multiple emitters by ID. */
-export type ParticleEffectOptions = (
-  | ParticleRendering
-  | { emitters: Record<string, ParticleRendering> }
-) & {
-  /** Automatically advance before rendering. Defaults to true. Disable for manual update(seconds). */
+/** Pixi artwork bindings and runtime integration, separate from the effect definition. */
+export interface ParticleEffectOptions {
+  /** Artwork keyed by emitter ID. Omitted emitters use procedural particles. */
+  emitters?: Readonly<Record<string, ParticleTexture>>;
+
+  /** Defaults to true. Disable when calling update(seconds) yourself. */
   autoUpdate?: boolean;
-  /** Ticker used for automatic updates. Defaults to Ticker.shared; the effect never owns it. */
+  /** Defaults to Ticker.shared. The effect does not own this ticker. */
   ticker?: Ticker;
-};
+}

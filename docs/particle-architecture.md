@@ -10,7 +10,7 @@ Keep the existing core and Pixi packages. Within core, separate configuration va
 
 The configuration boundary uses strict Zod schemas to validate unknown input before GPU allocation and produce typed owned data. Configuration types live in `src/types` and are inferred from the schemas. Parsing throws a `ZodError` with structured issue paths; callers can use the exported schema with `safeParse` instead. Runtime updates use a restricted typed API. Never evaluate consumer code, generate functions from JSON, or traverse configuration per particle per frame.
 
-Core has no Pixi dependency. GPU.js remains the simulation backend. Pixi owns visual output and resolves asset identifiers through the host. Host texture objects do not belong in JSON. Shared GPU textures remain resident; normal playback must not read particle state back to the CPU.
+Core has no Pixi dependency. GPU.js remains the simulation backend. Pixi owns visual output and accepts textures loaded by the host. Host texture objects do not belong in JSON. Shared GPU textures remain resident; normal playback must not read particle state back to the CPU.
 
 Keep ordinary typed kernel functions and explicit helper registration. The package build compiles their source strings into tracked `src/simulation/functions.json`; consumers need no build plugin, source rewriting or minifier configuration. Test kernels after production minification.
 
@@ -224,7 +224,7 @@ World-space speed includes the birth emitter scale and inherited velocity; local
 
 ### Blend modes
 
-Each emitter has `blendMode`: `normal` (default), `add`, `multiply`, or `screen`.
+Each emitter has `rendering.blendMode`: `normal` (default), `add`, `multiply`, or `screen`.
 The Pixi renderer uses Pixi's default premultiplied-alpha blend factors for textured and
 procedural particles alike. With premultiplied source color S, source alpha A,
 and destination color D, RGB output is:
@@ -238,28 +238,26 @@ Normal, multiply, and screen use source-over alpha accumulation; add sums alpha.
 Texture alpha, particle alpha, and view opacity are already incorporated into the
 premultiplied source color. The previous `alpha` blend-mode name is no longer
 accepted; existing effect JSON must use `normal`. Opacity properties remain `alpha`.
-`emitter.setParameters({ blendMode: 'add' })` affects the next render, including
+`effect.setEmitterBlendMode(emitterId, 'add')` affects the next render, including
 existing particles while paused. It does not restart simulation or add particle
 state. The demo exposes this under Appearance. Procedural particles now default
 to Normal too; choose Add explicitly for their previous additive appearance.
 
 ### Pixi atlas frames
 
-Texture configuration belongs to `@reparticle/pixi`, separate from the core effect
-JSON. Load a Pixi spritesheet in the host, then select a named frame:
+Texture configuration belongs to Pixi's per-emitter bindings. Core rendering
+contains only blend mode and tint.
 
 ```ts
 const atlas = await Assets.load<Spritesheet>('textures/particles.json');
-const view = new ParticleEffect(effectConfig, { atlas, frame: 'star' });
-view.setTexture({ atlas, frame: 'leaf' });
+const view = new ParticleEffect(effectConfig, {
+  emitters: { sparks: { textures: [atlas.textures.star] } },
+});
+view.setTexture({ textures: [atlas.textures.leaf] });
 ```
 
-A standalone texture uses `{ texture }`; `{ texture: null }` selects procedural
-particles. The existing `view.texture` property also accepts resolved Pixi textures.
-`ParticleTexture` is the exported union for these options. Atlas objects expose a
-`textures` map, so Pixi `Spritesheet` instances work directly. Missing frame names
-throw before replacing the current texture or allocating a new view's GPU resources.
-The caller owns all textures and atlas resources; destroying the view does not destroy them.
+Omitted textures select procedural particles. Empty or invalid supplied arrays use a shared missing-texture placeholder and log a warning. The host
+owns every texture; destroying the effect never destroys borrowed artwork.
 
 Frames respect Pixi UV rotation and trim offsets, retaining the original untrimmed
 image's proportions and center. Initial size still controls the longest original
@@ -270,16 +268,15 @@ pass is added. The demo's three artwork choices now share `textures/particles.js
 
 ### Pixi flipbook animation
 
-Animation is also a Pixi texture option, never part of the core effect config:
+Animation belongs to Pixi bindings, with at least two frames from one texture source.
 
 ```ts
+const frames = atlas.animations.flames;
+validateAnimationFrames(frames);
 const view = new ParticleEffect(effectConfig, {
-  atlas,
-  animation: 'flames', // name in atlas.animations
-  playback: 'loop-forward',
-  fps: 30,
+  emitters: { fire: { textures: frames, playback: 'loop-forward', fps: 30 } },
 });
-view.setTexture({ atlas, animation: 'smoke', playback: 'once-forward' });
+view.setTexture({ textures: frames, playback: 'once-forward' });
 ```
 
 Playback supports `none`, `once-forward`, `once-backward`, `once-pingpong`,
@@ -322,16 +319,18 @@ finished once emitter does not stop looping siblings or remove its living partic
 Core validates the whole effect before any GPU allocation. Texture data stays in Pixi:
 
 ```ts
+validateAnimationFrames(flameFrames);
 const view = new ParticleEffect(effectConfig, {
+  autoUpdate: false,
   emitters: {
-    smoke: { texture: smokeTexture },
-    fire: { atlas, animation: 'flames', playback: 'loop-forward', fps: 30 },
-    sparks: { atlas, frame: 'spark' },
+    smoke: { textures: [smokeTexture] },
+    fire: { textures: flameFrames, playback: 'loop-forward', fps: 30 },
+    sparks: { textures: [atlas.textures.spark] },
   },
 });
 view.update(seconds); // advance every emitter, including independent prewarm/delay
 view.getEmitter('fire').setParameters({ emission: { rate: 200 } });
-view.setEmitterTexture('sparks', { atlas, frame: 'star' });
+view.setEmitterTexture('sparks', { textures: [atlas.textures.star] });
 view.reset(); // reset every simulation and repeat its authored start behavior
 ```
 
@@ -648,10 +647,9 @@ additional passes or per-particle CPU transform work are added.
 
 ### Runtime emitter tint (Pixi)
 
-`ParticleRendering` combines the existing texture selection with an optional straight
-RGBA `tint` (`red`, `green`, `blue`, `alpha`). It lives in Pixi's constructor options,
-never in the core effect JSON. Each omitted tint defaults to white with alpha one.
-Use `{ texture: null, tint: ... }` for procedural particles.
+Core rendering includes an optional straight RGBA `tint` (`red`, `green`, `blue`,
+`alpha`). Pixi combines it with artwork bindings internally. An omitted tint
+uses white with alpha one, including procedural particles.
 
 As with [Defold's material constant overrides](https://defold.com/ref/particlefx-lua/#particlefx.set_constant),
 `setEmitterTint(id, tint)` overrides the authored value until `resetEmitterTint(id)`
@@ -788,7 +786,7 @@ order. No GPU readback or particle simulation change is involved.
 
 ### Pixi render pipe and initialization
 
-`ParticleEffect` is constructed with effect and rendering configuration only. Its CPU emitters are available immediately. `ParticlePipe` is a registered WebGL extension instantiated by Pixi with the renderer. It owns per-view drawing resources and inserts particle draw instructions between Pixi batch boundaries.
+`ParticleEffect` is constructed with an effect definition containing per-emitter rendering data, plus separate ticker/runtime options. Its CPU emitters are available immediately. `ParticlePipe` is a registered WebGL extension instantiated by Pixi with the renderer. It owns per-view drawing resources and inserts particle draw instructions between Pixi batch boundaries.
 
 The pipe prepares particle views in the rendered subtree during `prerender`, before temporary root transforms, framebuffer binding, filters, or masks. This is necessary because GPU.js kernel compilation changes GL state. The draw instruction only renders existing textures; it never advances simulation.
 

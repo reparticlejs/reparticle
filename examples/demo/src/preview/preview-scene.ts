@@ -117,6 +117,7 @@ export class PreviewScene {
       );
     } else {
       this.updateParameters(next);
+      this.view.setEmitterBlendMode(this.view.emitter.id, next.blendMode);
       if (next.texture !== this.settings.texture) {
         this.view.setTexture(this.assets.textures[next.texture]);
       }

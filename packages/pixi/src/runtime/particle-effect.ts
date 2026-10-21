@@ -4,6 +4,7 @@ import {
   Emitter,
   type EmitterState,
   type EffectConfig,
+  type EffectInput,
   type StopOptions,
 } from '@reparticle/core';
 import {
@@ -20,12 +21,11 @@ import type { ParticleEffectOptions } from '#types/particle-effect-options.js';
 import type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
 import type { ParticleTexture } from '#types/particle-texture.js';
 
+import { resolveRendering } from '../config/resolve-rendering';
 import type { ParticlePipe } from '../rendering/particle-pipe';
 import { resolveTint } from '../rendering/resolve-tint';
 import { resolveFlipbook } from '../textures/resolve-flipbook';
-import { resolvePivot } from '../textures/resolve-pivot';
 import { resolveTexture } from '../textures/resolve-texture';
-import { resolveTextureFlip } from '../textures/resolve-texture-flip';
 import type { EmitterRenderer } from './emitter-renderer';
 
 /** An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller. */
@@ -45,10 +45,10 @@ export class ParticleEffect extends ViewContainer {
   private disposed = false;
   private readonly emitterStates = new Map<string, EmitterState>();
 
-  public constructor(definition: unknown, options: ParticleEffectOptions = { emitters: {} }) {
+  public constructor(definition: EffectInput, options: ParticleEffectOptions = {}) {
     super({});
     const effect = parseEffectConfig(definition);
-    this.configureRendering(effect, options);
+    this.configureRendering(effect, options.emitters);
     this.createEmitters(effect);
     this.tickListener = this.onTick.bind(this);
     this.currentTicker = options.ticker ?? Ticker.shared;
@@ -104,7 +104,7 @@ export class ParticleEffect extends ViewContainer {
   }
 
   public set texture(texture: Texture | null) {
-    this.setTexture({ texture });
+    this.setTexture(texture ? { textures: [texture] } : {});
   }
 
   public get awakeEmitters(): number {
@@ -177,6 +177,15 @@ export class ParticleEffect extends ViewContainer {
     return emitter;
   }
 
+  public setEmitterBlendMode(
+    id: string,
+    blendMode: NonNullable<ParticleRendering['blendMode']>,
+  ): void {
+    const rendering = resolveRendering({ ...this.getRendering(id), blendMode });
+    this.pipe?.getEmitterRenderer(this, id)?.setBlendMode(rendering.blendMode);
+    this.renderingByEmitter.set(id, rendering);
+  }
+
   public setEmitterTint(id: string, tint: ParticleTint): void {
     const rendering = this.getRendering(id);
     const value = resolveTint(tint);
@@ -197,9 +206,13 @@ export class ParticleEffect extends ViewContainer {
   public setEmitterTexture(id: string, options: ParticleTexture): void {
     this.pipe?.assertAvailable();
     const rendering = this.getRendering(id);
-    this.validateTexture(options);
-    this.pipe?.getEmitterRenderer(this, id)?.setTexture(options);
-    this.renderingByEmitter.set(id, { ...options, tint: resolveTint(rendering.tint) });
+    const replacement = resolveRendering({
+      ...options,
+      tint: rendering.tint,
+      blendMode: rendering.blendMode,
+    });
+    this.pipe?.getEmitterRenderer(this, id)?.setTexture(replacement);
+    this.renderingByEmitter.set(id, replacement);
   }
 
   public getEmitterTexture(id: string): Texture | null {
@@ -279,35 +292,24 @@ export class ParticleEffect extends ViewContainer {
     this.update(ticker.deltaMS / 1000);
   }
 
-  /** Validate all artwork selections before creating core emitters. */
-  private configureRendering(effect: EffectConfig, options: ParticleEffectOptions): void {
-    if ('emitters' in options) {
-      const ids = new Set(effect.emitters.map((emitter) => emitter.id));
-      for (const [id, rendering] of Object.entries(options.emitters)) {
-        if (!ids.has(id)) {
-          throw new Error(`Unknown particle emitter: ${id}`);
-        }
-        this.renderingByEmitter.set(id, rendering);
+  /** Validate every artwork binding before creating simulations or subscribing to the ticker. */
+  private configureRendering(
+    effect: EffectConfig,
+    artwork: ParticleEffectOptions['emitters'] = {},
+  ): void {
+    const emitterIds = new Set(effect.emitters.map((emitter) => emitter.id));
+    for (const id of Object.keys(artwork)) {
+      if (!emitterIds.has(id)) {
+        throw new Error(`Unknown emitter artwork binding: ${id}`);
       }
-    } else {
-      if (effect.emitters.length !== 1) {
-        throw new Error('Select textures by emitter ID for a multi-emitter effect');
-      }
-      this.renderingByEmitter.set(effect.emitters[0].id, options);
     }
-    // Validate every selection before allocating any emitter resources.
-    for (const rendering of this.renderingByEmitter.values()) {
-      resolveTint(rendering.tint);
-      this.validateTexture(rendering);
-    }
-  }
 
-  /** Validate artwork even when no renderer has been attached yet. */
-  private validateTexture(options: ParticleTexture): void {
-    resolvePivot(options.pivot);
-    resolveTextureFlip(options);
-    if (!resolveFlipbook(options)) {
-      resolveTexture(options);
+    for (const emitter of effect.emitters) {
+      const rendering = resolveRendering({
+        ...artwork[emitter.id],
+        ...emitter.rendering,
+      });
+      this.renderingByEmitter.set(emitter.id, rendering);
     }
   }
 
@@ -315,7 +317,7 @@ export class ParticleEffect extends ViewContainer {
   private createEmitters(effect: EffectConfig): void {
     for (const config of effect.emitters) {
       const emitter = new Emitter(null, config, effect.modifiers, this.effectTransform);
-      const rendering = this.renderingByEmitter.get(emitter.id) ?? { texture: null };
+      const rendering = this.renderingByEmitter.get(emitter.id)!;
       const tint = resolveTint(rendering.tint);
       this.renderingByEmitter.set(emitter.id, { ...rendering, tint });
       this.defaultTints.set(emitter.id, tint);

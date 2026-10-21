@@ -64,10 +64,13 @@ The shared-context/ping-pong integration was adapted from the local GPU.js–Pix
 
 ```ts
 import { Assets } from 'pixi.js';
+import { parseEffectConfig } from '@reparticle/core';
 import { ParticleEffect } from '@reparticle/pixi';
 
-const definition = await fetch('/effect.json').then((response) => response.json());
-const particles = new ParticleEffect(definition, { emitters: {}, ticker: app.ticker });
+const definition = parseEffectConfig(
+  await fetch('/effect.json').then((response) => response.json()),
+);
+const particles = new ParticleEffect(definition, { ticker: app.ticker });
 particles.texture = await Assets.load('/textures/spark.png');
 particles.emitter.setParameters({ initial: { size: 24 } }); // future births; longest edge
 app.stage.addChild(particles);
@@ -76,7 +79,7 @@ app.stage.addChild(particles);
 
 Use a WebGL renderer. Textures are ordinary Pixi `Texture` instances loaded through `Assets`. The example includes original SVG artwork rasterized by Pixi; PNG and other Pixi-supported image formats work through the same API. Images upload on first use, then the shader samples them directly on the GPU. Switching `particles.texture` changes the artwork for all particles without restarting simulation. Set it to `null` for the procedural circle.
 
-Untrimmed, unrotated atlas frames are supported through their UV rectangle. Trimmed or rotated frames are rejected explicitly. This example does not animate spritesheets. The caller owns the texture; destroying a view does not destroy shared artwork. No automatic bounds calculation or hit testing is added.
+Atlas frames support trim offsets and UV rotation. Multiple frames support flipbook animation. The caller owns the texture; destroying a view does not destroy shared artwork. No automatic bounds calculation or hit testing is added.
 
 ## Development stats
 
@@ -304,8 +307,8 @@ example at `?multiple` includes stop, clear, restart and emitter-state indicator
 ### Automatic frame sizing
 
 ```ts
-view.setTexture({ atlas, animation: 'smoke', sizeMode: 'auto', fps: 30 });
-// For composed effects: view.setEmitterTexture('smoke', { atlas, animation: 'smoke', sizeMode: 'auto' });
+view.setTexture({ textures: smokeFrames, sizeMode: 'auto', fps: 30 });
+// For composed effects: view.setEmitterTexture('smoke', { textures: smokeFrames, sizeMode: 'auto' });
 ```
 
 `sizeMode` belongs only to Pixi texture options and defaults to `'manual'`.
@@ -313,12 +316,11 @@ Manual flipbooks keep one aspect ratio across frames, using the first authored
 frame's original size by default (including backward playback). To supply the
 animation's reference dimensions explicitly, use `animationSize: { width: 64, height: 32 }`
 in the animation texture options. Both dimensions must be finite and positive.
-These dimensions also determine pivot scaling in either size mode; they never
-enter core effect JSON.
+These dimensions also determine pivot scaling in either size mode; they are validated by Pixi and are absent from core configuration.
 Following Defold, `'auto'` uses the current frame's original dimensions for
 animations with multiple frames and playback other than `'none'`. Initial size,
 its curve and spread are ignored; lifetime scale and stretch still apply.
-Single frames, single-frame animations, playback `'none'`, and procedural particles
+Single frames, playback `'none'`, and procedural particles
 retain manual sizing. FPS zero freezes the first frame but retains Auto sizing.
 Trimmed frames keep their original extent and trim offset; atlas rotation does not
 swap particle dimensions. Dimensions use Pixi's logical texture units, independent
@@ -328,8 +330,8 @@ restarting the simulation. Select **Atlas animation · automatic size** in the d
 ### Artwork flipping
 
 ```ts
-view.setTexture({ atlas, animation: 'smoke', flipX: true, flipY: false });
-view.setEmitterTexture('sparks', { atlas, frame: 'spark', flipY: true });
+view.setTexture({ textures: smokeFrames, flipX: true, flipY: false });
+view.setEmitterTexture('sparks', { textures: [atlas.textures.spark], flipY: true });
 ```
 
 `flipX` and `flipY` are optional booleans in Pixi texture configuration, both
@@ -344,7 +346,7 @@ effect. No core fields, GPU readbacks, or extra draw passes are required.
 ### Particle pivot
 
 ```ts
-view.setTexture({ atlas, frame: 'leaf', pivot: { x: 0, y: 0.5 } });
+view.setTexture({ textures: [atlas.textures.leaf], pivot: { x: 0, y: 0.5 } });
 ```
 
 Pivot is a Pixi texture option, defaulting to `{ x: 0, y: 0 }` (center).
@@ -431,14 +433,13 @@ fourth constructor argument. Pixi manages this runtime transform internally.
 
 ## Per-emitter rendering tint
 
-Tint belongs to Pixi rendering options, separately from the core effect definition:
+Tint belongs to each emitter’s shared `rendering` data:
 
 ```ts
-const particles = new ParticleEffect(effect, {
-  emitters: {
-    fire: { texture: null, tint: { red: 1, green: 0.8, blue: 0.5, alpha: 1 } },
-  },
-});
+effect.emitters[0].rendering = {
+  tint: { red: 1, green: 0.8, blue: 0.5, alpha: 1 },
+};
+const particles = new ParticleEffect(effect, { ticker: app.ticker });
 particles.setEmitterTint('fire', { red: 0.5, green: 1, blue: 1, alpha: 0.4 });
 particles.getEmitterTint('fire'); // Independent RGBA snapshot.
 particles.resetEmitterTint('fire'); // Restore the authored tint, not necessarily white.
@@ -485,7 +486,7 @@ and render textures according to their normal Pixi ownership rules.
 
 ### Renderer-free construction
 
-`new ParticleEffect(effect, renderingOptions)` validates configuration and creates CPU emitter controls without a renderer. Importing `@reparticle/pixi` registers its WebGL particle pipe with Pixi. On the first render, the pipe attaches the renderer’s shared context and prepares GPU.js before Pixi binds the render target.
+`new ParticleEffect(effect, runtimeOptions)` validates configuration and creates CPU emitter controls without a renderer. Importing `@reparticle/pixi` registers its WebGL particle pipe with Pixi. On the first render, the pipe attaches the renderer’s shared context and prepares GPU.js before Pixi binds the render target.
 
 Emitter access, parameter changes, texture/tint changes, and playback controls work immediately. `update(seconds)` validates its input but does not advance playback until that first render; it does not queue elapsed time. Afterwards, updates run independently of rendering, including when the view is offstage. Start offset/prewarm runs on the first positive update after initialization. GPU texture access before initialization throws.
 
@@ -510,3 +511,32 @@ Both `effect.autoUpdate` and `effect.ticker` can change at runtime. Switching
 tickers transfers the listener; disabling automatic updates or destroying the
 effect removes it. The effect never destroys its ticker. Updates still wait for
 the first render to initialize GPU resources.
+
+### Effect data and renderer assets
+
+Core validates each emitter's `rendering` settings: `blendMode` and optional RGBA
+`tint`. Artwork is supplied separately through Pixi options, keyed by emitter ID.
+
+```ts
+const frames = atlas.animations.smoke;
+validateAnimationFrames(frames); // Narrows a loaded Texture[] to two or more frames.
+const particles = new ParticleEffect(effectConfig, {
+  emitters: {
+    smoke: { textures: frames, playback: 'loop-forward', fps: 24 },
+    sparks: { textures: [sparkTexture] },
+  },
+  ticker: app.ticker,
+  autoUpdate: true,
+});
+```
+
+One texture is static. Two or more enable animation settings; empty or invalid supplied arrays use a shared missing-texture placeholder and log a warning. Omitted artwork uses procedural particles. Animation frames must share
+one texture source. Pixi borrows textures and never destroys them with the effect.
+Sizing, pivot, flips, animation size, playback and FPS belong to Pixi bindings.
+`validateAnimationFrames` is exported by `@reparticle/pixi` for loaded arrays.
+
+`EffectInput` and `EmitterInput` describe authoring data; `EffectConfig` and
+`EmitterConfig` include parsed defaults. Use `parseEffectConfig(json)` for untrusted
+JSON. Runtime `setTexture({ textures: [texture] })` and `setEmitterTexture(id, options)`
+replace artwork without changing core configuration. Use `setEmitterBlendMode`
+and `setEmitterTint` for live appearance overrides.

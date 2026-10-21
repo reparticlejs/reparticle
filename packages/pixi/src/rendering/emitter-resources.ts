@@ -1,7 +1,7 @@
 import type { Emitter } from '@reparticle/core';
 import { GlProgram, Shader, State, Texture, type WebGLRenderer } from 'pixi.js';
 
-import type { ParticleRendering } from '#types/particle-rendering.js';
+import type { ParticleTexture } from '#types/particle-texture.js';
 
 import fragment from '../shaders/particle.frag.glsl';
 import vertex from '../shaders/particle.vert.glsl';
@@ -31,7 +31,7 @@ export class EmitterResources {
   public constructor(
     private readonly renderer: WebGLRenderer,
     emitter: Emitter,
-    options: ParticleRendering,
+    options: ParticleTexture,
   ) {
     this.uniforms = createUniforms(emitter.configuration);
     const gl = renderer.gl;

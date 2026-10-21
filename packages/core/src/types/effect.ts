@@ -8,16 +8,18 @@ import type { emitterSchema } from '#src/config/schemas/runtime/emitter.js';
 /**
  * Parsed effect definition with schema defaults applied.
  * Contains at least one emitter with a unique ID and an effect-level modifier list.
- * Texture assets and animation settings belong to the renderer's configuration.
+ * Rendering settings contain shared appearance only; artwork belongs to the renderer.
  */
-export type EffectConfig = z.infer<typeof effectConfigSchema>;
+export type EffectConfig = z.output<typeof effectConfigSchema>;
 
-/**
- * Parsed definition for one emitter, including allocation, playback, transforms,
- * birth properties, lifetime curves, and modifiers. Schema defaults are present;
- * this is the resolved configuration, not the shape of unparsed JSON.
- */
-export type EmitterConfig = z.infer<typeof emitterConfigSchema>;
+/** Authoring input before defaults and validation. */
+export type EffectInput = z.input<typeof effectConfigSchema>;
+
+/** Emitter authoring input before defaults and validation. */
+export type EmitterInput = z.input<typeof emitterConfigSchema>;
+
+/** Validated emitter data, including the shared rendering contract. */
+export type EmitterConfig = z.output<typeof emitterConfigSchema>;
 
 /**
  * Parsed acceleration, drag, radial, or vortex modifier with defaults applied.

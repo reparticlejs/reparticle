@@ -4,6 +4,8 @@ export { effectConfigSchema } from './config/schemas/definition/effect';
 export { emitterConfigSchema } from './config/schemas/definition/emitter';
 export type {
   EffectConfig,
+  EffectInput,
+  EmitterInput,
   EmitterConfig,
   EmitterParameters,
   ModifierConfig,
@@ -38,3 +40,11 @@ export { prewarm } from './runtime/playback/prewarm';
 export { ParticleSlots } from './runtime/particles/slots';
 export type { ParticleLifetimeVisitor } from '#types/particle-lifetime.js';
 export { propertyVariation } from './simulation/emission/variation';
+
+export { renderingSchema } from './config/schemas/definition/rendering';
+export type {
+  RenderingConfig,
+  RenderingInput,
+  ParticleBlendMode,
+  ParticleTint,
+} from '#types/rendering.js';

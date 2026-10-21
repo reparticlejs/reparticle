@@ -4,6 +4,7 @@ import { color32BitToUniform, type Texture, type WebGLRenderer, type Matrix } fr
 import type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
 import type { ParticleTexture } from '#types/particle-texture.js';
 
+import { resolveRendering } from '../config/resolve-rendering';
 import { EmitterResources } from '../rendering/emitter-resources';
 import { resolveTint } from '../rendering/resolve-tint';
 
@@ -17,16 +18,19 @@ export class EmitterRenderer {
   private readonly resources: EmitterResources;
   private disposed = false;
   private currentTint: ParticleTint;
+  private blendMode: NonNullable<ParticleRendering['blendMode']>;
   private animationHalfStep = 0;
 
   public constructor(
     renderer: WebGLRenderer,
     public readonly emitter: Emitter,
-    options: ParticleRendering = { texture: null },
+    options: ParticleRendering = {},
   ) {
     this.currentTint = resolveTint(options.tint);
     this.renderer = renderer;
-    this.resources = new EmitterResources(renderer, emitter, options);
+    const rendering = resolveRendering(options);
+    this.blendMode = rendering.blendMode;
+    this.resources = new EmitterResources(renderer, emitter, rendering);
   }
 
   /** Caller owns the texture. Atlas trim and rotation are respected. */
@@ -35,7 +39,11 @@ export class EmitterRenderer {
   }
 
   public set texture(value: Texture | null) {
-    this.setTexture({ texture: value });
+    this.setTexture(value ? { textures: [value] } : {});
+  }
+
+  public setBlendMode(blendMode: NonNullable<ParticleRendering['blendMode']>): void {
+    this.blendMode = blendMode;
   }
 
   public setTint(tint: ParticleTint): void {
@@ -82,7 +90,7 @@ export class EmitterRenderer {
     this.syncColor(displayColor);
 
     // Reuse the draw command; Pixi binds the shader, textures, geometry, and state.
-    resources.state.blendMode = this.emitter.configuration.blendMode;
+    resources.state.blendMode = this.blendMode;
     resources.drawOptions.instanceCount = count;
     // Follow Pixi mesh rendering: bind the active render group and target uniforms.
     resources.shader.groups[100] = this.renderer.globalUniforms.bindGroup;

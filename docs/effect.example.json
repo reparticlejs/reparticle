@@ -92,11 +92,13 @@
       "duration": 1,
       "orientation": "default",
       "playMode": "loop",
-      "blendMode": "normal",
       "stretchWithVelocity": false,
       "position": {
         "x": 0,
         "y": 0
+      },
+      "rendering": {
+        "blendMode": "normal"
       }
     }
   ],
