@@ -72,4 +72,10 @@ export const examples: readonly Example[] = [
     file: 'particle-examples/smoke.json',
     artwork: { smoke: { source: 'particle-examples/particle-blob.png' } },
   },
+  {
+    id: 'twirl',
+    name: 'Twirl',
+    file: 'particle-examples/twirl.json',
+    artwork: { emitter1: { source: 'particle-examples/twirl-01.png' } },
+  },
 ];

@@ -15,7 +15,7 @@ Port each effect in the source README's order:
 - [x] Slash (`slash`)
 - [x] Knife slash (`slash_knife`)
 - [x] Smoke (`smoke`)
-- [ ] Twirl (`twirl`)
+- [x] Twirl (`twirl`)
 - [ ] Fog (`fog`)
 - [ ] Confetti (`confetti`)
 
@@ -159,3 +159,16 @@ radial force 36 ± 36 within 500 units, then four localized vortices. Vortex
 positions reflect source Y into canvas coordinates; strengths, spreads, and
 radii remain unchanged. These opposing vortices produce the swaying motion.
 Playback loops with duration 1 second and seed 1, on the shared gray background.
+
+## Twirl
+
+`twirl.json` translates `assets/fx/twirl.particlefx`: one slot, looping playback
+with duration 1 second, 1 birth/second, 1-second lifetime, size 100, additive
+blending, and the original 0.5-second start offset. Omitted box dimensions and
+speed are explicitly zero, keeping the particle centered.
+
+Independent red, green, and blue curves cycle the color while the authored
+rotation curve turns the texture through nearly 360 degrees. All curve points
+and tangent slopes are retained. `twirl-01.png` is copied unchanged from the
+CC0 pack's `assets/img/particle/twirl_01.png`. Seed 1 and the shared gray
+background follow the other examples; artwork remains separate from effect JSON.
