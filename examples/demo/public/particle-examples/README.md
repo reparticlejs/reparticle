@@ -9,8 +9,8 @@ Port each effect in the source README's order:
 - [x] Dust (`dust`)
 - [x] Energy (`energy`)
 - [x] Explosion (`exp1`)
-- [ ] Celebration cracker (`exp2`)
-- [ ] Candle flame (`fire`)
+- [x] Celebration cracker (`exp2`, 2D adaptation)
+- [x] Candle flame (`fire`)
 - [ ] Loading (`loading`)
 - [ ] Slash (`slash`)
 - [ ] Knife slash (`slash_knife`)
@@ -72,3 +72,37 @@ Seeds 1–4 use Reparticle's deterministic random sequence.
 credits [Kenney](https://kenney.nl/) for these CC0 assets. Textures remain in the
 Pixi artwork settings, separate from simulation JSON. Use **Restart** to replay
 the explosion after its particles finish; the demo does not add an automatic loop.
+
+## Celebration cracker
+
+`exp2.json` adapts `assets/fx/exp2.particlefx`. The source sphere emitter is
+replaced with a 64-unit circle for this 2D implementation. This changes the
+projected spawn distribution and projected speeds: it is not an exact 3D sphere
+projection. All other authored particle properties and curves are retained.
+
+The burst uses 64 slots, once playback for 0.1 seconds at 512 particles/second,
+lifetime 2 ± 0.5 seconds, speed 800 ± 40, size 20, RGB spread, rotation spread,
+and the original alpha, rotation, and stretch-Y curves. Default orientation is
+retained, so the source's initial angular velocity is stored but not integrated.
+
+Shared modifiers keep their source order: downward acceleration (-200), vortex
+(30 ± 200, radius 1000, center reflected to Y=52), then drag (2.5). Acceleration
+and nondirectional drag do not use their source position fields. Seed 1 uses
+Reparticle's deterministic random sequence. **Restart** replays the burst.
+
+`ta.png` is copied unchanged from the source pack's `assets/img/particle` folder,
+covered by its CC0 license. Artwork stays in Pixi settings; the common gray
+background remains unchanged.
+
+## Candle flame
+
+`fire.json` translates `assets/fx/fire.particlefx`, using the original blob
+texture and additive blending. It retains 24 slots, 8 births per second,
+2-second lifetime, speed 80, size 80 ± 30, and the narrow cone's dimensions
+(width 0.5 ± 0.25, height 1 ± 0.1). The source omits initial blue, which is zero
+in Defold; the port sets it explicitly rather than taking Reparticle's default 1.
+
+Size, red, green, and alpha curves retain all source values and tangent slopes.
+Upward acceleration 150 runs before drag 3; the acceleration's authored position
+has no effect on this uniform force. Playback loops with duration 1 second,
+using Reparticle seed 1. The common gray background is unchanged.

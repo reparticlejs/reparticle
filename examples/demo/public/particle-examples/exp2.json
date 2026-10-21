@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "emitter4",
+      "capacity": 64,
+      "seed": 1,
+      "duration": 0.1,
+      "playMode": "once",
+      "space": "world",
+      "orientation": "default",
+      "emission": {
+        "rate": 512,
+        "shape": {
+          "type": "circle",
+          "diameter": 64
+        }
+      },
+      "initial": {
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "lifetime": 2.0,
+        "lifetimeSpread": 0.5,
+        "speed": 800.0,
+        "speedSpread": 40.0,
+        "size": 20.0,
+        "red": 1.0,
+        "redSpread": 1.0,
+        "green": 1.0,
+        "greenSpread": 1.0,
+        "blue": 1.0,
+        "blueSpread": 1.0,
+        "alpha": 1.0,
+        "rotation": 180.0,
+        "rotationSpread": 180.0,
+        "stretchX": 0.0,
+        "stretchY": 0.0,
+        "angularVelocity": 180.0,
+        "angularVelocitySpread": 180.0
+      },
+      "overLifetime": {
+        "scale": 1.0,
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 1.0295122,
+              "tangent": 0.1671469618793958
+            },
+            {
+              "time": 1.0,
+              "value": -0.0029450615,
+              "tangent": -2.5749176411858876
+            }
+          ]
+        },
+        "rotation": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": 765.5301,
+              "tangent": 0.0
+            },
+            {
+              "time": 1.0,
+              "value": 70.495995,
+              "tangent": 0.0
+            }
+          ]
+        },
+        "stretchX": 0.0,
+        "stretchY": {
+          "points": [
+            {
+              "time": 0.0,
+              "value": -0.009803428,
+              "tangent": -9.093895430218197
+            },
+            {
+              "time": 0.33243692,
+              "value": -0.43588516,
+              "tangent": 8.127474644312871
+            },
+            {
+              "time": 0.7347125,
+              "value": -0.6223566,
+              "tangent": 8.830175813767738
+            },
+            {
+              "time": 1.0,
+              "value": -0.9549724,
+              "tangent": -14.011108169097573
+            }
+          ]
+        },
+        "angularVelocity": 1.0
+      },
+      "rendering": {
+        "blendMode": "normal"
+      }
+    }
+  ],
+  "modifiers": [
+    {
+      "type": "acceleration",
+      "magnitude": -200
+    },
+    {
+      "type": "vortex",
+      "magnitude": 30,
+      "spread": 200,
+      "x": 0,
+      "y": 52,
+      "maxDistance": 1000
+    },
+    {
+      "type": "drag",
+      "magnitude": 2.5
+    }
+  ]
+}

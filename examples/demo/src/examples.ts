@@ -36,4 +36,16 @@ export const examples: readonly Example[] = [
       emitter3: { source: 'particle-examples/scorch-01.png' },
     },
   },
+  {
+    id: 'exp2',
+    name: 'Celebration cracker',
+    file: 'particle-examples/exp2.json',
+    artwork: { emitter4: { source: 'particle-examples/ta.png' } },
+  },
+  {
+    id: 'fire',
+    name: 'Candle flame',
+    file: 'particle-examples/fire.json',
+    artwork: { fire: { source: 'particle-examples/particle-blob.png' } },
+  },
 ];
