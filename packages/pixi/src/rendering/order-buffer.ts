@@ -2,19 +2,27 @@ import { Buffer, BufferUsage, Geometry, type WebGLRenderer } from 'pixi.js';
 
 import type { ParticleOrderSource } from '#types/particle-order.js';
 
-/** CPU draw order backed by Pixi resources; simulation slots never move. */
+/**
+ * Send core's ordered live particle IDs to the vertex shader.
+ * An order such as [3, 0, 4] draws those simulation slots without moving their data.
+ * Each particle instance receives one ID; the shader builds its four quad corners.
+ *
+ * CPU and GPU storage are reserved once for the emitter's capacity. Updates reuse
+ * that storage and upload only the live prefix when core's order revision changes.
+ * No simulation texture is copied or read back.
+ */
 export class ParticleOrderBuffer {
   public readonly geometry: Geometry;
-  private readonly slots: Uint32Array;
+  private readonly orderedSlots: Uint32Array;
   private readonly buffer: Buffer;
-  private revision = -1;
-  private count = 0;
+  private copiedRevision = -1;
+  private liveCount = 0;
 
   public constructor(renderer: WebGLRenderer, capacity: number) {
-    this.slots = new Uint32Array(capacity);
+    this.orderedSlots = new Uint32Array(capacity);
     this.buffer = new Buffer({
       label: 'particle draw order',
-      size: this.slots.byteLength,
+      size: this.orderedSlots.byteLength,
       usage: BufferUsage.VERTEX | BufferUsage.COPY_DST,
       shrinkToFit: false,
     });
@@ -30,6 +38,7 @@ export class ParticleOrderBuffer {
             format: 'uint32',
             stride: Uint32Array.BYTES_PER_ELEMENT,
             offset: 0,
+            // Advance the ID per particle, not per corner of its quad.
             instance: true,
           },
         },
@@ -40,17 +49,26 @@ export class ParticleOrderBuffer {
     }
   }
 
-  /** Mark changed live slot IDs for upload when Pixi next binds the geometry. */
+  /**
+   * Copy the latest order and return the instance count for drawing.
+   * Pixi uploads the marked prefix on its next bind. Several simulation steps before
+   * a draw, including prewarm, therefore require only the final order to be uploaded.
+   */
   public update(source: ParticleOrderSource): number {
-    if (this.revision !== source.particleRevision) {
-      this.count = source.copyParticleOrder(this.slots);
-      this.revision = source.particleRevision;
-      if (this.count > 0) {
-        // This API takes an element count; Buffer.update() instead takes bytes.
-        this.buffer.setDataWithSize(this.slots, this.count, false);
-      }
+    if (this.copiedRevision === source.particleRevision) {
+      return this.liveCount;
     }
-    return this.count;
+
+    this.liveCount = source.copyParticleOrder(this.orderedSlots);
+    this.copiedRevision = source.particleRevision;
+
+    // Empty orders draw zero instances; the previous buffer contents can stay intact.
+    if (this.liveCount > 0) {
+      // Count is in uint32 elements, not bytes. Keep the existing GPU allocation.
+      this.buffer.setDataWithSize(this.orderedSlots, this.liveCount, false);
+    }
+
+    return this.liveCount;
   }
 
   /** Geometry owns its sole buffer; Pixi releases both the VAO and GPU storage. */
