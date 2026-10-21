@@ -1,16 +1,18 @@
 import { useRef, useState } from 'react';
 
 import { createDemo } from './create-demo';
+import { examples } from './examples';
 import { useMountEffect } from './hooks/use-mount-effect';
+import type { Example } from './types/example';
 
 type DemoController = Awaited<ReturnType<typeof createDemo>>;
 
 export function Demo({
-  multiple,
+  example,
   onSelect,
 }: {
-  multiple: boolean;
-  onSelect: (multiple: boolean) => void;
+  example: Example;
+  onSelect: (example: Example) => void;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const controller = useRef<DemoController>(undefined);
@@ -24,7 +26,7 @@ export function Demo({
 
     async function mount() {
       try {
-        demo = await createDemo(host.current!, multiple, abort.signal);
+        demo = await createDemo(host.current!, example, abort.signal);
         if (abort.signal.aborted) {
           demo?.destroy();
           return;
@@ -65,11 +67,14 @@ export function Demo({
         <label htmlFor="effect">Effect</label>
         <select
           id="effect"
-          value={multiple ? 'multiple' : 'fountain'}
-          onChange={(event) => onSelect(event.target.value === 'multiple')}
+          value={example.id}
+          onChange={(event) => onSelect(examples.find((item) => item.id === event.target.value)!)}
         >
-          <option value="fountain">Star fountain</option>
-          <option value="multiple">Multi-emitter</option>
+          {examples.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+            </option>
+          ))}
         </select>
         <div className="playback-actions">
           <button disabled={!ready} onClick={togglePlayback}>

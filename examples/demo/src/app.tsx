@@ -1,9 +1,10 @@
 import { useState } from 'react';
 
 import { Demo } from './demo';
+import { examples } from './examples';
 
 export function App() {
-  const [multiple, setMultiple] = useState(false);
+  const [example, setExample] = useState(examples[0]!);
 
-  return <Demo key={String(multiple)} multiple={multiple} onSelect={setMultiple} />;
+  return <Demo key={example.id} example={example} onSelect={setExample} />;
 }

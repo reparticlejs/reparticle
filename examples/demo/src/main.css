@@ -27,6 +27,7 @@ select:focus-visible {
   outline-offset: 3px;
 }
 .demo {
+  background: #666666;
   position: relative;
   flex: 1;
   min-width: 0;
