@@ -16,7 +16,7 @@ Port each effect in the source README's order:
 - [x] Knife slash (`slash_knife`)
 - [x] Smoke (`smoke`)
 - [x] Twirl (`twirl`)
-- [ ] Fog (`fog`)
+- [x] Fog (`fog`)
 - [ ] Confetti (`confetti`)
 
 ## Dust
@@ -172,3 +172,16 @@ rotation curve turns the texture through nearly 360 degrees. All curve points
 and tangent slopes are retained. `twirl-01.png` is copied unchanged from the
 CC0 pack's `assets/img/particle/twirl_01.png`. Seed 1 and the shared gray
 background follow the other examples; artwork remains separate from effect JSON.
+
+## Fog
+
+`fog.json` translates `assets/fx/fog.particlefx`, using the original blob texture
+and screen blending. It retains a 600×400 box, 32 slots, 8 births/second,
+10-second lifetime, size 400 ± 100, alpha 0.95 ± 0.5, and the original initial
+stretch values/spreads. Omitted speed is explicitly zero; no modifiers are added.
+
+All seven alpha points and both six-point stretch curves retain their authored
+values and tangent slopes, including negative samples. Playback loops with
+1-second duration and no prewarm. Capacity remains 32 even though rate × lifetime
+is 80: living particles are retained and excess births are dropped. Seed 1 and
+the shared gray background follow the other examples.

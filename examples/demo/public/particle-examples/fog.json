@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "fog",
+      "capacity": 32,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "space": "world",
+      "emission": {
+        "rate": 8,
+        "shape": {
+          "type": "box",
+          "width": 600,
+          "height": 400
+        }
+      },
+      "initial": {
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "speed": 0,
+        "lifetime": 10.0,
+        "size": 400.0,
+        "sizeSpread": 100.0,
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": 0.95,
+        "alphaSpread": 0.5,
+        "stretchX": 3.0,
+        "stretchXSpread": 1.25,
+        "stretchY": 0.5,
+        "stretchYSpread": 0.5
+      },
+      "overLifetime": {
+        "scale": 1.0,
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0,
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.0,
+              "tangent": 13.863328960598407
+            },
+            {
+              "time": 0.133968,
+              "value": 0.939959,
+              "tangent": 0.10831956702606171
+            },
+            {
+              "time": 0.323711,
+              "value": -0.207634,
+              "tangent": -1.443614635730293
+            },
+            {
+              "time": 0.533909,
+              "value": 0.500935,
+              "tangent": -0.29833292460853733
+            },
+            {
+              "time": 0.719378,
+              "value": 0.070837,
+              "tangent": -1.613295700649335
+            },
+            {
+              "time": 0.85917,
+              "value": 0.195436,
+              "tangent": -0.7732711227857717
+            },
+            {
+              "time": 1.0,
+              "value": -0.002301,
+              "tangent": -1.8589258152871404
+            }
+          ]
+        },
+        "stretchX": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.0,
+              "tangent": 0.0
+            },
+            {
+              "time": 0.161592,
+              "value": 0.161945,
+              "tangent": 0.0
+            },
+            {
+              "time": 0.308305,
+              "value": -0.061991,
+              "tangent": -0.22927560943830416
+            },
+            {
+              "time": 0.513148,
+              "value": 0.050582,
+              "tangent": 0.09061571210538999
+            },
+            {
+              "time": 0.724913,
+              "value": -0.087014,
+              "tangent": -0.14914767557074393
+            },
+            {
+              "time": 1.0,
+              "value": 0.0,
+              "tangent": 0.0
+            }
+          ]
+        },
+        "stretchY": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.0,
+              "tangent": 0.0
+            },
+            {
+              "time": 0.142215,
+              "value": 0.361996,
+              "tangent": 0.0
+            },
+            {
+              "time": 0.369205,
+              "value": 0.118133,
+              "tangent": -0.3398661401272271
+            },
+            {
+              "time": 0.580968,
+              "value": 0.259497,
+              "tangent": -0.08610337704779818
+            },
+            {
+              "time": 0.773356,
+              "value": 0.122828,
+              "tangent": -0.782757718604911
+            },
+            {
+              "time": 1.0,
+              "value": 0.352469,
+              "tangent": 0.0
+            }
+          ]
+        },
+        "angularVelocity": 1.0
+      },
+      "rendering": {
+        "blendMode": "screen"
+      }
+    }
+  ]
+}

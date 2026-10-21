@@ -14,7 +14,7 @@ pnpm dev
 ```
 
 Open the local URL printed by Vite. The sidebar has an effect dropdown, Pause/Resume, and Restart:
-**Star fountain** (default), **Multi-emitter**, **Dust**, **Energy**, **Explosion**, **Celebration cracker**, **Candle flame**, **Loading**, **Slash**, **Knife slash**, **Smoke**, or **Twirl**. Effects run automatically, with compact stats over the canvas.
+**Star fountain** (default), **Multi-emitter**, **Dust**, **Energy**, **Explosion**, **Celebration cracker**, **Candle flame**, **Loading**, **Slash**, **Knife slash**, **Smoke**, **Twirl**, or **Fog**. Effects run automatically, with compact stats over the canvas.
 For mobile testing, use Vite's Network URL on the same Wi-Fi network.
 
 Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error; there is no silent CPU fallback.
@@ -111,7 +111,7 @@ Updates are validated atomically. Capacity, seed, ID and shape type cannot be ch
 
 ## Demo UI
 
-We are porting [ParticleExamples](https://github.com/yeqwep/ParticleExamples) one effect at a time, with Dust, Energy, Explosion, a 2D Celebration cracker, Candle flame, Loading, Slash, Knife slash, Smoke, and Twirl now available. Progress and source attribution are in [the port checklist](examples/demo/public/particle-examples/README.md).
+We are porting [ParticleExamples](https://github.com/yeqwep/ParticleExamples) one effect at a time, with Dust, Energy, Explosion, a 2D Celebration cracker, Candle flame, Loading, Slash, Knife slash, Smoke, Twirl, and Fog now available. Progress and source attribution are in [the port checklist](examples/demo/public/particle-examples/README.md).
 
 Compact stats sit at the canvas’s top right. Click the overlay to cycle metrics,
 including FPS and the combined live particle count. Counts use CPU ordering data
