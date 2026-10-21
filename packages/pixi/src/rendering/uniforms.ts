@@ -5,7 +5,7 @@ import { packColorCurves } from '../curves/pack-color-curves';
 import { packGeometryCurves } from '../curves/pack-geometry-curves';
 
 /**
- * Create one emitter's shader settings, with names matching shaders/particle.ts.
+ * Create one emitter's shader settings, with names matching the particle GLSL shaders.
  * EmitterView fills runtime values before drawing and reuses the vector storage.
  * Particle state and artwork textures are separate Shader.resources bindings;
  * Pixi's global group supplies projection and render-group transforms and color.
