@@ -48,4 +48,10 @@ export const examples: readonly Example[] = [
     file: 'particle-examples/fire.json',
     artwork: { fire: { source: 'particle-examples/particle-blob.png' } },
   },
+  {
+    id: 'loading',
+    name: 'Loading',
+    file: 'particle-examples/loading.json',
+    artwork: { loading: { source: 'particle-examples/circle-05-up.png' } },
+  },
 ];

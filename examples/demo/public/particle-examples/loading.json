@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "loading",
+      "capacity": 12,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "space": "world",
+      "emission": {
+        "rate": 4,
+        "shape": {
+          "type": "box",
+          "width": 0,
+          "height": 0
+        }
+      },
+      "initial": {
+        "lifetime": 2.5,
+        "speed": 0,
+        "size": 100,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1
+      },
+      "overLifetime": {
+        "scale": 1,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0.5850961140250944
+            },
+            {
+              "time": 0.267985,
+              "value": 1.01179,
+              "tangent": 0.3774448868342997
+            },
+            {
+              "time": 1,
+              "value": 0.0072254334,
+              "tangent": -0.28575188265511153
+            }
+          ]
+        },
+        "rotation": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 350.9025390217485
+            },
+            {
+              "time": 1,
+              "value": 359.9999,
+              "tangent": 415.8587270577352
+            }
+          ]
+        }
+      },
+      "rendering": {
+        "blendMode": "add"
+      }
+    }
+  ]
+}

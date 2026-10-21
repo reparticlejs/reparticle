@@ -11,7 +11,7 @@ Port each effect in the source README's order:
 - [x] Explosion (`exp1`)
 - [x] Celebration cracker (`exp2`, 2D adaptation)
 - [x] Candle flame (`fire`)
-- [ ] Loading (`loading`)
+- [x] Loading (`loading`)
 - [ ] Slash (`slash`)
 - [ ] Knife slash (`slash_knife`)
 - [ ] Smoke (`smoke`)
@@ -106,3 +106,15 @@ Size, red, green, and alpha curves retain all source values and tangent slopes.
 Upward acceleration 150 runs before drag 3; the acceleration's authored position
 has no effect on this uniform force. Playback loops with duration 1 second,
 using Reparticle seed 1. The common gray background is unchanged.
+
+## Loading
+
+`loading.json` translates `assets/fx/loading.particlefx`: 12 slots, 4 births per
+second, 2.5-second lifetime, size 100, additive blending, and looping playback
+with duration 1 second. Omitted box dimensions and speed are explicitly zero,
+so overlapping particles stay centered. Alpha and rotation curves retain their
+source values and tangent slopes, including the near-360-degree rotation.
+
+`circle-05-up.png` is an unmodified copy of `assets/img/particle/circle_05_up.png`
+from the CC0 source pack. This single atlas image rotates and fades; it is not a
+flipbook animation. Artwork stays in Pixi settings, with the shared gray background.
