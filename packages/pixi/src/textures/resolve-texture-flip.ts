@@ -1,4 +1,4 @@
-import type { ParticleTexture } from './types/particle-texture';
+import type { ParticleTexture } from '../types/particle-texture';
 
 export function resolveTextureFlip({
   flipX = false,

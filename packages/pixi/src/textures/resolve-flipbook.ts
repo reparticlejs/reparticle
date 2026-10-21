@@ -1,5 +1,5 @@
-import type { Flipbook } from './types/flipbook';
-import type { ParticleTexture } from './types/particle-texture';
+import type { Flipbook } from '../types/flipbook';
+import type { ParticleTexture } from '../types/particle-texture';
 
 export function resolveFlipbook(options: ParticleTexture): Flipbook | null {
   if (

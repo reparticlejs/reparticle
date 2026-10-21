@@ -164,7 +164,7 @@
       "duration": 1,
       "orientation": "default",
       "playMode": "loop",
-      "blendMode": "alpha",
+      "blendMode": "normal",
       "stretchWithVelocity": false,
       "position": {
         "x": 0,

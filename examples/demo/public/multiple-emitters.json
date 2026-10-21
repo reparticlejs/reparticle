@@ -55,7 +55,7 @@
       },
       "id": "smoke",
       "startDelay": 0.3,
-      "blendMode": "alpha",
+      "blendMode": "normal",
       "modifiers": [],
       "position": {
         "x": 0,

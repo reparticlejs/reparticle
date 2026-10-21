@@ -138,11 +138,11 @@ Start delay: `startDelay` is finite and nonnegative, defaults to zero, and is st
 
 Start offset: `startOffset` is a finite nonnegative structural setting, default zero. Match Defold StartInstance: ignore offsets below 0.0001 and clamp simulated time to maximum sampled initial-lifetime curve value plus lifetime spread. Fast-forward in full float32 1/60-second steps with float32 elapsed accumulation, including delay and once/loop transitions. The last step is not shortened. Reparticle defers this work until the first positive update so consumers can position an emitter before its world-space particles are born. Reset queues it again; zero-time kernel warmup does not consume it. The debug overlay replays the shared timing utilities independently, keeping the debug display separate from core allocation bookkeeping. Reference: [Defold StartInstance](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L407-L429) and [FastForwardEmitter](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L313-L324).
 
-Size over lifetime is implemented as `initial.size` (default 24, captured at birth) multiplied by `overLifetime.scale` (default 1). Scale accepts a constant or `{ points: [{ time, value, tangent }] }`. Tangents are slopes equivalent to Defold ty/tx; Hermite interpolation is sampled into 64 linear segments, matching Defold PROPERTY_SAMPLE_COUNT. Time is normalized particle age, not emitter time. Core owns schema and curve math, and stores initial size in the properties texel's third channel. Pixi uploads the sampled curve once and evaluates it in its vertex shader, retaining texture aspect ratio. No texture expansion, extra simulation kernel, CPU particle state, or per-frame curve upload is required. Runtime initial-size updates affect future births only; curve edits require recreation. Initial-size spread, emitter-time size curves and automatic animated-frame sizing were added in subsequent steps below.
+Size over lifetime is implemented as `initial.size` (default 24, captured at birth) multiplied by `overLifetime.scale` (default 1). Scale accepts a constant or `{ points: [{ time, value, tangent }] }`. Tangents are slopes equivalent to Defold ty/tx; Hermite interpolation is sampled into 64 linear segments, matching Defold PROPERTY_SAMPLE_COUNT. Time is normalized particle age, not emitter time. Core owns schema and curve math, and stores initial size in the properties texel's third channel. Pixi samples the curve once and evaluates it in its vertex shader, retaining texture aspect ratio. The per-emitter uniform group syncs these samples when drawing with the shared program. No texture expansion, extra simulation kernel, or CPU particle state is required. Runtime initial-size updates affect future births only; curve edits require recreation. Initial-size spread, emitter-time size curves and automatic animated-frame sizing were added in subsequent steps below.
 
 Alpha over lifetime: `initial.alpha` and `overLifetime.alpha` default to 1. The latter uses the shared constant/Hermite curve schema and 64-segment sampling. Following Defold, clamp only the product of captured initial alpha and lifetime alpha to [0, 1], before multiplying texture and object opacity. Pixi scales premultiplied RGB and alpha together for both textured and procedural rendering. Initial alpha shares the color texel with initial RGB; an explicit active flag identifies live storage. Transparent particles remain simulated and counted. Initial alpha is a numeric parameter for future births; lifetime curves remain structural. No texture growth, readback, extra pass, or per-frame curve upload.
 
-Color over lifetime: initial red/green/blue and lifetime red/green/blue default to 1. Each channel follows Defold's clamp(initial × lifetime, 0, 1), then tints texture RGB without additional color-space conversion. Initial numeric updates affect new births, lifetime curves require recreation. Captured RGB occupies a third RGBA texel `[initialRed, initialGreen, initialBlue, initialAlpha]`, raising texture storage and update output by 50% (32 to 48 bytes per slot per texture), still in one simulation pass. GPU texture-height validation now accounts for all three row bands. RGBA curves share one array of 65 vec4 samples to stay within minimum WebGL2 vertex-uniform limits; samples upload once. The procedural circle has a white base, so its color comes entirely from configured RGB. Initial color spread and emitter-time color curves remain pending.
+Color over lifetime: initial red/green/blue and lifetime red/green/blue default to 1. Each channel follows Defold's clamp(initial × lifetime, 0, 1), then tints texture RGB without additional color-space conversion. Initial numeric updates affect new births, lifetime curves require recreation. Captured RGB occupies a third RGBA texel `[initialRed, initialGreen, initialBlue, initialAlpha]`, raising texture storage and update output by 50% (32 to 48 bytes per slot per texture), still in one simulation pass. GPU texture-height validation now accounts for all three row bands. RGBA curves share one array of 65 vec4 samples to stay within minimum WebGL2 vertex-uniform limits; samples are reused and synced through each emitter’s uniform group. The procedural circle has a white base, so its color comes entirely from configured RGB. Initial color spread and emitter-time color curves remain pending.
 
 Rotation uses `initial.rotation` plus `overLifetime.rotation`, both degrees and default zero. Initial rotation is stored in the fourth properties channel, making the properties band `[age, lifetime, initialSize, initialRotation]`; texture storage is unchanged. Lifetime rotation uses the shared 64-segment Hermite sampling and is an absolute additive offset, not angular velocity. Positive angles rotate counterclockwise after accounting for downward canvas Y. Pixi rotates the aspect-correct quad around its center before applying the object transform, leaving simulation velocity unchanged. Initial degree updates affect future births, curve edits require recreation. `orientation` defaults to `"default"`; `"initial-direction"` aligns local up to the shape's spawn direction, then adds initial rotation and lifetime rotation. Alignment is captured at birth even at zero speed and remains fixed when gravity changes velocity. Box points up, circle points radially outward (including zero diameter), and Cone2D points away from its tip with an up fallback at zero length. Reparticle's extra point shape uses its sampled direction/spread. Orientation edits require recreation. The stored `initialRotation` includes this alignment. `"movement-direction"` captures the incoming velocity heading before modifiers on each simulation step, including the birth velocity after emitter transformation and inheritance. Pixi combines that captured heading with initial rotation and the lifetime offset. A force-induced turn changes the visual heading on the following step, matching Defold. As in Defold, squared speed must exceed `0.0001`; otherwise only the rotation offsets apply, with no retained heading. Directions nearly opposite local up use Defold's half-turn fallback (`abs(upDot + 1) <= 0.0001`). The previously reserved geometry channel stores `movementRotation` in degrees; no texture band, simulation pass or CPU readback is added. Paused rendering retains this angle; local hierarchy transforms still apply at draw time. Angular velocity, rotation spread and emitter transforms were added in subsequent steps below.
 
@@ -224,23 +224,24 @@ World-space speed includes the birth emitter scale and inherited velocity; local
 
 ### Blend modes
 
-Each emitter has `blendMode`: `alpha` (default), `add`, `multiply`, or `screen`.
-The Pixi renderer uses Defold's premultiplied-alpha blend factors for textured and
+Each emitter has `blendMode`: `normal` (default), `add`, `multiply`, or `screen`.
+The Pixi renderer uses Pixi's default premultiplied-alpha blend factors for textured and
 procedural particles alike. With premultiplied source color S, source alpha A,
 and destination color D, RGB output is:
 
-- Alpha: S + D × (1 − A).
+- Normal: S + D × (1 − A).
 - Add: S + D.
 - Multiply: S × D + D × (1 − A).
-- Screen: S × (1 − D) + D.
+- Screen: S + D × (1 − S).
 
-These match [Defold's particle renderer](https://github.com/defold/defold/blob/dev/engine/gamesys/src/gamesys/components/comp_particlefx.cpp),
-including its alpha-channel blend factors. Texture alpha, particle alpha, and
-view opacity are already incorporated into the premultiplied source color.
+Normal, multiply, and screen use source-over alpha accumulation; add sums alpha.
+Texture alpha, particle alpha, and view opacity are already incorporated into the
+premultiplied source color. The previous `alpha` blend-mode name is no longer
+accepted; existing effect JSON must use `normal`. Opacity properties remain `alpha`.
 `emitter.setParameters({ blendMode: 'add' })` affects the next render, including
 existing particles while paused. It does not restart simulation or add particle
 state. The demo exposes this under Appearance. Procedural particles now default
-to Alpha too; choose Add explicitly for their previous additive appearance.
+to Normal too; choose Add explicitly for their previous additive appearance.
 
 ### Pixi atlas frames
 
@@ -295,9 +296,12 @@ retains that offset. Reset restarts particle ages. Prewarming naturally advances
 animation through the existing particle ages. Live animation changes use current
 ages, without restarting the emitter or maintaining a separate animation clock.
 
-A small renderer-owned RGBA32F table stores four texels per animation frame
-(64 bytes: UV corners, trim rectangle, original dimensions, two reserved components). It is uploaded only when selecting
-an animation. The vertex shader chooses each particle's frame independently;
+A Pixi `BufferImageSource` in `rgba32float` format stores four texels per animation
+frame (64 bytes: UV corners, trim rectangle, original dimensions, two reserved
+components). Frame selection builds the table; Pixi uploads it on first binding
+and retains it for subsequent draws. Nearest sampling, clamp-to-edge, disabled
+mipmaps, and no alpha premultiplication preserve the numeric metadata. Replacing
+an animation destroys the old source without destroying caller-owned artwork. The vertex shader chooses each particle's frame independently;
 there is no particle readback, CPU animation loop, extra simulation storage, or
 extra draw pass. Rotation and trim work per frame. The existing manual sizing
 uses each frame's original proportions; this is a confirmed Defold compatibility
@@ -687,13 +691,36 @@ the normalization on the next simulation step. The optional debug counter keeps
 allocation tracking without logical sorting.
 
 Sorting takes O(n log n) CPU work for n living particles per step; rendering uploads
-4n bytes once per changed draw. There is one instanced draw per emitter. Every
+4n bytes once per changed draw. Pixi issues one draw per emitter, using its
+single-instance draw path when only one particle is alive. Every
 texture lookup still addresses the original simulation slot. No GPU readback,
 extra simulation pass, or intermediate prewarm order upload is required. Each
 view destroys its order buffer; texture ownership and emitter definition order
 are unchanged.
 
 ## Pixi rendering integration
+
+Draw-order storage uses a Pixi `Buffer` and `Geometry` with an instanced `uint32`
+particle ID attribute. Capacity is reserved once without uploading unused slots;
+changed orders mark only the live prefix for upload when geometry is bound.
+Pixi manages the VAO, integer attribute setup, buffer uploads, and draw calls.
+Destroying the geometry also releases its owned buffer. Simulation slots and
+CPU particle ordering are unchanged.
+
+Pixi's `GlProgram`, `Shader`, and `UniformGroup` manage compilation, linking,
+binding, and uniform uploads. Emitters share the cached program and own separate
+dynamic uniform groups, including reusable vector and curve arrays. Groups sync
+on each draw so values from another emitter cannot leak across draws. Destroying
+an emitter destroys its shader bindings, leaving the shared program cache to Pixi.
+GPU.js particle textures remain directly bound WebGL textures. Artwork and
+animation-frame sources use Pixi's texture system on their assigned units;
+sampler uniforms select those units without readbacks.
+
+Particle draw state uses Pixi's reusable `State.for2d()` and state system for
+blending, depth, culling, and blend equations. Normal, add, multiply, and screen
+use Pixi's corresponding default modes without name mapping. No custom blend
+factors are applied. In particular, multiply uses Pixi's normal alpha accumulation
+on transparent targets rather than preserving destination alpha.
 
 Particle draws preserve the active framebuffer, viewport, stencil test and color
 mask. Their clip-space matrix combines the inverse scene transform, relative render

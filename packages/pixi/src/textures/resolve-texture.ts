@@ -1,6 +1,6 @@
 import type { Texture } from 'pixi.js';
 
-import type { ParticleTexture } from './types/particle-texture';
+import type { ParticleTexture } from '../types/particle-texture';
 
 export function resolveTexture(options: ParticleTexture): Texture | null {
   if (options.animation !== undefined) {

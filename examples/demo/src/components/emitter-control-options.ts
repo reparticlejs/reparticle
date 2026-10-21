@@ -31,7 +31,7 @@ export const playModeOptions: SelectOption<PreviewControls['playMode']>[] = [
 ];
 
 export const blendModeOptions: SelectOption<PreviewControls['blendMode']>[] = [
-  { value: 'alpha', label: 'Alpha' },
+  { value: 'normal', label: 'Normal' },
   { value: 'add', label: 'Add' },
   { value: 'multiply', label: 'Multiply' },
   { value: 'screen', label: 'Screen' },
