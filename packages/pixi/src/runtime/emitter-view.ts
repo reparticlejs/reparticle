@@ -13,7 +13,6 @@ import { ParticleOrderBuffer } from '../rendering/order-buffer';
 import { resolveTint } from '../rendering/resolve-tint';
 import { restoreDrawState } from '../rendering/restore-draw-state';
 import { restoreSimulationState } from '../rendering/restore-simulation-state';
-import { applyState } from '../rendering/state';
 import { createUniforms } from '../rendering/uniforms';
 import { vertex, fragment } from '../shaders/particle';
 import { createFrameSource } from '../textures/create-frame-source';
@@ -36,6 +35,7 @@ export class EmitterView {
   private readonly particleSources: SimulationSources;
   private readonly state = State.for2d();
   private readonly order: ParticleOrderBuffer;
+  private readonly drawOptions: Parameters<WebGLRenderer['encoder']['draw']>[0];
   private readonly uniforms: ReturnType<typeof createUniforms>;
   private disposed = false;
   private flipbook: Flipbook | null = null;
@@ -89,6 +89,15 @@ export class EmitterView {
         renderer.shader.bind(shader);
         order = new ParticleOrderBuffer(renderer, this.emitter.capacity);
         this.order = order;
+        this.drawOptions = {
+          geometry: order.geometry,
+          shader,
+          state: this.state,
+          topology: 'triangle-strip',
+          size: 4,
+          start: 0,
+          instanceCount: 0,
+        };
         if (animation) {
           this.frameSource = createFrameSource(
             animation.frames,
@@ -250,11 +259,10 @@ export class EmitterView {
       u.tint[1] = tint.green;
       u.tint[2] = tint.blue;
       u.tint[3] = tint.alpha;
-      // Pixi binds all shader textures, including the borrowed GPU.js output.
-      r.shader.bind(this.shader);
-      applyState(r, this.state, this.emitter.configuration.blendMode);
-      r.geometry.bind(this.order.geometry, this.shader.glProgram);
-      r.geometry.draw('triangle-strip', 4, 0, count);
+      // Reuse the draw command; Pixi binds the shader, textures, geometry, and state.
+      this.state.blendMode = this.emitter.configuration.blendMode;
+      this.drawOptions.instanceCount = count;
+      r.encoder.draw(this.drawOptions);
     } finally {
       restoreDrawState(r);
     }

@@ -704,6 +704,8 @@ Draw-order storage uses a Pixi `Buffer` and `Geometry` with an instanced `uint32
 particle ID attribute. Capacity is reserved once without uploading unused slots;
 changed orders mark only the live prefix for upload when geometry is bound.
 Pixi manages the VAO, integer attribute setup, buffer uploads, and draw calls.
+Each emitter reuses an `encoder.draw()` options object containing its shader,
+geometry, and state; only the live instance count changes on each draw.
 Destroying the geometry also releases its owned buffer. Simulation slots and
 CPU particle ordering are unchanged.
 
