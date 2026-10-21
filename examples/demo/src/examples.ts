@@ -54,4 +54,10 @@ export const examples: readonly Example[] = [
     file: 'particle-examples/loading.json',
     artwork: { loading: { source: 'particle-examples/circle-05-up.png' } },
   },
+  {
+    id: 'slash',
+    name: 'Slash',
+    file: 'particle-examples/slash.json',
+    artwork: { slash: { source: 'particle-examples/particle-blob.png' } },
+  },
 ];

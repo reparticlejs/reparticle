@@ -12,7 +12,7 @@ Port each effect in the source README's order:
 - [x] Celebration cracker (`exp2`, 2D adaptation)
 - [x] Candle flame (`fire`)
 - [x] Loading (`loading`)
-- [ ] Slash (`slash`)
+- [x] Slash (`slash`)
 - [ ] Knife slash (`slash_knife`)
 - [ ] Smoke (`smoke`)
 - [ ] Twirl (`twirl`)
@@ -118,3 +118,17 @@ source values and tangent slopes, including the near-360-degree rotation.
 `circle-05-up.png` is an unmodified copy of `assets/img/particle/circle_05_up.png`
 from the CC0 source pack. This single atlas image rotates and fades; it is not a
 flipbook animation. Artwork stays in Pixi settings, with the shared gray background.
+
+## Slash
+
+`slash.json` translates `assets/fx/slash.particlefx`: one particle slot, once
+playback for 1 second at 1 birth/second, 0.3-second lifetime, speed 1000, size 20,
+and an 8×12 box emitter. Initial-direction orientation and additive blending
+turn the original blob texture into the moving slash.
+
+The emitter retains its offset (79, -119 in canvas coordinates). Its source
+quaternion becomes a counterclockwise rotation of approximately 145 degrees.
+Alpha and both stretch curves retain all values and tangent slopes, including
+the steep stretch-Y tangents. Seed 1 uses Reparticle's random sequence.
+**Restart** replays the once-only effect; the original emission rate is retained,
+so the slash appears around one second after playback starts.
