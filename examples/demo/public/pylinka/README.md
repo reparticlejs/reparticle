@@ -85,7 +85,7 @@ Our box emits straight upward, so the source's independent sideways velocity (±
 - Coin variants use seven emitters, one per color row, sharing the total spawn rate. This approximates random per-particle color selection; each row loops at 14 FPS. Gem Spin intentionally uses the same coin sheet as the source recipe.
 - Fire Plume, Bonfire, and Wispy Smoke use 64-frame atlases and once-forward playback over particle lifetime. Their playback therefore follows our existing lifetime-based animation instead of a fixed source FPS.
 - Trail scenes move the ParticleEffect display object along a figure-eight or pendulum path before simulation. World-space particles stay behind. These paths approximate the gallery movement; source spline timing and distance-based extra births are not reproduced. Pause and Restart also control this demo movement. Trails do not prewarm at a stationary origin.
-- Other effects prewarm for their maximum lifetime. Full-width fields resize their box to the canvas. The background remains the same neutral gray for every effect.
+- Other effects prewarm for their maximum lifetime. Full-width fields resize their box to the canvas. The background is the same dark checkerboard for every effect.
 
 ## Artwork
 

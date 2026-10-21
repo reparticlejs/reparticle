@@ -1,8 +1,9 @@
 import { parseEffectConfig } from '@reparticle/core';
 import { ParticleEffect } from '@reparticle/pixi';
-import { Application, type WebGLRenderer } from 'pixi.js';
+import { Application, type TilingSprite, type WebGLRenderer } from 'pixi.js';
 
 import { animateEmitter } from './animate-emitter';
+import { createBackground } from './create-background';
 import { createDemoStats } from './devtools/create-demo-stats';
 import type { Stats } from './devtools/types/stats';
 import { loadArtwork } from './load-artwork';
@@ -14,11 +15,13 @@ export async function createDemo(host: HTMLDivElement, example: Example, signal:
   let mounted = false;
   let stats: Stats | undefined;
   let effect: ParticleEffect | undefined;
+  let background: TilingSprite | undefined;
 
   function destroy() {
     stats?.destroy();
     // Detach the effect before Application destroys its ticker.
     effect?.destroy();
+    background?.destroy({ texture: true, textureSource: true });
     if (app.renderer) {
       app.destroy(true, { children: true });
     } else {
@@ -29,7 +32,7 @@ export async function createDemo(host: HTMLDivElement, example: Example, signal:
   try {
     await app.init({
       resizeTo: host,
-      background: '#666666',
+      background: '#111111',
       preference: 'webgl',
       preferWebGLVersion: 2,
       resolution: window.devicePixelRatio || 1,
@@ -57,9 +60,13 @@ export async function createDemo(host: HTMLDivElement, example: Example, signal:
       emitters: artwork,
     });
     effect = particles;
-    app.stage.addChild(particles);
+    const checkerboard = createBackground(app.renderer);
+    background = checkerboard;
+    app.stage.addChild(checkerboard, particles);
 
     function layout() {
+      checkerboard.width = app.screen.width;
+      checkerboard.height = app.screen.height;
       particles.position.set(
         app.screen.width / 2,
         app.screen.height * (example.verticalPosition ?? 0.5),

@@ -27,7 +27,7 @@ select:focus-visible {
   outline-offset: 3px;
 }
 .demo {
-  background: #666666;
+  background: repeating-conic-gradient(#191919 0% 25%, #111111 0% 50%) 0 0 / 32px 32px;
   position: relative;
   flex: 1;
   min-width: 0;
