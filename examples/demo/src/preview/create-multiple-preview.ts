@@ -41,7 +41,7 @@ export async function createMultiplePreview(
     });
     view.position.set(app.screen.width / 2, app.screen.height * 0.7);
     app.stage.addChild(view);
-    view.onStateChange(onStateChange);
+    view.on('statechange', onStateChange);
     for (const emitter of view.emitters.values()) {
       onStateChange({
         emitterId: emitter.id,

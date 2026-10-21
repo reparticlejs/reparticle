@@ -14,7 +14,6 @@ import { resolvePivot } from '../textures/resolve-pivot';
 import { resolveTexture } from '../textures/resolve-texture';
 import { resolveTextureFlip } from '../textures/resolve-texture-flip';
 import type { ParticleRendering, ParticleTint } from '../types/particle-rendering';
-import type { ParticleStateListener } from '../types/particle-state-change';
 import type { ParticleTexture } from '../types/particle-texture';
 import type { ParticleViewOptions } from '../types/particle-view-options';
 import type { EmitterView } from './emitter-view';
@@ -31,7 +30,6 @@ export class ParticleView extends RenderContainer {
   private readonly simulations = new Map<string, Emitter>();
   private disposed = false;
   private readonly states = new Map<string, EmitterState>();
-  private readonly stateListeners = new Set<ParticleStateListener>();
 
   public constructor(
     definition: unknown,
@@ -75,9 +73,7 @@ export class ParticleView extends RenderContainer {
         this.pipe?.restoreState();
         this.states.set(event.emitterId, event.state);
         const change = { ...event, awakeEmitters: this.awakeEmitters };
-        for (const listener of [...this.stateListeners]) {
-          listener(change);
-        }
+        this.emit('statechange', change);
       });
     }
   }
@@ -109,14 +105,6 @@ export class ParticleView extends RenderContainer {
 
   public get isSleeping(): boolean {
     return this.awakeEmitters === 0;
-  }
-
-  public onStateChange(listener: ParticleStateListener): () => void {
-    if (this.disposed) {
-      throw new Error('ParticleView has been destroyed');
-    }
-    this.stateListeners.add(listener);
-    return () => this.stateListeners.delete(listener);
   }
 
   public play(): void {
@@ -272,7 +260,6 @@ export class ParticleView extends RenderContainer {
     }
     this.pipe?.restoreState();
     this.pipe = null;
-    this.stateListeners.clear();
     this.states.clear();
     this.selections.clear();
     this.defaultTints.clear();

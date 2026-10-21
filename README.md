@@ -262,19 +262,22 @@ is required.
 ### Playback and completion
 
 ```ts
-const unsubscribe = view.onStateChange(({ emitterId, state, awakeEmitters }) => {
+import type { ParticleStateListener } from '@reparticle/pixi';
+
+const onStateChange: ParticleStateListener = ({ emitterId, state, awakeEmitters }) => {
   console.log(emitterId, state);
   if (state === 'sleeping' && awakeEmitters === 0) {
     console.log('Effect finished');
   }
-});
+};
+view.on('statechange', onStateChange);
 
 view.play(); // restart all emitters, including delay and prewarm
 view.stop(); // stop spawning; let existing particles finish
 view.stop({ clear: true }); // stop and remove particles immediately
 view.clear(); // shorthand for stop({ clear: true })
 view.getEmitter('sparks').stop(); // control one emitter
-unsubscribe();
+view.off('statechange', onStateChange);
 ```
 
 States follow Defold's `prespawn → spawning → postspawn → sleeping` lifecycle.

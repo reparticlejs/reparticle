@@ -456,6 +456,11 @@ which may already be later in that sequence. Subscribers do not receive an initi
 snapshot. Listeners may unsubscribe or restart/destroy an emitter; destruction
 removes subscriptions without synthesizing a completion event.
 
+Pixi `ParticleView` emits `statechange` through its inherited event emitter. Use
+`on`, `once`, and `off` to manage subscriptions. Events include `emitterId`, `state`, and
+`awakeEmitters`. Pixi removes the listeners when the view is destroyed. Subscriptions
+follow Pixi's event semantics, including repeated registration of the same listener.
+
 Sleeping is determined without GPU readback or per-particle CPU motion simulation.
 `ParticleSlots` owns a free-slot stack, captured float32 lifetimes, and birth batches
 with a shared float32 age. Existing slots expire strictly after lifetime before
