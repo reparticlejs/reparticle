@@ -1,7 +1,7 @@
 import { parseEffectConfig } from '@reparticle/core';
 import { expect, it } from 'vitest';
 
-import effect from '../../public/multiple-emitters.json';
+import effect from '../fixtures/multiple-emitters.json';
 
 it('loads the composed demo with independent looping and once emitters', () => {
   const parsed = parseEffectConfig(effect);

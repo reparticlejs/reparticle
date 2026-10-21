@@ -4,39 +4,16 @@ Source: [yeqwep/ParticleExamples](https://github.com/yeqwep/ParticleExamples),
 commit `e7a53af811d392a713831115388466580acfe388`. Effect definitions are CC0;
 the original license is included as `LICENSE`.
 
-Port each effect in the source README's order:
+Effects retained in the demo:
 
-- [x] Dust (`dust`)
 - [x] Energy (`energy`)
 - [x] Explosion (`exp1`)
 - [x] Celebration cracker (`exp2`, 2D adaptation)
 - [x] Candle flame (`fire`)
 - [x] Loading (`loading`)
-- [x] Slash (`slash`)
-- [x] Knife slash (`slash_knife`)
 - [x] Smoke (`smoke`)
-- [x] Twirl (`twirl`)
 - [x] Fog (`fog`)
 - [x] Confetti (`confetti`)
-
-## Dust
-
-`dust.json` translates `assets/fx/dust.particlefx`. It retains the one-particle
-capacity, one birth per second, 0.6-second lifetime, 250-unit speed, 100-unit
-initial size, RGB spread, authored size/color/alpha curves, and drag magnitude 3.
-Unspecified box dimensions remain zero. Tangent vectors become slopes `t_y / t_x`.
-Defold's upward motion maps to Pixi's negative Y. Seed 1 makes this demo repeatable;
-the random sequence is Reparticle's rather than Defold's.
-
-The source's angular-velocity multiplier is 1, but initial angular velocity is
-zero and orientation is default, so it adds no rotation. The demo uses a shared neutral gray background for all effects.
-
-`particle-blob.png` is the unmodified 32×32 built-in texture used by the source,
-from [Defold](https://github.com/defold/defold/blob/dev/engine/engine/content/builtins/graphics/particle_blob.png).
-Copyright 2020 The Defold Foundation. Its separate license is included as
-`DEFOLD-LICENSE.txt`; it is not part of ParticleExamples' CC0 artwork.
-
-Artwork remains in Pixi's example settings, separate from effect JSON.
 
 ## Energy
 
@@ -49,7 +26,7 @@ The four alpha curve points retain their tangent slopes (`t_y / t_x`).
 Modifiers remain in authored order: vortex (125 with spread 500, radius 500),
 then inward radial acceleration (-400, radius 500). The omitted source duration
 is explicitly zero, matching its continuous looping behavior. Seed 1 uses
-Reparticle's deterministic random sequence. All effects share the gray background.
+Reparticle's deterministic random sequence. All effects share the dark checkerboard background.
 
 ## Explosion
 
@@ -91,7 +68,7 @@ and nondirectional drag do not use their source position fields. Seed 1 uses
 Reparticle's deterministic random sequence. **Restart** replays the burst.
 
 `ta.png` is copied unchanged from the source pack's `assets/img/particle` folder,
-covered by its CC0 license. Artwork stays in Pixi settings; the common gray
+covered by its CC0 license. Artwork stays in Pixi settings; the common dark checkerboard
 background remains unchanged.
 
 ## Candle flame
@@ -107,7 +84,7 @@ Upward acceleration 150 runs before drag 3; the acceleration's authored position
 has no effect on this uniform force. Playback loops with duration 1 second,
 using Reparticle seed 1. The demo adds a 2-second start offset (one particle
 lifetime) so the flame is fully developed on its first visible frame. The common
-gray background is unchanged.
+dark checkerboard background is unchanged.
 
 ## Loading
 
@@ -121,35 +98,7 @@ source values and tangent slopes, including the near-360-degree rotation.
 from the CC0 source pack. This single atlas image rotates and fades; it is not a
 flipbook animation. The demo adds a 2.5-second start offset (one particle lifetime)
 so the full spinner is visible immediately. Artwork stays in Pixi settings, with
-the shared gray background.
-
-## Slash
-
-`slash.json` translates `assets/fx/slash.particlefx`: one particle slot, once
-playback for 1 second at 1 birth/second, 0.3-second lifetime, speed 1000, size 20,
-and an 8×12 box emitter. Initial-direction orientation and additive blending
-turn the original blob texture into the moving slash.
-
-The emitter retains its offset (79, -119 in canvas coordinates). Its source
-quaternion becomes a counterclockwise rotation of approximately 145 degrees.
-Alpha and both stretch curves retain all values and tangent slopes, including
-the steep stretch-Y tangents. Seed 1 uses Reparticle's random sequence.
-**Restart** replays the once-only effect; the original emission rate is retained,
-so the slash appears around one second after playback starts.
-
-## Knife slash
-
-`slash-knife.json` translates `assets/fx/slash_knife.particlefx`, reusing the
-original `circle-05-up.png` artwork. It retains one slot, once playback for
-1 second at 1 birth/second, lifetime 0.8 seconds, size 200, initial rotation
-90 degrees, initial stretch X=1, and additive blending. Omitted speed and box
-dimensions are explicitly zero: the texture rotates and stretches in place.
-
-Alpha, rotation, and both stretch curves retain their source values and tangent
-slopes, including negative alpha values and steep rotation tangents. The renderer
-clamps final opacity, leaving the underlying curve intact. **Restart** replays
-the brief visible sweep around one second after starting. Seed 1 and the shared
-gray background follow the other examples.
+the shared dark checkerboard background.
 
 ## Smoke
 
@@ -164,20 +113,7 @@ positions reflect source Y into canvas coordinates; strengths, spreads, and
 radii remain unchanged. These opposing vortices produce the swaying motion.
 Playback loops with duration 1 second and seed 1. The demo adds a 4-second start
 offset (one particle lifetime) so the smoke is fully developed immediately, on
-the shared gray background.
-
-## Twirl
-
-`twirl.json` translates `assets/fx/twirl.particlefx`: one slot, looping playback
-with duration 1 second, 1 birth/second, 1-second lifetime, size 100, additive
-blending, and the original 0.5-second start offset. Omitted box dimensions and
-speed are explicitly zero, keeping the particle centered.
-
-Independent red, green, and blue curves cycle the color while the authored
-rotation curve turns the texture through nearly 360 degrees. All curve points
-and tangent slopes are retained. `twirl-01.png` is copied unchanged from the
-CC0 pack's `assets/img/particle/twirl_01.png`. Seed 1 and the shared gray
-background follow the other examples; artwork remains separate from effect JSON.
+the shared dark checkerboard background.
 
 ## Fog
 
@@ -191,7 +127,7 @@ values and tangent slopes, including negative samples. Playback loops with
 1-second duration and a 10-second start offset (one particle lifetime) so the fog
 is already developed on its first visible frame. Capacity remains 32 even though rate × lifetime
 is 80: living particles are retained and excess births are dropped. Seed 1 and
-the shared gray background follow the other examples.
+the shared dark checkerboard background follow the other examples.
 
 ## Confetti
 
@@ -212,4 +148,8 @@ match the canvas on resize. It increases downward acceleration to -75 and adds
 extended to 10 seconds so particles reach the bottom of tall canvases; capacity
 is raised to 256 to accommodate the longer fall. The original curves and color
 spread remain unchanged. It reuses CC0 `ta.png`, normal blending, seed 1, and
-the shared gray background.
+the shared dark checkerboard background.
+
+## Shared artwork
+
+`particle-blob.png` is Defold's unmodified built-in 32×32 particle texture. Copyright 2020 The Defold Foundation; see `DEFOLD-LICENSE.txt`. The other retained textures come from the source pack, under its included `LICENSE`. Artwork stays in Pixi bindings, separate from effect JSON.

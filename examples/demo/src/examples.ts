@@ -2,24 +2,6 @@ import type { Example } from './types/example';
 
 export const examples: readonly Example[] = [
   {
-    id: 'fountain',
-    name: 'Star fountain',
-    file: 'effect.json',
-    artwork: { sparks: { source: 'textures/particles.json', frame: 'star' } },
-  },
-  {
-    id: 'multiple',
-    name: 'Multi-emitter',
-    file: 'multiple-emitters.json',
-    artwork: { sparks: { source: 'textures/particles.json', frame: 'spark' } },
-  },
-  {
-    id: 'dust',
-    name: 'Dust',
-    file: 'particle-examples/dust.json',
-    artwork: { dust: { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
     id: 'energy',
     name: 'Energy',
     file: 'particle-examples/energy.json',
@@ -55,28 +37,10 @@ export const examples: readonly Example[] = [
     artwork: { loading: { source: 'particle-examples/circle-05-up.png' } },
   },
   {
-    id: 'slash',
-    name: 'Slash',
-    file: 'particle-examples/slash.json',
-    artwork: { slash: { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
-    id: 'slash_knife',
-    name: 'Knife slash',
-    file: 'particle-examples/slash-knife.json',
-    artwork: { slash_knife: { source: 'particle-examples/circle-05-up.png' } },
-  },
-  {
     id: 'smoke',
     name: 'Smoke',
     file: 'particle-examples/smoke.json',
     artwork: { smoke: { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
-    id: 'twirl',
-    name: 'Twirl',
-    file: 'particle-examples/twirl.json',
-    artwork: { emitter1: { source: 'particle-examples/twirl-01.png' } },
   },
   {
     id: 'fog',
@@ -93,58 +57,10 @@ export const examples: readonly Example[] = [
     artwork: { emitter: { source: 'particle-examples/ta.png' } },
   },
   {
-    id: 'pylinka-campfire',
-    name: 'Campfire',
-    file: 'pylinka/campfire.json',
-    artwork: { campfire: { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
-    id: 'pylinka-torch',
-    name: 'Torch',
-    file: 'pylinka/torch.json',
-    artwork: { torch: { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
     id: 'pylinka-ember-rise',
     name: 'Ember Rise',
     file: 'pylinka/ember-rise.json',
     artwork: { 'ember-rise': { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
-    id: 'pylinka-blue-flame',
-    name: 'Blue Flame',
-    file: 'pylinka/blue-flame.json',
-    artwork: { 'blue-flame': { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
-    id: 'pylinka-inferno',
-    name: 'Inferno',
-    file: 'pylinka/inferno.json',
-    artwork: { inferno: { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
-    id: 'pylinka-candle',
-    name: 'Candle (Pylinka)',
-    file: 'pylinka/candle.json',
-    artwork: { candle: { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
-    id: 'pylinka-will-o-wisp',
-    name: "Will-o'-Wisp",
-    file: 'pylinka/will-o-wisp.json',
-    artwork: { 'will-o-wisp': { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
-    id: 'pylinka-fairy-dust',
-    name: 'Fairy Dust',
-    file: 'pylinka/fairy-dust.json',
-    artwork: { 'fairy-dust': { source: 'particle-examples/particle-blob.png' } },
-  },
-  {
-    id: 'pylinka-healing-glow',
-    name: 'Healing Glow',
-    file: 'pylinka/healing-glow.json',
-    artwork: { 'healing-glow': { source: 'particle-examples/particle-blob.png' } },
   },
   {
     id: 'pylinka-ease-pop',
@@ -165,18 +81,6 @@ export const examples: readonly Example[] = [
         source: 'particle-examples/particle-blob.png',
       },
     },
-  },
-  {
-    id: 'pylinka-snowfall',
-    name: 'Snowfall',
-    file: 'pylinka/snowfall.json',
-    artwork: {
-      snowfall: {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    verticalPosition: 0,
-    fullWidth: true,
   },
   {
     id: 'pylinka-rain',
@@ -201,36 +105,6 @@ export const examples: readonly Example[] = [
     },
   },
   {
-    id: 'pylinka-gold-coins',
-    name: 'Gold Shower',
-    file: 'pylinka/gold-coins.json',
-    artwork: {
-      'gold-coins': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-  },
-  {
-    id: 'pylinka-plasma-drift',
-    name: 'Plasma Drift',
-    file: 'pylinka/plasma-drift.json',
-    artwork: {
-      'plasma-drift': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-  },
-  {
-    id: 'pylinka-frost-shimmer',
-    name: 'Frost Shimmer',
-    file: 'pylinka/frost-shimmer.json',
-    artwork: {
-      'frost-shimmer': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-  },
-  {
     id: 'pylinka-stardust-fall',
     name: 'Stardust Fall',
     file: 'pylinka/stardust-fall.json',
@@ -241,62 +115,6 @@ export const examples: readonly Example[] = [
     },
     verticalPosition: 0,
     fullWidth: true,
-  },
-  {
-    id: 'pylinka-ash-fall',
-    name: 'Ash Fall',
-    file: 'pylinka/ash-fall.json',
-    artwork: {
-      'ash-fall': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    verticalPosition: 0,
-    fullWidth: true,
-  },
-  {
-    id: 'pylinka-pollen-drift',
-    name: 'Pollen Drift',
-    file: 'pylinka/pollen-drift.json',
-    artwork: {
-      'pollen-drift': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-  },
-  {
-    id: 'pylinka-bubbles',
-    name: 'Bubbles',
-    file: 'pylinka/bubbles.json',
-    artwork: {
-      bubbles: {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    verticalPosition: 1,
-    fullWidth: true,
-  },
-  {
-    id: 'pylinka-embers-drift',
-    name: 'Embers Drift',
-    file: 'pylinka/embers-drift.json',
-    artwork: {
-      'embers-drift': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    verticalPosition: 1,
-    fullWidth: true,
-  },
-  {
-    id: 'pylinka-xp-orbs',
-    name: 'XP Orbs',
-    file: 'pylinka/xp-orbs.json',
-    artwork: {
-      'xp-orbs': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
   },
   {
     id: 'pylinka-nebula',
@@ -470,19 +288,6 @@ export const examples: readonly Example[] = [
     },
   },
   {
-    id: 'pylinka-twin-flame',
-    name: 'Twin Flame',
-    file: 'pylinka/twin-flame.json',
-    artwork: {
-      outer: {
-        source: 'particle-examples/particle-blob.png',
-      },
-      core: {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-  },
-  {
     id: 'pylinka-whirlpool',
     name: 'Whirlpool',
     file: 'pylinka/whirlpool.json',
@@ -523,64 +328,12 @@ export const examples: readonly Example[] = [
     },
   },
   {
-    id: 'pylinka-rune-swirl',
-    name: 'Rune Swirl',
-    file: 'pylinka/rune-swirl.json',
-    artwork: {
-      'rune-swirl': {
-        source: 'pylinka/textures/magic_03.png',
-      },
-    },
-  },
-  {
-    id: 'pylinka-fae-dust',
-    name: 'Fae Dust',
-    file: 'pylinka/fae-dust.json',
-    artwork: {
-      'fae-dust': {
-        source: 'pylinka/textures/magic_05.png',
-      },
-    },
-  },
-  {
-    id: 'pylinka-star-fall',
-    name: 'Star Fall',
-    file: 'pylinka/star-fall.json',
-    artwork: {
-      'star-fall': {
-        source: 'pylinka/textures/star_01.png',
-      },
-    },
-    verticalPosition: 0,
-    fullWidth: true,
-  },
-  {
-    id: 'pylinka-twinkle-field',
-    name: 'Twinkle Field',
-    file: 'pylinka/twinkle-field.json',
-    artwork: {
-      'twinkle-field': {
-        source: 'pylinka/textures/star_03.png',
-      },
-    },
-  },
-  {
     id: 'pylinka-shooting-stars',
     name: 'Shooting Stars',
     file: 'pylinka/shooting-stars.json',
     artwork: {
       'shooting-stars': {
         source: 'pylinka/textures/star_05.png',
-      },
-    },
-  },
-  {
-    id: 'pylinka-soft-stars',
-    name: 'Soft Stars',
-    file: 'pylinka/soft-stars.json',
-    artwork: {
-      'soft-stars': {
-        source: 'pylinka/textures/star_01_a.png',
       },
     },
   },
@@ -646,26 +399,6 @@ export const examples: readonly Example[] = [
     },
   },
   {
-    id: 'pylinka-flame-embers',
-    name: 'Flame Embers',
-    file: 'pylinka/flame-embers.json',
-    artwork: {
-      'flame-embers': {
-        source: 'pylinka/textures/flame_02.png',
-      },
-    },
-  },
-  {
-    id: 'pylinka-glow-orbs',
-    name: 'Glow Orbs',
-    file: 'pylinka/glow-orbs.json',
-    artwork: {
-      'glow-orbs': {
-        source: 'pylinka/textures/circle_02.png',
-      },
-    },
-  },
-  {
     id: 'pylinka-twirl-trails',
     name: 'Twirl Trails',
     file: 'pylinka/twirl-trails.json',
@@ -708,18 +441,6 @@ export const examples: readonly Example[] = [
     },
   },
   {
-    id: 'pylinka-bonfire',
-    name: 'Bonfire',
-    file: 'pylinka/bonfire.json',
-    artwork: {
-      bonfire: {
-        source: 'pylinka/textures/fire_03_8x8.json',
-        animation: 'play',
-        playback: 'once-forward',
-      },
-    },
-  },
-  {
     id: 'pylinka-wispy-smoke-anim',
     name: 'Wispy Smoke',
     file: 'pylinka/wispy-smoke-anim.json',
@@ -743,86 +464,6 @@ export const examples: readonly Example[] = [
     motion: 'figure-eight',
   },
   {
-    id: 'pylinka-comet-tail',
-    name: 'Comet Tail',
-    file: 'pylinka/comet-tail.json',
-    artwork: {
-      'comet-tail': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    motion: 'figure-eight',
-  },
-  {
-    id: 'pylinka-pixie-trail',
-    name: 'Pixie Trail',
-    file: 'pylinka/pixie-trail.json',
-    artwork: {
-      'pixie-trail': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    motion: 'figure-eight',
-  },
-  {
-    id: 'pylinka-smoke-trail',
-    name: 'Smoke Trail',
-    file: 'pylinka/smoke-trail.json',
-    artwork: {
-      'smoke-trail': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    motion: 'figure-eight',
-  },
-  {
-    id: 'pylinka-sparkler',
-    name: 'Sparkler',
-    file: 'pylinka/sparkler.json',
-    artwork: {
-      sparkler: {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    motion: 'figure-eight',
-  },
-  {
-    id: 'pylinka-neon-swipe',
-    name: 'Neon Swipe',
-    file: 'pylinka/neon-swipe.json',
-    artwork: {
-      'neon-swipe': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    motion: 'figure-eight',
-  },
-  {
-    id: 'pylinka-ghost-wisp',
-    name: 'Ghost Wisp',
-    file: 'pylinka/ghost-wisp.json',
-    artwork: {
-      'ghost-wisp': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    motion: 'figure-eight',
-  },
-  {
-    id: 'pylinka-comet-and-smoke',
-    name: 'Comet & Smoke',
-    file: 'pylinka/comet-and-smoke.json',
-    artwork: {
-      core: {
-        source: 'particle-examples/particle-blob.png',
-      },
-      smoke: {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    motion: 'figure-eight',
-  },
-  {
     id: 'pylinka-infinity-loop',
     name: 'Infinity Loop',
     file: 'pylinka/infinity-loop.json',
@@ -832,16 +473,5 @@ export const examples: readonly Example[] = [
       },
     },
     motion: 'figure-eight',
-  },
-  {
-    id: 'pylinka-pendulum-sparks',
-    name: 'Pendulum Sparks',
-    file: 'pylinka/pendulum-sparks.json',
-    artwork: {
-      'pendulum-sparks': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    motion: 'pendulum',
   },
 ];

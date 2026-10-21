@@ -93,7 +93,7 @@ GPU.js compiles the packaged function strings at runtime, so the functions must 
 
 ## Effect configuration and runtime parameters
 
-Pass an effect JSON object to `new ParticleEffect(definition)`. Validation happens before GPU allocation. See [the JSON skeleton](docs/effect.example.json); the demo loads `examples/demo/public/effect.json`. Core-only consumers can pass `parseEffectConfig(definition).emitters[0]` to `new Emitter({ gl, canvas }, emitterDefinition)`.
+Pass an effect JSON object to `new ParticleEffect(definition)`. Validation happens before GPU allocation. See [the JSON skeleton](docs/effect.example.json); the demo selects effect files listed in `examples/demo/src/examples.ts`. Core-only consumers can pass `parseEffectConfig(definition).emitters[0]` to `new Emitter({ gl, canvas }, emitterDefinition)`.
 
 ```ts
 particles.emitter.setParameters({ emission: { rate: 1500 } });

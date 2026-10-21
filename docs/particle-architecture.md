@@ -262,7 +262,7 @@ image's proportions and center. Initial size still controls the longest original
 dimension; automatic sizing is described below. Flipbook playback is described below. Switching
 frames affects all existing particles immediately without restarting simulation,
 including while paused. No simulation state, CPU particle readback, or extra draw
-pass is added. Both demo effects use `textures/particles.json`.
+pass is added. The atlas path above is illustrative; the demo selects artwork per effect.
 
 ### Pixi flipbook animation
 
@@ -349,7 +349,7 @@ partial construction failure and destruction; caller-owned artwork survives.
 Shared effect-root modifiers are described below. Effect-wide resource budgets are a host-level concern outside the current contract.
 This adds independent composition, not changes to the documented simulation integrator.
 
-The **Multi-emitter** dropdown option loads `public/multiple-emitters.json`:
+The multi-emitter test fixture, `examples/demo/tests/fixtures/multiple-emitters.json`, contains
 looping fire, delayed smoke, and a once-only spark burst. The Pixi host supplies
 artwork separately. The sidebar offers effect selection, Pause/Resume, and Restart. Compact stats remain inside the canvas area.
 

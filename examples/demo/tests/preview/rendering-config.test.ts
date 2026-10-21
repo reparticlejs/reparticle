@@ -3,7 +3,7 @@ import { ParticleEffect, validateAnimationFrames, type ParticleTexture } from '@
 import { Texture, Ticker } from 'pixi.js';
 import { expect, expectTypeOf, it, vi } from 'vitest';
 
-import effect from '../../public/effect.json';
+import effect from '../fixtures/effect.json';
 
 const definition = parseEffectConfig(effect);
 const emitterId = definition.emitters[0].id;

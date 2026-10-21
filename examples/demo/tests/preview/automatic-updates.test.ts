@@ -3,7 +3,7 @@ import { ParticleEffect } from '@reparticle/pixi';
 import { Ticker, UPDATE_PRIORITY } from 'pixi.js';
 import { expect, it, vi } from 'vitest';
 
-import effect from '../../public/effect.json';
+import effect from '../fixtures/effect.json';
 
 const definition = parseEffectConfig(effect);
 
