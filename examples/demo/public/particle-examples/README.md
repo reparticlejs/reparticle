@@ -14,7 +14,7 @@ Port each effect in the source README's order:
 - [x] Loading (`loading`)
 - [x] Slash (`slash`)
 - [x] Knife slash (`slash_knife`)
-- [ ] Smoke (`smoke`)
+- [x] Smoke (`smoke`)
 - [ ] Twirl (`twirl`)
 - [ ] Fog (`fog`)
 - [ ] Confetti (`confetti`)
@@ -146,3 +146,16 @@ slopes, including negative alpha values and steep rotation tangents. The rendere
 clamps final opacity, leaving the underlying curve intact. **Restart** replays
 the brief visible sweep around one second after starting. Seed 1 and the shared
 gray background follow the other examples.
+
+## Smoke
+
+`smoke.json` translates `assets/fx/smoke.particlefx`, using the original blob
+texture and screen blending. It retains 48 slots, 12 births/second, 4-second
+lifetime, speed 60, size 70 ± 10, a 20×10 cone emitter, and the original initial
+alpha/stretch spreads. Alpha and stretch curves preserve every point and slope.
+
+All seven modifiers remain in authored order: upward acceleration 80, drag 3,
+radial force 36 ± 36 within 500 units, then four localized vortices. Vortex
+positions reflect source Y into canvas coordinates; strengths, spreads, and
+radii remain unchanged. These opposing vortices produce the swaying motion.
+Playback loops with duration 1 second and seed 1, on the shared gray background.

@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "smoke",
+      "capacity": 48,
+      "seed": 1,
+      "duration": 1,
+      "playMode": "loop",
+      "space": "world",
+      "emission": {
+        "rate": 12,
+        "shape": {
+          "type": "cone2d",
+          "width": 20,
+          "height": 10
+        }
+      },
+      "initial": {
+        "lifetime": 4,
+        "speed": 60,
+        "size": 70,
+        "sizeSpread": 10,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1,
+        "alphaSpread": 0.9,
+        "stretchX": 0.2,
+        "stretchXSpread": 0.1,
+        "stretchY": 0.2,
+        "stretchYSpread": 0.2
+      },
+      "overLifetime": {
+        "scale": 1,
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 3.8709695255817644
+            },
+            {
+              "time": 0.187948,
+              "value": 0.813054,
+              "tangent": 1.6656871080136664
+            },
+            {
+              "time": 0.347059,
+              "value": 0.415806,
+              "tangent": -0.765819699696825
+            },
+            {
+              "time": 0.579585,
+              "value": 0.610088,
+              "tangent": -6.435863390808311
+            },
+            {
+              "time": 1,
+              "value": 0.007225,
+              "tangent": -0.8839800213223455
+            }
+          ]
+        },
+        "stretchX": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.199637,
+              "tangent": 0.0
+            },
+            {
+              "time": 1,
+              "value": 3.488542,
+              "tangent": 0.7855136913074022
+            }
+          ]
+        },
+        "stretchY": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0.0
+            },
+            {
+              "time": 0.266782,
+              "value": 0.274577,
+              "tangent": -3.5540471798516133
+            },
+            {
+              "time": 0.659862,
+              "value": 2.056932,
+              "tangent": -2.5276004813438484
+            },
+            {
+              "time": 1,
+              "value": 4.083937,
+              "tangent": 0.0
+            }
+          ]
+        },
+        "angularVelocity": 1
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 80
+        },
+        {
+          "type": "drag",
+          "magnitude": 3
+        },
+        {
+          "type": "radial",
+          "magnitude": 36,
+          "spread": 36,
+          "maxDistance": 500
+        },
+        {
+          "type": "vortex",
+          "x": -29,
+          "y": -13,
+          "magnitude": 150,
+          "spread": 150,
+          "maxDistance": 30
+        },
+        {
+          "type": "vortex",
+          "x": 27,
+          "y": -31,
+          "magnitude": -150,
+          "spread": 150,
+          "maxDistance": 30
+        },
+        {
+          "type": "vortex",
+          "x": 54,
+          "y": -76,
+          "magnitude": -200,
+          "spread": 200,
+          "maxDistance": 60
+        },
+        {
+          "type": "vortex",
+          "x": -62,
+          "y": -105,
+          "magnitude": 100,
+          "spread": 100,
+          "maxDistance": 60
+        }
+      ],
+      "rendering": {
+        "blendMode": "screen"
+      }
+    }
+  ]
+}

@@ -66,4 +66,10 @@ export const examples: readonly Example[] = [
     file: 'particle-examples/slash-knife.json',
     artwork: { slash_knife: { source: 'particle-examples/circle-05-up.png' } },
   },
+  {
+    id: 'smoke',
+    name: 'Smoke',
+    file: 'particle-examples/smoke.json',
+    artwork: { smoke: { source: 'particle-examples/particle-blob.png' } },
+  },
 ];
