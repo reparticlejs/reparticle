@@ -1,4 +1,4 @@
-import type { Texture } from 'pixi.js';
+import type { PointData, Size, Texture } from 'pixi.js';
 
 export type AnimationPlayback =
   | 'none'
@@ -12,16 +12,10 @@ export type AnimationPlayback =
 export type ParticleSizeMode = 'manual' | 'auto';
 
 /** Offset from the centered geometry: positive X right, positive Y up. */
-export interface ParticlePivot {
-  x: number;
-  y: number;
-}
+export type ParticlePivot = PointData;
 
 /** Animation reference dimensions in logical texture units. */
-export interface AnimationSize {
-  width: number;
-  height: number;
-}
+export type AnimationSize = Size;
 
 /** Caller owns the textures, including frames loaded by a Pixi Spritesheet. */
 export type ParticleTexture = {

@@ -1,5 +1,5 @@
 import { CURVE_SEGMENTS, type EmitterConfig } from '@reparticle/core';
-import { UniformGroup } from 'pixi.js';
+import { Matrix, UniformGroup } from 'pixi.js';
 
 import { sampleColorCurves } from '../curves/sample-color-curves';
 import { sampleGeometryCurves } from '../curves/sample-geometry-curves';
@@ -17,7 +17,7 @@ export function createUniforms(config: EmitterConfig) {
     emitterRotation: { value: new Float32Array([1, 0]), type: 'vec2<f32>' },
     emitterScale: { value: 1, type: 'f32' },
     emitterHandedness: { value: 1, type: 'f32' },
-    transform: { value: new Float32Array(9), type: 'mat3x3<f32>' },
+    transform: { value: new Matrix(), type: 'mat3x3<f32>' },
 
     displayColor: { value: new Float32Array([1, 1, 1, 1]), type: 'vec4<f32>' },
     tint: { value: new Float32Array([1, 1, 1, 1]), type: 'vec4<f32>' },

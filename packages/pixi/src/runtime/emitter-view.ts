@@ -240,7 +240,7 @@ export class EmitterView {
     u.emitterRotation[1] = Math.sin(radians);
     u.emitterOffset[0] = localSpace ? this.emitter.worldX : 0;
     u.emitterOffset[1] = localSpace ? this.emitter.worldY : 0;
-    transform.toArray(true, u.transform);
+    u.transform = transform;
 
     color32BitToUniform(displayColor, u.displayColor, 0);
     const tint = this.currentTint;
