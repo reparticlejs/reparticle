@@ -84,8 +84,8 @@ export class EmitterView {
           },
         });
         this.shader = shader;
-        // Pixi compiles lazily. Bind here so construction still reports shader errors.
-        renderer.shader.bind(shader);
+        // Compile now, but defer uniform syncing until the active global group is bound.
+        renderer.shader.bind(shader, true);
         order = new ParticleOrderBuffer(renderer, this.emitter.capacity);
         this.order = order;
         this.drawOptions = {
@@ -250,6 +250,8 @@ export class EmitterView {
     // Reuse the draw command; Pixi binds the shader, textures, geometry, and state.
     this.state.blendMode = this.emitter.configuration.blendMode;
     this.drawOptions.instanceCount = count;
+    // Follow Pixi mesh rendering: bind the active render group and target uniforms.
+    this.shader.groups[100] = r.globalUniforms.bindGroup;
     r.encoder.draw(this.drawOptions);
   }
   public destroy(): void {

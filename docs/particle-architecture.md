@@ -726,8 +726,9 @@ factors are applied. In particular, multiply uses Pixi's normal alpha accumulati
 on transparent targets rather than preserving destination alpha.
 
 Particle draws preserve the active framebuffer, viewport, stencil test and color
-mask. Their clip-space matrix combines the inverse scene transform, relative render
-group transform, Pixi’s global transform, filter offset and target projection.
+mask. Their local matrix combines the inverse scene transform and relative render
+group transform. Pixi's global shader uniform bind group supplies the world transform
+(including filter offsets), target projection and group opacity directly to the shader.
 This supports render textures (including resolution and frame offsets), filters,
 graphics/sprite masks, nested effects and ordinary sibling layering.
 

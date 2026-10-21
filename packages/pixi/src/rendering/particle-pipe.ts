@@ -39,7 +39,7 @@ export class ParticlePipe implements RenderPipe<ParticleView> {
     if (view.isRenderable) {
       const resources = this.resources.get(view);
       if (resources) {
-        view.draw(this.renderer, resources);
+        view.draw(resources);
       }
     }
   }

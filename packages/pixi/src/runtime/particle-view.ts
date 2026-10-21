@@ -5,7 +5,7 @@ import {
   type EmitterState,
   type StopOptions,
 } from '@reparticle/core';
-import { Matrix, RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
+import { Matrix, RenderContainer, type Texture } from 'pixi.js';
 
 import type { ParticlePipe } from '../rendering/particle-pipe';
 import { resolveTint } from '../rendering/resolve-tint';
@@ -239,7 +239,7 @@ export class ParticleView extends RenderContainer {
   }
 
   /** @internal Invoked by the particle pipe inside Pixi's draw instruction sequence. */
-  public draw(renderer: WebGLRenderer, views: ReadonlyMap<string, EmitterView>): void {
+  public draw(views: ReadonlyMap<string, EmitterView>): void {
     // Particle positions already include the scene transform. Convert back to the
     // view's local coordinates, then use Pixi's current group and target transform.
     if (
@@ -249,21 +249,15 @@ export class ParticleView extends RenderContainer {
     ) {
       return;
     }
-    const globals = renderer.globalUniforms.globalUniformData;
     this.drawTransform.copyFrom(this.sceneTransform).invert();
     // A view rendered as its own group has no transform relative to that group.
     // Pixi may still retain its previous relative transform from a parent draw.
     if (!this.renderGroup) {
       this.drawTransform.prepend(this.relativeGroupTransform);
     }
-    this.drawTransform
-      .prepend(globals.worldTransformMatrix)
-      .translate(-globals.offset.x, -globals.offset.y)
-      .prepend(globals.projectionMatrix);
     const relativeAlpha = this.renderGroup ? 1 : this.groupAlpha;
-    const opacity = relativeAlpha * ((globals.worldColor >>> 24) / 255);
     for (const view of views.values()) {
-      view.renderParticles(this.drawTransform, opacity);
+      view.renderParticles(this.drawTransform, relativeAlpha);
     }
   }
 
