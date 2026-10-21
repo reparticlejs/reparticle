@@ -1,8 +1,8 @@
 import { CURVE_SEGMENTS, type EmitterConfig } from '@reparticle/core';
 import { Matrix, UniformGroup } from 'pixi.js';
 
-import { sampleColorCurves } from '../curves/sample-color-curves';
-import { sampleGeometryCurves } from '../curves/sample-geometry-curves';
+import { packColorCurves } from '../curves/pack-color-curves';
+import { packGeometryCurves } from '../curves/pack-geometry-curves';
 
 /**
  * Per-emitter values uploaded by Pixi's shader system. Vector storage is reused.
@@ -44,12 +44,12 @@ export function createUniforms(config: EmitterConfig) {
     animationBackward: { value: 0, type: 'i32' },
     animationPingpong: { value: 0, type: 'i32' },
     geometryCurve: {
-      value: sampleGeometryCurves(config.overLifetime),
+      value: packGeometryCurves(config.overLifetime),
       type: 'vec4<f32>',
       size: CURVE_SEGMENTS + 1,
     },
     colorCurve: {
-      value: sampleColorCurves(config.overLifetime),
+      value: packColorCurves(config.overLifetime),
       type: 'vec4<f32>',
       size: CURVE_SEGMENTS + 1,
     },
