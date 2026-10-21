@@ -695,7 +695,7 @@ reuse the buffer, and reset or clear invalidates it. Initial lifetime edits affe
 the normalization on the next simulation step. The optional debug counter keeps
 allocation tracking without logical sorting.
 
-Sorting takes O(n log n) CPU work for n living particles per step; rendering uploads
+Stable two-pass radix sorting takes O(n + 256) CPU work for n living particles per step; rendering uploads
 4n bytes once per changed draw. Pixi issues one draw per emitter, using its
 single-instance draw path when only one particle is alive. Every
 texture lookup still addresses the original simulation slot. No GPU readback,

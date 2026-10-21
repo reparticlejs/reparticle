@@ -28,6 +28,8 @@ import { resolveFlipbook } from '../textures/resolve-flipbook';
 import { resolveTexture } from '../textures/resolve-texture';
 import type { EmitterRenderer } from './emitter-renderer';
 
+const MAX_STEP_SECONDS = 0.1;
+
 /** An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller. */
 export class ParticleEffect extends ViewContainer {
   public override readonly renderPipeId = 'reparticle';
@@ -287,9 +289,21 @@ export class ParticleEffect extends ViewContainer {
     this.addBounds(this._bounds);
   }
 
-  /** Pixi deltaMS includes ticker speed and its configured elapsed-time limit. */
+  /** Preserve ticker time while keeping every simulation step within core's limit. */
   private onTick(ticker: Ticker): void {
-    this.update(ticker.deltaMS / 1000);
+    const seconds = ticker.deltaMS / 1000;
+    if (!Number.isFinite(seconds) || seconds <= MAX_STEP_SECONDS) {
+      this.update(seconds);
+      return;
+    }
+
+    // Pixi applies ticker speed after its elapsed-time cap, so even capped frames
+    // can exceed the simulation limit. Equal substeps preserve the full scaled delta.
+    const stepCount = Math.ceil(seconds / MAX_STEP_SECONDS);
+    const stepSeconds = seconds / stepCount;
+    for (let step = 0; step < stepCount && !this.disposed; step++) {
+      this.update(stepSeconds);
+    }
   }
 
   /** Validate every artwork binding before creating simulations or subscribing to the ticker. */

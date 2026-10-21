@@ -52,7 +52,7 @@ pnpm format
 - WebGL2 only. The prior WebGPU experiment has not been ported into these packages.
 - Main-canvas and RenderTexture rendering, including Pixi filters, graphics masks, sprite masks, and effects on parent containers. Supply bounds or a filter area explicitly; particle bounds are never scanned. Context-loss recovery is not supported yet.
 - GPU.js's browser compiler is included at runtime, increasing bundle size. Precompiled kernels are future work.
-- Default capacity is 100,000; construction accepts up to 1,000,000 subject to GPU texture limits. This is a capacity limit, not a cross-device performance guarantee.
+- Core requires an explicit capacity; the demo starts at 8192 slots. Construction accepts up to 1,000,000 subject to GPU texture limits. This is a capacity limit, not a cross-device performance guarantee.
 - Updates accept 0–0.1 seconds. The demo clamps long frames to 0.05 seconds, avoiding a large catch-up after tab suspension.
 - No editor, serialization, public custom-behavior API, WebGPU backend, or new comparative benchmark is included.
 
@@ -499,8 +499,10 @@ Pixi wraps GPU.js output textures with `ExternalSource` and binds them through `
 ### Automatic and manual updates
 
 Effects default to `autoUpdate: true` on `Ticker.shared`. Pass `ticker: app.ticker`
-to follow your application's clock. Automatic updates use `ticker.deltaMS / 1000`
-and run at normal priority, before Pixi's application render listener.
+to follow your application's clock. Automatic updates preserve `ticker.deltaMS / 1000`,
+splitting deltas above 0.1 seconds into equal steps within core's limit. This also
+handles ticker speed scaling. They run at normal priority, before Pixi's application
+render listener. Manual `update(seconds)` calls still require a value from 0 to 0.1.
 
 For your own simulation loop, pass `autoUpdate: false` and call
 `effect.update(seconds)` explicitly. Do not also advance an automatically updated
