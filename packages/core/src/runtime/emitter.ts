@@ -29,7 +29,6 @@ export class Emitter {
   public readonly width = 256;
   public readonly rows: number;
   public readonly capacity: number;
-  public readonly gl: WebGL2RenderingContext;
   /** Gate new births without pausing the simulation or resetting playback. */
   public emitting = true;
 
@@ -52,7 +51,8 @@ export class Emitter {
   private readonly initialSeed: number;
   private needsPrewarm = true;
 
-  private readonly simulation: GpuSimulation;
+  private simulation: GpuSimulation | null = null;
+  private context: EmitterContext | null = null;
   private readonly simulationParameters = createSimulationParameters();
   private disposed = false;
 
@@ -60,7 +60,7 @@ export class Emitter {
   private notifying = false;
 
   public constructor(
-    context: EmitterContext,
+    context: EmitterContext | null,
     definition: EmitterConfig,
     sharedModifiers: unknown = [],
     public readonly effectTransform = new EffectTransform(),
@@ -80,7 +80,6 @@ export class Emitter {
     );
     this.shape = new SampledShape(this.settings.emission.shape);
 
-    this.gl = context.gl;
     this.capacity = this.settings.capacity;
     this.rows = Math.ceil(this.capacity / this.width);
 
@@ -98,13 +97,45 @@ export class Emitter {
     if (!Number.isFinite(this.seed)) {
       throw new RangeError('Seed must be finite');
     }
-    this.simulation = new GpuSimulation(context, this.width, this.rows, this.capacity);
+    if (context) {
+      this.initialize(context);
+    }
+  }
+
+  /** Attach the renderer's context once. CPU controls are usable before attachment. */
+  public initialize(context: EmitterContext): void {
+    this.assertAlive();
+    if (this.context) {
+      if (this.context.gl !== context.gl) {
+        throw new Error('An emitter cannot move between WebGL contexts');
+      }
+      return;
+    }
+    const simulation = new GpuSimulation(context, this.width, this.rows, this.capacity);
+    this.simulation = simulation;
     try {
-      this.warmSimulation();
+      // Compile both paths without changing playback, seeds, or queued controls.
+      simulation.reset();
+      this.integrate(0, 0, this.initial.lifetime.at(0), 0);
+      this.integrate(0, 0, this.initial.lifetime.at(0), 0);
+      simulation.reset();
+      this.context = context;
     } catch (error) {
-      this.destroy();
+      simulation.destroy();
+      this.simulation = null;
       throw error;
     }
+  }
+
+  public get initialized(): boolean {
+    return this.simulation !== null;
+  }
+
+  public get gl(): WebGL2RenderingContext {
+    if (!this.context) {
+      throw new Error('Emitter GPU resources have not been initialized');
+    }
+    return this.context.gl;
   }
 
   public get worldX(): number {
@@ -154,7 +185,7 @@ export class Emitter {
   public stop({ clear = false }: StopOptions = {}): void {
     this.assertAlive();
     if (clear) {
-      this.simulation.clear();
+      this.simulation?.clear();
       this.slots.reset();
     }
     this.needsPrewarm = false;
@@ -271,11 +302,15 @@ export class Emitter {
   /** GPU resource handle for renderer adapters. Never calls toArray/readPixels. */
   public get texture(): WebGLTexture {
     this.assertAlive();
+    if (!this.simulation) {
+      throw new Error('Emitter GPU resources have not been initialized');
+    }
     return this.simulation.texture;
   }
 
   /**
    * Advance by 0–0.1 seconds. The first positive step runs pending prewarm first.
+   * Before initialize(), updates leave playback paused without accumulating time.
    * Zero-time updates initialize GPU output without advancing particle ages.
    * State notifications are delivered after the simulation work completes.
    */
@@ -287,7 +322,7 @@ export class Emitter {
     if (!Number.isFinite(seconds) || seconds < 0 || seconds > 0.1) {
       throw new RangeError('Step must be between 0 and 0.1 seconds');
     }
-    if (this.state === 'sleeping') {
+    if (!this.simulation || this.state === 'sleeping') {
       return;
     }
     if (seconds > 0 && this.needsPrewarm) {
@@ -306,7 +341,7 @@ export class Emitter {
   /** Clear particles and restore the initial clock and seed; preserve the emitting gate. */
   public reset(): void {
     this.assertAlive();
-    this.simulation.reset();
+    this.simulation?.reset();
     this.schedule.reset();
     this.slots.reset();
     this.playback.reset();
@@ -323,15 +358,7 @@ export class Emitter {
     }
     this.disposed = true;
     this.listeners.clear();
-    this.simulation.destroy();
-  }
-
-  /** Compile both update paths with zero-time steps, then restore fresh playback. */
-  private warmSimulation(): void {
-    this.reset();
-    this.update(0);
-    this.update(0);
-    this.reset();
+    this.simulation?.destroy();
   }
 
   /** Queue reentrant state changes until the current notification batch finishes. */
@@ -477,7 +504,7 @@ export class Emitter {
       settings.scale,
       this.effectTransform,
     );
-    this.simulation.update(parameters);
+    this.simulation!.update(parameters);
   }
 
   private assertAlive(): void {

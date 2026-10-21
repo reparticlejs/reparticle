@@ -1,14 +1,14 @@
 import {
   parseEffectConfig,
   EffectTransform,
-  type Emitter,
+  Emitter,
   type EmitterState,
   type StopOptions,
 } from '@reparticle/core';
 import { Matrix, RenderContainer, type Texture, type WebGLRenderer } from 'pixi.js';
 
+import type { ParticlePipe } from '../rendering/particle-pipe';
 import { resolveTint } from '../rendering/resolve-tint';
-import { restoreSimulationState } from '../rendering/restore-simulation-state';
 import { resolveFlipbook } from '../textures/resolve-flipbook';
 import { resolvePivot } from '../textures/resolve-pivot';
 import { resolveTexture } from '../textures/resolve-texture';
@@ -17,29 +17,29 @@ import type { ParticleRendering, ParticleTint } from '../types/particle-renderin
 import type { ParticleStateListener } from '../types/particle-state-change';
 import type { ParticleTexture } from '../types/particle-texture';
 import type { ParticleViewOptions } from '../types/particle-view-options';
-import { EmitterView } from './emitter-view';
+import type { EmitterView } from './emitter-view';
 
 /** An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller. */
 export class ParticleView extends RenderContainer {
   private readonly effectTransform = new EffectTransform();
   private readonly sceneTransform = new Matrix();
   private readonly drawTransform = new Matrix();
-  private readonly renderer: WebGLRenderer;
-  private readonly views = new Map<string, EmitterView>();
+  public override readonly renderPipeId = 'reparticle';
+  private pipe: ParticlePipe | null = null;
+  private readonly selections = new Map<string, ParticleRendering>();
+  private readonly defaultTints = new Map<string, ParticleTint>();
   private readonly simulations = new Map<string, Emitter>();
   private disposed = false;
   private readonly states = new Map<string, EmitterState>();
   private readonly stateListeners = new Set<ParticleStateListener>();
 
   public constructor(
-    renderer: WebGLRenderer,
     definition: unknown,
     options: ParticleRendering | ParticleViewOptions = { emitters: {} },
   ) {
     super({});
-    this.renderer = renderer;
     const effect = parseEffectConfig(definition);
-    const selections = new Map<string, ParticleRendering>();
+    const selections = this.selections;
     if ('emitters' in options) {
       const ids = new Set(effect.emitters.map((emitter) => emitter.id));
       for (const [id, texture] of Object.entries(options.emitters)) {
@@ -63,32 +63,38 @@ export class ParticleView extends RenderContainer {
         resolveTexture(texture);
       }
     }
-    try {
-      for (const emitter of effect.emitters) {
-        const view = new EmitterView(
-          renderer,
-          emitter,
-          selections.get(emitter.id),
-          effect.modifiers,
-          this.effectTransform,
-        );
-        this.views.set(emitter.id, view);
-        this.simulations.set(emitter.id, view.emitter);
-        this.states.set(emitter.id, view.emitter.state);
-        view.emitter.onStateChange((event) => {
-          restoreSimulationState(renderer);
-          this.states.set(event.emitterId, event.state);
-          const change = { ...event, awakeEmitters: this.awakeEmitters };
-          for (const listener of [...this.stateListeners]) {
-            listener(change);
-          }
-        });
-      }
-      renderer.runners.prerender.add(this);
-    } catch (error) {
-      this.destroy();
-      throw error;
+    for (const config of effect.emitters) {
+      const emitter = new Emitter(null, config, effect.modifiers, this.effectTransform);
+      const rendering = selections.get(emitter.id) ?? { texture: null };
+      const tint = resolveTint(rendering.tint);
+      selections.set(emitter.id, { ...rendering, tint });
+      this.defaultTints.set(emitter.id, tint);
+      this.simulations.set(emitter.id, emitter);
+      this.states.set(emitter.id, emitter.state);
+      emitter.onStateChange((event) => {
+        this.pipe?.restoreState();
+        this.states.set(event.emitterId, event.state);
+        const change = { ...event, awakeEmitters: this.awakeEmitters };
+        for (const listener of [...this.stateListeners]) {
+          listener(change);
+        }
+      });
     }
+  }
+
+  /** @internal Called before Pixi changes the rendered root's transform. */
+  public prepare(pipe: ParticlePipe): void {
+    if (this.pipe && this.pipe !== pipe) {
+      throw new Error('ParticleView cannot move between renderers');
+    }
+    this.syncSceneTransform();
+    this.pipe = pipe;
+  }
+
+  /** @internal Rendering configuration is independent of core simulation. */
+  public getRendering(id: string): ParticleRendering {
+    this.getEmitter(id);
+    return this.selections.get(id)!;
   }
 
   public get awakeEmitters(): number {
@@ -114,8 +120,13 @@ export class ParticleView extends RenderContainer {
   }
 
   public play(): void {
-    for (const view of this.views.values()) {
-      view.play();
+    for (const emitter of this.simulations.values()) {
+      const view = this.pipe?.getEmitterView(this, emitter.id);
+      if (view) {
+        view.play();
+      } else {
+        emitter.play();
+      }
     }
   }
 
@@ -126,8 +137,13 @@ export class ParticleView extends RenderContainer {
   }
 
   public stop(options: StopOptions = {}): void {
-    for (const view of this.views.values()) {
-      view.stop(options);
+    for (const emitter of this.simulations.values()) {
+      const view = this.pipe?.getEmitterView(this, emitter.id);
+      if (view) {
+        view.stop(options);
+      } else {
+        emitter.stop(options);
+      }
     }
   }
 
@@ -141,61 +157,89 @@ export class ParticleView extends RenderContainer {
   }
 
   public getEmitter(id: string): Emitter {
-    return this.getView(id).emitter;
+    const emitter = this.simulations.get(id);
+    if (!emitter) {
+      throw new Error(`Unknown particle emitter: ${id}`);
+    }
+    return emitter;
   }
 
   public setEmitterTint(id: string, tint: ParticleTint): void {
-    this.getView(id).setTint(tint);
+    const rendering = this.getRendering(id);
+    const value = resolveTint(tint);
+    this.pipe?.getEmitterView(this, id)?.setTint(value);
+    this.selections.set(id, { ...rendering, tint: value });
   }
 
   public getEmitterTint(id: string): ParticleTint {
-    return this.getView(id).getTint();
+    return { ...this.getRendering(id).tint! };
   }
 
   /** Remove the override and restore the authored rendering tint. */
   public resetEmitterTint(id: string): void {
-    this.getView(id).resetTint();
+    this.getEmitter(id);
+    this.setEmitterTint(id, this.defaultTints.get(id)!);
   }
 
   public setEmitterTexture(id: string, options: ParticleTexture): void {
-    this.getView(id).setTexture(options);
+    const rendering = this.getRendering(id);
+    resolvePivot(options.pivot);
+    resolveTextureFlip(options);
+    if (!resolveFlipbook(options)) {
+      resolveTexture(options);
+    }
+    this.pipe?.getEmitterView(this, id)?.setTexture(options);
+    this.selections.set(id, { ...options, tint: resolveTint(rendering.tint) });
   }
 
   public getEmitterTexture(id: string): Texture | null {
-    return this.getView(id).texture;
+    const rendering = this.getRendering(id);
+    return resolveFlipbook(rendering)?.frames[0] ?? resolveTexture(rendering);
   }
 
   /** Single-emitter convenience; multi-emitter callers must select by ID. */
   public get emitter(): Emitter {
-    return this.singleView.emitter;
+    return this.getEmitter(this.singleEmitterId);
   }
 
   public get texture(): Texture | null {
-    return this.singleView.texture;
+    return this.getEmitterTexture(this.singleEmitterId);
   }
 
   public set texture(texture: Texture | null) {
-    this.singleView.texture = texture;
+    this.setTexture({ texture });
   }
 
   public setTexture(options: ParticleTexture): void {
-    this.singleView.setTexture(options);
+    this.setEmitterTexture(this.singleEmitterId, options);
   }
 
+  /** Advance initialized simulations. Playback waits for the first render. */
   public update(seconds: number): void {
     this.syncSceneTransform();
-    for (const view of this.views.values()) {
-      view.update(seconds);
+    for (const emitter of this.simulations.values()) {
+      const view = this.pipe?.getEmitterView(this, emitter.id);
+      if (view) {
+        view.update(seconds);
+      } else {
+        emitter.update(seconds);
+      }
     }
   }
 
   public reset(): void {
-    for (const view of this.views.values()) {
-      view.reset();
+    for (const emitter of this.simulations.values()) {
+      const view = this.pipe?.getEmitterView(this, emitter.id);
+      if (view) {
+        view.reset();
+      } else {
+        emitter.reset();
+      }
     }
   }
 
-  public override render(): void {
+  /** @internal Invoked by the particle pipe inside Pixi's draw instruction sequence. */
+  public draw(renderer: WebGLRenderer, views: ReadonlyMap<string, EmitterView>): void {
     // Particle positions already include the scene transform. Convert back to the
     // view's local coordinates, then use Pixi's current group and target transform.
     if (
@@ -205,16 +249,20 @@ export class ParticleView extends RenderContainer {
     ) {
       return;
     }
-    const globals = this.renderer.globalUniforms.globalUniformData;
+    const globals = renderer.globalUniforms.globalUniformData;
+    this.drawTransform.copyFrom(this.sceneTransform).invert();
+    // A view rendered as its own group has no transform relative to that group.
+    // Pixi may still retain its previous relative transform from a parent draw.
+    if (!this.renderGroup) {
+      this.drawTransform.prepend(this.relativeGroupTransform);
+    }
     this.drawTransform
-      .copyFrom(this.sceneTransform)
-      .invert()
-      .prepend(this.relativeGroupTransform)
       .prepend(globals.worldTransformMatrix)
       .translate(-globals.offset.x, -globals.offset.y)
       .prepend(globals.projectionMatrix);
-    const opacity = this.groupAlpha * ((globals.worldColor >>> 24) / 255);
-    for (const view of this.views.values()) {
+    const relativeAlpha = this.renderGroup ? 1 : this.groupAlpha;
+    const opacity = relativeAlpha * ((globals.worldColor >>> 24) / 255);
+    for (const view of views.values()) {
       view.renderParticles(this.drawTransform, opacity);
     }
   }
@@ -224,20 +272,18 @@ export class ParticleView extends RenderContainer {
       return;
     }
     this.disposed = true;
-    this.renderer.runners.prerender.remove(this);
-    for (const view of this.views.values()) {
-      view.destroy();
+    this.pipe?.destroyRenderable(this);
+    for (const emitter of this.simulations.values()) {
+      emitter.destroy();
     }
+    this.pipe?.restoreState();
+    this.pipe = null;
     this.stateListeners.clear();
     this.states.clear();
-    this.views.clear();
+    this.selections.clear();
+    this.defaultTints.clear();
     this.simulations.clear();
     super.destroy();
-  }
-
-  /** Capture the scene before Pixi temporarily replaces the rendered root's transform. */
-  private prerender(): void {
-    this.syncSceneTransform();
   }
 
   /** Read the current hierarchy before simulation, even before Pixi's render traversal. */
@@ -264,18 +310,10 @@ export class ParticleView extends RenderContainer {
     });
   }
 
-  private getView(id: string): EmitterView {
-    const view = this.views.get(id);
-    if (!view) {
-      throw new Error(`Unknown particle emitter: ${id}`);
-    }
-    return view;
-  }
-
-  private get singleView(): EmitterView {
-    if (this.views.size !== 1) {
+  private get singleEmitterId(): string {
+    if (this.simulations.size !== 1) {
       throw new Error('Select an emitter by ID for a multi-emitter effect');
     }
-    return this.views.values().next().value!;
+    return this.simulations.keys().next().value!;
   }
 }

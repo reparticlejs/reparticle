@@ -19,7 +19,6 @@ export class PreviewScene {
     const definition = assets.effect.emitters[0];
     this.settings = initialControls(definition);
     this.view = createParticleView(
-      app,
       definition,
       assets.textures,
       this.settings,
@@ -37,6 +36,10 @@ export class PreviewScene {
 
   public get controls(): Readonly<PreviewControls> {
     return this.settings;
+  }
+
+  public get initialized(): boolean {
+    return this.view.emitter.initialized;
   }
 
   public get emitting(): boolean {

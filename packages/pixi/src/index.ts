@@ -1,3 +1,9 @@
+import { extensions } from 'pixi.js';
+
+import { ParticlePipe } from './rendering/particle-pipe';
+
+extensions.add(ParticlePipe);
+
 // Effect display object.
 export { ParticleView } from './runtime/particle-view';
 

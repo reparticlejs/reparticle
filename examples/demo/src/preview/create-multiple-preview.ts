@@ -32,7 +32,7 @@ export async function createMultiplePreview(
     if (signal.aborted) {
       return null;
     }
-    const view = new ParticleView(app.renderer, effect, {
+    const view = new ParticleView(effect, {
       emitters: {
         smoke: { texture: null },
         fire: { texture: null },

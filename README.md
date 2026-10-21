@@ -36,7 +36,7 @@ Positions, velocities, modifiers, and rendering remain on the GPU, with no readb
 
 Pixi orders living particles by Defold’s 16-bit remaining-lifetime key: longer remaining lifetimes draw first. Core sorts logical slot IDs every simulation step, including prewarm, using existing CPU lifetime metadata. Pixi uploads only the final order on each draw: one uint per living instance (4 bytes each), without moving simulation texels or reading the GPU. Expired entries use Defold’s forward swap-removal, births append in allocation order, and equal keys use the resulting logical index. Stable two-pass radix sorting costs O(live particles + 256) per simulation step; paused draws reuse the buffer. Emitters still draw in definition order.
 
-Core owns simulation resources; the Pixi view owns its core emitter and drawing resources. Destroy the view before destroying the renderer. Core never destroys the host GL context. GPU.js canvas-size changes during compilation and GL-state restoration are handled at the integration boundary.
+Core owns simulation resources; the Pixi view owns its core emitters, and the renderer’s particle pipe owns drawing resources. Destroy the view before destroying the renderer. Core never destroys the host GL context. GPU.js canvas-size changes during compilation and GL-state restoration are handled at the integration boundary.
 
 ## Checks
 
@@ -67,7 +67,7 @@ import { Assets } from 'pixi.js';
 import { ParticleView } from '@reparticle/pixi';
 
 const definition = await fetch('/effect.json').then((response) => response.json());
-const particles = new ParticleView(app.renderer, definition);
+const particles = new ParticleView(definition);
 particles.texture = await Assets.load('/textures/spark.png');
 particles.emitter.setParameters({ initial: { size: 24 } }); // future births; longest edge
 app.stage.addChild(particles);
@@ -94,7 +94,7 @@ GPU.js compiles the packaged function strings at runtime, so the functions must 
 
 ## Effect configuration and runtime parameters
 
-Pass an effect JSON object to `new ParticleView(renderer, definition)`. Validation happens before GPU allocation. See [the JSON skeleton](docs/effect.example.json); the demo loads `examples/demo/public/effect.json`. Core-only consumers can pass `parseEffectConfig(definition).emitters[0]` to `new Emitter({ gl, canvas }, emitterDefinition)`.
+Pass an effect JSON object to `new ParticleView(definition)`. Validation happens before GPU allocation. See [the JSON skeleton](docs/effect.example.json); the demo loads `examples/demo/public/effect.json`. Core-only consumers can pass `parseEffectConfig(definition).emitters[0]` to `new Emitter({ gl, canvas }, emitterDefinition)`.
 
 ```ts
 particles.emitter.setParameters({ emission: { rate: 1500 } });
@@ -425,7 +425,7 @@ fourth constructor argument. Pixi manages this runtime transform internally.
 Tint belongs to Pixi rendering options, separately from the core effect definition:
 
 ```ts
-const particles = new ParticleView(renderer, effect, {
+const particles = new ParticleView(effect, {
   emitters: {
     fire: { texture: null, tint: { red: 1, green: 0.8, blue: 0.5, alpha: 1 } },
   },
@@ -473,3 +473,11 @@ Simulation updates remain explicit. Rendering to several targets does not advanc
 particles. Pixi’s render-transform override changes the drawing projection without
 changing the emitter’s simulation transform. Destroy caller-owned filters, masks
 and render textures according to their normal Pixi ownership rules.
+
+### Renderer-free construction
+
+`new ParticleView(effect, renderingOptions)` validates configuration and creates CPU emitter controls without a renderer. Importing `@reparticle/pixi` registers its WebGL particle pipe with Pixi. On the first render, the pipe attaches the renderer’s shared context and prepares GPU.js before Pixi binds the render target.
+
+Emitter access, parameter changes, texture/tint changes, and playback controls work immediately. `update(seconds)` validates its input but does not advance playback until that first render; it does not queue elapsed time. Afterwards, updates run independently of rendering, including when the view is offstage. Start offset/prewarm runs on the first positive update after initialization. GPU texture access before initialization throws.
+
+A view stays attached to its first renderer: transferring live GPU state between contexts is unsupported. Destroying the view releases its resources; destroying the renderer also destroys its attached particle views. Caller-owned artwork is preserved.

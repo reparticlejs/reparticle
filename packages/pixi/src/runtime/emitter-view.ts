@@ -1,10 +1,8 @@
-import type { StopOptions, EffectTransform } from '@reparticle/core';
-import { Emitter, type EmitterConfig, type ModifierConfig } from '@reparticle/core';
+import type { Emitter, StopOptions } from '@reparticle/core';
 import {
   GlProgram,
   Shader,
   State,
-  RenderContainer,
   type Texture,
   type BufferImageSource,
   type WebGLRenderer,
@@ -28,8 +26,7 @@ import type { ParticleRendering, ParticleTint } from '../types/particle-renderin
 import type { ParticleTexture, ParticlePivot } from '../types/particle-texture';
 
 /** WebGL2 particle draw resources; Pixi owns the render target and clipping state. */
-export class EmitterView extends RenderContainer {
-  public readonly emitter: Emitter;
+export class EmitterView {
   private readonly host: WebGLRenderer;
   private readonly gl: WebGL2RenderingContext;
   private readonly shader: Shader;
@@ -39,7 +36,6 @@ export class EmitterView extends RenderContainer {
   private disposed = false;
   private flipbook: Flipbook | null = null;
   private automaticSize = false;
-  private readonly defaultTint: ParticleTint;
   private currentTint: ParticleTint;
 
   private textureFlip: [number, number] = [1, 1];
@@ -49,34 +45,24 @@ export class EmitterView extends RenderContainer {
   private artwork: Texture | null = null;
   public constructor(
     renderer: WebGLRenderer,
-    config: EmitterConfig,
+    public readonly emitter: Emitter,
     options: ParticleRendering = { texture: null },
-    sharedModifiers?: ModifierConfig[],
-    effectTransform?: EffectTransform,
   ) {
     const tint = resolveTint(options.tint);
     const pivot = resolvePivot(options.pivot);
     const flip = resolveTextureFlip(options);
     const animation = resolveFlipbook(options);
     const texture = animation ? animation.frames[0]! : resolveTexture(options);
-    super({});
-    this.defaultTint = tint;
     this.currentTint = tint;
     this.artwork = texture;
     this.texturePivot = pivot;
     this.textureFlip = flip;
     this.automaticSize = options.sizeMode === 'auto' && (animation?.frames.length ?? 0) > 1;
     this.host = renderer;
-    this.uniforms = createUniforms(config);
+    this.uniforms = createUniforms(emitter.configuration);
     const gl = renderer.gl;
     this.gl = gl;
     try {
-      this.emitter = new Emitter(
-        { gl, canvas: renderer.canvas },
-        config,
-        sharedModifiers,
-        effectTransform,
-      );
       let shader: Shader | undefined;
       let order: ParticleOrderBuffer | undefined;
       try {
@@ -100,7 +86,6 @@ export class EmitterView extends RenderContainer {
         order?.destroy();
         shader?.destroy();
         this.frameSource?.destroy();
-        this.emitter.destroy();
         throw error;
       }
     } finally {
@@ -108,17 +93,10 @@ export class EmitterView extends RenderContainer {
     }
   }
 
-  public getTint(): ParticleTint {
-    return { ...this.currentTint };
-  }
-
   public setTint(tint: ParticleTint): void {
     this.currentTint = resolveTint(tint);
   }
 
-  public resetTint(): void {
-    this.currentTint = this.defaultTint;
-  }
   /** Caller owns the texture. Atlas trim and rotation are respected. */
   public get texture(): Texture | null {
     return this.artwork;
@@ -280,17 +258,15 @@ export class EmitterView extends RenderContainer {
       restoreDrawState(r);
     }
   }
-  public override destroy(): void {
+  public destroy(): void {
     if (this.disposed) {
       return;
     }
     this.disposed = true;
-    this.emitter.destroy();
     this.order.destroy();
     this.frameSource?.destroy();
     // GlProgram.from() is shared; Pixi owns the compiled program cache.
     this.shader.destroy();
     restoreSimulationState(this.host);
-    super.destroy();
   }
 }

@@ -54,7 +54,7 @@ export async function createPreview(
 
     function advance(elapsedSeconds: number) {
       const controls = activeScene.controls;
-      if (controls.paused) {
+      if (controls.paused || !activeScene.initialized) {
         return;
       }
       const emitting = activeScene.emitting;

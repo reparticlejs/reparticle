@@ -24,7 +24,7 @@ Two timelines are distinct: emitter elapsed time controls emission and the initi
 
 Modifiers change velocity sequentially in authored array order: emitter-local entries first, then shared effect entries. Living-particle position advances once using the resulting velocity, as in Defold. Newborns age by the full simulation step and advance from their sampled birth position using the modified velocity, as in Defold.
 
-The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and loads through `ParticleView(renderer, definition)` or the core `Emitter` constructor after parsing. Unsupported fields, shapes, and versions fail explicitly. Effects accept one or more emitters with unique IDs.
+The first JSON skeleton is [effect.example.json](effect.example.json). It is accepted by `parseEffectConfig` and loads through `ParticleView(definition)` or the core `Emitter` constructor after parsing. Unsupported fields, shapes, and versions fail explicitly. Effects accept one or more emitters with unique IDs.
 
 The required fields are `version`, the nonempty `emitters` list, and each emitter's
 `id`, `capacity`, `seed`, `emission.rate`, `emission.shape`, `initial.lifetime`,
@@ -250,7 +250,7 @@ JSON. Load a Pixi spritesheet in the host, then select a named frame:
 
 ```ts
 const atlas = await Assets.load<Spritesheet>('textures/particles.json');
-const view = new ParticleView(renderer, effectConfig, { atlas, frame: 'star' });
+const view = new ParticleView(effectConfig, { atlas, frame: 'star' });
 view.setTexture({ atlas, frame: 'leaf' });
 ```
 
@@ -273,7 +273,7 @@ pass is added. The demo's three artwork choices now share `textures/particles.js
 Animation is also a Pixi texture option, never part of the core effect config:
 
 ```ts
-const view = new ParticleView(renderer, effectConfig, {
+const view = new ParticleView(effectConfig, {
   atlas,
   animation: 'flames', // name in atlas.animations
   playback: 'loop-forward',
@@ -322,7 +322,7 @@ finished once emitter does not stop looping siblings or remove its living partic
 Core validates the whole effect before any GPU allocation. Texture data stays in Pixi:
 
 ```ts
-const view = new ParticleView(renderer, effectConfig, {
+const view = new ParticleView(effectConfig, {
   emitters: {
     smoke: { texture: smokeTexture },
     fire: { atlas, animation: 'flames', playback: 'loop-forward', fps: 30 },
@@ -758,3 +758,11 @@ array is replaced by equally sized reusable scratch storage, with 256 additional
 Uint32 counters (1 KiB per emitter). Sorting introduces no per-call array allocation.
 Simulation slots stay fixed; prewarm sorts every step and uploads only its final
 order. No GPU readback or particle simulation change is involved.
+
+### Pixi render pipe and initialization
+
+`ParticleView` is constructed with effect and rendering configuration only. Its CPU emitters are available immediately. `ParticlePipe` is a registered WebGL extension instantiated by Pixi with the renderer. It owns per-view drawing resources and inserts particle draw instructions between Pixi batch boundaries.
+
+The pipe prepares particle views in the rendered subtree during `prerender`, before temporary root transforms, framebuffer binding, filters, or masks. This is necessary because GPU.js kernel compilation changes GL state. The draw instruction only renders existing textures; it never advances simulation.
+
+Before first render, updates validate arguments but leave playback paused, with no queued steps. Playback controls and configuration changes are retained. First initialization warms both GPU paths without resetting those controls. Subsequent updates and prewarm operate normally, even offstage. Views are bound to one renderer, and renderer destruction releases its attached views.
