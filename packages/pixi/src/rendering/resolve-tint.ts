@@ -1,4 +1,4 @@
-import type { ParticleTint } from '../types/particle-rendering';
+import type { ParticleTint } from '#types/particle-rendering.js';
 
 /** Copy the value so caller mutations cannot change an authored default or runtime override. */
 export function resolveTint(

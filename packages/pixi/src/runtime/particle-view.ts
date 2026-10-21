@@ -7,15 +7,16 @@ import {
 } from '@reparticle/core';
 import { Matrix, RenderContainer, type Texture } from 'pixi.js';
 
+import type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
+import type { ParticleTexture } from '#types/particle-texture.js';
+import type { ParticleViewOptions } from '#types/particle-view-options.js';
+
 import type { ParticlePipe } from '../rendering/particle-pipe';
 import { resolveTint } from '../rendering/resolve-tint';
 import { resolveFlipbook } from '../textures/resolve-flipbook';
 import { resolvePivot } from '../textures/resolve-pivot';
 import { resolveTexture } from '../textures/resolve-texture';
 import { resolveTextureFlip } from '../textures/resolve-texture-flip';
-import type { ParticleRendering, ParticleTint } from '../types/particle-rendering';
-import type { ParticleTexture } from '../types/particle-texture';
-import type { ParticleViewOptions } from '../types/particle-view-options';
 import type { EmitterView } from './emitter-view';
 
 /** An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller. */

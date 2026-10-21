@@ -1,6 +1,6 @@
 import { Buffer, BufferUsage, Geometry, type WebGLRenderer } from 'pixi.js';
 
-import type { ParticleOrderSource } from '../types/particle-order';
+import type { ParticleOrderSource } from '#types/particle-order.js';
 
 /** CPU draw order backed by Pixi resources; simulation slots never move. */
 export class ParticleOrderBuffer {

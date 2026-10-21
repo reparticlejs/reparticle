@@ -10,6 +10,10 @@ import {
   type Matrix,
 } from 'pixi.js';
 
+import type { Flipbook } from '#types/flipbook.js';
+import type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
+import type { ParticleTexture, ParticlePivot } from '#types/particle-texture.js';
+
 import { ParticleOrderBuffer } from '../rendering/order-buffer';
 import { resolveTint } from '../rendering/resolve-tint';
 import { restoreSimulationState } from '../rendering/restore-simulation-state';
@@ -21,9 +25,6 @@ import { resolvePivot } from '../textures/resolve-pivot';
 import { resolveTexture } from '../textures/resolve-texture';
 import { resolveTextureFlip } from '../textures/resolve-texture-flip';
 import { SimulationSources } from '../textures/simulation-sources';
-import type { Flipbook } from '../types/flipbook';
-import type { ParticleRendering, ParticleTint } from '../types/particle-rendering';
-import type { ParticleTexture, ParticlePivot } from '../types/particle-texture';
 
 const PARTICLE_BANDS = 5;
 

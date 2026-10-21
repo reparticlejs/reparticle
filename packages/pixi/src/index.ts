@@ -14,7 +14,7 @@ export type {
   AnimationSize,
   ParticleSizeMode,
   ParticlePivot,
-} from './types/particle-texture';
-export type { ParticleStateChange, ParticleStateListener } from './types/particle-state-change';
-export type { ParticleRendering, ParticleTint } from './types/particle-rendering';
-export type { ParticleViewOptions } from './types/particle-view-options';
+} from '#types/particle-texture.js';
+export type { ParticleStateChange, ParticleStateListener } from '#types/particle-state-change.js';
+export type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
+export type { ParticleViewOptions } from '#types/particle-view-options.js';

@@ -1,4 +1,4 @@
-import type { ParticleTexture } from './particle-texture';
+import type { ParticleTexture } from '#types/particle-texture.js';
 
 /** Straight RGBA multiplier, applied after the particle's own color. */
 export interface ParticleTint {
