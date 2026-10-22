@@ -499,4 +499,28 @@ export const examples: readonly Example[] = [
     manualBurst: { emitter: 'sparks', count: 60 },
     artwork: { sparks: { source: 'particle-examples/particle-blob.png' } },
   },
+  {
+    id: 'success-sparkle',
+    name: 'Success Sparkle',
+    file: 'pylinka/success-sparkle.json',
+    artwork: { 'success-sparkle': { source: 'particle-examples/particle-blob.png' } },
+  },
+  {
+    id: 'spell-cast',
+    name: 'Spell Cast',
+    file: 'pylinka/spell-cast.json',
+    artwork: { 'spell-cast': { source: 'particle-examples/particle-blob.png' } },
+  },
+  {
+    id: 'cloud-puff',
+    name: 'Cloud Puff',
+    file: 'pylinka/cloud-puff.json',
+    artwork: {
+      'cloud-puff': {
+        source: 'pylinka/textures/cloud_01_8x8.json',
+        animation: 'play',
+        playback: 'once-forward',
+      },
+    },
+  },
 ];

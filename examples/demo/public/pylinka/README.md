@@ -14,19 +14,19 @@ Our box emits straight upward, so the source's small independent sideways veloci
 
 ## Supported collection
 
-27 of the 90 source recipes are currently included; the gallery has been curated down from the original port collection. These are visual adaptations using existing engine APIs, not pixel-identical ports. All effect JSON remains separate from Pixi artwork and playback bindings. Arcane Burst demonstrates scheduled bursts; the other adaptations use the existing engine APIs.
+30 of the 90 source recipes are currently included; the gallery has been curated down from the original port collection. These are visual adaptations using existing engine APIs, not pixel-identical ports. All effect JSON remains separate from Pixi artwork and playback bindings. Arcane Burst demonstrates scheduled bursts; the other adaptations use the existing engine APIs.
 
-| Group    | Included effects                                                               |
-| -------- | ------------------------------------------------------------------------------ |
-| abstract | Ease Pop, Nebula, Data Stream                                                  |
-| trails   | Coin Spark Trail, Infinity Loop                                                |
-| fire     | Ember Rise                                                                     |
-| magic    | Star Sparkle, Stardust Fall, Gem Spin, Arcane Burst                            |
-| ambient  | Rain, Fireflies                                                                |
-| ui       | Coin Shower, Coin Fountain, Confetti Pop                                       |
-| swirl    | Whirlpool, Black Hole, Cyclone, Helix Climb                                    |
-| vfx      | Shooting Stars, Twirl Trails, Soft Smoke, Steam Plume, Fire Plume, Wispy Smoke |
-| rotation | Spinning Coins, Quarter-Turn Drop                                              |
+| Group    | Included effects                                                                           |
+| -------- | ------------------------------------------------------------------------------------------ |
+| abstract | Ease Pop, Nebula, Data Stream                                                              |
+| trails   | Coin Spark Trail, Infinity Loop                                                            |
+| fire     | Ember Rise                                                                                 |
+| magic    | Star Sparkle, Stardust Fall, Gem Spin, Arcane Burst, Spell Cast                            |
+| ambient  | Rain, Fireflies                                                                            |
+| ui       | Coin Shower, Coin Fountain, Confetti Pop, Success Sparkle                                  |
+| swirl    | Whirlpool, Black Hole, Cyclone, Helix Climb                                                |
+| vfx      | Shooting Stars, Twirl Trails, Soft Smoke, Steam Plume, Fire Plume, Wispy Smoke, Cloud Puff |
+| rotation | Spinning Coins, Quarter-Turn Drop                                                          |
 
 ## Shared adaptations
 
@@ -36,7 +36,7 @@ Our box emits straight upward, so the source's small independent sideways veloci
 - Coin variants use seven emitters, one per color row, sharing the total spawn rate. This approximates random per-particle color selection; each row loops at 14 FPS. Gem Spin intentionally uses the same coin sheet as the source recipe.
 - Fire Plume and Wispy Smoke use 64-frame atlases and once-forward playback over particle lifetime. Their playback therefore follows our existing lifetime-based animation instead of a fixed source FPS.
 - Trail scenes move the ParticleEffect display object along a figure-eight or pendulum path before simulation. World-space particles stay behind. These paths approximate the gallery movement; source spline timing is not reproduced. Coin Spark Trail uses distance-only emission at 1.4 particles per world unit; the source combines that with 420 particles/second. Pause and Restart also control this demo movement. Trails do not prewarm at a stationary origin.
-- Other effects except Arcane Burst prewarm for their maximum lifetime. Full-width fields resize their box to the canvas. The background is the same dark checkerboard for every effect.
+- Continuous effects prewarm for their maximum lifetime. Full-width fields resize their box to the canvas. The background is the same dark checkerboard for every effect.
 
 ## Artwork
 
@@ -44,13 +44,11 @@ Static VFX and flipbook textures are copied from Pylinka's Brackeys bundle; see 
 
 ## Deferred recipes
 
-These 29 recipes remain deferred. Burst-only recipes can now be ported using scheduled bursts.
+These 26 recipes remain deferred. Burst-only recipes can now be ported using scheduled bursts.
 
 | Recipe            | Status / missing behavior                |
 | ----------------- | ---------------------------------------- |
-| Success Sparkle   | ready to port with scheduled bursts      |
 | Ink Bloom         | ready to port with scheduled bursts      |
-| Spell Cast        | ready to port with scheduled bursts      |
 | Enchant Ring      | ready to port with scheduled bursts      |
 | Notification Ping | ready to port with scheduled bursts      |
 | Heart Pop         | ready to port with scheduled bursts      |
@@ -76,7 +74,6 @@ These 29 recipes remain deferred. Burst-only recipes can now be ported using sch
 | Magnet Void       | collisions / obstacle fields             |
 | Spark Burst       | ready to port with scheduled bursts      |
 | Tumbling Shards   | ready to port with scheduled bursts      |
-| Cloud Puff        | ready to port with scheduled bursts      |
 
 ### Arcane Burst
 
@@ -94,3 +91,19 @@ uses a 30 × 10 rectangle with independent X/Y velocities; this adaptation uses 
 point emitter with an upward angular fan. Original rectangular SVG artwork and
 spin variation give the particles a paper-confetti appearance. Scale 2 keeps the
 launch visible. Count spread of 30 is an added variation on the source's fixed 180.
+
+### Success Sparkle, Spell Cast, and Cloud Puff
+
+These scheduled bursts start immediately and repeat without prewarm. Success
+Sparkle emits 130 green particles every 1.5 seconds from a diameter-16 circle,
+with 0.5–1 second lifetimes and drag 2.6. Spell Cast emits 300 violet particles
+every 1.2 seconds, with 0.6–1.1 second lifetimes and drag 2.4. Both use scale 4,
+cubic ease-out fading/shrinking, and radial velocity as an approximation of the
+source's independent X/Y velocity ranges. Counts remain fixed as authored.
+
+Cloud Puff emits two animated clouds every 2.4 seconds, with 2.6–3.1 second
+lifetimes. It uses the source CC0 64-frame cloud sheet, additive blending, linear
+growth, and a sampled sine-in opacity fade. Sprites are twice the source size,
+matching the other large flipbooks. The upward velocity fan approximates independent
+X/Y sampling. Once-forward animation spans each particle's lifetime rather than
+playing at the source's fixed 22 FPS. Its next burst overlaps the previous clouds.

@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "success-sparkle",
+      "capacity": 1400,
+      "seed": 1,
+      "duration": 1.5,
+      "playMode": "loop",
+      "scale": 4,
+      "emission": {
+        "rate": 0,
+        "shape": {
+          "type": "circle",
+          "diameter": 16
+        },
+        "bursts": [
+          {
+            "time": 0,
+            "count": 130
+          }
+        ]
+      },
+      "initial": {
+        "lifetime": 0.75,
+        "lifetimeSpread": 0.25,
+        "speed": 91.92388155425118,
+        "speedSpread": 91.92388155425118,
+        "size": 12,
+        "direction": 0,
+        "spread": 6.283185307179586
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -3
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -3
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "red": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.615686274509804,
+              "tangent": -1.4
+            },
+            {
+              "time": 1,
+              "value": 0.14901960784313725,
+              "tangent": 0
+            }
+          ]
+        },
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1.0,
+              "tangent": -0.6352941176470589
+            },
+            {
+              "time": 1,
+              "value": 0.788235294117647,
+              "tangent": 0
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.6901960784313725,
+              "tangent": -0.8235294117647058
+            },
+            {
+              "time": 1,
+              "value": 0.41568627450980394,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "drag",
+          "magnitude": 2.6
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      }
+    }
+  ]
+}
