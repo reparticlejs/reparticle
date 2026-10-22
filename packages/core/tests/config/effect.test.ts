@@ -146,7 +146,7 @@ it.each([
   { time: Infinity, count: 1 },
   { time: 0, count: 0 },
   { time: 0, count: 1.5 },
-  { time: 0, count: 1, probability: 0.5 },
+  { time: 0, count: 1, unsupported: true },
 ])('rejects invalid burst definitions: %j', (burst) => {
   const input = example();
   input.emitters[0].emission.bursts = [burst];
@@ -163,4 +163,16 @@ it('defaults omitted burst count spread to zero', () => {
   const input = example();
   input.emitters[0].emission.bursts = [{ time: 0, count: 10 }];
   expect(parseEffectConfig(input).emitters[0].emission.bursts[0]?.countSpread).toBe(0);
+});
+
+it.each([-0.1, 1.1, Infinity, NaN])('rejects invalid burst probability: %s', (probability) => {
+  const input = example();
+  input.emitters[0].emission.bursts = [{ time: 0, count: 10, probability }];
+  expect(() => parseEffectConfig(input)).toThrow(ZodError);
+});
+
+it('defaults omitted probability to always firing', () => {
+  const input = example();
+  input.emitters[0].emission.bursts = [{ time: 0, count: 10 }];
+  expect(parseEffectConfig(input).emitters[0].emission.bursts[0]?.probability).toBe(1);
 });

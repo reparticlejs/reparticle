@@ -780,7 +780,7 @@ Before first render, updates validate arguments but leave playback paused, with 
 
 ## Scheduled bursts
 
-`emission.bursts` is an optional array of `{ time, count, countSpread? }`: nonnegative seconds
+`emission.bursts` is an optional array of `{ time, count, countSpread?, probability? }`: nonnegative seconds
 from emission start and a positive integer particle count. The default is `[]`.
 Bursts add to continuous `rate` emission and use the same free-slot allocator.
 Living particles are preserved; births exceeding available capacity are dropped.
@@ -810,3 +810,13 @@ The emitter seed and occurrence index determine the sample. Restart repeats the
 sequence; changing frame size does not change samples for the same occurrences.
 Disabled and capacity-dropped events still consume their occurrence so they cannot
 shift future samples. Spread is authored configuration, not a runtime parameter.
+
+Burst `probability` defaults to 1 and accepts values from 0 to 1. Zero always skips;
+one always fires. Intermediate values use a seeded sample per occurrence, on a
+separate random stream from count spread. A skipped event is consumed, never retried
+or deferred. Restart repeats decisions, and successful bursts retain the same count
+samples regardless of probability. Disabled emission and full capacity still consume
+events normally. This setting is authored configuration, not a runtime parameter.
+The Electrical Sparks demo attempts a discharge every 0.7 seconds at probability
+0.7, with 35–75 particles in successful discharges. It uses existing simulation and
+rendering features, with no GPU readbacks.

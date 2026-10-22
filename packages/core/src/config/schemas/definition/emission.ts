@@ -46,6 +46,7 @@ const burstSchema = strictObject({
   time: number().nonnegative(),
   count: number().int().positive(),
   countSpread: number().int().nonnegative().default(0),
+  probability: number().min(0).max(1).default(1),
 });
 
 export const emissionSchema = strictObject({

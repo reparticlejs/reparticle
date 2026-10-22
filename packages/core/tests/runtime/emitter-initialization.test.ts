@@ -184,7 +184,7 @@ it('combines bursts with rate, preserves living slots, and resets the burst sche
         emission: {
           ...definition.emission,
           rate: 10,
-          bursts: [{ time: 0, count: 10, countSpread: 0 }],
+          bursts: [{ time: 0, count: 10, countSpread: 0, probability: 1 }],
         },
         initial: { ...definition.initial, lifetime: 2 },
       },
@@ -218,7 +218,7 @@ it('consumes disabled bursts and processes bursts during prewarm', () => {
         emission: {
           ...definition.emission,
           rate: 0,
-          bursts: [{ time: 0, count: 3, countSpread: 0 }],
+          bursts: [{ time: 0, count: 3, countSpread: 0, probability: 1 }],
         },
         initial: { ...definition.initial, lifetime: 2 },
       },
@@ -248,8 +248,8 @@ it('adds rate births to bursts and keeps the schedule when rate changes', () => 
       ...definition.emission,
       rate: 10,
       bursts: [
-        { time: 0, count: 3, countSpread: 0 },
-        { time: 0.3, count: 2, countSpread: 0 },
+        { time: 0, count: 3, countSpread: 0, probability: 1 },
+        { time: 0.3, count: 2, countSpread: 0, probability: 1 },
       ],
     },
     initial: { ...definition.initial, lifetime: 2 },
@@ -278,8 +278,8 @@ it('does not replay dropped bursts after occupied slots become free', () => {
       ...definition.emission,
       rate: 0,
       bursts: [
-        { time: 0, count: 2, countSpread: 0 },
-        { time: 0.2, count: 5, countSpread: 0 },
+        { time: 0, count: 2, countSpread: 0, probability: 1 },
+        { time: 0.2, count: 5, countSpread: 0, probability: 1 },
       ],
     },
     initial: { ...definition.initial, lifetime: 0.25 },
@@ -302,7 +302,11 @@ it('prewarms repeated bursts and reproduces the same population after reset', ()
     duration: 0.1,
     playMode: 'loop',
     startOffset: 0.25,
-    emission: { ...definition.emission, rate: 0, bursts: [{ time: 0, count: 3, countSpread: 0 }] },
+    emission: {
+      ...definition.emission,
+      rate: 0,
+      bursts: [{ time: 0, count: 3, countSpread: 0, probability: 1 }],
+    },
     initial: { ...definition.initial, lifetime: 2 },
   });
   const order = new Uint32Array(100);

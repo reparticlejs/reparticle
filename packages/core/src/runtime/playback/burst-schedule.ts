@@ -2,6 +2,9 @@ import type { EmitterConfig } from '#types/effect.js';
 
 import { propertyVariation } from '../../simulation/emission/variation';
 
+const COUNT_VARIATION_STREAM = 11;
+const PROBABILITY_STREAM = 12;
+
 /**
  * Convert timed bursts into particle requests for each simulation step.
  *
@@ -13,6 +16,7 @@ import { propertyVariation } from '../../simulation/emission/variation';
  * schedule does not allocate arrays or access GPU data. Count spread is sampled
  * per occurrence, rounded to a whole particle, and clamped to zero. Reset replays
  * the same seeded sequence, independent of how simulation steps group events.
+ * Probability decides whether each occurrence fires, independently of its count.
  */
 export class BurstSchedule {
   private readonly bursts: EmitterConfig['emission']['bursts'];
@@ -52,11 +56,12 @@ export class BurstSchedule {
     let burst = this.bursts[this.nextBurstIndex];
 
     while (burst !== undefined && burst.time - emissionTime <= timeTolerance) {
-      // Sample each occurrence, including disabled or capacity-dropped events.
-      // A dedicated stream keeps this independent of particle-property randomness.
-      const variation = propertyVariation(this.occurrence, this.seed, 11);
-      const count = Math.max(0, Math.round(burst.count + variation * burst.countSpread));
-      requestedBirths = Math.min(this.capacity, requestedBirths + count);
+      if (this.shouldFire(burst.probability)) {
+        const variation = propertyVariation(this.occurrence, this.seed, COUNT_VARIATION_STREAM);
+        const count = Math.max(0, Math.round(burst.count + variation * burst.countSpread));
+        requestedBirths = Math.min(this.capacity, requestedBirths + count);
+      }
+      // Skipped, disabled, and capacity-dropped bursts still consume their sample.
       this.occurrence += 1;
 
       // Consume even after reaching capacity: excess births are dropped, never queued.
@@ -72,5 +77,14 @@ export class BurstSchedule {
     this.currentCycle = undefined;
     this.occurrence = 0;
     this.nextBurstIndex = 0;
+  }
+  /** Separate randomness from count spread; endpoints always mean never / always. */
+  private shouldFire(probability: number): boolean {
+    if (probability === 0 || probability === 1) {
+      return probability === 1;
+    }
+    const variation = propertyVariation(this.occurrence, this.seed, PROBABILITY_STREAM);
+    const chance = (variation + 1) / 2;
+    return chance < probability;
   }
 }
