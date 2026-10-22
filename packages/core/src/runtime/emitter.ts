@@ -11,6 +11,7 @@ import { sampleInitialProperties } from '../curves/sample-initial-properties';
 import { SampledShape } from '../curves/sampled-shape';
 import { createSimulationParameters } from './gpu/parameters';
 import { GpuSimulation } from './gpu/simulation';
+import { textureLayout } from './gpu/texture-layout';
 import { ModifierSampler } from './modifiers/sampler';
 import { ParticleSlots } from './particles/slots';
 import { EmitterPlayback } from './playback/emitter';
@@ -26,8 +27,7 @@ import { EmitterVelocity } from './transforms/velocity';
  * and expiration without readbacks. The renderer owns the GL context.
  */
 export class Emitter {
-  public readonly width = 256;
-  public readonly rows: number;
+  private layout: ReturnType<typeof textureLayout>;
   public readonly capacity: number;
   /** Gate new births without pausing the simulation or resetting playback. */
   public emitting = true;
@@ -81,7 +81,7 @@ export class Emitter {
     this.shape = new SampledShape(this.settings.emission.shape);
 
     this.capacity = this.settings.capacity;
-    this.rows = Math.ceil(this.capacity / this.width);
+    this.layout = textureLayout(this.capacity);
 
     this.spawnSchedule = new SpawnSchedule(this.capacity);
     this.particleSlots = new ParticleSlots(this.capacity);
@@ -113,6 +113,10 @@ export class Emitter {
     }
     context.assertAvailable?.();
     try {
+      this.layout = textureLayout(
+        this.capacity,
+        context.gl.getParameter(context.gl.MAX_TEXTURE_SIZE),
+      );
       const simulation = new GpuSimulation(context, this.width, this.rows, this.capacity);
       this.simulation = simulation;
       try {
@@ -134,6 +138,16 @@ export class Emitter {
 
   public get initialized(): boolean {
     return this.simulation !== null;
+  }
+
+  /** Texture columns; finalized against device limits when initialized. */
+  public get width(): number {
+    return this.layout.width;
+  }
+
+  /** Rows in each of the five particle-state bands. */
+  public get rows(): number {
+    return this.layout.rows;
   }
 
   public get gl(): WebGL2RenderingContext {

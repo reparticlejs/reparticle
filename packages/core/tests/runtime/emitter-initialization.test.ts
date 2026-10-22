@@ -29,7 +29,9 @@ vi.mock('#src/runtime/gpu/simulation.js', () => ({
 // The simulation is mocked: these identities test attachment, not WebGL execution.
 const Context = vi.fn<typeof WebGL2RenderingContext>();
 const Canvas = vi.fn<typeof HTMLCanvasElement>();
-const context: EmitterContext = { gl: new Context(), canvas: new Canvas() };
+const gl = new Context();
+gl.getParameter = vi.fn<WebGL2RenderingContext['getParameter']>(() => 16384);
+const context: EmitterContext = { gl, canvas: new Canvas() };
 const definition = parseEffectConfig(skeleton).emitters[0];
 
 beforeEach(() => vi.clearAllMocks());

@@ -547,3 +547,5 @@ Sizing, pivot, flips, animation size, playback and FPS belong to Pixi bindings.
 JSON. Runtime `setTexture({ textures: [texture] })` and `setEmitterTexture(id, options)`
 replace artwork without changing core configuration. Use `setEmitterBlendMode`
 and `setEmitterTint` for live appearance overrides.
+
+Simulation textures use the smallest slot allocation that fits emitter capacity and the device texture limit. Equal-size layouts prefer the full five-band texture closest to square. For example, 16 particles use an 8 × 10 texture. Dimensions are finalized when the renderer attaches its WebGL context; no particle data is read back.

@@ -102,7 +102,8 @@ export class GpuSimulation {
     ) {
       throw new Error('GPU simulation requires WebGL2 and EXT_color_buffer_float');
     }
-    if (this.rows * PARTICLE_BANDS > gl.getParameter(gl.MAX_TEXTURE_SIZE)) {
+    const maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    if (this.width > maxSize || this.rows * PARTICLE_BANDS > maxSize) {
       throw new RangeError('Capacity exceeds GPU texture limits');
     }
   }
