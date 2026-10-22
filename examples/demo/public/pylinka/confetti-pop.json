@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "confetti-pop",
+      "capacity": 1200,
+      "seed": 7,
+      "duration": 1.8,
+      "playMode": "loop",
+      "scale": 2,
+      "emission": {
+        "rate": 0,
+        "shape": {
+          "type": "point"
+        },
+        "bursts": [
+          {
+            "time": 0,
+            "count": 180,
+            "countSpread": 30
+          }
+        ]
+      },
+      "initial": {
+        "lifetime": 1.4,
+        "lifetimeSpread": 0.4,
+        "speed": 220,
+        "speedSpread": 80,
+        "direction": -1.5707963267948966,
+        "spread": 1.6,
+        "size": 11.2,
+        "rotationSpread": 180,
+        "angularVelocitySpread": 180
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": -0.3571428571428571
+            },
+            {
+              "time": 1,
+              "value": 0.6428571428571429,
+              "tangent": -0.3571428571428571
+            }
+          ]
+        },
+        "red": 1,
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.8352941176470589,
+              "tangent": -0.2941176470588236
+            },
+            {
+              "time": 1,
+              "value": 0.5411764705882353,
+              "tangent": -0.2941176470588236
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.2901960784313726,
+              "tangent": -0.05490196078431375
+            },
+            {
+              "time": 1,
+              "value": 0.23529411764705882,
+              "tangent": -0.05490196078431375
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": -520
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    }
+  ]
+}

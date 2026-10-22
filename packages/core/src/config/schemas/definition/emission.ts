@@ -45,6 +45,7 @@ const emissionRateSchema = scalarPropertySchema.refine(
 const burstSchema = strictObject({
   time: number().nonnegative(),
   count: number().int().positive(),
+  countSpread: number().int().nonnegative().default(0),
 });
 
 export const emissionSchema = strictObject({

@@ -16,7 +16,8 @@
         "bursts": [
           {
             "time": 0,
-            "count": 260
+            "count": 260,
+            "countSpread": 40
           }
         ]
       },

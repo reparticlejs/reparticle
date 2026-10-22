@@ -85,7 +85,11 @@ export class Emitter {
     this.capacity = this.settings.capacity;
     this.rows = Math.ceil(this.capacity / this.width);
 
-    this.burstSchedule = new BurstSchedule(this.settings.emission.bursts, this.capacity);
+    this.burstSchedule = new BurstSchedule(
+      this.settings.emission.bursts,
+      this.capacity,
+      this.settings.seed,
+    );
     this.spawnSchedule = new SpawnSchedule(this.capacity);
     this.particleSlots = new ParticleSlots(this.capacity, true);
     this.playback = new EmitterPlayback(

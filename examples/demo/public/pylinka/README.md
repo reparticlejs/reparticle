@@ -14,7 +14,7 @@ Our box emits straight upward, so the source's small independent sideways veloci
 
 ## Supported collection
 
-26 of the 90 source recipes are currently included; the gallery has been curated down from the original port collection. These are visual adaptations using existing engine APIs, not pixel-identical ports. All effect JSON remains separate from Pixi artwork and playback bindings. Arcane Burst demonstrates scheduled bursts; the other adaptations use the existing engine APIs.
+27 of the 90 source recipes are currently included; the gallery has been curated down from the original port collection. These are visual adaptations using existing engine APIs, not pixel-identical ports. All effect JSON remains separate from Pixi artwork and playback bindings. Arcane Burst demonstrates scheduled bursts; the other adaptations use the existing engine APIs.
 
 | Group    | Included effects                                                               |
 | -------- | ------------------------------------------------------------------------------ |
@@ -23,7 +23,7 @@ Our box emits straight upward, so the source's small independent sideways veloci
 | fire     | Ember Rise                                                                     |
 | magic    | Star Sparkle, Stardust Fall, Gem Spin, Arcane Burst                            |
 | ambient  | Rain, Fireflies                                                                |
-| ui       | Coin Shower, Coin Fountain                                                     |
+| ui       | Coin Shower, Coin Fountain, Confetti Pop                                       |
 | swirl    | Whirlpool, Black Hole, Cyclone, Helix Climb                                    |
 | vfx      | Shooting Stars, Twirl Trails, Soft Smoke, Steam Plume, Fire Plume, Wispy Smoke |
 | rotation | Spinning Coins, Quarter-Turn Drop                                              |
@@ -44,11 +44,10 @@ Static VFX and flipbook textures are copied from Pylinka's Brackeys bundle; see 
 
 ## Deferred recipes
 
-These 30 recipes remain deferred. Burst-only recipes can now be ported using scheduled bursts.
+These 29 recipes remain deferred. Burst-only recipes can now be ported using scheduled bursts.
 
 | Recipe            | Status / missing behavior                |
 | ----------------- | ---------------------------------------- |
-| Confetti Pop      | ready to port with scheduled bursts      |
 | Success Sparkle   | ready to port with scheduled bursts      |
 | Ink Bloom         | ready to port with scheduled bursts      |
 | Spell Cast        | ready to port with scheduled bursts      |
@@ -81,8 +80,17 @@ These 30 recipes remain deferred. Burst-only recipes can now be ported using sch
 
 ### Arcane Burst
 
-260 violet particles appear together at time zero every 1.3 seconds, with no
+220–300 violet particles appear together at time zero every 1.3 seconds, with no
 continuous emission. Lifetime is 0.6–1.1 seconds, drag is 2.3, and cubic ease-out
 curves fade and shrink the particles. The source's independent X/Y velocity
 ranges are approximated by radial direction and speed spread. Display scale is
-4, matching the other compact adaptations. No prewarm: Restart shows a fresh burst.
+4, matching the other compact adaptations. Count spread of 40 is a Reparticle variation on the source’s fixed count of 260. No prewarm: Restart shows a fresh burst.
+
+### Confetti Pop
+
+A warm yellow-to-orange burst every 1.8 seconds, with 150–210 particles, lifetimes
+of 1–1.8 seconds, and downward acceleration of 520 units/s². No prewarm. The source
+uses a 30 × 10 rectangle with independent X/Y velocities; this adaptation uses a
+point emitter with an upward angular fan. Original rectangular SVG artwork and
+spin variation give the particles a paper-confetti appearance. Scale 2 keeps the
+launch visible. Count spread of 30 is an added variation on the source's fixed 180.

@@ -780,7 +780,7 @@ Before first render, updates validate arguments but leave playback paused, with 
 
 ## Scheduled bursts
 
-`emission.bursts` is an optional array of `{ time, count }`: nonnegative seconds
+`emission.bursts` is an optional array of `{ time, count, countSpread? }`: nonnegative seconds
 from emission start and a positive integer particle count. The default is `[]`.
 Bursts add to continuous `rate` emission and use the same free-slot allocator.
 Living particles are preserved; births exceeding available capacity are dropped.
@@ -801,3 +801,12 @@ Burst definitions cannot be changed with runtime parameter patches.
 
 Scheduling uses CPU counters and the existing slot allocator. It adds no GPU
 readbacks, per-frame arrays, or simulation texture changes.
+
+Burst `countSpread` defaults to zero and must be a nonnegative integer. Each
+occurrence samples `count + variation * countSpread`, rounds to the nearest whole
+particle, and clamps negative counts to zero before applying capacity. For example,
+`{ "time": 0, "count": 100, "countSpread": 20 }` requests 80–120 particles.
+The emitter seed and occurrence index determine the sample. Restart repeats the
+sequence; changing frame size does not change samples for the same occurrences.
+Disabled and capacity-dropped events still consume their occurrence so they cannot
+shift future samples. Spread is authored configuration, not a runtime parameter.

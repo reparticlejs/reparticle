@@ -480,4 +480,10 @@ export const examples: readonly Example[] = [
     file: 'pylinka/arcane-burst.json',
     artwork: { 'arcane-burst': { source: 'particle-examples/particle-blob.png' } },
   },
+  {
+    id: 'confetti-pop',
+    name: 'Confetti Pop',
+    file: 'pylinka/confetti-pop.json',
+    artwork: { 'confetti-pop': { source: 'pylinka/textures/confetti.svg' } },
+  },
 ];

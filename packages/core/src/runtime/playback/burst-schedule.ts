@@ -1,5 +1,7 @@
 import type { EmitterConfig } from '#types/effect.js';
 
+import { propertyVariation } from '../../simulation/emission/variation';
+
 /**
  * Convert timed bursts into particle requests for each simulation step.
  *
@@ -8,16 +10,20 @@ import type { EmitterConfig } from '#types/effect.js';
  * many requested particles fit in the available slots.
  *
  * Definitions are validated before construction and sorted once. Advancing the
- * schedule does not allocate arrays or access GPU data.
+ * schedule does not allocate arrays or access GPU data. Count spread is sampled
+ * per occurrence, rounded to a whole particle, and clamped to zero. Reset replays
+ * the same seeded sequence, independent of how simulation steps group events.
  */
 export class BurstSchedule {
   private readonly bursts: EmitterConfig['emission']['bursts'];
   private currentCycle: number | undefined;
   private nextBurstIndex = 0;
+  private occurrence = 0;
 
   public constructor(
     bursts: EmitterConfig['emission']['bursts'],
     private readonly capacity: number,
+    private readonly seed = 0,
   ) {
     // Preserve the authored order in the definition; equal times remain separate bursts.
     this.bursts = [...bursts].sort((left, right) => left.time - right.time);
@@ -46,7 +52,12 @@ export class BurstSchedule {
     let burst = this.bursts[this.nextBurstIndex];
 
     while (burst !== undefined && burst.time - emissionTime <= timeTolerance) {
-      requestedBirths = Math.min(this.capacity, requestedBirths + burst.count);
+      // Sample each occurrence, including disabled or capacity-dropped events.
+      // A dedicated stream keeps this independent of particle-property randomness.
+      const variation = propertyVariation(this.occurrence, this.seed, 11);
+      const count = Math.max(0, Math.round(burst.count + variation * burst.countSpread));
+      requestedBirths = Math.min(this.capacity, requestedBirths + count);
+      this.occurrence += 1;
 
       // Consume even after reaching capacity: excess births are dropped, never queued.
       this.nextBurstIndex += 1;
@@ -59,6 +70,7 @@ export class BurstSchedule {
   /** Forget consumed events so restart can replay every burst, including time zero. */
   public reset(): void {
     this.currentCycle = undefined;
+    this.occurrence = 0;
     this.nextBurstIndex = 0;
   }
 }

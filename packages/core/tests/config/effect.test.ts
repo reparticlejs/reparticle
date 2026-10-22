@@ -152,3 +152,15 @@ it.each([
   input.emitters[0].emission.bursts = [burst];
   expect(() => parseEffectConfig(input)).toThrow(ZodError);
 });
+
+it.each([-1, 1.5, Infinity])('rejects invalid burst count spread: %s', (countSpread) => {
+  const input = example();
+  input.emitters[0].emission.bursts = [{ time: 0, count: 10, countSpread }];
+  expect(() => parseEffectConfig(input)).toThrow(ZodError);
+});
+
+it('defaults omitted burst count spread to zero', () => {
+  const input = example();
+  input.emitters[0].emission.bursts = [{ time: 0, count: 10 }];
+  expect(parseEffectConfig(input).emitters[0].emission.bursts[0]?.countSpread).toBe(0);
+});
