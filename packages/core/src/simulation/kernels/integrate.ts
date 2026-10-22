@@ -46,6 +46,7 @@ export function integrate(
   rotationCurve: Float32Array,
   angularVelocityCurve: Float32Array,
   modifiers: Float32Array,
+  pathInput: UniformVector,
 ): ParticleTexel {
   const seconds = stepInput[0];
   const spawnCount = stepInput[1];
@@ -234,13 +235,32 @@ export function integrate(
       ];
     }
 
+    // Distance births occupy the first ordinals in ascending slot order.
+    // Prefixes skip whole mask words; at most 23 bits remain to count locally.
+    let pathFraction = 1;
+    if (stepInput[3] > 0) {
+      const wordIndex = Math.floor(particleId / 24);
+      const maskWords = Math.ceil(this.constants.capacity / 24);
+      let ordinal = spawnMask[maskWords + wordIndex]!;
+      for (let bit = 0; bit < 24; bit++) {
+        if (bit < particleId % 24) {
+          ordinal += Math.floor(spawnWord / Math.pow(2, bit)) % 2;
+        }
+      }
+      if (ordinal < stepInput[3]) {
+        pathFraction = Math.min(1, pathInput[2] + ordinal * pathInput[3]);
+      }
+    }
+
     // Apply forces to the birth velocity before advancing the newborn position.
     const positionX =
       emitterX +
+      pathInput[0] * (pathFraction - 1) +
       (emitterCosine * spawnMotionState[0] * handedness - emitterSine * spawnMotionState[1]) *
         emitterScale;
     const positionY =
       emitterY +
+      pathInput[1] * (pathFraction - 1) +
       (emitterSine * spawnMotionState[0] * handedness + emitterCosine * spawnMotionState[1]) *
         emitterScale;
     const angularVelocity =

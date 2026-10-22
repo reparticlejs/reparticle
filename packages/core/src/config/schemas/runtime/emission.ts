@@ -12,5 +12,6 @@ const shapeSchema = strictObject({
 
 export const emissionSchema = strictObject({
   rate: number().nonnegative(),
+  rateOverDistance: number().nonnegative(),
   shape: shapeSchema,
 }).partial();

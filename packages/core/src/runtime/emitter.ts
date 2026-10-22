@@ -14,6 +14,7 @@ import { GpuSimulation } from './gpu/simulation';
 import { ModifierSampler } from './modifiers/sampler';
 import { ParticleSlots } from './particles/slots';
 import { BurstSchedule } from './playback/burst-schedule';
+import { DistanceSchedule } from './playback/distance-schedule';
 import { EmitterPlayback } from './playback/emitter';
 import { prewarm } from './playback/prewarm';
 import { SpawnRate } from './playback/spawn-rate';
@@ -46,6 +47,7 @@ export class Emitter {
   // Playback, birth allocation, and inherited motion.
   private readonly playback: EmitterPlayback;
   private readonly burstSchedule: BurstSchedule;
+  private readonly distanceSchedule: DistanceSchedule;
   private readonly spawnSchedule: SpawnSchedule;
   private readonly particleSlots: ParticleSlots;
   private readonly emitterVelocity = new EmitterVelocity();
@@ -91,6 +93,7 @@ export class Emitter {
       this.capacity,
       this.settings.seed,
     );
+    this.distanceSchedule = new DistanceSchedule(this.capacity);
     this.spawnSchedule = new SpawnSchedule(this.capacity);
     this.particleSlots = new ParticleSlots(this.capacity, true);
     this.playback = new EmitterPlayback(
@@ -369,7 +372,7 @@ export class Emitter {
     if (!Number.isFinite(seconds) || seconds < 0 || seconds > 0.1) {
       throw new RangeError('Step must be between 0 and 0.1 seconds');
     }
-    if (!this.simulation || (this.state === 'sleeping' && this.pendingBurstCount === 0)) {
+    if (!this.simulation) {
       return;
     }
     try {
@@ -386,7 +389,7 @@ export class Emitter {
       if (seconds > 0) {
         this.pendingBurstCount = 0;
       }
-      this.step(seconds, manualBirths);
+      this.step(seconds, manualBirths, seconds > 0);
     } finally {
       this.context?.restoreState?.();
     }
@@ -404,6 +407,7 @@ export class Emitter {
     }
     this.pendingBurstCount = 0;
     this.spawnSchedule.reset();
+    this.distanceSchedule.reset();
     this.burstSchedule.reset();
     this.particleSlots.reset();
     this.playback.reset();
@@ -450,23 +454,33 @@ export class Emitter {
   }
 
   /** Order matters: playback → birth requests → slot allocation → GPU update → draining. */
-  private step(seconds: number, manualBirths = 0): void {
+  private step(seconds: number, manualBirths = 0, measureDistance = false): void {
     if (manualBirths > 0) {
       this.playback.wake();
     }
     if (this.state === 'sleeping') {
+      if (measureDistance) {
+        this.distanceSchedule.next(this.worldX, this.worldY, 0);
+      }
       return;
     }
     const shouldEmit = this.playback.advance(seconds);
     const emitterAge = this.playback.normalizedAge;
     const rate = shouldEmit && this.emitting ? this.spawnRate.at(emitterAge) : 0;
+    const distanceBirths = measureDistance
+      ? this.distanceSchedule.next(
+          this.worldX,
+          this.worldY,
+          shouldEmit && this.emitting ? this.settings.emission.rateOverDistance : 0,
+        )
+      : 0;
     const continuousBirths = this.spawnSchedule.next(rate, seconds);
     const burstBirths = shouldEmit
       ? this.burstSchedule.next(this.playback.emissionCycle, this.playback.emissionTime)
       : 0;
     const requested = Math.min(
       this.capacity,
-      continuousBirths + (this.emitting ? burstBirths : 0) + manualBirths,
+      continuousBirths + (this.emitting ? burstBirths : 0) + manualBirths + distanceBirths,
     );
     const lifetime = this.initialProperties.lifetime.at(emitterAge);
     const settings = this.settings;
@@ -480,6 +494,7 @@ export class Emitter {
       Math.max(0, this.initialProperties.lifetime.maximum),
     );
 
+    this.prepareBirthPath(Math.min(distanceBirths, birthCount));
     this.integrate(seconds, birthCount, lifetime, emitterAge);
 
     if (seconds > 0) {
@@ -487,6 +502,32 @@ export class Emitter {
     }
     if (birthCount > 0) {
       this.spawnSeed = (this.spawnSeed + 1) % 65536;
+    }
+  }
+
+  /** Convert the world travel segment into the emitter's current simulation space. */
+  private prepareBirthPath(count: number): void {
+    const parameters = this.simulationParameters;
+    const path = parameters.path;
+    parameters.step.distanceBirths = count;
+    path.x = 0;
+    path.y = 0;
+    path.firstFraction = this.distanceSchedule.firstBirthFraction;
+    path.fractionStep = this.distanceSchedule.birthFractionStep;
+    if (count === 0) {
+      return;
+    }
+    const x = this.distanceSchedule.displacementX;
+    const y = this.distanceSchedule.displacementY;
+    if (this.settings.space === 'world') {
+      path.x = x;
+      path.y = y;
+    } else if (this.worldScale !== 0) {
+      const angle = (-this.worldRotation * Math.PI) / 180;
+      const cosine = Math.cos(angle);
+      const sine = Math.sin(angle);
+      path.x = ((cosine * x + sine * y) * this.worldHandedness) / this.worldScale;
+      path.y = (-sine * x + cosine * y) / this.worldScale;
     }
   }
 

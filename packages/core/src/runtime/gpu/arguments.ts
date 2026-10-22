@@ -40,4 +40,5 @@ export const INTEGRATION_ARGUMENT_TYPES: NonNullable<IGPUKernelSettings['argumen
   rotationCurve: 'Array',
   angularVelocityCurve: 'Array',
   modifiers: 'Array',
+  pathInput: 'Array(4)',
 };

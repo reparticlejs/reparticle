@@ -844,3 +844,31 @@ then returns to sleeping once its particles drain. Its scheduled emission does n
 restart. Notifications remain deferred until simulation completes. No GPU readback
 or immediate GPU call is needed. The Tap Sparks example demonstrates repeated
 requests at pointer positions while world-space particles from earlier taps remain.
+
+## Emission over distance
+
+`emission.rateOverDistance` is a nonnegative number of particles per world unit,
+defaulting to zero. It can also be changed with `setParameters`. It adds to time
+rate, scheduled bursts, and manual bursts. Coin Spark Trail demonstrates a value
+of 1.4 with time rate zero: stopping movement produces no births.
+
+The first positive update establishes a position. Subsequent positive updates
+measure the emitter's world origin, including parent/effect movement. Fractional
+births carry between segments and loops, so spacing does not depend on frame size
+along a straight path. Reset clears this history. Zero-time updates and stationary
+prewarm do not consume travel. Delay, disabled emission, and stopped playback track
+positions without emitting or accumulating missed distance.
+
+Distance births use equally spaced points on the straight segment from the last
+position to the current one. Local-space effects convert this segment into their
+current local coordinates; world-space effects leave particles behind normally.
+Shape sampling, rotation, scale, initial-property curves, and newborn integration
+use the current frame's settings. This is position interpolation, not subframe
+simulation or reconstruction of a curved path. Teleports count as travel.
+
+When capacity is insufficient, earliest distance requests take precedence, followed
+by other births at the current origin. Living particles are preserved and overflow
+is dropped. Birth ordinals are derived from the spawn mask plus one count prefix
+per 24 slots. This doubles the compact mask storage (about 33 KB total for 100,000
+slots), adds one reusable vec4 uniform, and requires no per-particle path buffer or
+GPU readback. Only newborn motion texels count up to 23 preceding bits for placement.

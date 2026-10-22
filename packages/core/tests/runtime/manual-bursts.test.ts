@@ -136,3 +136,29 @@ it('validates counts without discarding valid pending requests; zero does not wa
   emitter.destroy();
   expect(() => emitter.emitBurst(1)).toThrow('destroyed');
 });
+
+it('emits by world distance, combines manual births, and skips disabled travel', () => {
+  const emitter = new Emitter(context, {
+    ...definition,
+    emission: { ...definition.emission, rateOverDistance: 0.5 },
+  });
+  const order = new Uint32Array(20);
+  emitter.update(0.1);
+  emitter.x = 10;
+  emitter.emitBurst(2);
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(7);
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(7);
+  emitter.emitting = false;
+  emitter.x = 100;
+  emitter.update(0.1);
+  emitter.emitting = true;
+  emitter.x = 102;
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(8);
+  emitter.reset();
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(0);
+  emitter.destroy();
+});

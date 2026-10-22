@@ -51,6 +51,7 @@ it.each([1, 2, 3])(
           new Float32Array(65),
           new Float32Array(65).fill(1),
           new Float32Array([0, 0]),
+          /* path */ [0, 0, 0, 0],
         );
       context.thread.y = 0;
       expect(run(1)).toEqual(expected);

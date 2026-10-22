@@ -176,3 +176,9 @@ it('defaults omitted probability to always firing', () => {
   input.emitters[0].emission.bursts = [{ time: 0, count: 10 }];
   expect(parseEffectConfig(input).emitters[0].emission.bursts[0]?.probability).toBe(1);
 });
+
+it.each([-1, Infinity, NaN])('rejects invalid distance emission rate: %s', (rateOverDistance) => {
+  const input = example();
+  input.emitters[0].emission.rateOverDistance = rateOverDistance;
+  expect(() => parseEffectConfig(input)).toThrow(ZodError);
+});

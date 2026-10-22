@@ -51,6 +51,7 @@ const burstSchema = strictObject({
 
 export const emissionSchema = strictObject({
   rate: emissionRateSchema,
+  rateOverDistance: number().nonnegative().default(0),
   rateSpread: number().nonnegative().default(0),
   shape: emissionShapeSchema,
   bursts: array(burstSchema).default([]),

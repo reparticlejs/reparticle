@@ -40,6 +40,7 @@ it('captures spread once, accumulates spin, and resets on slot reuse', () => {
       new Float32Array(65),
       curve,
       new Float32Array([2, 0, 0, 100, 40, 0, 0, 0.6, -0.8, 0, 0, 1, 2, 2, 0, 0, 1, 0, 0, 0]),
+      /* path */ [0, 0, 0, 0],
     );
   const born = run(1);
   const captured = 100 + 40 * propertyVariation(0, 1, 15);

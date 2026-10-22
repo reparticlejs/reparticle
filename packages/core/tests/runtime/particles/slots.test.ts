@@ -72,9 +72,9 @@ it.each([1, 7, 24, 25, 100, 8192])('matches float32 slot lifetimes at capacity %
 it('encodes all 24 bits exactly and clears stale spawn bits', () => {
   const slots = new ParticleSlots(49);
   slots.advance(0.1, 49, 1, 0, 1);
-  expect([...slots.spawnMask]).toEqual([16777215, 16777215, 1]);
+  expect([...slots.spawnMask]).toEqual([16777215, 16777215, 1, 0, 24, 48]);
   slots.advance(0.1, 49, 1, 0, 1);
-  expect([...slots.spawnMask]).toEqual([0, 0, 0]);
+  expect([...slots.spawnMask]).toEqual([0, 0, 0, 0, 0, 0]);
   slots.reset();
   expect(slots.count).toBe(0);
   slots.advance(0.1, 1, 1, 0, 1);

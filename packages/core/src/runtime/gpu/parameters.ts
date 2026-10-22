@@ -15,7 +15,8 @@ export function createSimulationParameters(): SimulationParameters {
 
   return {
     // Timestep, births, and sampled emission shape.
-    step: { seconds: 0, birthCount: 0, seed: 0 },
+    step: { seconds: 0, birthCount: 0, distanceBirths: 0, seed: 0 },
+    path: { x: 0, y: 0, firstFraction: 0, fractionStep: 0 },
     emission: { speed: 0, direction: 0, spread: 0, lifetime: 0 },
     shape: { type: 0, dimensionX: 0, dimensionY: 0 },
     shapeSpread: { dimensionX: 0, dimensionY: 0 },

@@ -37,6 +37,7 @@ it.each([0, 1, 2, 3])(
         new Float32Array(65),
         new Float32Array(65).fill(1),
         new Float32Array([0, 0]),
+        /* path */ [0, 0, 0, 0],
       );
     const base = run(1, 0, 0);
     const rotated = run(0, -1, 100);

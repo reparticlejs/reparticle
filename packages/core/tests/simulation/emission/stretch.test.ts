@@ -38,6 +38,7 @@ it('captures independent stretch spread, retains it, and replaces it on slot reu
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([2, 0, 0, 100, 40, 0, 0, 0.6, -0.8, 0, 0, 1, 2, 2, 0, 0, 1, 0, 0, 0]),
+      /* path */ [0, 0, 0, 0],
     );
   const born = run(1);
   expect(born[0]).toBeCloseTo(1 + propertyVariation(0, 1, 16) * 0.5);

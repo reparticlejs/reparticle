@@ -11,7 +11,8 @@
         "shape": {
           "type": "point"
         },
-        "bursts": []
+        "bursts": [],
+        "rateOverDistance": 0
       },
       "overLifetime": {
         "scale": 1,

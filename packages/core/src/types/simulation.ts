@@ -9,7 +9,7 @@ export type UniformVector = [number, number, number, number];
  * remain arrays for the kernel to sample separately for each particle.
  *
  * SimulationInputs packs each object group into one vec4, padding unused lanes
- * with zero. The final four arrays are borrowed texture inputs, not vec4 uniforms.
+ * with zero. The four arrays are borrowed texture inputs, not vec4 uniforms.
  * Positions and velocities use the emitter's local or world simulation space.
  */
 export interface SimulationParameters {
@@ -17,8 +17,13 @@ export interface SimulationParameters {
   step: {
     seconds: number;
     birthCount: number;
+    /** First births in ascending slot order placed along the travelled path. */
+    distanceBirths: number;
     seed: number;
   };
+
+  /** Travel vector in simulation space and normalized positions along the segment. */
+  path: { x: number; y: number; firstFraction: number; fractionStep: number };
 
   /** Birth speed (units/s), direction and full angular spread (radians), lifetime (s). */
   emission: {
@@ -112,7 +117,7 @@ export interface SimulationParameters {
     initialAngularVelocity: number;
   };
 
-  /** Accepted birth slots: each float32 word packs 24 exact integer bits. */
+  /** Birth bits (24 slots per word), followed by birth-count prefixes for those words. */
   spawnMask: Float32Array;
 
   /** 65 added rotation samples (degrees) spanning normalized particle lifetime [0, 1]. */

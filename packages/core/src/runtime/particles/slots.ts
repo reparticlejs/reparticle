@@ -14,9 +14,10 @@ const SLOTS_PER_MASK_WORD = 24;
  * Living slots are never overwritten; requests beyond available capacity are dropped.
  */
 export class ParticleSlots {
-  /** Packed birth flags for the current step: one bit per newly admitted slot. */
+  /** Packed birth bits followed by per-word birth prefixes for path placement. */
   public readonly spawnMask: Float32Array;
 
+  private readonly maskWords: number;
   private version = 0;
   private readonly order: ParticleOrder | undefined;
   private maximumLifetime = NaN;
@@ -34,7 +35,8 @@ export class ParticleSlots {
       throw new RangeError('Capacity must be an integer from 1 to 1,000,000');
     }
     this.order = trackOrder ? new ParticleOrder(capacity) : undefined;
-    this.spawnMask = new Float32Array(Math.ceil(capacity / SLOTS_PER_MASK_WORD));
+    this.maskWords = Math.ceil(capacity / SLOTS_PER_MASK_WORD);
+    this.spawnMask = new Float32Array(this.maskWords * 2);
     this.free = new Uint32Array(capacity);
     this.lifetimes = new Float32Array(capacity);
     this.freeCount = capacity;
@@ -106,6 +108,14 @@ export class ParticleSlots {
     }
 
     this.admit(count, step, lifetime, spread, seed);
+    // Second half stores the number of births before each mask word. The GPU
+    // can derive a newborn's ordinal without reading back or moving particle slots.
+    let prefix = 0;
+    for (let word = 0; word < this.maskWords; word++) {
+      const countInWord = this.spawnMask[this.maskWords + word]!;
+      this.spawnMask[this.maskWords + word] = prefix;
+      prefix += countInWord;
+    }
     this.sort();
     return count;
   }
@@ -142,6 +152,7 @@ export class ParticleSlots {
       this.lifetimes[slot] = sampledLifetime;
 
       const word = Math.floor(slot / SLOTS_PER_MASK_WORD);
+      this.spawnMask[this.maskWords + word]! += 1;
       this.spawnMask[word] = this.spawnMask[word]! + 2 ** (slot % SLOTS_PER_MASK_WORD);
     }
 

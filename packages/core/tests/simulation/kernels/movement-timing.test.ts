@@ -38,6 +38,7 @@ function simulation({
         new Float32Array(65),
         new Float32Array(65).fill(1),
         modifiers,
+        /* path */ [0, 0, 0, 0],
       ),
     ]);
     state = next;
