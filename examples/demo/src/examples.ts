@@ -523,4 +523,22 @@ export const examples: readonly Example[] = [
       },
     },
   },
+  {
+    id: 'spark-burst',
+    name: 'Spark Burst',
+    file: 'pylinka/spark-burst.json',
+    artwork: { 'spark-burst': { source: 'pylinka/textures/spark_03.png' } },
+  },
+  {
+    id: 'tumbling-shards',
+    name: 'Tumbling Shards',
+    file: 'pylinka/tumbling-shards.json',
+    artwork: { 'tumbling-shards': { source: 'pylinka/textures/star_05.png' } },
+  },
+  {
+    id: 'ink-bloom',
+    name: 'Ink Bloom',
+    file: 'pylinka/ink-bloom.json',
+    artwork: { 'ink-bloom': { source: 'particle-examples/particle-blob.png' } },
+  },
 ];

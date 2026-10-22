@@ -14,19 +14,19 @@ Our box emits straight upward, so the source's small independent sideways veloci
 
 ## Supported collection
 
-30 of the 90 source recipes are currently included; the gallery has been curated down from the original port collection. These are visual adaptations using existing engine APIs, not pixel-identical ports. All effect JSON remains separate from Pixi artwork and playback bindings. Arcane Burst demonstrates scheduled bursts; the other adaptations use the existing engine APIs.
+33 of the 90 source recipes are currently included; the gallery has been curated down from the original port collection. These are visual adaptations using existing engine APIs, not pixel-identical ports. All effect JSON remains separate from Pixi artwork and playback bindings. Arcane Burst demonstrates scheduled bursts; the other adaptations use the existing engine APIs.
 
-| Group    | Included effects                                                                           |
-| -------- | ------------------------------------------------------------------------------------------ |
-| abstract | Ease Pop, Nebula, Data Stream                                                              |
-| trails   | Coin Spark Trail, Infinity Loop                                                            |
-| fire     | Ember Rise                                                                                 |
-| magic    | Star Sparkle, Stardust Fall, Gem Spin, Arcane Burst, Spell Cast                            |
-| ambient  | Rain, Fireflies                                                                            |
-| ui       | Coin Shower, Coin Fountain, Confetti Pop, Success Sparkle                                  |
-| swirl    | Whirlpool, Black Hole, Cyclone, Helix Climb                                                |
-| vfx      | Shooting Stars, Twirl Trails, Soft Smoke, Steam Plume, Fire Plume, Wispy Smoke, Cloud Puff |
-| rotation | Spinning Coins, Quarter-Turn Drop                                                          |
+| Group    | Included effects                                                                                        |
+| -------- | ------------------------------------------------------------------------------------------------------- |
+| abstract | Ease Pop, Nebula, Data Stream, Ink Bloom                                                                |
+| trails   | Coin Spark Trail, Infinity Loop                                                                         |
+| fire     | Ember Rise                                                                                              |
+| magic    | Star Sparkle, Stardust Fall, Gem Spin, Arcane Burst, Spell Cast                                         |
+| ambient  | Rain, Fireflies                                                                                         |
+| ui       | Coin Shower, Coin Fountain, Confetti Pop, Success Sparkle                                               |
+| swirl    | Whirlpool, Black Hole, Cyclone, Helix Climb                                                             |
+| vfx      | Shooting Stars, Twirl Trails, Soft Smoke, Steam Plume, Fire Plume, Wispy Smoke, Cloud Puff, Spark Burst |
+| rotation | Spinning Coins, Quarter-Turn Drop, Tumbling Shards                                                      |
 
 ## Shared adaptations
 
@@ -44,11 +44,10 @@ Static VFX and flipbook textures are copied from Pylinka's Brackeys bundle; see 
 
 ## Deferred recipes
 
-These 26 recipes remain deferred. Burst-only recipes can now be ported using scheduled bursts.
+These 23 recipes remain deferred. Burst-only recipes can now be ported using scheduled bursts.
 
 | Recipe            | Status / missing behavior                |
 | ----------------- | ---------------------------------------- |
-| Ink Bloom         | ready to port with scheduled bursts      |
 | Enchant Ring      | ready to port with scheduled bursts      |
 | Notification Ping | ready to port with scheduled bursts      |
 | Heart Pop         | ready to port with scheduled bursts      |
@@ -72,8 +71,6 @@ These 26 recipes remain deferred. Burst-only recipes can now be ported using sch
 | Spark Anvil       | collisions / obstacle fields             |
 | Stream Past Stone | collisions / obstacle fields             |
 | Magnet Void       | collisions / obstacle fields             |
-| Spark Burst       | ready to port with scheduled bursts      |
-| Tumbling Shards   | ready to port with scheduled bursts      |
 
 ### Arcane Burst
 
@@ -107,3 +104,19 @@ growth, and a sampled sine-in opacity fade. Sprites are twice the source size,
 matching the other large flipbooks. The upward velocity fan approximates independent
 X/Y sampling. Once-forward animation spans each particle's lifetime rather than
 playing at the source's fixed 22 FPS. Its next burst overlaps the previous clouds.
+
+### Spark Burst, Tumbling Shards, and Ink Bloom
+
+All three use fixed-count scheduled bursts, scale 4, and no prewarm. Spark Burst
+emits 110 cyan sparks every 1.4 seconds with the source spark_03 sprite, 0.7–1.3
+second lifetimes, downward acceleration 200, and drag 0.7. Tumbling Shards emits
+44 star_05 sprites every 1.2 seconds, with 1–1.6 second lifetimes, downward
+acceleration 240, drag 0.35, random initial rotation, and ±540 degrees/s spin.
+Its upward angular fan approximates the source's independent X/Y velocities.
+
+Ink Bloom emits 220 blue particles every two seconds, with 1.5–2.5 second
+lifetimes, drag 3, normal blending, and sine-out growth from scale 1 to 2.4.
+Its blue tint darkens while opacity fades. Spark Burst and Ink Bloom approximate
+independent X/Y birth velocities with radial direction and speed spread. Sine
+curves are sampled as Hermite points; Spark Burst and Tumbling Shards use sine-in
+color/opacity fading and linear size changes. Existing shared texture credits apply.
