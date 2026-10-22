@@ -492,4 +492,11 @@ export const examples: readonly Example[] = [
     file: 'electrical-sparks.json',
     artwork: { sparks: { source: 'particle-examples/particle-blob.png' } },
   },
+  {
+    id: 'manual-sparks',
+    name: 'Tap Sparks',
+    file: 'manual-sparks.json',
+    manualBurst: { emitter: 'sparks', count: 60 },
+    artwork: { sparks: { source: 'particle-examples/particle-blob.png' } },
+  },
 ];

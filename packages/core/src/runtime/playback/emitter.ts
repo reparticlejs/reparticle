@@ -87,6 +87,13 @@ export class EmitterPlayback {
     }
   }
 
+  /** Wake only to drain manually requested particles; never restart the emission clock. */
+  public wake(): void {
+    if (this.currentState === 'sleeping') {
+      this.setState('postspawn');
+    }
+  }
+
   /** Enter sleeping only after emission has stopped and the caller reports no particles. */
   public finish(empty: boolean): void {
     if (empty && this.currentState === 'postspawn') {

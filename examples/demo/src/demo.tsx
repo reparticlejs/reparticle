@@ -76,6 +76,7 @@ export function Demo({
             </option>
           ))}
         </select>
+        {example.manualBurst && <p>Tap the canvas to emit a burst.</p>}
         <div className="playback-actions">
           <button disabled={!ready} onClick={togglePlayback}>
             {paused ? 'Resume' : 'Pause'}

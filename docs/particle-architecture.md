@@ -820,3 +820,27 @@ events normally. This setting is authored configuration, not a runtime parameter
 The Electrical Sparks demo attempts a discharge every 0.7 seconds at probability
 0.7, with 35–75 particles in successful discharges. It uses existing simulation and
 rendering features, with no GPU readbacks.
+
+## Manual bursts
+
+Call `effect.emitBurst('sparks', 50)` on the Pixi display object, or
+`emitter.emitBurst(50)` on a core emitter. The nonnegative safe-integer count is
+explicit: scheduled burst probability and count spread do not apply.
+
+Requests accumulate up to capacity and are consumed on the next positive update,
+after any initial prewarm. They can be queued before renderer attachment. With
+`autoUpdate: false`, they wait until the consumer calls `update(seconds)`.
+The emitter's position, transform, and initial properties at that update determine
+the births. Several queued calls use that same position, not separate snapshots.
+
+Manual requests bypass start delay and the `emitting` gate. They combine with
+scheduled births through the existing allocator, preserving living particles and
+dropping excess requests without a backlog. Stop, clear, reset, and play cancel
+pending requests; retirement does not. Existing particles and the emission clock
+are never reset by `emitBurst` itself.
+
+A sleeping emitter wakes into `postspawn` on the update that admits the request,
+then returns to sleeping once its particles drain. Its scheduled emission does not
+restart. Notifications remain deferred until simulation completes. No GPU readback
+or immediate GPU call is needed. The Tap Sparks example demonstrates repeated
+requests at pointer positions while world-space particles from earlier taps remain.

@@ -138,6 +138,12 @@ export class ParticleEffect extends ViewContainer {
     }
   }
 
+  /** Queue births for the next positive update without restarting or clearing the effect. */
+  public emitBurst(emitterId: string, count: number): void {
+    this.pipe?.assertAvailable();
+    this.getEmitter(emitterId).emitBurst(count);
+  }
+
   public retire(): void {
     for (const emitter of this.simulations.values()) {
       emitter.retire();

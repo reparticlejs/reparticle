@@ -126,6 +126,7 @@ it('rejects host-prohibited operations before CPU or GPU state changes', () => {
 
   for (const operation of [
     () => emitter.update(0.01),
+    () => emitter.emitBurst(2),
     () => emitter.play(),
     () => emitter.reset(),
     () => emitter.stop(),

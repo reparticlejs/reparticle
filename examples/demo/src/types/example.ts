@@ -11,6 +11,8 @@ export interface Example {
   fullWidth?: boolean;
   /** Demo-only display-object movement; simulation stays unchanged. */
   motion?: 'figure-eight' | 'pendulum';
+  /** Tap the canvas to request particles at the pointer position. */
+  manualBurst?: { emitter: string; count: number };
   artwork: Record<
     string,
     {

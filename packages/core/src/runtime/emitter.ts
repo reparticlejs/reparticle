@@ -52,6 +52,7 @@ export class Emitter {
   private spawnSeed: number;
   private readonly initialSeed: number;
   private needsPrewarm = true;
+  private pendingBurstCount = 0;
 
   private simulation: GpuSimulation | null = null;
   private context: EmitterContext | null = null;
@@ -188,6 +189,21 @@ export class Emitter {
     this.reset();
   }
 
+  /**
+   * Queue an explicit particle count for the next positive update, after prewarm.
+   * Bypasses the emission gate, delay, and scheduled burst probability. Requests
+   * share available slots with scheduled births; overflow is dropped, never retried.
+   * Multiple calls accumulate up to capacity. Zero is a no-op; stop/reset cancel them.
+   */
+  public emitBurst(count: number): void {
+    this.assertAlive();
+    this.context?.assertAvailable?.();
+    if (!Number.isSafeInteger(count) || count < 0) {
+      throw new RangeError('Burst count must be a nonnegative safe integer');
+    }
+    this.pendingBurstCount = Math.min(this.capacity, this.pendingBurstCount + count);
+  }
+
   /** Finish the current cycle, then drain existing particles. */
   public retire(): void {
     this.assertAlive();
@@ -207,6 +223,7 @@ export class Emitter {
       this.particleSlots.reset();
     }
     this.needsPrewarm = false;
+    this.pendingBurstCount = 0;
     this.playback.stop();
     this.notifyStateChanges();
   }
@@ -352,7 +369,7 @@ export class Emitter {
     if (!Number.isFinite(seconds) || seconds < 0 || seconds > 0.1) {
       throw new RangeError('Step must be between 0 and 0.1 seconds');
     }
-    if (!this.simulation || this.state === 'sleeping') {
+    if (!this.simulation || (this.state === 'sleeping' && this.pendingBurstCount === 0)) {
       return;
     }
     try {
@@ -365,7 +382,11 @@ export class Emitter {
         );
       }
       this.emitterVelocity.update(this.worldX, this.worldY, seconds);
-      this.step(seconds);
+      const manualBirths = seconds > 0 ? this.pendingBurstCount : 0;
+      if (seconds > 0) {
+        this.pendingBurstCount = 0;
+      }
+      this.step(seconds, manualBirths);
     } finally {
       this.context?.restoreState?.();
     }
@@ -381,6 +402,7 @@ export class Emitter {
     } finally {
       this.context?.restoreState?.();
     }
+    this.pendingBurstCount = 0;
     this.spawnSchedule.reset();
     this.burstSchedule.reset();
     this.particleSlots.reset();
@@ -428,7 +450,10 @@ export class Emitter {
   }
 
   /** Order matters: playback → birth requests → slot allocation → GPU update → draining. */
-  private step(seconds: number): void {
+  private step(seconds: number, manualBirths = 0): void {
+    if (manualBirths > 0) {
+      this.playback.wake();
+    }
     if (this.state === 'sleeping') {
       return;
     }
@@ -439,7 +464,10 @@ export class Emitter {
     const burstBirths = shouldEmit
       ? this.burstSchedule.next(this.playback.emissionCycle, this.playback.emissionTime)
       : 0;
-    const requested = Math.min(this.capacity, continuousBirths + (this.emitting ? burstBirths : 0));
+    const requested = Math.min(
+      this.capacity,
+      continuousBirths + (this.emitting ? burstBirths : 0) + manualBirths,
+    );
     const lifetime = this.initialProperties.lifetime.at(emitterAge);
     const settings = this.settings;
 
