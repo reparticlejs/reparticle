@@ -562,6 +562,17 @@ export const examples: readonly Example[] = [
     },
   },
   {
+    id: 'campfire',
+    name: 'Campfire',
+    file: 'campfire/effect.json',
+    artwork: {
+      smoke: { source: 'pylinka/textures/smoke_01_a.png' },
+      flames: { source: 'pylinka/textures/smoke_01_a.png' },
+      core: { source: 'particle-examples/particle-blob.png' },
+      embers: { source: 'particle-examples/particle-blob.png' },
+    },
+  },
+  {
     id: 'stress-test',
     name: 'Stress test · 1M',
     file: 'stress-test/effect.json',
