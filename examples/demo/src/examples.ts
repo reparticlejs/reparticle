@@ -474,4 +474,13 @@ export const examples: readonly Example[] = [
     },
     motion: 'figure-eight',
   },
+  {
+    id: 'stress-test',
+    name: 'Stress test · 1M',
+    file: 'stress-test/effect.json',
+    artwork: {
+      'particles-a': { source: 'stress-test/particle.svg' },
+      'particles-b': { source: 'stress-test/particle.svg' },
+    },
+  },
 ];

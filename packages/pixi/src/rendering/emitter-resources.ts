@@ -1,5 +1,5 @@
 import type { Emitter } from '@reparticle/core';
-import { GlProgram, Shader, State, Texture, type WebGLRenderer } from 'pixi.js';
+import { Geometry, GlProgram, Shader, State, Texture, type WebGLRenderer } from 'pixi.js';
 
 import type { ParticleTexture } from '#types/particle-texture.js';
 
@@ -7,7 +7,6 @@ import fragment from '../shaders/particle.frag.glsl';
 import vertex from '../shaders/particle.vert.glsl';
 import { EmitterArtwork } from '../textures/emitter-artwork';
 import { SimulationSources } from '../textures/simulation-sources';
-import { ParticleOrderBuffer } from './order-buffer';
 import { restoreSimulationState } from './restore-simulation-state';
 import { createUniforms } from './uniforms';
 
@@ -23,7 +22,7 @@ export class EmitterResources {
   public readonly shader: Shader;
   public readonly particleSources: SimulationSources;
   public readonly state = State.for2d();
-  public readonly order: ParticleOrderBuffer;
+  public readonly geometry: Geometry;
   public readonly drawOptions: Parameters<WebGLRenderer['encoder']['draw']>[0];
   public readonly uniforms: ReturnType<typeof createUniforms>;
   private disposed = false;
@@ -42,7 +41,7 @@ export class EmitterResources {
     );
     let artwork: EmitterArtwork | undefined;
     let shader: Shader | undefined;
-    let order: ParticleOrderBuffer | undefined;
+    let geometry: Geometry | undefined;
     try {
       artwork = new EmitterArtwork(gl.getParameter(gl.MAX_TEXTURE_SIZE), options);
       this.artwork = artwork;
@@ -58,19 +57,20 @@ export class EmitterResources {
       this.shader = shader;
       // Compile now, but defer uniform syncing until the active global group is bound.
       renderer.shader.bind(shader, true);
-      order = new ParticleOrderBuffer(renderer, emitter.capacity);
-      this.order = order;
+      // Instance and vertex IDs address slots and quad corners without buffers.
+      geometry = new Geometry({ topology: 'triangle-strip' });
+      this.geometry = geometry;
       this.drawOptions = {
-        geometry: order.geometry,
+        geometry,
         shader,
         state: this.state,
         topology: 'triangle-strip',
         size: 4,
         start: 0,
-        instanceCount: 0,
+        instanceCount: emitter.capacity,
       };
     } catch (error) {
-      order?.destroy();
+      geometry?.destroy();
       shader?.destroy();
       artwork?.destroy();
       this.particleSources.destroy();
@@ -87,7 +87,7 @@ export class EmitterResources {
     }
     this.disposed = true;
     try {
-      this.order.destroy();
+      this.geometry.destroy();
       this.artwork.destroy();
       // GlProgram.from() is shared; Pixi owns the compiled program cache.
       this.shader.destroy();

@@ -5,8 +5,7 @@ precision highp int;
 #include <curve-constants>
 #include <pixi-global-uniforms>
 
-// Simulation storage and draw order.
-layout(location = 0) in uint particleId;
+// Simulation storage. Instances draw in fixed slot order.
 uniform sampler2D particles;
 uniform int width;
 uniform int rows;
@@ -80,7 +79,7 @@ struct ArtworkFrame {
 
 // Each slot occupies the same column in five row bands.
 Particle readParticle() {
-  int slot = int(particleId);
+  int slot = gl_InstanceID;
   ivec2 address = ivec2(slot % width, slot / width);
   vec4 motion = texelFetch(particles, address, 0);
   vec4 lifetime = texelFetch(particles, address + ivec2(0, rows), 0);

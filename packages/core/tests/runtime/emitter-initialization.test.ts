@@ -36,12 +36,12 @@ beforeEach(() => vi.clearAllMocks());
 
 it('constructs CPU controls and validates updates without allocating GPU resources', () => {
   const emitter = new Emitter(null, definition);
-  const revision = emitter.particleRevision;
+  const count = emitter.particleCount;
   emitter.x = 42;
   emitter.setParameters({ initial: { speed: 12 } });
   emitter.update(0.1);
   expect(emitter.initialized).toBe(false);
-  expect(emitter.particleRevision).toBe(revision);
+  expect(emitter.particleCount).toBe(count);
   expect(emitter.x).toBe(42);
   expect(emitter.configuration.initial.speed).toBe(12);
   expect(() => emitter.update(Infinity)).toThrow(RangeError);
@@ -119,7 +119,7 @@ it('rejects host-prohibited operations before CPU or GPU state changes', () => {
   blocked = false;
   emitter.initialize(guardedContext);
   emitter.emitting = false;
-  const revision = emitter.particleRevision;
+  const count = emitter.particleCount;
   const state = emitter.state;
   vi.clearAllMocks();
   blocked = true;
@@ -133,7 +133,7 @@ it('rejects host-prohibited operations before CPU or GPU state changes', () => {
     () => emitter.destroy(),
   ]) {
     expect(operation).toThrow('host is rendering');
-    expect(emitter.particleRevision).toBe(revision);
+    expect(emitter.particleCount).toBe(count);
     expect(emitter.state).toBe(state);
     expect(emitter.emitting).toBe(false);
   }

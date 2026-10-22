@@ -2,7 +2,6 @@ import type { ParticleLifetimeVisitor } from '#types/particle-lifetime.js';
 import type { ParticleSlotBatch } from '#types/particle-slots.js';
 
 import { propertyVariation } from '../../simulation/emission/variation';
-import { ParticleOrder } from './order';
 
 // Every integer up to 24 bits is represented exactly by a float32.
 const SLOTS_PER_MASK_WORD = 24;
@@ -18,32 +17,21 @@ export class ParticleSlots {
   public readonly spawnMask: Float32Array;
 
   private version = 0;
-  private readonly order: ParticleOrder | undefined;
-  private maximumLifetime = NaN;
   // Free slots form a stack; only entries below freeCount are available.
   private readonly free: Uint32Array;
   private readonly lifetimes: Float32Array;
   private freeCount: number;
   private batches: ParticleSlotBatch[] = [];
 
-  public constructor(
-    private readonly capacity: number,
-    trackOrder = false,
-  ) {
+  public constructor(private readonly capacity: number) {
     if (!Number.isInteger(capacity) || capacity < 1 || capacity > 1_000_000) {
       throw new RangeError('Capacity must be an integer from 1 to 1,000,000');
     }
-    this.order = trackOrder ? new ParticleOrder(capacity) : undefined;
     this.spawnMask = new Float32Array(Math.ceil(capacity / SLOTS_PER_MASK_WORD));
     this.free = new Uint32Array(capacity);
     this.lifetimes = new Float32Array(capacity);
     this.freeCount = capacity;
     this.reset();
-  }
-
-  /** Changes when allocation metadata may change, even if draw order stays identical. */
-  public get revision(): number {
-    return this.version;
   }
 
   /** Visit only live allocation metadata; no particle texture is inspected. */
@@ -56,14 +44,6 @@ export class ParticleSlots {
     }
   }
 
-  /** Copy sorted live slot IDs; requires trackOrder to be enabled at construction. */
-  public copyOrder(target: Uint32Array): number {
-    if (!this.order) {
-      throw new Error('Particle ordering is not enabled');
-    }
-    return this.order.copyTo(target);
-  }
-
   public get count(): number {
     return this.capacity - this.freeCount;
   }
@@ -73,7 +53,7 @@ export class ParticleSlots {
   }
 
   /**
-   * Advance existing particles, admit births into free slots, then refresh ordering.
+   * Advance existing particles and admit births into free slots.
    * Returns the accepted birth count. Excess requests are dropped, never queued.
    * Lifetimes and ages use float32 rounding to match GPU expiration decisions.
    */
@@ -83,11 +63,8 @@ export class ParticleSlots {
     lifetime: number,
     spread: number,
     seed: number,
-    maximumLifetime = lifetime,
   ): number {
-    const changed = seconds > 0 || requested > 0 || maximumLifetime !== this.maximumLifetime;
-    this.maximumLifetime = maximumLifetime;
-    if (changed) {
+    if (seconds > 0 || requested > 0) {
       this.version++;
     }
 
@@ -99,21 +76,16 @@ export class ParticleSlots {
 
     const count = Math.min(requested, this.freeCount);
     if (count === 0) {
-      if (changed) {
-        this.sort();
-      }
       return 0;
     }
 
     this.admit(count, step, lifetime, spread, seed);
-    this.sort();
     return count;
   }
 
   /** Clear all allocations and restore ascending slot allocation order. */
   public reset(): void {
     this.version++;
-    this.order?.reset();
     this.batches = [];
     this.freeCount = this.capacity;
     this.spawnMask.fill(0);
@@ -131,7 +103,6 @@ export class ParticleSlots {
     for (let index = 0; index < count; index++) {
       const slot = this.free[--this.freeCount]!;
       slots[index] = slot;
-      this.order?.add(slot);
 
       let sampledLifetime = initialLifetime;
       if (spread > 0) {
@@ -145,25 +116,13 @@ export class ParticleSlots {
       this.spawnMask[word] = this.spawnMask[word]! + 2 ** (slot % SLOTS_PER_MASK_WORD);
     }
 
-    // All births share an age. Shortest lifetimes expire first; slot ID breaks ties.
+    // Sort each new batch only for expiration. This never controls rendering order.
     if (spread > 0) {
       slots.sort((a, b) => this.lifetimes[a]! - this.lifetimes[b]! || a - b);
     }
 
     // Even nonpositive lifetimes retain their birth frame.
     this.batches.push({ slots, next: 0, age: step, generation: this.version });
-  }
-
-  /** Refresh lifetime keys without moving the particles in their GPU slots. */
-  private sort(): void {
-    const order = this.order;
-    if (!order) {
-      return;
-    }
-    this.forEachLifetime((slot, age, lifetime) => {
-      order.setLifetime(slot, age, lifetime, this.maximumLifetime);
-    });
-    order.sort();
   }
 
   private expire(seconds: number): void {
@@ -176,7 +135,6 @@ export class ParticleSlots {
         if (batch.age <= this.lifetimes[slot]!) {
           break;
         }
-        this.order?.expire(slot);
         this.free[this.freeCount++] = slot;
         batch.next++;
       }
@@ -190,7 +148,5 @@ export class ParticleSlots {
       }
     }
     this.batches.length = retainedBatchCount;
-    // Apply logical swap-removal after every expired slot has been marked.
-    this.order?.removeExpired();
   }
 }

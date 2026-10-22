@@ -79,11 +79,10 @@ export class EmitterRenderer {
 
   /** Refresh reusable uniforms and submit one instanced quad draw. */
   public renderParticles(transform: Matrix, displayColor: number): void {
-    if (this.disposed || this.emitter.state === 'sleeping') {
+    if (this.disposed || this.emitter.state === 'sleeping' || this.emitter.particleCount === 0) {
       return;
     }
     const resources = this.resources;
-    const count = resources.order.update(this.emitter);
     this.syncSimulation();
     resources.artwork.sync(resources.shader, resources.uniforms.uniforms, this.animationHalfStep);
     this.syncTransform(transform);
@@ -91,7 +90,6 @@ export class EmitterRenderer {
 
     // Reuse the draw command; Pixi binds the shader, textures, geometry, and state.
     resources.state.blendMode = this.blendMode;
-    resources.drawOptions.instanceCount = count;
     // Follow Pixi mesh rendering: bind the active render group and target uniforms.
     resources.shader.groups[100] = this.renderer.globalUniforms.bindGroup;
     this.renderer.encoder.draw(resources.drawOptions);

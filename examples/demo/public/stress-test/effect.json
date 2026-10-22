@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "particles-a",
+      "capacity": 512000,
+      "seed": 1,
+      "playMode": "loop",
+      "startOffset": 2,
+      "emission": {
+        "rate": 250000,
+        "shape": {
+          "type": "box",
+          "width": 200,
+          "height": 200
+        }
+      },
+      "initial": {
+        "lifetime": 2,
+        "speed": 20,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "size": 4,
+        "alpha": 0.5019607843137255
+      },
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "particles-b",
+      "capacity": 512000,
+      "seed": 2,
+      "playMode": "loop",
+      "startOffset": 2,
+      "emission": {
+        "rate": 250000,
+        "shape": {
+          "type": "box",
+          "width": 200,
+          "height": 200
+        }
+      },
+      "initial": {
+        "lifetime": 2,
+        "speed": 20,
+        "direction": -1.5707963267948966,
+        "spread": 0,
+        "size": 4,
+        "alpha": 0.5019607843137255
+      },
+      "rendering": {
+        "blendMode": "normal"
+      }
+    }
+  ]
+}

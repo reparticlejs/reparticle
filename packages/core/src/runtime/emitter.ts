@@ -22,8 +22,8 @@ import { EmitterVelocity } from './transforms/velocity';
 
 /**
  * Coordinate one emitter's playback, CPU slot metadata, and GPU simulation.
- * Particle state stays in GPU textures; CPU metadata controls birth admission,
- * expiration, and draw order without readbacks. The renderer owns the GL context.
+ * Particle state stays in GPU textures; CPU metadata controls birth admission
+ * and expiration without readbacks. The renderer owns the GL context.
  */
 export class Emitter {
   public readonly width = 256;
@@ -84,7 +84,7 @@ export class Emitter {
     this.rows = Math.ceil(this.capacity / this.width);
 
     this.spawnSchedule = new SpawnSchedule(this.capacity);
-    this.particleSlots = new ParticleSlots(this.capacity, true);
+    this.particleSlots = new ParticleSlots(this.capacity);
     this.playback = new EmitterPlayback(
       this.settings.duration,
       this.settings.playMode,
@@ -310,15 +310,9 @@ export class Emitter {
     this.spawnRate = spawnRate;
   }
 
-  /** Changes when allocation or particle ages change, including reset and clear. */
-  public get particleRevision(): number {
-    return this.particleSlots.revision;
-  }
-
-  /** Copy the final logical order; simulation texels always remain in their original slots. */
-  public copyParticleOrder(target: Uint32Array): number {
-    this.assertAlive();
-    return this.particleSlots.copyOrder(target);
+  /** Number of living particles tracked on the CPU; no GPU readback. */
+  public get particleCount(): number {
+    return this.particleSlots.count;
   }
 
   /** GPU resource handle for renderer adapters. Never calls toArray/readPixels. */
@@ -437,7 +431,6 @@ export class Emitter {
       lifetime,
       settings.initial.lifetimeSpread,
       this.spawnSeed,
-      Math.max(0, this.initialProperties.lifetime.maximum),
     );
 
     this.integrate(seconds, birthCount, lifetime, emitterAge);

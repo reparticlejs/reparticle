@@ -36,7 +36,7 @@ GPU state contains position, velocity, age, lifetime, and appearance data. Built
 
 Positions, velocities, modifiers, and rendering remain on the GPU, with no readback or extra simulation pass. Allocation work visits birth batches and slots being born or expired, rather than every allocated particle each frame. Lifetime spread orders each new batch by sampled lifetime so expiration can stop at the first survivor.
 
-Pixi orders living particles by Defold’s 16-bit remaining-lifetime key: longer remaining lifetimes draw first. Core sorts logical slot IDs every simulation step, including prewarm, using existing CPU lifetime metadata. Pixi uploads only the final order on each draw: one uint per living instance (4 bytes each), without moving simulation texels or reading the GPU. Expired entries use Defold’s forward swap-removal, births append in allocation order, and equal keys use the resulting logical index. Stable two-pass radix sorting costs O(live particles + 256) per simulation step; paused draws reuse the buffer. Emitters still draw in definition order.
+Pixi draws particles in fixed GPU slot order, with no lifetime sorting or per-frame order buffer. The vertex shader uses the instance ID to address each slot and hides inactive particles. Each nonempty emitter submits its configured capacity; emitters draw in definition order. Normal alpha blending can therefore look different when slots are reused. `emitter.particleCount` provides the CPU-tracked live count without GPU readbacks.
 
 Core owns simulation resources; the Pixi view owns its core emitters, and the renderer’s particle pipe owns drawing resources. Destroy the view before destroying the renderer. Core never destroys the host GL context. GPU.js canvas-size changes during compilation and GL-state restoration are handled at the integration boundary.
 
@@ -180,6 +180,8 @@ Each emitter accepts `"duration": 1` (seconds) and `"playMode": "once"` or `"loo
 Following [Defold's emitter timing](https://github.com/defold/defold/blob/dev/engine/particle/src/particle.cpp#L785-L844), once emits through the entire update that reaches duration, then stops spawning. Existing particles continue moving and aging. Loops restart the emitter timer without clearing particles, fractional emission, or the random sequence. Zero-duration once emits for one positive update; zero-duration loop emits continuously. Zero-time warm-up updates do not consume playback.
 
 `emitter.isEmitting` reports emission eligibility at the current playback clock; pending prewarm has not yet advanced that clock. The existing `emitter.emitting` boolean remains a manual emission gate; turning it off does not pause the clock or restart a completed effect. Pause by skipping updates. `reset()` clears particles and restarts the timer, spawn schedule, and seed. Duration/mode changes require recreation.
+
+Spawn positions and directions use a deterministic, sine-free sampler. The same seed and slot sequence reproduce the same layout; this replaces the older sine-based sequence, so existing seeds now produce different layouts.
 
 `startDelay` defaults to `0` seconds. Following Defold, the delay is checked before advancing each frame: the frame reaching the delay still waits, and the next frame emits. Delay overshoot contributes to the duration clock. Loops do not repeat the delay; reset does. Like duration, it is a structural setting rather than a runtime parameter patch.
 

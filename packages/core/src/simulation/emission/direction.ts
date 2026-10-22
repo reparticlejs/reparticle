@@ -1,21 +1,30 @@
 /**
- * Produce a repeatable sample in [0, 1) from a particle slot and seed.
+ * Produce a repeatable sample in [0, 1) for spawn positions and directions.
  *
- * Shape sampling uses this value for positions and directions. Changing the
- * seed varies the pattern when slots are reused; the same inputs reproduce
- * the same sample within the same execution backend.
+ * Mix the slot and seed as two small integers instead of taking the sine of
+ * a large slot-dependent angle. All integer intermediates stay below 2^24,
+ * where float32 is exact; only the final normalization needs rounding.
+ * Shape callers may offset the seed to obtain a second coordinate.
  */
 export function spawnVariation(particleId: number, seed: number): number {
-  // Fixed hash coefficients mix the slot and seed, then amplify the sine value.
-  // These are not physical units; changing them changes every seeded pattern.
-  const particleWeight = 12.9898;
-  const seedWeight = 0.137;
-  const hashScale = 43758.5453;
-  const phase = particleId * particleWeight + seed * seedWeight;
-  const hash = Math.sin(phase) * hashScale;
+  // Two base-4093 digits cover every supported slot without a short slot cycle.
+  // Even the largest square and the combined result fit exactly in float32.
+  const base = 4093;
+  let left = (Math.floor(particleId / base) + Math.floor(seed / base)) % base;
+  let right = ((particleId % base) + (seed % base)) % base;
 
-  // Floor extracts a nonnegative fractional part even when the hash is negative.
-  return hash - Math.floor(hash);
+  // Six Feistel rounds: mix one digit into the other, then swap them.
+  // Each round is reversible, so distinct slots retain distinct integer codes
+  // for a fixed seed. The round salt breaks symmetry between repeated rounds.
+  for (let round = 0; round < 6; round++) {
+    const square = (right * right) % base;
+    const mixed = (square * 251 + round * 1013) % base;
+    const next = (left + mixed) % base;
+    left = right;
+    right = next;
+  }
+
+  return (left * base + right) / (base * base);
 }
 
 /**

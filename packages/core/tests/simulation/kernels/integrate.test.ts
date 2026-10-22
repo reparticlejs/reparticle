@@ -204,7 +204,10 @@ it('uses radial circle spawning independently of point direction and spread', ()
     new Float32Array([1, 0, 0, 100, 0, 0, 0, 0, 1, 0, 0]),
   );
   expect(changedPointDirection).toEqual(first);
-  expect(Math.hypot(first[0] - 5, first[1] - 6)).toBeLessThanOrEqual(50);
+  // Undo birth-step movement before checking the sampled position's radius.
+  const birthX = first[0] - first[2] * 0.1;
+  const birthY = first[1] - first[3] * 0.1;
+  expect(Math.hypot(birthX - 5, birthY - 6)).toBeLessThanOrEqual(50);
   expect(Math.hypot(first[2], first[3] - 10)).toBeCloseTo(220);
 });
 

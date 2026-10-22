@@ -14,9 +14,8 @@ export function createDemoStats(
   overlay.textContent = 'WebGL2 · GPU.js\n0 particles\n— fps';
   host.appendChild(overlay);
 
-  // Reuse CPU draw-order storage only when sampling the live count.
+  // Live counts are already tracked by the allocator.
   const emitters = [...effect.emitters.values()];
-  const order = new Uint32Array(Math.max(...emitters.map((emitter) => emitter.capacity)));
   let sampleStart = performance.now();
   let frames = 0;
 
@@ -30,7 +29,7 @@ export function createDemoStats(
 
     let particleCount = 0;
     for (const emitter of emitters) {
-      particleCount += emitter.copyParticleOrder(order);
+      particleCount += emitter.particleCount;
     }
     // Wall-clock time keeps FPS independent of ticker speed and delta-time clamping.
     const fps = Math.round((frames * 1000) / elapsed);
