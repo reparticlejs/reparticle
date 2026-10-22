@@ -10,11 +10,10 @@
       "startOffset": 0,
       "scale": 4,
       "emission": {
-        "rate": 0,
+        "rate": 420,
         "shape": {
           "type": "point"
-        },
-        "rateOverDistance": 1.4
+        }
       },
       "initial": {
         "lifetime": 0.95,

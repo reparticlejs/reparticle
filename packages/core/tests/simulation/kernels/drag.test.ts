@@ -35,7 +35,6 @@ it('retains spread for the lifetime, resamples on birth, and damps after gravity
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([2, 0, 0, 100, 0, 0, 0, 0, 1, 0, 0, 1, 2, 2, 0, 0, 1, 0, 0, directional]),
-      /* path */ [0, 0, 0, 0],
     );
   expect(run(0, 1, 0).slice(2)).toEqual([70, 42]);
   expect(run(0, 99, 0).slice(2)).toEqual([70, 42]);

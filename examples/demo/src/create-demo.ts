@@ -82,17 +82,6 @@ export async function createDemo(host: HTMLDivElement, example: Example, signal:
     const restartMotion = example.motion
       ? animateEmitter(app, particles, example.motion)
       : undefined;
-    if (example.manualBurst) {
-      const { emitter, count } = example.manualBurst;
-      app.stage.eventMode = 'static';
-      app.stage.hitArea = app.screen;
-      app.stage.on('pointerdown', (event) => {
-        if (particles.autoUpdate) {
-          particles.position.copyFrom(event.global);
-          particles.emitBurst(emitter, count);
-        }
-      });
-    }
     host.appendChild(app.canvas);
     stats = createDemoStats(app, host, particles);
     app.start();

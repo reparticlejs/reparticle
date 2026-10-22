@@ -3,7 +3,6 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
 import { Emitter } from '#src/runtime/emitter.js';
 import type { EmitterContext } from '#types/emitter.js';
-import type { SimulationParameters } from '#types/simulation.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 
@@ -11,7 +10,7 @@ const gpu = vi.hoisted(() => ({
   construct: vi.fn<() => void>(),
   reset: vi.fn<() => void>(),
   clear: vi.fn<() => void>(),
-  update: vi.fn<(parameters: SimulationParameters) => void>(),
+  update: vi.fn<() => void>(),
   destroy: vi.fn<() => void>(),
 }));
 
@@ -127,7 +126,6 @@ it('rejects host-prohibited operations before CPU or GPU state changes', () => {
 
   for (const operation of [
     () => emitter.update(0.01),
-    () => emitter.emitBurst(2),
     () => emitter.play(),
     () => emitter.reset(),
     () => emitter.stop(),
@@ -172,177 +170,3 @@ it('restores host state before notifications and when simulation fails', () => {
   expect(restored).toBe(true);
   emitter.destroy();
 });
-
-it('combines bursts with rate, preserves living slots, and resets the burst schedule', () => {
-  const config = parseEffectConfig({
-    ...skeleton,
-    emitters: [
-      {
-        ...definition,
-        capacity: 5,
-        duration: 1,
-        playMode: 'once',
-        startOffset: 0,
-        emission: {
-          ...definition.emission,
-          rate: 10,
-          bursts: [{ time: 0, count: 10, countSpread: 0, probability: 1 }],
-        },
-        initial: { ...definition.initial, lifetime: 2 },
-      },
-    ],
-  }).emitters[0];
-  const emitter = new Emitter(context, config);
-  const order = new Uint32Array(5);
-  emitter.update(0);
-  expect(emitter.copyParticleOrder(order)).toBe(0);
-  emitter.update(0.1);
-  expect(emitter.copyParticleOrder(order)).toBe(5);
-  const firstOrder = order.slice();
-  emitter.update(0.1);
-  expect(emitter.copyParticleOrder(order)).toBe(5);
-  expect(order).toEqual(firstOrder);
-  emitter.reset();
-  emitter.update(0.1);
-  expect(emitter.copyParticleOrder(order)).toBe(5);
-  emitter.destroy();
-});
-
-it('consumes disabled bursts and processes bursts during prewarm', () => {
-  const config = parseEffectConfig({
-    ...skeleton,
-    emitters: [
-      {
-        ...definition,
-        duration: 1,
-        playMode: 'loop',
-        startOffset: 0,
-        emission: {
-          ...definition.emission,
-          rate: 0,
-          bursts: [{ time: 0, count: 3, countSpread: 0, probability: 1 }],
-        },
-        initial: { ...definition.initial, lifetime: 2 },
-      },
-    ],
-  }).emitters[0];
-  const emitter = new Emitter(context, config);
-  const order = new Uint32Array(config.capacity);
-  emitter.emitting = false;
-  emitter.update(0.1);
-  emitter.emitting = true;
-  emitter.update(0.1);
-  expect(emitter.copyParticleOrder(order)).toBe(0);
-  emitter.destroy();
-  const prewarmed = new Emitter(context, { ...config, startOffset: 0.5 });
-  prewarmed.update(0.01);
-  expect(prewarmed.copyParticleOrder(order)).toBe(3);
-  prewarmed.destroy();
-});
-
-it('adds rate births to bursts and keeps the schedule when rate changes', () => {
-  const emitter = new Emitter(context, {
-    ...definition,
-    capacity: 20,
-    duration: 1,
-    startOffset: 0,
-    emission: {
-      ...definition.emission,
-      rate: 10,
-      bursts: [
-        { time: 0, count: 3, countSpread: 0, probability: 1 },
-        { time: 0.3, count: 2, countSpread: 0, probability: 1 },
-      ],
-    },
-    initial: { ...definition.initial, lifetime: 2 },
-  });
-  const order = new Uint32Array(20);
-  emitter.update(0.1);
-  expect(emitter.copyParticleOrder(order)).toBe(4);
-  emitter.setParameters({ emission: { rate: 20 } });
-  emitter.update(0.1);
-  expect(emitter.copyParticleOrder(order)).toBe(6);
-  emitter.update(0.1);
-  expect(emitter.copyParticleOrder(order)).toBe(10);
-  emitter.stop();
-  emitter.update(0.1);
-  expect(emitter.copyParticleOrder(order)).toBe(10);
-  emitter.destroy();
-});
-
-it('does not replay dropped bursts after occupied slots become free', () => {
-  const emitter = new Emitter(context, {
-    ...definition,
-    capacity: 2,
-    duration: 2,
-    startOffset: 0,
-    emission: {
-      ...definition.emission,
-      rate: 0,
-      bursts: [
-        { time: 0, count: 2, countSpread: 0, probability: 1 },
-        { time: 0.2, count: 5, countSpread: 0, probability: 1 },
-      ],
-    },
-    initial: { ...definition.initial, lifetime: 0.25 },
-  });
-  const order = new Uint32Array(2);
-  emitter.update(0.1);
-  emitter.update(0.1);
-  expect(emitter.copyParticleOrder(order)).toBe(2);
-  for (let step = 0; step < 5; step++) {
-    emitter.update(0.1);
-  }
-  expect(emitter.copyParticleOrder(order)).toBe(0);
-  emitter.destroy();
-});
-
-it('prewarms repeated bursts and reproduces the same population after reset', () => {
-  const emitter = new Emitter(context, {
-    ...definition,
-    capacity: 100,
-    duration: 0.1,
-    playMode: 'loop',
-    startOffset: 0.25,
-    emission: {
-      ...definition.emission,
-      rate: 0,
-      bursts: [{ time: 0, count: 3, countSpread: 0, probability: 1 }],
-    },
-    initial: { ...definition.initial, lifetime: 2 },
-  });
-  const order = new Uint32Array(100);
-  emitter.update(0.01);
-  expect(emitter.copyParticleOrder(order)).toBe(9);
-  emitter.reset();
-  emitter.update(0.01);
-  expect(emitter.copyParticleOrder(order)).toBe(9);
-  emitter.destroy();
-});
-
-it.each(['world', 'local'] as const)(
-  'converts parent movement into %s birth coordinates',
-  (space) => {
-    const emitter = new Emitter(context, {
-      ...definition,
-      space,
-      scale: 2,
-      rotation: 90,
-      startOffset: 0,
-      emission: { ...definition.emission, rate: 0, rateOverDistance: 1 },
-    });
-    emitter.update(0.1);
-    emitter.effectTransform.x = 10;
-    let path: SimulationParameters['path'] | undefined;
-    let distanceBirths = 0;
-    gpu.update.mockImplementationOnce((parameters) => {
-      path = { ...parameters.path };
-      distanceBirths = parameters.step.distanceBirths;
-    });
-    emitter.update(0.1);
-    expect(distanceBirths).toBe(10);
-    expect(path?.x).toBeCloseTo(space === 'world' ? 10 : 0);
-    expect(path?.y).toBeCloseTo(space === 'world' ? 0 : 5);
-    emitter.destroy();
-  },
-);

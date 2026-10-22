@@ -10,9 +10,7 @@
         "rate": 3000,
         "shape": {
           "type": "point"
-        },
-        "bursts": [],
-        "rateOverDistance": 0
+        }
       },
       "overLifetime": {
         "scale": 1,

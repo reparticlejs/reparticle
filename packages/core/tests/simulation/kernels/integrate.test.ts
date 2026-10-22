@@ -35,7 +35,6 @@ it('maps motion and properties texels without changing the behavior math', () =>
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([1, 0, 0, 100, 0, 0, 0, 0, 1, 0, 0]),
-      /* path */ [0, 0, 0, 0],
     );
   expect(step()).toEqual([13, 17, 30, -30]);
   context.thread.y = 1;
@@ -84,7 +83,6 @@ it('reinitializes a recycled slot and moves and ages on its birth step', () => {
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([1, 0, 0, 100, 0, 0, 0, 0, 1, 0, 0]),
-      /* path */ [0, 0, 0, 0],
     );
   expect(step()).toEqual([27, 7, 220, 10]);
   context.thread.y = 1;
@@ -147,7 +145,6 @@ it('preserves lifetime captured at spawn and stops motion at expiry despite new 
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([1, 0, 0, -100, 0, 0, 0, 0, 1, 0, 0]),
-      /* path */ [0, 0, 0, 0],
     );
   expect(step()).toEqual([10, 20, 0, 0]);
   context.thread.y = 1;
@@ -185,7 +182,6 @@ it('uses radial circle spawning independently of point direction and spread', ()
     new Float32Array(65),
     new Float32Array(65).fill(1),
     new Float32Array([1, 0, 0, 100, 0, 0, 0, 0, 1, 0, 0]),
-    /* path */ [0, 0, 0, 0],
   );
   const changedPointDirection = integrate.call(
     context,
@@ -206,7 +202,6 @@ it('uses radial circle spawning independently of point direction and spread', ()
     new Float32Array(65),
     new Float32Array(65).fill(1),
     new Float32Array([1, 0, 0, 100, 0, 0, 0, 0, 1, 0, 0]),
-    /* path */ [0, 0, 0, 0],
   );
   expect(changedPointDirection).toEqual(first);
   expect(Math.hypot(first[0] - 5, first[1] - 6)).toBeLessThanOrEqual(50);
@@ -245,7 +240,6 @@ it('spawns a cone independently of point direction and advances birth age', () =
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([1, 0, 0, 100, 0, 0, 0, 0, 1, 0, 0]),
-      /* path */ [0, 0, 0, 0],
     );
   const born = step(0, 0);
   expect(step(2, 10)).toEqual(born);
@@ -286,7 +280,6 @@ it('captures size at birth, preserves it when initial size changes, and replaces
     new Float32Array(65),
     new Float32Array(65).fill(1),
     new Float32Array([0, 0]),
-    /* path */ [0, 0, 0, 0],
   );
   expect(retained[2]).toBe(12);
   const recycled = integrate.call(
@@ -308,7 +301,6 @@ it('captures size at birth, preserves it when initial size changes, and replaces
     new Float32Array(65),
     new Float32Array(65).fill(1),
     new Float32Array([0, 0]),
-    /* path */ [0, 0, 0, 0],
   );
   expect(recycled).toEqual([0.1, 2, 48, 0]);
 });
@@ -344,7 +336,6 @@ it('preserves initial alpha until the slot is recycled', () => {
     new Float32Array(65),
     new Float32Array(65).fill(1),
     new Float32Array([0, 0]),
-    /* path */ [0, 0, 0, 0],
   );
   expect(retained[3]).toBe(0.25);
   const recycled = integrate.call(
@@ -366,7 +357,6 @@ it('preserves initial alpha until the slot is recycled', () => {
     new Float32Array(65),
     new Float32Array(65).fill(1),
     new Float32Array([0, 0]),
-    /* path */ [0, 0, 0, 0],
   );
   expect(recycled).toEqual([1, 1, 1, 0.75]);
 });
@@ -403,7 +393,6 @@ it('continues simulating transparent particles and keeps unused slots inactive',
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([0, 0]),
-      /* path */ [0, 0, 0, 0],
     );
   expect(step()).toEqual([1, 0, 10, 0]);
   state[1]![0] = [0, 0, 0, 0];
@@ -443,7 +432,6 @@ it('captures initial RGB, preserves it, and replaces it when a slot is reused', 
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([0, 0]),
-      /* path */ [0, 0, 0, 0],
     );
   expect(step(0)).toEqual([0.1, 0.2, 0.3, 0.5]);
   expect(step(1)).toEqual([0.7, 0.8, 0.9, 1]);
@@ -483,7 +471,6 @@ it('captures initial rotation and preserves it until slot reuse', () => {
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([0, 0]),
-      /* path */ [0, 0, 0, 0],
     );
   expect(step(0)[3]).toBe(-45);
   expect(step(1)).toEqual([0.1, 2, 24, 450]);
@@ -521,7 +508,6 @@ it('captures alignment at zero speed, adds initial rotation, and retains it unde
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([1, 0, 0, 160, 0, 0, 0, 0, 1, 0, 0]),
-      /* path */ [0, 0, 0, 0],
     );
   const born = step(1);
   expect(born).toEqual([0.1, 2, 24, -60]);

@@ -38,7 +38,6 @@ it('applies radial after drag with stable spread and integrates its displacement
         3, 1, 0, 100, 40, 0, 0, 0.6, -0.8, 0, 0, 1, 2, 2, 0, 0, 1, 0, 0, 0, 2, 100, 40, 0, 0, 0, 0,
         5, 0,
       ]),
-      /* path */ [0, 0, 0, 0],
     );
   expect(run(1)[2]).toBeCloseTo((100 + 120 * 0.6 * 0.1) * 0.7 + 7.2);
   expect(run(1)[3]).toBeCloseTo((50 - 120 * 0.8 * 0.1) * 0.7 + 9.6);

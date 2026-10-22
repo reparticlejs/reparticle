@@ -13,9 +13,6 @@ import { propertyVariation } from '../../simulation/emission/variation';
 export class EmitterPlayback {
   // Counts delay time first, then time within the current emission cycle.
   private elapsed = 0;
-  private cycle = 0;
-  private lastEmissionCycle = 0;
-  private lastEmissionTime = 0;
   private emissionStopped = false;
   private retireAfterLoop = false;
   private waitingForDelay = true;
@@ -56,16 +53,6 @@ export class EmitterPlayback {
     return this.authoredDuration === 0 ? 0 : this.elapsed / this.authoredDuration;
   }
 
-  /** Cycle that emitted in the last active step, before any loop wrap. */
-  public get emissionCycle(): number {
-    return this.lastEmissionCycle;
-  }
-
-  /** End time of the last active step, before any loop wrap. */
-  public get emissionTime(): number {
-    return this.lastEmissionTime;
-  }
-
   /** Drain queued state changes in order; repeated states do not enqueue events. */
   public takeTransitions(): EmitterState[] {
     const transitions = this.transitions;
@@ -83,13 +70,6 @@ export class EmitterPlayback {
     this.retireAfterLoop = false;
     if (this.currentState !== 'sleeping') {
       this.emissionStopped = true;
-      this.setState('postspawn');
-    }
-  }
-
-  /** Wake only to drain manually requested particles; never restart the emission clock. */
-  public wake(): void {
-    if (this.currentState === 'sleeping') {
       this.setState('postspawn');
     }
   }
@@ -131,13 +111,10 @@ export class EmitterPlayback {
     }
 
     this.elapsed = Math.min(this.elapsed + seconds, this.duration);
-    this.lastEmissionCycle = this.cycle;
-    this.lastEmissionTime = this.elapsed;
     if (this.durationReached) {
       if (this.playMode === 'loop' && !this.retireAfterLoop) {
         // Discard duration overshoot; start delay only applies after reset.
         this.elapsed = 0;
-        this.cycle += 1;
       } else {
         this.stop();
       }
@@ -149,9 +126,6 @@ export class EmitterPlayback {
   /** Restart the delay and cancel stop/retirement, keeping the sampled timing values. */
   public reset(): void {
     this.elapsed = 0;
-    this.cycle = 0;
-    this.lastEmissionCycle = 0;
-    this.lastEmissionTime = 0;
     this.emissionStopped = false;
     this.retireAfterLoop = false;
     this.waitingForDelay = true;

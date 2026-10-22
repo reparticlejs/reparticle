@@ -25,9 +25,8 @@ const ARGUMENT = {
   rotationCurve: 14,
   angularVelocityCurve: 15,
   modifiers: 16,
-  path: 17,
 } as const;
-const ARGUMENT_COUNT = ARGUMENT.path + 1;
+const ARGUMENT_COUNT = ARGUMENT.modifiers + 1;
 
 /**
  * Pack named parameters into reusable vec4 uniforms for one update kernel.
@@ -35,13 +34,12 @@ const ARGUMENT_COUNT = ARGUMENT.path + 1;
  * by reference. Never share an instance between the alternating update kernels.
  * UniformBuffer preserves those cached references until their values change.
  *
- * The four texture inputs are texture-backed arrays. Forward them without copying;
+ * The final four inputs are texture-backed arrays. Forward them without copying;
  * their storage and upload behavior are owned by the existing simulation code.
  */
 export class SimulationInputs {
   /** Borrowed kernel arguments; call write() before the first run. Reused each step. */
   public readonly args: KernelVariable[] = new Array(ARGUMENT_COUNT).fill(0);
-  private readonly path = new UniformBuffer();
   private readonly step = new UniformBuffer();
   private readonly emission = new UniformBuffer();
   private readonly shape = new UniformBuffer();
@@ -77,15 +75,8 @@ export class SimulationInputs {
       orientation,
     } = parameters;
 
-    const path = parameters.path;
-    this.args[ARGUMENT.path] = this.path.set(path.x, path.y, path.firstFraction, path.fractionStep);
     this.args[ARGUMENT.state] = state;
-    this.args[ARGUMENT.step] = this.step.set(
-      step.seconds,
-      step.birthCount,
-      step.seed,
-      step.distanceBirths,
-    );
+    this.args[ARGUMENT.step] = this.step.set(step.seconds, step.birthCount, step.seed, 0);
     this.args[ARGUMENT.emission] = this.emission.set(
       emission.speed,
       emission.direction,

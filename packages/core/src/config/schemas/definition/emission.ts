@@ -1,4 +1,4 @@
-import { array, discriminatedUnion, literal, number, strictObject } from 'zod';
+import { discriminatedUnion, literal, number, strictObject } from 'zod';
 
 import { scalarPropertySchema } from './curve';
 
@@ -41,18 +41,8 @@ const emissionRateSchema = scalarPropertySchema.refine(
   'Constant emission rate must be nonnegative',
 );
 
-// Times are seconds after the start delay, within each emission cycle.
-const burstSchema = strictObject({
-  time: number().nonnegative(),
-  count: number().int().positive(),
-  countSpread: number().int().nonnegative().default(0),
-  probability: number().min(0).max(1).default(1),
-});
-
 export const emissionSchema = strictObject({
   rate: emissionRateSchema,
-  rateOverDistance: number().nonnegative().default(0),
   rateSpread: number().nonnegative().default(0),
   shape: emissionShapeSchema,
-  bursts: array(burstSchema).default([]),
 });
