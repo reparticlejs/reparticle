@@ -9,6 +9,8 @@ export interface Example {
   verticalPosition?: number;
   /** Stretch box emission across the canvas width on resize. */
   fullWidth?: boolean;
+  /** Stretch box emission across the canvas height on resize. */
+  fullHeight?: boolean;
   /** Demo-only display-object movement; simulation stays unchanged. */
   motion?: 'figure-eight' | 'pendulum';
   artwork: Record<

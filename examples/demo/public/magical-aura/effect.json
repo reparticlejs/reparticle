@@ -1,0 +1,317 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "glow",
+      "seed": 92,
+      "capacity": 1024,
+      "startOffset": 3,
+      "emission": {
+        "rate": 35,
+        "shape": {
+          "type": "circle",
+          "diameter": 180
+        }
+      },
+      "initial": {
+        "lifetime": 2.2,
+        "lifetimeSpread": 0.44000000000000006,
+        "speed": 5,
+        "speedSpread": 1.25,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 65,
+        "sizeSpread": 19.5,
+        "red": 0.1,
+        "green": 0.8,
+        "blue": 0.5,
+        "alpha": 0.12
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.2,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.65,
+              "value": 0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.4,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 1.7,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "rendering": {
+        "blendMode": "add"
+      }
+    },
+    {
+      "id": "rings",
+      "seed": 115,
+      "capacity": 16,
+      "startOffset": 3,
+      "emission": {
+        "rate": 1.5,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 1.8,
+        "lifetimeSpread": 0.36000000000000004,
+        "speed": 0,
+        "speedSpread": 0.0,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 280,
+        "sizeSpread": 0,
+        "red": 0.15,
+        "green": 0.9,
+        "blue": 0.6,
+        "alpha": 0.35
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.2,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.65,
+              "value": 0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.3,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 1.1,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "rendering": {
+        "blendMode": "add"
+      }
+    },
+    {
+      "id": "orbit",
+      "seed": 115,
+      "capacity": 1024,
+      "startOffset": 3,
+      "emission": {
+        "rate": 220,
+        "shape": {
+          "type": "circle",
+          "diameter": 180
+        }
+      },
+      "initial": {
+        "lifetime": 2.4,
+        "lifetimeSpread": 0.48,
+        "speed": 35,
+        "speedSpread": 8.75,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 4,
+        "sizeSpread": 1.2,
+        "red": 0.3,
+        "green": 1,
+        "blue": 0.65,
+        "stretchY": 1.4
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.2,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.65,
+              "value": 0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.5,
+              "tangent": 0
+            },
+            {
+              "time": 0.3,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.2,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "rendering": {
+        "blendMode": "add"
+      },
+      "orientation": "movement-direction",
+      "stretchWithVelocity": true,
+      "modifiers": [
+        {
+          "type": "radial",
+          "magnitude": -65,
+          "maxDistance": 400
+        },
+        {
+          "type": "vortex",
+          "magnitude": 95,
+          "maxDistance": 400
+        },
+        {
+          "type": "drag",
+          "magnitude": 0.3
+        }
+      ]
+    },
+    {
+      "id": "motes",
+      "seed": 115,
+      "capacity": 1024,
+      "startOffset": 3,
+      "emission": {
+        "rate": 60,
+        "shape": {
+          "type": "circle",
+          "diameter": 180
+        }
+      },
+      "initial": {
+        "lifetime": 2.8,
+        "lifetimeSpread": 0.5599999999999999,
+        "speed": 12,
+        "speedSpread": 3.0,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 5,
+        "sizeSpread": 1.5,
+        "red": 0.8,
+        "green": 1,
+        "blue": 0.45
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.2,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.65,
+              "value": 0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.5,
+              "tangent": 0
+            },
+            {
+              "time": 0.3,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.2,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "rendering": {
+        "blendMode": "add"
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 35
+        }
+      ]
+    }
+  ]
+}

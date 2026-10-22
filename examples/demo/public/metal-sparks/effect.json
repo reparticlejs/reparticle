@@ -1,0 +1,338 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "streaks",
+      "seed": 11,
+      "capacity": 1024,
+      "startOffset": 1.8,
+      "position": {
+        "x": -180.0,
+        "y": -97.5
+      },
+      "emission": {
+        "rate": 380,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 0.85,
+        "lifetimeSpread": 0.2125,
+        "speed": 645.0,
+        "speedSpread": 225.75,
+        "direction": -0.35,
+        "spread": 1.1,
+        "size": 3.0,
+        "sizeSpread": 0.8999999999999999,
+        "stretchY": 1.2,
+        "red": 1,
+        "green": 0.85,
+        "blue": 0.45,
+        "alpha": 0.9
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.65,
+              "value": 0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.2,
+              "tangent": 0
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.4,
+              "value": 0.1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.3,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 720.0,
+          "rotation": 180
+        },
+        {
+          "type": "drag",
+          "magnitude": 0.5
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      },
+      "orientation": "movement-direction",
+      "stretchWithVelocity": true
+    },
+    {
+      "id": "embers",
+      "seed": 30,
+      "capacity": 1024,
+      "startOffset": 1.8,
+      "position": {
+        "x": -180.0,
+        "y": -97.5
+      },
+      "emission": {
+        "rate": 100,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 1.4,
+        "lifetimeSpread": 0.35,
+        "speed": 270.0,
+        "speedSpread": 94.49999999999999,
+        "direction": -0.35,
+        "spread": 1.1,
+        "size": 4.199999999999999,
+        "sizeSpread": 1.26,
+        "stretchY": 0.13333333333333333,
+        "red": 1,
+        "green": 0.85,
+        "blue": 0.45,
+        "alpha": 0.9
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.65,
+              "value": 0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.2,
+              "tangent": 0
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.4,
+              "value": 0.1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.3,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 720.0,
+          "rotation": 180
+        },
+        {
+          "type": "drag",
+          "magnitude": 0.5
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      },
+      "orientation": "movement-direction",
+      "stretchWithVelocity": true
+    },
+    {
+      "id": "contact",
+      "seed": 49,
+      "capacity": 64,
+      "startOffset": 1.8,
+      "position": {
+        "x": -180.0,
+        "y": -97.5
+      },
+      "emission": {
+        "rate": 70,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 0.09,
+        "lifetimeSpread": 0.0225,
+        "speed": 30.0,
+        "speedSpread": 10.5,
+        "direction": -0.35,
+        "spread": 6.283185307179586,
+        "size": 36.0,
+        "sizeSpread": 10.799999999999999,
+        "stretchY": 0.0,
+        "red": 1,
+        "green": 0.85,
+        "blue": 0.45,
+        "alpha": 0.45
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.65,
+              "value": 0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "green": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.2,
+              "tangent": 0
+            }
+          ]
+        },
+        "blue": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.4,
+              "value": 0.1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.3,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [],
+      "rendering": {
+        "blendMode": "add"
+      }
+    }
+  ]
+}

@@ -70,9 +70,14 @@ export async function createDemo(host: HTMLDivElement, example: Example, signal:
         app.screen.width / 2,
         app.screen.height * (example.verticalPosition ?? 0.5),
       );
-      if (example.fullWidth) {
+      if (example.fullWidth || example.fullHeight) {
         for (const emitter of particles.emitters.values()) {
-          emitter.setParameters({ emission: { shape: { width: app.screen.width } } });
+          if (example.fullWidth) {
+            emitter.setParameters({ emission: { shape: { width: app.screen.width } } });
+          }
+          if (example.fullHeight) {
+            emitter.setParameters({ emission: { shape: { height: app.screen.height } } });
+          }
         }
       }
     }

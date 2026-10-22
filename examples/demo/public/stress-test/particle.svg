@@ -1,3 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4">
-  <path fill="white" d="M0 0h4v4H0z" />
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <defs>
+    <radialGradient id="dot">
+      <stop offset="0.35" stop-color="white" />
+      <stop offset="1" stop-color="white" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <circle cx="8" cy="8" r="8" fill="url(#dot)" />
 </svg>

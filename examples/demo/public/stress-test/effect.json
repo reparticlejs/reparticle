@@ -2,53 +2,193 @@
   "version": 1,
   "emitters": [
     {
-      "id": "particles-a",
-      "capacity": 512000,
-      "seed": 1,
+      "id": "distant",
+      "capacity": 409600,
+      "seed": 40960,
       "playMode": "loop",
-      "startOffset": 2,
+      "startOffset": 10,
       "emission": {
-        "rate": 250000,
+        "rate": 40000,
         "shape": {
           "type": "box",
-          "width": 200,
-          "height": 200
+          "width": 1000,
+          "height": 800
         }
       },
       "initial": {
-        "lifetime": 2,
-        "speed": 20,
-        "direction": -1.5707963267948966,
+        "lifetime": 10,
+        "speed": -18,
+        "speedSpread": 3.6,
+        "direction": 0,
         "spread": 0,
-        "size": 4,
-        "alpha": 0.5019607843137255
+        "size": 1,
+        "sizeSpread": 0.35,
+        "red": 0.8,
+        "green": 0.9,
+        "blue": 1,
+        "alpha": 0.16
       },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.12,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.75,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 2,
+          "rotation": -90
+        }
+      ],
       "rendering": {
         "blendMode": "normal"
       }
     },
     {
-      "id": "particles-b",
-      "capacity": 512000,
-      "seed": 2,
+      "id": "middle",
+      "capacity": 92160,
+      "seed": 9216,
       "playMode": "loop",
-      "startOffset": 2,
+      "startOffset": 10,
       "emission": {
-        "rate": 250000,
+        "rate": 9000,
         "shape": {
           "type": "box",
-          "width": 200,
-          "height": 200
+          "width": 1000,
+          "height": 800
         }
       },
       "initial": {
-        "lifetime": 2,
-        "speed": 20,
-        "direction": -1.5707963267948966,
+        "lifetime": 10,
+        "speed": -48,
+        "speedSpread": 9.600000000000001,
+        "direction": 0,
         "spread": 0,
-        "size": 4,
-        "alpha": 0.5019607843137255
+        "size": 2.5,
+        "sizeSpread": 0.875,
+        "red": 0.94,
+        "green": 0.97,
+        "blue": 1,
+        "alpha": 0.5
       },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.12,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.75,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 5,
+          "rotation": -90
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "foreground",
+      "capacity": 11520,
+      "seed": 1152,
+      "playMode": "loop",
+      "startOffset": 10,
+      "emission": {
+        "rate": 1000,
+        "shape": {
+          "type": "box",
+          "width": 1000,
+          "height": 800
+        }
+      },
+      "initial": {
+        "lifetime": 10,
+        "speed": -90,
+        "speedSpread": 18.0,
+        "direction": 0,
+        "spread": 0,
+        "size": 7,
+        "sizeSpread": 2.4499999999999997,
+        "red": 0.94,
+        "green": 0.97,
+        "blue": 1,
+        "alpha": 0.75
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.12,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.75,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 9,
+          "rotation": -90
+        }
+      ],
       "rendering": {
         "blendMode": "normal"
       }
