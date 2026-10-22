@@ -1,0 +1,390 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "base",
+      "seed": 11,
+      "capacity": 512,
+      "startOffset": 2,
+      "position": {
+        "x": 0,
+        "y": 115
+      },
+      "emission": {
+        "rate": 90,
+        "shape": {
+          "type": "circle",
+          "diameter": 22
+        }
+      },
+      "initial": {
+        "lifetime": 1.5,
+        "lifetimeSpread": 0.3,
+        "speed": 10,
+        "speedSpread": 8,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 28,
+        "sizeSpread": 8.4,
+        "rotationSpread": 180,
+        "red": 0.58,
+        "green": 0.53,
+        "blue": 0.44,
+        "alpha": 0.4,
+        "stretchX": 0.7
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.6,
+              "tangent": 0
+            },
+            {
+              "time": 0.6,
+              "value": 1.2,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 1.5,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.2,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.65,
+              "value": 0.7,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "rotation": 100
+      },
+      "modifiers": [
+        {
+          "type": "vortex",
+          "magnitude": 170,
+          "maxDistance": 300
+        },
+        {
+          "type": "radial",
+          "magnitude": -65,
+          "maxDistance": 300
+        },
+        {
+          "type": "acceleration",
+          "magnitude": 50
+        },
+        {
+          "type": "drag",
+          "magnitude": 0.7
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "middle",
+      "seed": 23,
+      "capacity": 512,
+      "startOffset": 2,
+      "position": {
+        "x": 0,
+        "y": 20
+      },
+      "emission": {
+        "rate": 130,
+        "shape": {
+          "type": "circle",
+          "diameter": 100
+        }
+      },
+      "initial": {
+        "lifetime": 1.5,
+        "lifetimeSpread": 0.3,
+        "speed": 10,
+        "speedSpread": 8,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 45,
+        "sizeSpread": 13.5,
+        "rotationSpread": 180,
+        "red": 0.58,
+        "green": 0.53,
+        "blue": 0.44,
+        "alpha": 0.4,
+        "stretchX": 0.7
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.6,
+              "tangent": 0
+            },
+            {
+              "time": 0.6,
+              "value": 1.2,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 1.5,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.2,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.65,
+              "value": 0.7,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "rotation": 100
+      },
+      "modifiers": [
+        {
+          "type": "vortex",
+          "magnitude": 170,
+          "maxDistance": 300
+        },
+        {
+          "type": "radial",
+          "magnitude": -65,
+          "maxDistance": 300
+        },
+        {
+          "type": "acceleration",
+          "magnitude": 50
+        },
+        {
+          "type": "drag",
+          "magnitude": 0.7
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "crown",
+      "seed": 37,
+      "capacity": 512,
+      "startOffset": 2,
+      "position": {
+        "x": 0,
+        "y": -95
+      },
+      "emission": {
+        "rate": 160,
+        "shape": {
+          "type": "circle",
+          "diameter": 210
+        }
+      },
+      "initial": {
+        "lifetime": 1.5,
+        "lifetimeSpread": 0.3,
+        "speed": 10,
+        "speedSpread": 8,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 64,
+        "sizeSpread": 19.2,
+        "rotationSpread": 180,
+        "red": 0.58,
+        "green": 0.53,
+        "blue": 0.44,
+        "alpha": 0.4,
+        "stretchX": 0.7
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.6,
+              "tangent": 0
+            },
+            {
+              "time": 0.6,
+              "value": 1.2,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 1.5,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.2,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.65,
+              "value": 0.7,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "rotation": 100
+      },
+      "modifiers": [
+        {
+          "type": "vortex",
+          "magnitude": 170,
+          "maxDistance": 300
+        },
+        {
+          "type": "radial",
+          "magnitude": -65,
+          "maxDistance": 300
+        },
+        {
+          "type": "acceleration",
+          "magnitude": 50
+        },
+        {
+          "type": "drag",
+          "magnitude": 0.7
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "debris",
+      "seed": 53,
+      "capacity": 128,
+      "startOffset": 2,
+      "position": {
+        "x": 0,
+        "y": 50
+      },
+      "orientation": "angular-velocity",
+      "emission": {
+        "rate": 30,
+        "shape": {
+          "type": "circle",
+          "diameter": 90
+        }
+      },
+      "initial": {
+        "lifetime": 1.8,
+        "lifetimeSpread": 0.3,
+        "speed": 25,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 12,
+        "sizeSpread": 6,
+        "rotationSpread": 180,
+        "angularVelocity": 150,
+        "angularVelocitySpread": 90,
+        "red": 0.75,
+        "green": 0.58,
+        "blue": 0.3,
+        "alpha": 0.8
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.1,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.7,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "vortex",
+          "magnitude": 230,
+          "maxDistance": 350
+        },
+        {
+          "type": "radial",
+          "magnitude": -90,
+          "maxDistance": 350
+        },
+        {
+          "type": "acceleration",
+          "magnitude": 90
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    }
+  ]
+}

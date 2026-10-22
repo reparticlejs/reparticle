@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="white" />
+      <stop offset="1" stop-color="#a4a4a4" />
+    </linearGradient>
+  </defs>
+  <path d="M52 6C34 8 13 13 10 31C8 43 17 51 29 48C46 44 49 24 52 6Z" fill="url(#leaf)" />
+  <g fill="none" stroke="#665b49" stroke-linecap="round">
+    <path d="M49 10Q32 29 13 55" stroke-width="2" />
+    <path d="M22 43L15 31M28 35L20 22M35 27L29 16M22 43L35 41M29 34L42 31M36 25L45 21" stroke-width="1" opacity="0.55" />
+  </g>
+</svg>

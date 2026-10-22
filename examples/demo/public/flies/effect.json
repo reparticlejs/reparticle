@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "left",
+      "seed": 11,
+      "capacity": 64,
+      "startOffset": 3,
+      "position": {
+        "x": -45,
+        "y": 15
+      },
+      "orientation": "movement-direction",
+      "emission": {
+        "rate": 9,
+        "shape": {
+          "type": "circle",
+          "diameter": 65
+        }
+      },
+      "initial": {
+        "lifetime": 2.5,
+        "lifetimeSpread": 0.5,
+        "speed": 55,
+        "speedSpread": 30,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 16,
+        "sizeSpread": 5,
+        "alpha": 0.95
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.1,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.85,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "vortex",
+          "magnitude": 240,
+          "spread": 100,
+          "maxDistance": 250
+        },
+        {
+          "type": "radial",
+          "magnitude": -180,
+          "spread": 60,
+          "maxDistance": 300
+        },
+        {
+          "type": "drag",
+          "magnitude": 1.2
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "right",
+      "seed": 29,
+      "capacity": 64,
+      "startOffset": 3,
+      "position": {
+        "x": 45,
+        "y": -15
+      },
+      "orientation": "movement-direction",
+      "emission": {
+        "rate": 9,
+        "shape": {
+          "type": "circle",
+          "diameter": 65
+        }
+      },
+      "initial": {
+        "lifetime": 2.5,
+        "lifetimeSpread": 0.5,
+        "speed": 55,
+        "speedSpread": 30,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 16,
+        "sizeSpread": 5,
+        "alpha": 0.95
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.1,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.85,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "vortex",
+          "magnitude": -260,
+          "spread": 100,
+          "maxDistance": 250
+        },
+        {
+          "type": "radial",
+          "magnitude": -180,
+          "spread": 60,
+          "maxDistance": 300
+        },
+        {
+          "type": "drag",
+          "magnitude": 1.2
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "center",
+      "seed": 47,
+      "capacity": 64,
+      "startOffset": 3,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "orientation": "movement-direction",
+      "emission": {
+        "rate": 9,
+        "shape": {
+          "type": "circle",
+          "diameter": 65
+        }
+      },
+      "initial": {
+        "lifetime": 2.5,
+        "lifetimeSpread": 0.5,
+        "speed": 55,
+        "speedSpread": 30,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 16,
+        "sizeSpread": 5,
+        "alpha": 0.95
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.1,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.85,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "vortex",
+          "magnitude": 320,
+          "spread": 100,
+          "maxDistance": 250
+        },
+        {
+          "type": "radial",
+          "magnitude": -180,
+          "spread": 60,
+          "maxDistance": 300
+        },
+        {
+          "type": "drag",
+          "magnitude": 1.2
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    }
+  ]
+}

@@ -1,0 +1,302 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "halo",
+      "capacity": 512,
+      "seed": 17,
+      "startOffset": 1.4,
+      "orientation": "movement-direction",
+      "stretchWithVelocity": true,
+      "emission": {
+        "rate": 180,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 1.2,
+        "lifetimeSpread": 0.06,
+        "speed": 320,
+        "speedSpread": 10,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 30,
+        "sizeSpread": 7.5,
+        "stretchY": 0,
+        "red": 0.34,
+        "green": 0.12,
+        "blue": 1,
+        "alpha": 0.22
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.5,
+              "tangent": 0
+            },
+            {
+              "time": 0.45,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.8,
+              "value": 0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.2,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.25,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.45,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.7,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "radial",
+          "magnitude": -400,
+          "maxDistance": 400
+        },
+        {
+          "type": "vortex",
+          "magnitude": 150,
+          "maxDistance": 400
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      }
+    },
+    {
+      "id": "sparks",
+      "capacity": 2048,
+      "seed": 31,
+      "startOffset": 1.4,
+      "orientation": "movement-direction",
+      "stretchWithVelocity": true,
+      "emission": {
+        "rate": 1000,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 1.2,
+        "lifetimeSpread": 0.06,
+        "speed": 320,
+        "speedSpread": 10,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 4,
+        "sizeSpread": 1.0,
+        "stretchY": 1.7,
+        "red": 0.2,
+        "green": 0.75,
+        "blue": 1,
+        "alpha": 0.9
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.5,
+              "tangent": 0
+            },
+            {
+              "time": 0.45,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.8,
+              "value": 0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.2,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.25,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.45,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.7,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "radial",
+          "magnitude": -400,
+          "maxDistance": 400
+        },
+        {
+          "type": "vortex",
+          "magnitude": 150,
+          "maxDistance": 400
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      }
+    },
+    {
+      "id": "filaments",
+      "capacity": 512,
+      "seed": 53,
+      "startOffset": 1.4,
+      "orientation": "movement-direction",
+      "stretchWithVelocity": true,
+      "emission": {
+        "rate": 300,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 1.2,
+        "lifetimeSpread": 0.06,
+        "speed": 320,
+        "speedSpread": 10,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 7,
+        "sizeSpread": 1.75,
+        "stretchY": 3,
+        "red": 0.62,
+        "green": 0.3,
+        "blue": 1,
+        "alpha": 0.55
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.5,
+              "tangent": 0
+            },
+            {
+              "time": 0.45,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.8,
+              "value": 0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.2,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.25,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.45,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.7,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "radial",
+          "magnitude": -400,
+          "maxDistance": 400
+        },
+        {
+          "type": "vortex",
+          "magnitude": 150,
+          "maxDistance": 400
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      }
+    }
+  ]
+}
