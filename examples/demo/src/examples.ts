@@ -474,4 +474,10 @@ export const examples: readonly Example[] = [
     },
     motion: 'figure-eight',
   },
+  {
+    id: 'arcane-burst',
+    name: 'Arcane Burst',
+    file: 'pylinka/arcane-burst.json',
+    artwork: { 'arcane-burst': { source: 'particle-examples/particle-blob.png' } },
+  },
 ];

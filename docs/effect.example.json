@@ -10,7 +10,8 @@
         "rate": 3000,
         "shape": {
           "type": "point"
-        }
+        },
+        "bursts": []
       },
       "overLifetime": {
         "scale": 1,

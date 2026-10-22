@@ -170,3 +170,138 @@ it('restores host state before notifications and when simulation fails', () => {
   expect(restored).toBe(true);
   emitter.destroy();
 });
+
+it('combines bursts with rate, preserves living slots, and resets the burst schedule', () => {
+  const config = parseEffectConfig({
+    ...skeleton,
+    emitters: [
+      {
+        ...definition,
+        capacity: 5,
+        duration: 1,
+        playMode: 'once',
+        startOffset: 0,
+        emission: { ...definition.emission, rate: 10, bursts: [{ time: 0, count: 10 }] },
+        initial: { ...definition.initial, lifetime: 2 },
+      },
+    ],
+  }).emitters[0];
+  const emitter = new Emitter(context, config);
+  const order = new Uint32Array(5);
+  emitter.update(0);
+  expect(emitter.copyParticleOrder(order)).toBe(0);
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(5);
+  const firstOrder = order.slice();
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(5);
+  expect(order).toEqual(firstOrder);
+  emitter.reset();
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(5);
+  emitter.destroy();
+});
+
+it('consumes disabled bursts and processes bursts during prewarm', () => {
+  const config = parseEffectConfig({
+    ...skeleton,
+    emitters: [
+      {
+        ...definition,
+        duration: 1,
+        playMode: 'loop',
+        startOffset: 0,
+        emission: { ...definition.emission, rate: 0, bursts: [{ time: 0, count: 3 }] },
+        initial: { ...definition.initial, lifetime: 2 },
+      },
+    ],
+  }).emitters[0];
+  const emitter = new Emitter(context, config);
+  const order = new Uint32Array(config.capacity);
+  emitter.emitting = false;
+  emitter.update(0.1);
+  emitter.emitting = true;
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(0);
+  emitter.destroy();
+  const prewarmed = new Emitter(context, { ...config, startOffset: 0.5 });
+  prewarmed.update(0.01);
+  expect(prewarmed.copyParticleOrder(order)).toBe(3);
+  prewarmed.destroy();
+});
+
+it('adds rate births to bursts and keeps the schedule when rate changes', () => {
+  const emitter = new Emitter(context, {
+    ...definition,
+    capacity: 20,
+    duration: 1,
+    startOffset: 0,
+    emission: {
+      ...definition.emission,
+      rate: 10,
+      bursts: [
+        { time: 0, count: 3 },
+        { time: 0.3, count: 2 },
+      ],
+    },
+    initial: { ...definition.initial, lifetime: 2 },
+  });
+  const order = new Uint32Array(20);
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(4);
+  emitter.setParameters({ emission: { rate: 20 } });
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(6);
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(10);
+  emitter.stop();
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(10);
+  emitter.destroy();
+});
+
+it('does not replay dropped bursts after occupied slots become free', () => {
+  const emitter = new Emitter(context, {
+    ...definition,
+    capacity: 2,
+    duration: 2,
+    startOffset: 0,
+    emission: {
+      ...definition.emission,
+      rate: 0,
+      bursts: [
+        { time: 0, count: 2 },
+        { time: 0.2, count: 5 },
+      ],
+    },
+    initial: { ...definition.initial, lifetime: 0.25 },
+  });
+  const order = new Uint32Array(2);
+  emitter.update(0.1);
+  emitter.update(0.1);
+  expect(emitter.copyParticleOrder(order)).toBe(2);
+  for (let step = 0; step < 5; step++) {
+    emitter.update(0.1);
+  }
+  expect(emitter.copyParticleOrder(order)).toBe(0);
+  emitter.destroy();
+});
+
+it('prewarms repeated bursts and reproduces the same population after reset', () => {
+  const emitter = new Emitter(context, {
+    ...definition,
+    capacity: 100,
+    duration: 0.1,
+    playMode: 'loop',
+    startOffset: 0.25,
+    emission: { ...definition.emission, rate: 0, bursts: [{ time: 0, count: 3 }] },
+    initial: { ...definition.initial, lifetime: 2 },
+  });
+  const order = new Uint32Array(100);
+  emitter.update(0.01);
+  expect(emitter.copyParticleOrder(order)).toBe(9);
+  emitter.reset();
+  emitter.update(0.01);
+  expect(emitter.copyParticleOrder(order)).toBe(9);
+  emitter.destroy();
+});

@@ -4,7 +4,7 @@ Effects adapted from [Pylinka recipes](https://github.com/schmooky/pylinka/blob/
 
 Compact effects use emitter scale 4 for visibility. Wide fields use scale 1 with larger sprites to keep their authored footprint visible. Large flipbooks use 2× sprite sizing. Full-width falling effects start at the top; rising fields start at the bottom.
 
-Only existing Reparticle features are used. Effects requiring turbulence, collisions, emission masks, subemitters, or instantaneous bursts are deferred.
+Only existing Reparticle features are used. Effects requiring turbulence, collisions, emission masks, or subemitters are deferred.
 
 ## Ember Rise
 
@@ -14,14 +14,14 @@ Our box emits straight upward, so the source's small independent sideways veloci
 
 ## Supported collection
 
-25 of the 90 source recipes are currently included; the gallery has been curated down from the original port collection. These are visual adaptations using existing engine APIs, not pixel-identical ports. All effect JSON remains separate from Pixi artwork and playback bindings. No simulation or renderer features were added.
+26 of the 90 source recipes are currently included; the gallery has been curated down from the original port collection. These are visual adaptations using existing engine APIs, not pixel-identical ports. All effect JSON remains separate from Pixi artwork and playback bindings. Arcane Burst demonstrates scheduled bursts; the other adaptations use the existing engine APIs.
 
 | Group    | Included effects                                                               |
 | -------- | ------------------------------------------------------------------------------ |
 | abstract | Ease Pop, Nebula, Data Stream                                                  |
 | trails   | Coin Spark Trail, Infinity Loop                                                |
 | fire     | Ember Rise                                                                     |
-| magic    | Star Sparkle, Stardust Fall, Gem Spin                                          |
+| magic    | Star Sparkle, Stardust Fall, Gem Spin, Arcane Burst                            |
 | ambient  | Rain, Fireflies                                                                |
 | ui       | Coin Shower, Coin Fountain                                                     |
 | swirl    | Whirlpool, Black Hole, Cyclone, Helix Climb                                    |
@@ -36,7 +36,7 @@ Our box emits straight upward, so the source's small independent sideways veloci
 - Coin variants use seven emitters, one per color row, sharing the total spawn rate. This approximates random per-particle color selection; each row loops at 14 FPS. Gem Spin intentionally uses the same coin sheet as the source recipe.
 - Fire Plume and Wispy Smoke use 64-frame atlases and once-forward playback over particle lifetime. Their playback therefore follows our existing lifetime-based animation instead of a fixed source FPS.
 - Trail scenes move the ParticleEffect display object along a figure-eight or pendulum path before simulation. World-space particles stay behind. These paths approximate the gallery movement; source spline timing and distance-based extra births are not reproduced. Pause and Restart also control this demo movement. Trails do not prewarm at a stationary origin.
-- Other effects prewarm for their maximum lifetime. Full-width fields resize their box to the canvas. The background is the same dark checkerboard for every effect.
+- Other effects except Arcane Burst prewarm for their maximum lifetime. Full-width fields resize their box to the canvas. The background is the same dark checkerboard for every effect.
 
 ## Artwork
 
@@ -44,20 +44,19 @@ Static VFX and flipbook textures are copied from Pylinka's Brackeys bundle; see 
 
 ## Deferred recipes
 
-These 31 recipes need behavior we are not adding in this pass.
+These 30 recipes remain deferred. Burst-only recipes can now be ported using scheduled bursts.
 
-| Recipe            | Missing behavior                         |
+| Recipe            | Status / missing behavior                |
 | ----------------- | ---------------------------------------- |
-| Arcane Burst      | instantaneous bursts                     |
-| Confetti Pop      | instantaneous bursts                     |
-| Success Sparkle   | instantaneous bursts                     |
-| Ink Bloom         | instantaneous bursts                     |
-| Spell Cast        | instantaneous bursts                     |
-| Enchant Ring      | instantaneous bursts                     |
-| Notification Ping | instantaneous bursts                     |
-| Heart Pop         | instantaneous bursts                     |
-| Energy Burst      | instantaneous bursts                     |
-| Jackpot Burst     | instantaneous bursts                     |
+| Confetti Pop      | ready to port with scheduled bursts      |
+| Success Sparkle   | ready to port with scheduled bursts      |
+| Ink Bloom         | ready to port with scheduled bursts      |
+| Spell Cast        | ready to port with scheduled bursts      |
+| Enchant Ring      | ready to port with scheduled bursts      |
+| Notification Ping | ready to port with scheduled bursts      |
+| Heart Pop         | ready to port with scheduled bursts      |
+| Energy Burst      | ready to port with scheduled bursts      |
+| Jackpot Burst     | ready to port with scheduled bursts      |
 | Firework          | death-triggered subemitters              |
 | Exploding Ships   | death-triggered subemitters              |
 | Coin Pop          | death-triggered subemitters              |
@@ -76,6 +75,14 @@ These 31 recipes need behavior we are not adding in this pass.
 | Spark Anvil       | collisions / obstacle fields             |
 | Stream Past Stone | collisions / obstacle fields             |
 | Magnet Void       | collisions / obstacle fields             |
-| Spark Burst       | instantaneous bursts                     |
-| Tumbling Shards   | instantaneous bursts                     |
-| Cloud Puff        | instantaneous bursts                     |
+| Spark Burst       | ready to port with scheduled bursts      |
+| Tumbling Shards   | ready to port with scheduled bursts      |
+| Cloud Puff        | ready to port with scheduled bursts      |
+
+### Arcane Burst
+
+260 violet particles appear together at time zero every 1.3 seconds, with no
+continuous emission. Lifetime is 0.6–1.1 seconds, drag is 2.3, and cubic ease-out
+curves fade and shrink the particles. The source's independent X/Y velocity
+ranges are approximated by radial direction and speed spread. Display scale is
+4, matching the other compact adaptations. No prewarm: Restart shows a fresh burst.

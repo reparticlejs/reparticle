@@ -777,3 +777,27 @@ order. No GPU readback or particle simulation change is involved.
 The pipe prepares particle views in the rendered subtree during `prerender`, before temporary root transforms, framebuffer binding, filters, or masks. This is necessary because GPU.js kernel compilation changes GL state. The draw instruction only renders existing textures; it never advances simulation.
 
 Before first render, updates validate arguments but leave playback paused, with no queued steps. Playback controls and configuration changes are retained. First initialization warms both GPU paths without resetting those controls. Subsequent updates and prewarm operate normally, even offstage. Views are bound to one renderer, and renderer destruction releases its attached views.
+
+## Scheduled bursts
+
+`emission.bursts` is an optional array of `{ time, count }`: nonnegative seconds
+from emission start and a positive integer particle count. The default is `[]`.
+Bursts add to continuous `rate` emission and use the same free-slot allocator.
+Living particles are preserved; births exceeding available capacity are dropped.
+
+Events are sorted once at construction. Duplicate times add their counts.
+A positive simulation step consumes every event through its end time. A time-zero
+burst fires on the first active step after the start delay. Births receive the
+same full-frame integration as continuous births; there are no subframe GPU steps.
+Loop-end events belong to the ending cycle, with the next cycle's time-zero burst
+on its next active step. Events beyond the sampled duration never fire.
+A zero-duration loop completes a cycle each active step, so time-zero bursts repeat
+each step; use a positive duration for spaced bursts.
+
+Restart resets the schedule, and prewarm processes it through normal simulation
+steps. Disabling emission consumes scheduled bursts without spawning or deferring
+them. Stop prevents later bursts; retirement allows the current cycle to finish.
+Burst definitions cannot be changed with runtime parameter patches.
+
+Scheduling uses CPU counters and the existing slot allocator. It adds no GPU
+readbacks, per-frame arrays, or simulation texture changes.

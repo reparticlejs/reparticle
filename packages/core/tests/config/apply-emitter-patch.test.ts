@@ -13,7 +13,7 @@ it('merges only supplied parameters and leaves the original definition independe
     initial: { speed: 50 },
     modifiers: [{ type: 'acceleration', magnitude: -20, rotation: 180 }],
   });
-  expect(next.emission).toEqual({ rate: 123, rateSpread: 0, shape: { type: 'point' } });
+  expect(next.emission).toEqual({ rate: 123, rateSpread: 0, shape: { type: 'point' }, bursts: [] });
   expect(next.initial).toEqual({ ...current.initial, speed: 50 });
   expect(next.modifiers[0]).toEqual({
     type: 'acceleration',

@@ -140,3 +140,15 @@ it('defaults absent position to the effect origin and preserves signed offsets',
   input.emitters[0].position.x = 10;
   expect(parsed.emitters[0].position.x).toBe(-24);
 });
+
+it.each([
+  { time: -1, count: 1 },
+  { time: Infinity, count: 1 },
+  { time: 0, count: 0 },
+  { time: 0, count: 1.5 },
+  { time: 0, count: 1, probability: 0.5 },
+])('rejects invalid burst definitions: %j', (burst) => {
+  const input = example();
+  input.emitters[0].emission.bursts = [burst];
+  expect(() => parseEffectConfig(input)).toThrow(ZodError);
+});

@@ -13,6 +13,7 @@ import { createSimulationParameters } from './gpu/parameters';
 import { GpuSimulation } from './gpu/simulation';
 import { ModifierSampler } from './modifiers/sampler';
 import { ParticleSlots } from './particles/slots';
+import { BurstSchedule } from './playback/burst-schedule';
 import { EmitterPlayback } from './playback/emitter';
 import { prewarm } from './playback/prewarm';
 import { SpawnRate } from './playback/spawn-rate';
@@ -44,6 +45,7 @@ export class Emitter {
 
   // Playback, birth allocation, and inherited motion.
   private readonly playback: EmitterPlayback;
+  private readonly burstSchedule: BurstSchedule;
   private readonly spawnSchedule: SpawnSchedule;
   private readonly particleSlots: ParticleSlots;
   private readonly emitterVelocity = new EmitterVelocity();
@@ -83,6 +85,7 @@ export class Emitter {
     this.capacity = this.settings.capacity;
     this.rows = Math.ceil(this.capacity / this.width);
 
+    this.burstSchedule = new BurstSchedule(this.settings.emission.bursts, this.capacity);
     this.spawnSchedule = new SpawnSchedule(this.capacity);
     this.particleSlots = new ParticleSlots(this.capacity, true);
     this.playback = new EmitterPlayback(
@@ -375,6 +378,7 @@ export class Emitter {
       this.context?.restoreState?.();
     }
     this.spawnSchedule.reset();
+    this.burstSchedule.reset();
     this.particleSlots.reset();
     this.playback.reset();
     this.emitterVelocity.reset();
@@ -427,7 +431,11 @@ export class Emitter {
     const shouldEmit = this.playback.advance(seconds);
     const emitterAge = this.playback.normalizedAge;
     const rate = shouldEmit && this.emitting ? this.spawnRate.at(emitterAge) : 0;
-    const requested = this.spawnSchedule.next(rate, seconds);
+    const continuousBirths = this.spawnSchedule.next(rate, seconds);
+    const burstBirths = shouldEmit
+      ? this.burstSchedule.next(this.playback.emissionCycle, this.playback.emissionTime)
+      : 0;
+    const requested = Math.min(this.capacity, continuousBirths + (this.emitting ? burstBirths : 0));
     const lifetime = this.initialProperties.lifetime.at(emitterAge);
     const settings = this.settings;
 
