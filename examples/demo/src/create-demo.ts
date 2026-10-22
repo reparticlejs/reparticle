@@ -4,8 +4,7 @@ import { Application, type TilingSprite, type WebGLRenderer } from 'pixi.js';
 
 import { animateEmitter } from './animate-emitter';
 import { createBackground } from './create-background';
-import { createDemoStats } from './devtools/create-demo-stats';
-import type { Stats } from './devtools/types/stats';
+import { createDemoStats } from './create-demo-stats';
 import { loadArtwork } from './load-artwork';
 import type { Example } from './types/example';
 
@@ -13,7 +12,7 @@ import type { Example } from './types/example';
 export async function createDemo(host: HTMLDivElement, example: Example, signal: AbortSignal) {
   const app = new Application<WebGLRenderer>();
   let mounted = false;
-  let stats: Stats | undefined;
+  let stats: ReturnType<typeof createDemoStats> | undefined;
   let effect: ParticleEffect | undefined;
   let background: TilingSprite | undefined;
 

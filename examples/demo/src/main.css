@@ -86,3 +86,17 @@ button:disabled {
     margin-top: 12px;
   }
 }
+
+.demo-stats {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  color: #d0d0d0;
+  font: 11px / 1.4 monospace;
+  text-align: right;
+  white-space: pre;
+  pointer-events: none;
+  user-select: none;
+  text-shadow: 0 1px 2px #000;
+}

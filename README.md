@@ -14,7 +14,7 @@ pnpm dev
 ```
 
 Open the local URL printed by Vite. The sidebar has an effect dropdown, Pause/Resume, and Restart:
-Choose **Star fountain**, **Multi-emitter**, or any of the 12 ParticleExamples effects. Effects run automatically, with compact stats over the canvas.
+Choose **Star fountain**, **Multi-emitter**, or any of the 12 ParticleExamples effects. Effects run automatically, with small text stats over the canvas.
 For mobile testing, use Vite's Network URL on the same Wi-Fi network.
 
 Requires WebGL2 and `EXT_color_buffer_float`. Unsupported devices show an error; there is no silent CPU fallback.
@@ -113,9 +113,9 @@ Updates are validated atomically. Capacity, seed, ID and shape type cannot be ch
 
 All 12 [ParticleExamples](https://github.com/yeqwep/ParticleExamples) effects are available, including a 2D adaptation of Celebration cracker. Source attribution and port details are in [the port checklist](examples/demo/public/particle-examples/README.md).
 
-Compact stats sit at the canvas’s top right. Click the overlay to cycle metrics,
-including FPS and the combined live particle count. Counts use CPU ordering data
-without reading GPU textures.
+Three small text lines at the canvas’s top right show WebGL2 / GPU.js, the combined
+live particle count, and FPS. They refresh twice per second, use CPU ordering data,
+and do not intercept pointer input or read GPU textures.
 
 The demo uses React with the official Vite React plugin. `App` owns the effect
 selection, `Demo` provides the sidebar and mounts one Pixi application, and `create-demo.ts`

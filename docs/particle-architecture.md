@@ -351,7 +351,7 @@ This adds independent composition, not changes to the documented simulation inte
 
 The multi-emitter test fixture, `examples/demo/tests/fixtures/multiple-emitters.json`, contains
 looping fire, delayed smoke, and a once-only spark burst. The Pixi host supplies
-artwork separately. The sidebar offers effect selection, Pause/Resume, and Restart. Compact stats remain inside the canvas area.
+artwork separately. The sidebar offers effect selection, Pause/Resume, and Restart. A three-line text overlay shows the backend, live particles, and FPS inside the canvas area.
 
 ### Shared effect modifiers
 
