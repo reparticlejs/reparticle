@@ -2,7 +2,7 @@
   "version": 1,
   "emitters": [
     {
-      "id": "fire-plume-anim",
+      "id": "fire-plume",
       "capacity": 60,
       "seed": 1,
       "duration": 1,

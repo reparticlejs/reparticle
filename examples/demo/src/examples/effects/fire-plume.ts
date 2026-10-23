@@ -1,12 +1,12 @@
 import type { Example } from '../../types/example';
 
 export const example: Example = {
-  id: 'wispy-smoke-anim',
-  name: 'Wispy Smoke',
-  file: 'effects/wispy-smoke-anim.json',
+  id: 'fire-plume',
+  name: 'Fire Plume',
+  file: 'effects/fire-plume.json',
   artwork: {
-    'wispy-smoke-anim': {
-      source: 'assets/wispy-smoke.json',
+    'fire-plume': {
+      source: 'assets/fire-plume.json',
       animation: 'play',
       playback: 'once-forward',
     },

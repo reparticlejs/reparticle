@@ -2,7 +2,7 @@
   "version": 1,
   "emitters": [
     {
-      "id": "wispy-smoke-anim",
+      "id": "wispy-smoke",
       "capacity": 50,
       "seed": 1,
       "duration": 1,
