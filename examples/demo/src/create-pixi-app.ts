@@ -1,107 +1,69 @@
-import { Application, type TilingSprite, type WebGLRenderer } from 'pixi.js';
+import { Application, type WebGLRenderer } from 'pixi.js';
 
-import { createBackground } from './create-background';
+import { createExamplePlayer } from './create-example-player';
 import { createStats } from './create-stats';
-import { loadExample } from './load-example';
-import type { Example } from './types/example';
+import { runCleanup } from './utils/run-cleanup';
 
-/** Own the canvas and renderer once; selections replace only the mounted effect. */
+/** Initialize one application; the returned player replaces effects within it. */
 export async function createPixiApp(host: HTMLDivElement, signal: AbortSignal) {
   const app = new Application<WebGLRenderer>();
-  let mounted = false;
-  let disposed = false;
-  let stats: ReturnType<typeof createStats> | undefined;
-  let background: TilingSprite | undefined;
-  let current: Awaited<ReturnType<typeof loadExample>>;
-  let loading: AbortController | undefined;
-
-  function destroy() {
-    if (disposed) {
-      return;
-    }
-    disposed = true;
-    loading?.abort();
-    stats?.destroy();
-    current?.destroy();
-    background?.destroy({ texture: true, textureSource: true });
-    if (app.renderer) {
-      app.destroy(true, { children: true });
-    } else {
-      app.stage.destroy({ children: true });
-    }
-  }
-
-  async function select(example: Example): Promise<boolean> {
-    if (disposed) {
-      return false;
-    }
-    loading?.abort();
-    const request = new AbortController();
-    loading = request;
-    stats?.setEffect(undefined);
-    current?.destroy();
-    current = undefined;
-
-    try {
-      const next = await loadExample(app, example, request.signal);
-      if (request.signal.aborted) {
-        next?.destroy();
-        return false;
-      }
-      current = next;
-      stats?.setEffect(next?.particles);
-      return next !== undefined;
-    } catch (error) {
-      if (request.signal.aborted) {
-        return false;
-      }
-      throw error;
-    }
-  }
 
   try {
     await app.init({
       resizeTo: host,
-      background: '#111111',
+      backgroundAlpha: 0,
       preference: 'webgl',
       preferWebGLVersion: 2,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
       autoStart: false,
     });
-    if (signal.aborted) {
-      return undefined;
-    }
+  } catch (error) {
+    destroyApplication(app);
+    throw error;
+  }
 
-    const checkerboard = createBackground(app.renderer);
-    background = checkerboard;
-    app.stage.addChild(checkerboard);
-    function resizeBackground() {
-      checkerboard.width = app.screen.width;
-      checkerboard.height = app.screen.height;
+  if (signal.aborted) {
+    destroyApplication(app);
+    return undefined;
+  }
+
+  return mountApplication(app, host);
+}
+
+/** Mount shared resources in order and release them in reverse order. */
+function mountApplication(app: Application<WebGLRenderer>, host: HTMLDivElement) {
+  const cleanup: (() => void)[] = [() => destroyApplication(app)];
+  let destroyed = false;
+
+  function destroy() {
+    if (destroyed) {
+      return;
     }
-    app.renderer.on('resize', resizeBackground);
-    resizeBackground();
+    destroyed = true;
+    runCleanup(cleanup.reverse());
+  }
+
+  try {
+    const stats = createStats(app, host);
+    cleanup.push(() => stats.destroy());
+    const player = createExamplePlayer(app, stats);
+    cleanup.push(() => player.destroy());
+
     host.appendChild(app.canvas);
-    stats = createStats(app, host);
     app.start();
-    mounted = true;
+    return { ...player, destroy };
+  } catch (error) {
+    destroy();
+    throw error;
+  }
+}
 
-    return {
-      destroy,
-      select,
-      setPaused(paused: boolean) {
-        if (current) {
-          current.particles.autoUpdate = !paused;
-        }
-      },
-      restart() {
-        current?.restart();
-      },
-    };
-  } finally {
-    if (!mounted) {
-      destroy();
-    }
+/** Pixi can fail before a renderer exists; its stage still needs releasing. */
+function destroyApplication(app: Application<WebGLRenderer>) {
+  if (app.renderer) {
+    app.destroy(true, { children: true });
+  } else {
+    app.stage.destroy({ children: true });
   }
 }

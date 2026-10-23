@@ -5,71 +5,79 @@ import type { Example } from '../types/example';
 import type { PixiApp } from '../types/pixi-app';
 import { useMountEffect } from './use-mount-effect';
 
-/** Keep one application mounted; only the latest selection may update the controls. */
+/** Create one Pixi application and expose loading state for its selected example. */
 export function usePixiApp(initialExample: Example) {
   const host = useRef<HTMLDivElement>(null);
   const [instance, setInstance] = useState<PixiApp>();
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
-  const selection = useRef(0);
+  const latestSelection = useRef(0);
 
-  async function load(pixiApp: PixiApp, example: Example) {
-    const request = ++selection.current;
+  async function loadExample(app: PixiApp, example: Example) {
+    const selectionId = ++latestSelection.current;
     setReady(false);
     setError('');
+
     try {
-      const loaded = await pixiApp.select(example);
-      if (request === selection.current) {
-        setReady(loaded);
+      const loaded = await app.select(example);
+      // A newer selection or unmount makes this result irrelevant to the UI.
+      if (selectionId !== latestSelection.current) {
+        return;
       }
+      setReady(loaded);
     } catch (cause) {
-      if (request === selection.current) {
-        setError(cause instanceof Error ? cause.message : String(cause));
+      if (selectionId !== latestSelection.current) {
+        return;
       }
+      setError(cause instanceof Error ? cause.message : String(cause));
     }
   }
 
   useMountEffect(() => {
-    const element = host.current;
-    if (!element) {
+    const container = host.current;
+    if (!container) {
       return undefined;
     }
 
-    const abort = new AbortController();
-    let ownedInstance: PixiApp | undefined;
+    const lifetime = new AbortController();
+    let app: PixiApp | undefined;
 
-    async function mount(container: HTMLDivElement) {
-      try {
-        const pixiApp = await createPixiApp(container, abort.signal);
-        if (abort.signal.aborted) {
-          pixiApp?.destroy();
-          return;
-        }
-        if (!pixiApp) {
-          return;
-        }
-        ownedInstance = pixiApp;
-        setInstance(pixiApp);
-        await load(pixiApp, initialExample);
-      } catch (cause) {
-        if (!abort.signal.aborted) {
-          setError(cause instanceof Error ? cause.message : String(cause));
-        }
+    function onCreated(created: PixiApp | undefined) {
+      if (lifetime.signal.aborted) {
+        created?.destroy();
+        return;
       }
+      if (!created) {
+        return;
+      }
+
+      app = created;
+      setInstance(created);
+      void loadExample(created, initialExample);
     }
 
-    void mount(element);
+    function onFailed(cause: unknown) {
+      if (lifetime.signal.aborted) {
+        return;
+      }
+      setError(cause instanceof Error ? cause.message : String(cause));
+    }
+
+    void createPixiApp(container, lifetime.signal).then(onCreated, onFailed);
+
     return () => {
-      selection.current++;
-      abort.abort();
-      ownedInstance?.destroy();
+      // Invalidate pending UI updates before releasing the application.
+      latestSelection.current++;
+      lifetime.abort();
+      app?.destroy();
     };
   });
 
   function select(example: Example) {
-    if (instance) {
-      void load(instance, example);
+    if (!instance) {
+      return;
     }
+    void loadExample(instance, example);
   }
 
   return { host, instance, ready, error, select };
