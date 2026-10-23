@@ -1,10 +1,10 @@
 import { ExampleSelect } from './components/example-select';
 import { PlaybackControls } from './components/playback-controls';
-import { usePixiApp } from './hooks/use-pixi-app';
+import { useExamplePlayer } from './hooks/use-example-player';
 
 export function App() {
-  const { host, appReady, exampleReady, error, example, paused, select, togglePlayback, restart } =
-    usePixiApp();
+  const { host, loading, error, example, paused, select, togglePlayback, restart } =
+    useExamplePlayer();
 
   return (
     <main>
@@ -12,10 +12,10 @@ export function App() {
         {error && <p role="alert">{error}</p>}
       </div>
       <aside className="sidebar">
-        <ExampleSelect example={example} disabled={!appReady} onSelect={select} />
+        <ExampleSelect example={example} disabled={loading} onSelect={select} />
         <PlaybackControls
           paused={paused}
-          disabled={!exampleReady}
+          disabled={loading || !!error}
           onToggle={togglePlayback}
           onRestart={restart}
         />

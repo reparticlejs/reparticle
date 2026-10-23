@@ -4,19 +4,18 @@ import { examples } from '../examples';
 import { createPixiApp } from '../runtime/pixi-app';
 import type { Example } from '../types/example';
 import type { ExamplePlayer } from '../types/example-player';
-import type { PixiAppState } from '../types/pixi-app-state';
+import type { ExamplePlayerState } from '../types/example-player-state';
 import { useMountEffect } from './use-mount-effect';
 
 /** Own the Pixi player in refs; React state describes only what the UI displays. */
-export function usePixiApp() {
-  const [example, setExample] = useState(examples[0]!);
+export function useExamplePlayer() {
   const host = useRef<HTMLDivElement>(null);
-  const [paused, setPaused] = useState(false);
   const player = useRef<ExamplePlayer | undefined>(undefined);
   const mountSignal = useRef<AbortSignal | undefined>(undefined);
-  const [state, setState] = useState<PixiAppState>({
-    appReady: false,
-    exampleReady: false,
+  const [state, setState] = useState<ExamplePlayerState>({
+    example: examples[0]!,
+    paused: false,
+    loading: true,
     error: '',
   });
 
@@ -25,15 +24,18 @@ export function usePixiApp() {
     if (!player.current || !signal || signal.aborted) {
       return;
     }
-    setExample(selected);
-    setPaused(false);
-    setState({ appReady: true, exampleReady: false, error: '' });
+    setState({
+      example: selected,
+      paused: false,
+      loading: true,
+      error: '',
+    });
 
     try {
-      const exampleReady = await player.current.select(selected);
+      const loaded = await player.current.select(selected);
       // Cancelled loads and results from a previous mount cannot change the UI.
-      if (exampleReady && !signal.aborted) {
-        setState({ appReady: true, exampleReady: true, error: '' });
+      if (loaded && !signal.aborted) {
+        setState((previous) => ({ ...previous, loading: false }));
       }
     } catch (cause) {
       if (!signal.aborted) {
@@ -44,7 +46,7 @@ export function usePixiApp() {
 
   function showError(cause: unknown) {
     const error = cause instanceof Error ? cause.message : String(cause);
-    setState({ appReady: !!player.current, exampleReady: false, error });
+    setState((previous) => ({ ...previous, loading: false, error }));
   }
 
   useMountEffect(() => {
@@ -64,7 +66,7 @@ export function usePixiApp() {
           return;
         }
         player.current = created;
-        await select(example);
+        await select(state.example);
       } catch (cause) {
         if (!lifetime.signal.aborted) {
           showError(cause);
@@ -83,17 +85,21 @@ export function usePixiApp() {
   });
 
   function togglePlayback() {
-    if (!player.current || !state.exampleReady) {
+    if (!player.current || state.loading || state.error) {
       return;
     }
-    player.current.setPaused(!paused);
-    setPaused(!paused);
+    const paused = !state.paused;
+    player.current.setPaused(paused);
+    setState((previous) => ({ ...previous, paused }));
   }
 
   function restart() {
-    player.current?.restart();
-    setPaused(false);
+    if (!player.current || state.loading || state.error) {
+      return;
+    }
+    player.current.restart();
+    setState((previous) => ({ ...previous, paused: false }));
   }
 
-  return { host, ...state, example, paused, select, togglePlayback, restart };
+  return { host, ...state, select, togglePlayback, restart };
 }
