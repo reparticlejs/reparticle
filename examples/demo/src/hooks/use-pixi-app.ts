@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 
+import { examples } from '../examples';
 import { createPixiApp } from '../runtime/pixi-app';
 import type { Example } from '../types/example';
 import type { ExamplePlayer } from '../types/example-player';
@@ -7,7 +8,8 @@ import type { PixiAppState } from '../types/pixi-app-state';
 import { useMountEffect } from './use-mount-effect';
 
 /** Own the Pixi player in refs; React state describes only what the UI displays. */
-export function usePixiApp(initialExample: Example) {
+export function usePixiApp() {
+  const [example, setExample] = useState(examples[0]!);
   const host = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(false);
   const player = useRef<ExamplePlayer | undefined>(undefined);
@@ -18,16 +20,17 @@ export function usePixiApp(initialExample: Example) {
     error: '',
   });
 
-  async function select(example: Example) {
+  async function select(selected: Example) {
     const signal = mountSignal.current;
     if (!player.current || !signal || signal.aborted) {
       return;
     }
+    setExample(selected);
     setPaused(false);
     setState({ appReady: true, exampleReady: false, error: '' });
 
     try {
-      const exampleReady = await player.current.select(example);
+      const exampleReady = await player.current.select(selected);
       // Cancelled loads and results from a previous mount cannot change the UI.
       if (exampleReady && !signal.aborted) {
         setState({ appReady: true, exampleReady: true, error: '' });
@@ -61,7 +64,7 @@ export function usePixiApp(initialExample: Example) {
           return;
         }
         player.current = created;
-        await select(initialExample);
+        await select(example);
       } catch (cause) {
         if (!lifetime.signal.aborted) {
           showError(cause);
@@ -92,5 +95,5 @@ export function usePixiApp(initialExample: Example) {
     setPaused(false);
   }
 
-  return { host, ...state, paused, select, togglePlayback, restart };
+  return { host, ...state, example, paused, select, togglePlayback, restart };
 }
