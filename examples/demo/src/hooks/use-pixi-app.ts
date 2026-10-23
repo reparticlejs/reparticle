@@ -2,35 +2,43 @@ import { useRef, useState } from 'react';
 
 import { createPixiApp } from '../runtime/pixi-app';
 import type { Example } from '../types/example';
-import type { PixiAppControls } from '../types/pixi-app-controls';
+import type { ExamplePlayer } from '../types/example-player';
+import type { PixiAppState } from '../types/pixi-app-state';
 import { useMountEffect } from './use-mount-effect';
 
-/** Create one Pixi application and expose loading state for its selected example. */
+/** Keep one application mounted; selections replace only the effect inside it. */
 export function usePixiApp(initialExample: Example) {
   const host = useRef<HTMLDivElement>(null);
-  const [instance, setInstance] = useState<PixiAppControls>();
-  const [exampleReady, setExampleReady] = useState(false);
-  const [error, setError] = useState('');
+  const [state, setState] = useState<PixiAppState>({
+    player: undefined,
+    exampleReady: false,
+    error: '',
+  });
   const latestSelection = useRef(0);
 
-  async function selectExample(app: PixiAppControls, example: Example) {
-    const selectionId = ++latestSelection.current;
-    setExampleReady(false);
-    setError('');
+  async function select(example: Example, player = state.player) {
+    if (!player) {
+      return;
+    }
+
+    const selection = ++latestSelection.current;
+    setState({ player, exampleReady: false, error: '' });
 
     try {
-      const loaded = await app.select(example);
-      // A newer selection or unmount makes this result irrelevant to the UI.
-      if (selectionId !== latestSelection.current) {
-        return;
+      const exampleReady = await player.select(example);
+      if (selection === latestSelection.current) {
+        setState({ player, exampleReady, error: '' });
       }
-      setExampleReady(loaded);
     } catch (cause) {
-      if (selectionId !== latestSelection.current) {
-        return;
+      if (selection === latestSelection.current) {
+        showError(cause, player);
       }
-      setError(cause instanceof Error ? cause.message : String(cause));
     }
+  }
+
+  function showError(cause: unknown, player?: ExamplePlayer) {
+    const error = cause instanceof Error ? cause.message : String(cause);
+    setState({ player, exampleReady: false, error });
   }
 
   useMountEffect(() => {
@@ -40,24 +48,19 @@ export function usePixiApp(initialExample: Example) {
     }
 
     const lifetime = new AbortController();
-    let app: PixiAppControls | undefined;
+    let player: ExamplePlayer | undefined;
 
-    async function start(mountHost: HTMLDivElement) {
+    async function start(hostElement: HTMLDivElement) {
       try {
-        app = await createPixiApp(mountHost, lifetime.signal);
-        // Unmount can happen between application creation and this continuation.
+        player = await createPixiApp(hostElement, lifetime.signal);
         if (lifetime.signal.aborted) {
-          app?.destroy();
+          player?.destroy();
           return;
         }
-        if (!app) {
-          return;
-        }
-        setInstance(app);
-        await selectExample(app, initialExample);
+        await select(initialExample, player);
       } catch (cause) {
         if (!lifetime.signal.aborted) {
-          setError(cause instanceof Error ? cause.message : String(cause));
+          showError(cause);
         }
       }
     }
@@ -65,19 +68,12 @@ export function usePixiApp(initialExample: Example) {
     void start(container);
 
     return () => {
-      // Invalidate pending UI updates before releasing the application.
+      // Ignore pending selection results, including during StrictMode's remount.
       latestSelection.current++;
       lifetime.abort();
-      app?.destroy();
+      player?.destroy();
     };
   });
 
-  function select(example: Example) {
-    if (!instance) {
-      return;
-    }
-    void selectExample(instance, example);
-  }
-
-  return { host, instance, exampleReady, error, select };
+  return { host, ...state, select };
 }

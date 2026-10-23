@@ -9,21 +9,21 @@ import type { Example } from './types/example';
 export function App() {
   const [example, setExample] = useState(examples[0]!);
   const [paused, setPaused] = useState(false);
-  const { host, instance, exampleReady, error, select } = usePixiApp(example);
+  const { host, player, exampleReady, error, select } = usePixiApp(example);
 
   function selectExample(selected: Example) {
     setPaused(false);
     setExample(selected);
-    select(selected);
+    void select(selected);
   }
 
   function togglePlayback() {
-    instance?.setPaused(!paused);
+    player?.setPaused(!paused);
     setPaused(!paused);
   }
 
   function restart() {
-    instance?.restart();
+    player?.restart();
     setPaused(false);
   }
 
@@ -33,7 +33,7 @@ export function App() {
         {error && <p role="alert">{error}</p>}
       </div>
       <aside className="sidebar">
-        <ExampleSelect example={example} disabled={!instance} onSelect={selectExample} />
+        <ExampleSelect example={example} disabled={!player} onSelect={selectExample} />
         <PlaybackControls
           paused={paused}
           disabled={!exampleReady}

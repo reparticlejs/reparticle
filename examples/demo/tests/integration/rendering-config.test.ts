@@ -3,26 +3,26 @@ import { ParticleEffect, validateAnimationFrames, type ParticleTexture } from '@
 import { Texture, Ticker } from 'pixi.js';
 import { expect, expectTypeOf, it, vi } from 'vitest';
 
-import effect from '../fixtures/effect.json';
+import effectDefinition from '../fixtures/effect.json';
 
-const definition = parseEffectConfig(effect);
-const emitterId = definition.emitters[0].id;
+const config = parseEffectConfig(effectDefinition);
+const emitterId = config.emitters[0].id;
 
 it('binds borrowed textures by emitter ID without adding artwork to core', () => {
-  const particles = new ParticleEffect(definition, {
+  const effect = new ParticleEffect(config, {
     autoUpdate: false,
     emitters: { [emitterId]: { textures: [Texture.WHITE] } },
   });
-  expect(particles.texture).toBe(Texture.WHITE);
-  expect(particles.emitter.configuration.rendering).toEqual(definition.emitters[0].rendering);
-  particles.destroy();
+  expect(effect.texture).toBe(Texture.WHITE);
+  expect(effect.emitter.configuration.rendering).toEqual(config.emitters[0].rendering);
+  effect.destroy();
   expect(Texture.WHITE.destroyed).toBe(false);
 });
 
 it('uses procedural artwork when bindings are omitted', () => {
-  const particles = new ParticleEffect(definition, { autoUpdate: false });
-  expect(particles.texture).toBeNull();
-  particles.destroy();
+  const effect = new ParticleEffect(config, { autoUpdate: false });
+  expect(effect.texture).toBeNull();
+  effect.destroy();
 });
 
 it.each([
@@ -35,7 +35,7 @@ it.each([
   const ticker = new Ticker();
   expect(() =>
     Reflect.construct(ParticleEffect, [
-      definition,
+      config,
       {
         ticker,
         emitters: { [emitterId]: artwork },
@@ -50,12 +50,12 @@ it('narrows loaded arrays and uses their first authored animation frame', () => 
   const frames: Texture[] = [Texture.WHITE, Texture.WHITE];
   validateAnimationFrames(frames);
   const artwork: ParticleTexture = { textures: frames, playback: 'loop-forward', fps: 24 };
-  const particles = new ParticleEffect(definition, {
+  const effect = new ParticleEffect(config, {
     autoUpdate: false,
     emitters: { [emitterId]: artwork },
   });
-  expect(particles.texture).toBe(Texture.WHITE);
-  particles.destroy();
+  expect(effect.texture).toBe(Texture.WHITE);
+  effect.destroy();
   expect(() => validateAnimationFrames([Texture.WHITE])).toThrow(/Particle|Animation|Unknown/);
 });
 
@@ -66,11 +66,11 @@ it('allows animation properties only with at least two frames', () => {
 });
 
 it('preserves appearance when replacing artwork and keeps textures caller-owned', () => {
-  const particles = new ParticleEffect(definition, { autoUpdate: false });
-  particles.setEmitterBlendMode(emitterId, 'add');
-  particles.setTexture({ textures: [Texture.WHITE] });
-  expect(particles.getRendering(emitterId).blendMode).toBe('add');
-  particles.destroy();
+  const effect = new ParticleEffect(config, { autoUpdate: false });
+  effect.setEmitterBlendMode(emitterId, 'add');
+  effect.setTexture({ textures: [Texture.WHITE] });
+  expect(effect.getRendering(emitterId).blendMode).toBe('add');
+  effect.destroy();
   expect(Texture.WHITE.destroyed).toBe(false);
 });
 
@@ -82,31 +82,31 @@ it.each([
   { textures: [Texture.WHITE, undefined] },
 ])('uses shared diagnostic artwork for invalid supplied textures: %j', ({ textures }) => {
   const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
-  const particles: ParticleEffect = Reflect.construct(ParticleEffect, [
-    definition,
+  const effect: ParticleEffect = Reflect.construct(ParticleEffect, [
+    config,
     {
       autoUpdate: false,
       emitters: { [emitterId]: { textures } },
     },
   ]);
   try {
-    const fallback = particles.texture;
+    const fallback = effect.texture;
     expect(fallback).toBeInstanceOf(Texture);
     expect(fallback?.width).toBe(32);
     expect(warning).toHaveBeenCalledTimes(1);
-    particles.setTexture({ textures: [Texture.WHITE] });
-    expect(particles.texture).toBe(Texture.WHITE);
+    effect.setTexture({ textures: [Texture.WHITE] });
+    expect(effect.texture).toBe(Texture.WHITE);
     expect(fallback?.destroyed).toBe(false);
   } finally {
-    particles.destroy();
+    effect.destroy();
     warning.mockRestore();
   }
 });
 
 it('reuses the placeholder and keeps it alive when an effect is destroyed', () => {
   const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
-  const first = new ParticleEffect(definition, { autoUpdate: false });
-  const second = new ParticleEffect(definition, { autoUpdate: false });
+  const first = new ParticleEffect(config, { autoUpdate: false });
+  const second = new ParticleEffect(config, { autoUpdate: false });
   const destroyed = new Texture();
   destroyed.destroy();
   try {

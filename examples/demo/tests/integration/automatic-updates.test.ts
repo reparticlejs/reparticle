@@ -3,9 +3,9 @@ import { ParticleEffect } from '@reparticle/pixi';
 import { Ticker, UPDATE_PRIORITY } from 'pixi.js';
 import { expect, it, vi } from 'vitest';
 
-import effect from '../fixtures/effect.json';
+import effectDefinition from '../fixtures/effect.json';
 
-const definition = parseEffectConfig(effect);
+const config = parseEffectConfig(effectDefinition);
 
 it.each([
   { speed: 1, elapsed: 16, minFPS: 10 },
@@ -17,8 +17,8 @@ it.each([
   const ticker = new Ticker();
   ticker.speed = speed;
   ticker.minFPS = minFPS;
-  const particles = new ParticleEffect(definition, { ticker });
-  const update = vi.spyOn(particles, 'update');
+  const effect = new ParticleEffect(config, { ticker });
+  const update = vi.spyOn(effect, 'update');
   const render = vi.fn<() => void>();
   ticker.add(render, undefined, UPDATE_PRIORITY.LOW);
 
@@ -36,7 +36,7 @@ it.each([
       render.mock.invocationCallOrder[0]!,
     );
   } finally {
-    particles.destroy();
+    effect.destroy();
     ticker.destroy();
   }
 });
@@ -44,26 +44,24 @@ it.each([
 it('stops remaining substeps if the effect is destroyed during an update', () => {
   const ticker = new Ticker();
   ticker.speed = 3;
-  const particles = new ParticleEffect(definition, { ticker });
-  const update = vi
-    .spyOn(particles.emitter, 'update')
-    .mockImplementation(() => particles.destroy());
+  const effect = new ParticleEffect(config, { ticker });
+  const update = vi.spyOn(effect.emitter, 'update').mockImplementation(() => effect.destroy());
   try {
     ticker.lastTime = 0;
     ticker.update(100);
     expect(update).toHaveBeenCalledOnce();
     expect(ticker.count).toBe(0);
   } finally {
-    particles.destroy();
+    effect.destroy();
     ticker.destroy();
   }
 });
 
 it('keeps the explicit update limit for manual callers', () => {
-  const particles = new ParticleEffect(definition, { autoUpdate: false });
+  const effect = new ParticleEffect(config, { autoUpdate: false });
   try {
-    expect(() => particles.update(0.2)).toThrow('Step must be between 0 and 0.1 seconds');
+    expect(() => effect.update(0.2)).toThrow('Step must be between 0 and 0.1 seconds');
   } finally {
-    particles.destroy();
+    effect.destroy();
   }
 });

@@ -1,15 +1,18 @@
 import { Application, type WebGLRenderer } from 'pixi.js';
 
-import type { PixiAppControls } from '../types/pixi-app-controls';
+import type { ExamplePlayer } from '../types/example-player';
 import { runCleanup } from '../utils/run-cleanup';
 import { createExamplePlayer } from './example-player';
 import { createStats } from './stats';
 
-/** Initialize one application; the returned player replaces effects within it. */
+/**
+ * Initialize one application; the returned player replaces effects within it.
+ * Destroying this player also releases the shared application, canvas, and stats.
+ */
 export async function createPixiApp(
   host: HTMLDivElement,
   signal: AbortSignal,
-): Promise<PixiAppControls | undefined> {
+): Promise<ExamplePlayer | undefined> {
   const app = new Application<WebGLRenderer>();
 
   try {

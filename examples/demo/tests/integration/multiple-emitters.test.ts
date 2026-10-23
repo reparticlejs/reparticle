@@ -1,10 +1,10 @@
 import { parseEffectConfig } from '@reparticle/core';
 import { expect, it } from 'vitest';
 
-import effect from '../fixtures/multiple-emitters.json';
+import effectDefinition from '../fixtures/multiple-emitters.json';
 
 it('loads the composed demo with independent looping and once emitters', () => {
-  const parsed = parseEffectConfig(effect);
+  const parsed = parseEffectConfig(effectDefinition);
   expect(parsed.emitters.map(({ id }) => id)).toEqual(['smoke', 'fire', 'sparks']);
   expect(parsed.emitters[0]).toMatchObject({ startDelay: 0.3, playMode: 'loop' });
   expect(parsed.emitters[1]).toMatchObject({ startDelay: 0, playMode: 'loop' });
