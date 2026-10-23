@@ -41,16 +41,6 @@ export const pylinkaExamples: readonly Example[] = [
     fullWidth: true,
   },
   {
-    id: 'pylinka-fireflies',
-    name: 'Fireflies',
-    file: 'pylinka/fireflies.json',
-    artwork: {
-      fireflies: {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-  },
-  {
     id: 'pylinka-stardust-fall',
     name: 'Stardust Fall',
     file: 'pylinka/stardust-fall.json',
@@ -73,18 +63,6 @@ export const pylinkaExamples: readonly Example[] = [
     },
   },
   {
-    id: 'pylinka-data-stream',
-    name: 'Data Stream',
-    file: 'pylinka/data-stream.json',
-    artwork: {
-      'data-stream': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-    verticalPosition: 0,
-    fullWidth: true,
-  },
-  {
     id: 'pylinka-coin-shower',
     name: 'Coin Shower',
     file: 'pylinka/coin-shower.json',
@@ -97,22 +75,6 @@ export const pylinkaExamples: readonly Example[] = [
     name: 'Coin Fountain',
     file: 'pylinka/coin-fountain.json',
     artwork: createCoinArtwork('coin-fountain'),
-  },
-  {
-    id: 'pylinka-gem-spin',
-    name: 'Gem Spin',
-    file: 'pylinka/gem-spin.json',
-    artwork: createCoinArtwork('gem-spin'),
-  },
-  {
-    id: 'pylinka-whirlpool',
-    name: 'Whirlpool',
-    file: 'pylinka/whirlpool.json',
-    artwork: {
-      whirlpool: {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
   },
   {
     id: 'pylinka-black-hole',
@@ -135,52 +97,12 @@ export const pylinkaExamples: readonly Example[] = [
     },
   },
   {
-    id: 'pylinka-helix-climb',
-    name: 'Helix Climb',
-    file: 'pylinka/helix-climb.json',
-    artwork: {
-      'helix-climb': {
-        source: 'particle-examples/particle-blob.png',
-      },
-    },
-  },
-  {
-    id: 'pylinka-shooting-stars',
-    name: 'Shooting Stars',
-    file: 'pylinka/shooting-stars.json',
-    artwork: {
-      'shooting-stars': {
-        source: 'pylinka/textures/star_05.png',
-      },
-    },
-  },
-  {
     id: 'pylinka-spinning-coins',
     name: 'Spinning Coins',
     file: 'pylinka/spinning-coins.json',
     artwork: createCoinArtwork('spinning-coins'),
     verticalPosition: 0,
     fullWidth: true,
-  },
-  {
-    id: 'pylinka-quarter-turn-drop',
-    name: 'Quarter-Turn Drop',
-    file: 'pylinka/quarter-turn-drop.json',
-    artwork: {
-      'quarter-turn-drop': {
-        source: 'pylinka/textures/star_01.png',
-      },
-    },
-  },
-  {
-    id: 'pylinka-twirl-trails',
-    name: 'Twirl Trails',
-    file: 'pylinka/twirl-trails.json',
-    artwork: {
-      'twirl-trails': {
-        source: 'pylinka/textures/twirl_01.png',
-      },
-    },
   },
   {
     id: 'pylinka-soft-smoke',

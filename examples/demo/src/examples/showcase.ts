@@ -59,15 +59,6 @@ export const showcaseExamples: readonly Example[] = [
     },
   },
   {
-    id: 'drops',
-    name: 'Drops',
-    file: 'drops/effect.json',
-    artwork: {
-      droplets: { source: 'drops/droplet.svg' },
-      'fine-drops': { source: 'drops/droplet.svg' },
-    },
-  },
-  {
     id: 'tornado',
     name: 'Tornado',
     file: 'tornado/effect.json',

@@ -14,23 +14,23 @@ Our box emits straight upward, so the source's small independent sideways veloci
 
 ## Supported collection
 
-25 of the 90 source recipes are currently included; the gallery has been curated down from the original port collection. These are visual adaptations using existing engine APIs, not pixel-identical ports. All effect JSON remains separate from Pixi artwork and playback bindings. No simulation or renderer features were added.
+17 of the 90 source recipes are currently included; the gallery has been curated down from the original port collection. These are visual adaptations using existing engine APIs, not pixel-identical ports. All effect JSON remains separate from Pixi artwork and playback bindings. No simulation or renderer features were added.
 
-| Group    | Included effects                                                               |
-| -------- | ------------------------------------------------------------------------------ |
-| abstract | Ease Pop, Nebula, Data Stream                                                  |
-| trails   | Coin Spark Trail, Infinity Loop                                                |
-| fire     | Ember Rise                                                                     |
-| magic    | Star Sparkle, Stardust Fall, Gem Spin                                          |
-| ambient  | Rain, Fireflies                                                                |
-| ui       | Coin Shower, Coin Fountain                                                     |
-| swirl    | Whirlpool, Black Hole, Cyclone, Helix Climb                                    |
-| vfx      | Shooting Stars, Twirl Trails, Soft Smoke, Steam Plume, Fire Plume, Wispy Smoke |
-| rotation | Spinning Coins, Quarter-Turn Drop                                              |
+| Group    | Included effects                                 |
+| -------- | ------------------------------------------------ |
+| abstract | Ease Pop, Nebula                                 |
+| trails   | Coin Spark Trail, Infinity Loop                  |
+| fire     | Ember Rise                                       |
+| magic    | Star Sparkle, Stardust Fall                      |
+| ambient  | Rain                                             |
+| ui       | Coin Shower, Coin Fountain                       |
+| swirl    | Black Hole, Cyclone                              |
+| vfx      | Soft Smoke, Steam Plume, Fire Plume, Wispy Smoke |
+| rotation | Spinning Coins                                   |
 
 ## Shared adaptations
 
-- Pylinka samples independent X/Y velocities. Point emitters use angular and speed spread; boxes use vertical speed spread, omitting lateral drift; disk emitters use radial velocity or a narrow cone for upward flames. Shooting Stars rotates its box for diagonal travel. These distributions differ from the source.
+- Pylinka samples independent X/Y velocities. Point emitters use angular and speed spread; boxes use vertical speed spread, omitting lateral drift; disk emitters use radial velocity or a narrow cone for upward flames. These distributions differ from the source.
 - Easing curves are represented by sampled Hermite points. Color channels are authored as absolute values against white initial color. Ease Pop uses a larger sprite to make its overshooting size curve visible.
 - Vortex recipes combine our vortex and inward radial modifiers. Pylinka uses linear distance falloff; ours uses constant strength inside a cutoff. Global source fields use a large finite cutoff. Drag uses our existing integration rather than Pylinka's exponential damping.
 - Coin variants use seven emitters, one per color row, sharing the total spawn rate. This approximates random per-particle color selection; each row loops at 14 FPS. Gem Spin intentionally uses the same coin sheet as the source recipe.
