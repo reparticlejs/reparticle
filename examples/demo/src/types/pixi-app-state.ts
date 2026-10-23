@@ -1,8 +1,6 @@
-import type { ExamplePlayer } from './example-player';
-
-/** UI state: the player can exist while its next example is still loading. */
+/** Application startup and example loading finish separately. */
 export interface PixiAppState {
-  player: ExamplePlayer | undefined;
+  appReady: boolean;
   exampleReady: boolean;
   error: string;
 }
