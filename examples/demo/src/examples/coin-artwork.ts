@@ -1,4 +1,4 @@
-import type { ExampleArtwork } from '../types/example';
+import type { ExampleArtwork } from '../types/example-artwork';
 
 const coinColors = ['gold', 'ruby', 'emerald', 'sapphire', 'amethyst', 'rose', 'silver'];
 

@@ -1,4 +1,4 @@
-import type { AnimationPlayback } from '@reparticle/pixi';
+import type { ExampleArtwork } from './example-artwork';
 
 /** Fixed scene and artwork selection; effect parameters stay in public JSON files. */
 export interface Example {
@@ -15,17 +15,4 @@ export interface Example {
   motion?: 'figure-eight' | 'pendulum';
   /** Artwork keyed by emitter ID in the effect JSON. */
   artwork: Record<string, ExampleArtwork>;
-}
-
-/** A standalone image, named atlas frame, or named atlas animation. */
-export interface ExampleArtwork {
-  /** Image or spritesheet URL relative to the application's base URL. */
-  source: string;
-  /** Named static frame within a spritesheet. */
-  frame?: string;
-  /** Named spritesheet animation; takes precedence over frame when both are supplied. */
-  animation?: string;
-  /** Animation-only playback settings passed to the Pixi renderer. */
-  playback?: AnimationPlayback;
-  fps?: number;
 }

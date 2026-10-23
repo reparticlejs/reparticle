@@ -5,10 +5,3 @@ export interface ExampleSelectProps {
   disabled: boolean;
   onSelect: (example: Example) => void;
 }
-
-export interface PlaybackControlsProps {
-  paused: boolean;
-  disabled: boolean;
-  onToggle: () => void;
-  onRestart: () => void;
-}

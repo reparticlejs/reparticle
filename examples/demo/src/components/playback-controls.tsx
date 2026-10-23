@@ -1,4 +1,4 @@
-import type { PlaybackControlsProps } from '../types/controls';
+import type { PlaybackControlsProps } from '../types/playback-controls-props';
 
 export function PlaybackControls({ paused, disabled, onToggle, onRestart }: PlaybackControlsProps) {
   return (

@@ -1,7 +1,8 @@
 import { type ParticleTexture, validateAnimationFrames } from '@reparticle/pixi';
 import { Assets, type Spritesheet, type Texture } from 'pixi.js';
 
-import type { Example, ExampleArtwork } from '../types/example';
+import type { Example } from '../types/example';
+import type { ExampleArtwork } from '../types/example-artwork';
 
 /**
  * Bind each emitter ID to its renderer artwork.
