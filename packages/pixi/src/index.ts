@@ -4,6 +4,9 @@ import { ParticlePipe } from './rendering/particle-pipe';
 
 extensions.add(ParticlePipe);
 
+// Effect authoring and runtime parameters used by the Pixi integration.
+export type { EffectInput, EmitterParameters, RenderingConfig } from '@reparticle/core';
+
 // Effect display object.
 export { ParticleEffect } from './runtime/particle-effect';
 
