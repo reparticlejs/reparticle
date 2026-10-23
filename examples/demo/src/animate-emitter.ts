@@ -1,5 +1,5 @@
 import type { ParticleEffect } from '@reparticle/pixi';
-import { type Application, UPDATE_PRIORITY, type WebGLRenderer } from 'pixi.js';
+import { type Application, type Ticker, UPDATE_PRIORITY, type WebGLRenderer } from 'pixi.js';
 
 import type { Example } from './types/example';
 
@@ -24,21 +24,24 @@ export function animateEmitter(
     effect.position.set(width / 2 + x, height / 2 + y);
   }
 
-  app.ticker.add(
-    (ticker) => {
-      if (!effect.autoUpdate) {
-        return;
-      }
-      elapsed += ticker.deltaMS / 1000;
-      position();
-    },
-    undefined,
-    UPDATE_PRIORITY.HIGH,
-  );
+  function update(ticker: Ticker) {
+    if (!effect.autoUpdate) {
+      return;
+    }
+    elapsed += ticker.deltaMS / 1000;
+    position();
+  }
+
+  app.ticker.add(update, undefined, UPDATE_PRIORITY.HIGH);
 
   position();
-  return () => {
-    elapsed = 0;
-    position();
+  return {
+    restart() {
+      elapsed = 0;
+      position();
+    },
+    destroy() {
+      app.ticker.remove(update);
+    },
   };
 }

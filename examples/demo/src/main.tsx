@@ -11,4 +11,5 @@ root.render(
     <App />
   </StrictMode>,
 );
+
 import.meta.hot?.dispose(() => root.unmount());
