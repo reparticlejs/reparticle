@@ -12,4 +12,5 @@ root.render(
   </StrictMode>,
 );
 
+// Release Pixi and its listeners before Vite replaces this entry module.
 import.meta.hot?.dispose(() => root.unmount());

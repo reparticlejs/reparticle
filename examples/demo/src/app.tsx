@@ -8,8 +8,8 @@ import type { Example } from './types/example';
 
 export function App() {
   const [example, setExample] = useState(examples[0]!);
-  const { host, instance, ready, error, select } = usePixiApp(example);
   const [paused, setPaused] = useState(false);
+  const { host, instance, ready, error, select } = usePixiApp(example);
 
   function selectExample(selected: Example) {
     setPaused(false);

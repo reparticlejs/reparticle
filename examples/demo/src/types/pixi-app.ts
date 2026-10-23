@@ -1,3 +1,4 @@
-import type { createPixiApp } from '../create-pixi-app';
+import type { ExamplePlayer } from './example-player';
 
-export type PixiApp = NonNullable<Awaited<ReturnType<typeof createPixiApp>>>;
+/** The shared application's controls; destroy also releases its canvas and stats. */
+export type PixiApp = ExamplePlayer;

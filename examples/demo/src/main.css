@@ -1,3 +1,4 @@
+/* Page layout */
 * {
   box-sizing: border-box;
 }
@@ -13,19 +14,7 @@ main {
   display: flex;
   height: 100dvh;
 }
-select {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #35445a;
-  border-radius: 6px;
-  background: #1a293b;
-  color: inherit;
-  font: inherit;
-}
-select:focus-visible {
-  outline: 2px solid #70e8cc;
-  outline-offset: 3px;
-}
+/* Transparent Pixi canvas over a CSS checkerboard. */
 .demo {
   background: repeating-conic-gradient(#191919 0% 25%, #111111 0% 50%) 0 0 / 32px 32px;
   position: relative;
@@ -42,12 +31,26 @@ canvas {
   color: #ffb8b8;
 }
 
+/* Example selection and playback */
 .sidebar {
   width: 260px;
   flex-shrink: 0;
   padding: 24px;
   border-left: 1px solid #263448;
   background: #101a28;
+}
+select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #35445a;
+  border-radius: 6px;
+  background: #1a293b;
+  color: inherit;
+  font: inherit;
+}
+select:focus-visible {
+  outline: 2px solid #70e8cc;
+  outline-offset: 3px;
 }
 label {
   display: block;
@@ -72,6 +75,22 @@ button:disabled {
   opacity: 0.5;
   cursor: default;
 }
+/* Stats stay inside the canvas area and never intercept pointer input. */
+.demo-stats {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  color: #d0d0d0;
+  font: 11px / 1.4 monospace;
+  text-align: right;
+  white-space: pre;
+  pointer-events: none;
+  user-select: none;
+  text-shadow: 0 1px 2px #000;
+}
+
+/* Stack the controls below the canvas on narrow screens. */
 @media (max-width: 600px) {
   main {
     flex-direction: column;
@@ -85,18 +104,4 @@ button:disabled {
   .playback-actions {
     margin-top: 12px;
   }
-}
-
-.demo-stats {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 1;
-  color: #d0d0d0;
-  font: 11px / 1.4 monospace;
-  text-align: right;
-  white-space: pre;
-  pointer-events: none;
-  user-select: none;
-  text-shadow: 0 1px 2px #000;
 }

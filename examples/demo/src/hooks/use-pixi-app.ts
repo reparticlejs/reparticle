@@ -13,7 +13,7 @@ export function usePixiApp(initialExample: Example) {
   const [error, setError] = useState('');
   const latestSelection = useRef(0);
 
-  async function loadExample(app: PixiApp, example: Example) {
+  async function selectExample(app: PixiApp, example: Example) {
     const selectionId = ++latestSelection.current;
     setReady(false);
     setError('');
@@ -42,28 +42,27 @@ export function usePixiApp(initialExample: Example) {
     const lifetime = new AbortController();
     let app: PixiApp | undefined;
 
-    function onCreated(created: PixiApp | undefined) {
-      if (lifetime.signal.aborted) {
-        created?.destroy();
-        return;
+    async function start(mountHost: HTMLDivElement) {
+      try {
+        app = await createPixiApp(mountHost, lifetime.signal);
+        // Unmount can happen between application creation and this continuation.
+        if (lifetime.signal.aborted) {
+          app?.destroy();
+          return;
+        }
+        if (!app) {
+          return;
+        }
+        setInstance(app);
+        await selectExample(app, initialExample);
+      } catch (cause) {
+        if (!lifetime.signal.aborted) {
+          setError(cause instanceof Error ? cause.message : String(cause));
+        }
       }
-      if (!created) {
-        return;
-      }
-
-      app = created;
-      setInstance(created);
-      void loadExample(created, initialExample);
     }
 
-    function onFailed(cause: unknown) {
-      if (lifetime.signal.aborted) {
-        return;
-      }
-      setError(cause instanceof Error ? cause.message : String(cause));
-    }
-
-    void createPixiApp(container, lifetime.signal).then(onCreated, onFailed);
+    void start(container);
 
     return () => {
       // Invalidate pending UI updates before releasing the application.
@@ -77,7 +76,7 @@ export function usePixiApp(initialExample: Example) {
     if (!instance) {
       return;
     }
-    void loadExample(instance, example);
+    void selectExample(instance, example);
   }
 
   return { host, instance, ready, error, select };

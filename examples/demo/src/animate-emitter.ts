@@ -3,45 +3,57 @@ import { type Application, type Ticker, UPDATE_PRIORITY, type WebGLRenderer } fr
 
 import type { Example } from './types/example';
 
-/** Move the display object before simulation; world-space particles leave a trail. */
+const FULL_TURN = Math.PI * 2;
+const HORIZONTAL_REACH = 0.3;
+
+/**
+ * Move the entire effect along a repeating path centered in the canvas.
+ * Update before particle simulation so world-space particles leave a trail.
+ * Pausing the effect also freezes the path; this helper does not own the effect.
+ */
 export function animateEmitter(
   app: Application<WebGLRenderer>,
   effect: ParticleEffect,
   motion: NonNullable<Example['motion']>,
 ) {
-  let elapsed = 0;
+  const isPendulum = motion === 'pendulum';
+  const cycleSeconds = isPendulum ? 5.2 : 6;
+  const verticalReach = isPendulum ? 0.12 : 0.18;
+  let elapsedSeconds = 0;
 
-  function position() {
-    const duration = motion === 'pendulum' ? 5.2 : 6;
-    const angle = (elapsed / duration) * Math.PI * 2;
-    const width = app.screen.width;
-    const height = app.screen.height;
-    const x = Math.sin(angle) * width * 0.3;
-    const y =
-      motion === 'pendulum'
-        ? Math.cos(angle * 2) * height * 0.12
-        : Math.sin(angle * 2) * height * 0.18;
-    effect.position.set(width / 2 + x, height / 2 + y);
+  function updatePosition() {
+    const { width, height } = app.screen;
+    const phase = (elapsedSeconds / cycleSeconds) * FULL_TURN;
+    const horizontalWave = Math.sin(phase);
+
+    // Two vertical cycles per horizontal cycle create the crossing figure-eight.
+    // Cosine shifts that path into a symmetric swinging arc for the pendulum.
+    const verticalWave = isPendulum ? Math.cos(phase * 2) : Math.sin(phase * 2);
+    const offsetX = horizontalWave * width * HORIZONTAL_REACH;
+    const offsetY = verticalWave * height * verticalReach;
+    effect.position.set(width / 2 + offsetX, height / 2 + offsetY);
   }
 
   function update(ticker: Ticker) {
     if (!effect.autoUpdate) {
       return;
     }
-    elapsed += ticker.deltaMS / 1000;
-    position();
+    elapsedSeconds += ticker.deltaMS / 1000;
+    updatePosition();
   }
 
-  app.ticker.add(update, undefined, UPDATE_PRIORITY.HIGH);
+  /** Rewind only the movement; the caller separately resets the particles. */
+  function restart() {
+    elapsedSeconds = 0;
+    updatePosition();
+  }
 
-  position();
-  return {
-    restart() {
-      elapsed = 0;
-      position();
-    },
-    destroy() {
-      app.ticker.remove(update);
-    },
-  };
+  /** Remove the callback when switching examples; leave the shared ticker running. */
+  function destroy() {
+    app.ticker.remove(update);
+  }
+
+  updatePosition();
+  app.ticker.add(update, undefined, UPDATE_PRIORITY.HIGH);
+  return { restart, destroy };
 }
