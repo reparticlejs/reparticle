@@ -8,7 +8,7 @@ export function createCoinArtwork(effect: string): Record<string, ExampleArtwork
 
   for (const color of coinColors) {
     artwork[`${effect}-${color}`] = {
-      source: 'pylinka/textures/coins.json',
+      source: 'assets/coins.json',
       animation: `coin_${color}`,
       playback: 'loop-forward',
       fps: 14,

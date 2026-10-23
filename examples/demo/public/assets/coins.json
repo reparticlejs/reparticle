@@ -1402,7 +1402,6 @@
     }
   },
   "meta": {
-    "app": "pylinka atlas-extract",
     "image": "coins.png",
     "format": "RGBA8888",
     "size": {
@@ -1495,22 +1494,6 @@
       "coin_silver_7",
       "coin_silver_8",
       "coin_silver_9"
-    ]
-  },
-  "pylinka": {
-    "cols": 10,
-    "rows": 7,
-    "frameW": 138,
-    "frameH": 138,
-    "pad": 2,
-    "sequences": [
-      "coin_gold",
-      "coin_ruby",
-      "coin_emerald",
-      "coin_sapphire",
-      "coin_amethyst",
-      "coin_rose",
-      "coin_silver"
     ]
   }
 }
