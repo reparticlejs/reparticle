@@ -6,7 +6,7 @@ export const example: Example = {
   file: 'effects/steam-plume.json',
   artwork: {
     'steam-plume': {
-      source: 'assets/smoke_05_a.png',
+      source: 'assets/steam-cloud.png',
     },
   },
 };

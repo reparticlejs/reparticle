@@ -6,7 +6,7 @@ export const example: Example = {
   file: 'effects/coin-spark-trail.json',
   artwork: {
     'coin-spark-trail': {
-      source: 'assets/particle-blob.png',
+      source: 'assets/soft-particle.png',
     },
   },
   motion: 'figure-eight',

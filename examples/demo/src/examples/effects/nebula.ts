@@ -6,7 +6,7 @@ export const example: Example = {
   file: 'effects/nebula.json',
   artwork: {
     nebula: {
-      source: 'assets/particle-blob.png',
+      source: 'assets/soft-particle.png',
     },
   },
 };

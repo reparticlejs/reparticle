@@ -6,7 +6,7 @@ export const example: Example = {
   file: 'effects/wispy-smoke-anim.json',
   artwork: {
     'wispy-smoke-anim': {
-      source: 'assets/wispy_smoke_01_8x8.json',
+      source: 'assets/wispy-smoke.json',
       animation: 'play',
       playback: 'once-forward',
     },

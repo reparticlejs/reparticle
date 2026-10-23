@@ -6,7 +6,7 @@ export const example: Example = {
   file: 'effects/fire-plume-anim.json',
   artwork: {
     'fire-plume-anim': {
-      source: 'assets/fire_01_8x8.json',
+      source: 'assets/fire-plume.json',
       animation: 'play',
       playback: 'once-forward',
     },

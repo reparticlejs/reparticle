@@ -6,9 +6,9 @@ export const example: Example = {
   file: 'effects/fireball.json',
   motion: 'pendulum',
   artwork: {
-    smoke: { source: 'assets/smoke_01_a.png' },
-    flame: { source: 'assets/particle-blob.png' },
-    core: { source: 'assets/particle-blob.png' },
-    sparks: { source: 'assets/particle-blob.png' },
+    smoke: { source: 'assets/smoke-cloud.png' },
+    flame: { source: 'assets/soft-particle.png' },
+    core: { source: 'assets/soft-particle.png' },
+    sparks: { source: 'assets/soft-particle.png' },
   },
 };

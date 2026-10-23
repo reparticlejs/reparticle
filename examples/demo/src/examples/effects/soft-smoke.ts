@@ -6,7 +6,7 @@ export const example: Example = {
   file: 'effects/soft-smoke.json',
   artwork: {
     'soft-smoke': {
-      source: 'assets/smoke_01_a.png',
+      source: 'assets/smoke-cloud.png',
     },
   },
 };

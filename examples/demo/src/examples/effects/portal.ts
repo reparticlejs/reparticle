@@ -5,8 +5,8 @@ export const example: Example = {
   name: 'Portal',
   file: 'effects/portal.json',
   artwork: {
-    halo: { source: 'assets/particle-blob.png' },
-    sparks: { source: 'assets/particle-blob.png' },
-    filaments: { source: 'assets/particle-blob.png' },
+    halo: { source: 'assets/soft-particle.png' },
+    sparks: { source: 'assets/soft-particle.png' },
+    filaments: { source: 'assets/soft-particle.png' },
   },
 };

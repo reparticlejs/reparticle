@@ -5,9 +5,9 @@ export const example: Example = {
   name: 'Campfire',
   file: 'effects/campfire.json',
   artwork: {
-    smoke: { source: 'assets/smoke_01_a.png' },
-    flames: { source: 'assets/smoke_01_a.png' },
-    core: { source: 'assets/particle-blob.png' },
-    embers: { source: 'assets/particle-blob.png' },
+    smoke: { source: 'assets/smoke-cloud.png' },
+    flames: { source: 'assets/smoke-cloud.png' },
+    core: { source: 'assets/soft-particle.png' },
+    embers: { source: 'assets/soft-particle.png' },
   },
 };

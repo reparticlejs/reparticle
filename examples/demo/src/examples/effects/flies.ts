@@ -5,8 +5,8 @@ export const example: Example = {
   name: 'Flies',
   file: 'effects/flies.json',
   artwork: {
-    left: { source: 'assets/fly.svg' },
-    right: { source: 'assets/fly.svg' },
-    center: { source: 'assets/fly.svg' },
+    left: { source: 'assets/fly.png' },
+    right: { source: 'assets/fly.png' },
+    center: { source: 'assets/fly.png' },
   },
 };

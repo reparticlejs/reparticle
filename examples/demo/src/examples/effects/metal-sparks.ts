@@ -5,8 +5,8 @@ export const example: Example = {
   name: 'Metal sparks',
   file: 'effects/metal-sparks.json',
   artwork: {
-    streaks: { source: 'assets/particle-blob.png' },
-    embers: { source: 'assets/particle-blob.png' },
-    contact: { source: 'assets/particle-blob.png' },
+    streaks: { source: 'assets/soft-particle.png' },
+    embers: { source: 'assets/soft-particle.png' },
+    contact: { source: 'assets/soft-particle.png' },
   },
 };

@@ -6,7 +6,7 @@ export const example: Example = {
   file: 'effects/black-hole.json',
   artwork: {
     'black-hole': {
-      source: 'assets/particle-blob.png',
+      source: 'assets/soft-particle.png',
     },
   },
 };

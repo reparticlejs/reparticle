@@ -5,9 +5,9 @@ export const example: Example = {
   name: 'Magical aura',
   file: 'effects/magical-aura.json',
   artwork: {
-    glow: { source: 'assets/particle-blob.png' },
-    rings: { source: 'assets/ring.svg' },
-    orbit: { source: 'assets/particle-blob.png' },
-    motes: { source: 'assets/particle-blob.png' },
+    glow: { source: 'assets/soft-particle.png' },
+    rings: { source: 'assets/magic-ring.png' },
+    orbit: { source: 'assets/soft-particle.png' },
+    motes: { source: 'assets/soft-particle.png' },
   },
 };

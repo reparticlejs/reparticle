@@ -6,7 +6,7 @@ export const example: Example = {
   file: 'effects/stardust-fall.json',
   artwork: {
     'stardust-fall': {
-      source: 'assets/particle-blob.png',
+      source: 'assets/soft-particle.png',
     },
   },
   verticalPosition: 0,

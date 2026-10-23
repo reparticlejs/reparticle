@@ -4,5 +4,5 @@ export const example: Example = {
   id: 'candle-flame',
   name: 'Candle flame',
   file: 'effects/candle-flame.json',
-  artwork: { fire: { source: 'assets/particle-blob.png' } },
+  artwork: { fire: { source: 'assets/soft-particle.png' } },
 };

@@ -5,9 +5,9 @@ export const example: Example = {
   name: 'Explosion',
   file: 'effects/explosion.json',
   artwork: {
-    emitter2: { source: 'assets/circle-05.png' },
-    d: { source: 'assets/circle-05.png' },
-    emitter: { source: 'assets/circle-05.png' },
-    emitter3: { source: 'assets/scorch-01.png' },
+    emitter2: { source: 'assets/soft-glow.png' },
+    d: { source: 'assets/soft-glow.png' },
+    emitter: { source: 'assets/soft-glow.png' },
+    emitter3: { source: 'assets/spark-flash.png' },
   },
 };

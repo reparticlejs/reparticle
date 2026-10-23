@@ -6,7 +6,7 @@ export const example: Example = {
   file: 'effects/infinity-loop.json',
   artwork: {
     'infinity-loop': {
-      source: 'assets/particle-blob.png',
+      source: 'assets/soft-particle.png',
     },
   },
   motion: 'figure-eight',

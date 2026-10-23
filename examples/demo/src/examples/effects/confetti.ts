@@ -6,5 +6,5 @@ export const example: Example = {
   file: 'effects/confetti.json',
   verticalPosition: 0,
   fullWidth: true,
-  artwork: { emitter: { source: 'assets/ta.png' } },
+  artwork: { emitter: { source: 'assets/confetti-strip.png' } },
 };

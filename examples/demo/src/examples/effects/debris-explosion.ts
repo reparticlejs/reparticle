@@ -5,9 +5,9 @@ export const example: Example = {
   name: 'Debris explosion',
   file: 'effects/debris-explosion.json',
   artwork: {
-    dust: { source: 'assets/smoke_01_a.png' },
-    flash: { source: 'assets/particle-blob.png' },
-    chunks: { source: 'assets/fragment.svg' },
-    chips: { source: 'assets/fragment.svg' },
+    dust: { source: 'assets/smoke-cloud.png' },
+    flash: { source: 'assets/soft-particle.png' },
+    chunks: { source: 'assets/debris-fragment.png' },
+    chips: { source: 'assets/debris-fragment.png' },
   },
 };

@@ -5,8 +5,8 @@ export const example: Example = {
   name: 'Water stream',
   file: 'effects/water-stream.json',
   artwork: {
-    stream: { source: 'assets/droplet.svg' },
-    highlights: { source: 'assets/droplet.svg' },
-    spray: { source: 'assets/droplet.svg' },
+    stream: { source: 'assets/water-droplet.png' },
+    highlights: { source: 'assets/water-droplet.png' },
+    spray: { source: 'assets/water-droplet.png' },
   },
 };

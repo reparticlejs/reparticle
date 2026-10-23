@@ -7,8 +7,8 @@ export const example: Example = {
   verticalPosition: 0,
   fullWidth: true,
   artwork: {
-    amber: { source: 'assets/leaf.svg' },
-    rust: { source: 'assets/leaf.svg' },
-    gold: { source: 'assets/leaf.svg' },
+    amber: { source: 'assets/leaf.png' },
+    rust: { source: 'assets/leaf.png' },
+    gold: { source: 'assets/leaf.png' },
   },
 };

@@ -6,7 +6,7 @@ export const example: Example = {
   file: 'effects/rain.json',
   artwork: {
     rain: {
-      source: 'assets/particle-blob.png',
+      source: 'assets/soft-particle.png',
     },
   },
   verticalPosition: 0,

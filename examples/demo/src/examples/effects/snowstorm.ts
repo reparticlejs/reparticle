@@ -7,8 +7,8 @@ export const example: Example = {
   fullWidth: true,
   fullHeight: true,
   artwork: {
-    distant: { source: 'assets/snowflake.svg' },
-    middle: { source: 'assets/snowflake.svg' },
-    foreground: { source: 'assets/snowflake.svg' },
+    distant: { source: 'assets/snow-particle.png' },
+    middle: { source: 'assets/snow-particle.png' },
+    foreground: { source: 'assets/snow-particle.png' },
   },
 };

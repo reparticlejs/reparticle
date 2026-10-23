@@ -5,11 +5,11 @@ export const example: Example = {
   name: 'Fireworks',
   file: 'effects/fireworks.json',
   artwork: {
-    gold: { source: 'assets/particle-blob.png' },
-    'gold-flash': { source: 'assets/particle-blob.png' },
-    rose: { source: 'assets/particle-blob.png' },
-    'rose-flash': { source: 'assets/particle-blob.png' },
-    blue: { source: 'assets/particle-blob.png' },
-    'blue-flash': { source: 'assets/particle-blob.png' },
+    gold: { source: 'assets/soft-particle.png' },
+    'gold-flash': { source: 'assets/soft-particle.png' },
+    rose: { source: 'assets/soft-particle.png' },
+    'rose-flash': { source: 'assets/soft-particle.png' },
+    blue: { source: 'assets/soft-particle.png' },
+    'blue-flash': { source: 'assets/soft-particle.png' },
   },
 };

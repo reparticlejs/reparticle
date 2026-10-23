@@ -5,9 +5,9 @@ export const example: Example = {
   name: 'Tornado',
   file: 'effects/tornado.json',
   artwork: {
-    base: { source: 'assets/smoke_01_a.png' },
-    middle: { source: 'assets/smoke_01_a.png' },
-    crown: { source: 'assets/smoke_01_a.png' },
-    debris: { source: 'assets/leaf.svg' },
+    base: { source: 'assets/smoke-cloud.png' },
+    middle: { source: 'assets/smoke-cloud.png' },
+    crown: { source: 'assets/smoke-cloud.png' },
+    debris: { source: 'assets/leaf.png' },
   },
 };
