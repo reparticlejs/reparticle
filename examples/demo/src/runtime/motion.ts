@@ -1,7 +1,7 @@
 import type { ParticleEffect } from '@reparticle/pixi';
 import { type Application, type Ticker, UPDATE_PRIORITY, type WebGLRenderer } from 'pixi.js';
 
-import type { Example } from './types/example';
+import type { Example } from '../types/example';
 
 const FULL_TURN = Math.PI * 2;
 const HORIZONTAL_REACH = 0.3;
@@ -11,7 +11,7 @@ const HORIZONTAL_REACH = 0.3;
  * Update before particle simulation so world-space particles leave a trail.
  * Pausing the effect also freezes the path; this helper does not own the effect.
  */
-export function animateEmitter(
+export function animateEffect(
   app: Application<WebGLRenderer>,
   effect: ParticleEffect,
   motion: NonNullable<Example['motion']>,

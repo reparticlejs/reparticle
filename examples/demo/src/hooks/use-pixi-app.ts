@@ -1,21 +1,21 @@
 import { useRef, useState } from 'react';
 
-import { createPixiApp } from '../create-pixi-app';
+import { createPixiApp } from '../runtime/pixi-app';
 import type { Example } from '../types/example';
-import type { PixiApp } from '../types/pixi-app';
+import type { PixiAppControls } from '../types/pixi-app-controls';
 import { useMountEffect } from './use-mount-effect';
 
 /** Create one Pixi application and expose loading state for its selected example. */
 export function usePixiApp(initialExample: Example) {
   const host = useRef<HTMLDivElement>(null);
-  const [instance, setInstance] = useState<PixiApp>();
-  const [ready, setReady] = useState(false);
+  const [instance, setInstance] = useState<PixiAppControls>();
+  const [exampleReady, setExampleReady] = useState(false);
   const [error, setError] = useState('');
   const latestSelection = useRef(0);
 
-  async function selectExample(app: PixiApp, example: Example) {
+  async function selectExample(app: PixiAppControls, example: Example) {
     const selectionId = ++latestSelection.current;
-    setReady(false);
+    setExampleReady(false);
     setError('');
 
     try {
@@ -24,7 +24,7 @@ export function usePixiApp(initialExample: Example) {
       if (selectionId !== latestSelection.current) {
         return;
       }
-      setReady(loaded);
+      setExampleReady(loaded);
     } catch (cause) {
       if (selectionId !== latestSelection.current) {
         return;
@@ -40,7 +40,7 @@ export function usePixiApp(initialExample: Example) {
     }
 
     const lifetime = new AbortController();
-    let app: PixiApp | undefined;
+    let app: PixiAppControls | undefined;
 
     async function start(mountHost: HTMLDivElement) {
       try {
@@ -79,5 +79,5 @@ export function usePixiApp(initialExample: Example) {
     void selectExample(instance, example);
   }
 
-  return { host, instance, ready, error, select };
+  return { host, instance, exampleReady, error, select };
 }

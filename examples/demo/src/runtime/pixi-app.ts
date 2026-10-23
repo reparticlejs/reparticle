@@ -1,15 +1,15 @@
 import { Application, type WebGLRenderer } from 'pixi.js';
 
-import { createExamplePlayer } from './create-example-player';
-import { createStats } from './create-stats';
-import type { PixiApp } from './types/pixi-app';
-import { runCleanup } from './utils/run-cleanup';
+import type { PixiAppControls } from '../types/pixi-app-controls';
+import { runCleanup } from '../utils/run-cleanup';
+import { createExamplePlayer } from './example-player';
+import { createStats } from './stats';
 
 /** Initialize one application; the returned player replaces effects within it. */
 export async function createPixiApp(
   host: HTMLDivElement,
   signal: AbortSignal,
-): Promise<PixiApp | undefined> {
+): Promise<PixiAppControls | undefined> {
   const app = new Application<WebGLRenderer>();
 
   try {

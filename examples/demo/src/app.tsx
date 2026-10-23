@@ -9,7 +9,7 @@ import type { Example } from './types/example';
 export function App() {
   const [example, setExample] = useState(examples[0]!);
   const [paused, setPaused] = useState(false);
-  const { host, instance, ready, error, select } = usePixiApp(example);
+  const { host, instance, exampleReady, error, select } = usePixiApp(example);
 
   function selectExample(selected: Example) {
     setPaused(false);
@@ -36,7 +36,7 @@ export function App() {
         <ExampleSelect example={example} disabled={!instance} onSelect={selectExample} />
         <PlaybackControls
           paused={paused}
-          disabled={!ready}
+          disabled={!exampleReady}
           onToggle={togglePlayback}
           onRestart={restart}
         />

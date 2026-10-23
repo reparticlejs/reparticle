@@ -1,7 +1,7 @@
 import type { ParticleEffect } from '@reparticle/pixi';
 import { type Application, UPDATE_PRIORITY, type WebGLRenderer } from 'pixi.js';
 
-import type { Stats } from './types/stats';
+import type { Stats } from '../types/stats';
 
 const SAMPLE_INTERVAL_MS = 200;
 const EMPTY_STATS = 'WebGL2 · GPU.js\n0 particles\n— fps';

@@ -1,13 +1,14 @@
 import type { Application, WebGLRenderer } from 'pixi.js';
 
-import { loadExample } from './load-example';
-import type { Example } from './types/example';
-import type { ExamplePlayer, LoadedExample } from './types/example-player';
-import type { Stats } from './types/stats';
+import type { Example } from '../types/example';
+import type { ExamplePlayer } from '../types/example-player';
+import type { MountedExample } from '../types/mounted-example';
+import type { Stats } from '../types/stats';
+import { loadExample } from './example';
 
 /** Own one selection at a time. The application and stats belong to the caller. */
 export function createExamplePlayer(app: Application<WebGLRenderer>, stats: Stats): ExamplePlayer {
-  let activeExample: LoadedExample | undefined;
+  let activeExample: MountedExample | undefined;
   let pendingLoad: AbortController | undefined;
   let destroyed = false;
 
@@ -30,7 +31,7 @@ export function createExamplePlayer(app: Application<WebGLRenderer>, stats: Stat
         return false;
       }
       activeExample = next;
-      stats.setEffect(next.particles);
+      stats.setEffect(next.effect);
       return true;
     } catch (error) {
       if (request.signal.aborted) {
@@ -47,7 +48,7 @@ export function createExamplePlayer(app: Application<WebGLRenderer>, stats: Stat
 
   function setPaused(paused: boolean) {
     if (activeExample) {
-      activeExample.particles.autoUpdate = !paused;
+      activeExample.effect.autoUpdate = !paused;
     }
   }
 
