@@ -1,4 +1,5 @@
 import { renderingSchema } from '@reparticle/core';
+import { Cache, Texture } from 'pixi.js';
 
 import type { ParticleRendering, ResolvedParticleRendering } from '#types/particle-rendering.js';
 import type { ParticleTexture } from '#types/particle-texture.js';
@@ -23,12 +24,13 @@ export function resolveRendering(options: ParticleRendering): ResolvedParticleRe
     blendMode: options.blendMode,
     tint: options.tint,
   });
-  const artwork = resolveArtwork(options);
+  const resolved = resolveTextureNames(options);
+  const artwork = resolveArtwork(resolved);
   validateArtworkSettings(artwork);
 
   // resolveArtwork preserves object identity unless it substitutes the placeholder.
   // Warn only after validation succeeds, so rejected settings do not report a fallback.
-  const usesPlaceholder = artwork !== options;
+  const usesPlaceholder = artwork !== resolved;
   if (usesPlaceholder) {
     console.warn(
       '[reparticle] Missing or invalid particle artwork; using the missing-texture placeholder.',
@@ -39,8 +41,23 @@ export function resolveRendering(options: ParticleRendering): ResolvedParticleRe
 }
 
 /** Check settings before a renderer is attached; drawing resources are created later. */
-function validateArtworkSettings(artwork: ParticleTexture): void {
+function validateArtworkSettings(artwork: ParticleTexture<Texture>): void {
   resolveFlipbook(artwork);
   resolvePivot(artwork.pivot);
   resolveTextureFlip(artwork);
+}
+
+/** Resolve loaded cache names once, before validation; never load or own assets here. */
+function resolveTextureNames(options: ParticleTexture): ParticleTexture<Texture> {
+  if (
+    !Array.isArray(options.textures) ||
+    !options.textures.some((frame) => typeof frame === 'string')
+  ) {
+    return options as ParticleTexture<Texture>;
+  }
+  const textures = options.textures.map((frame) =>
+    typeof frame === 'string' ? (Cache.has(frame) ? Cache.get(frame) : undefined) : frame,
+  );
+  // Mapping preserves tuple length. resolveArtwork checks missing and invalid cache entries.
+  return { ...options, textures } as unknown as ParticleTexture<Texture>;
 }

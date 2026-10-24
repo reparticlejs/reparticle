@@ -15,14 +15,16 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run tests"
   },
   "dependencies": {
     "@reparticle/core": "workspace:*"
   },
   "devDependencies": {
     "pixi.js": "catalog:",
-    "tsdown": "catalog:"
+    "tsdown": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "pixi.js": "^8.20.1"

@@ -12,7 +12,7 @@ import { getMissingTexture } from './missing-texture';
  * that identity to warn once per invalid assignment, after validating the other settings.
  * Caller-owned textures and arrays are never modified.
  */
-export function resolveArtwork(options: ParticleTexture): ParticleTexture {
+export function resolveArtwork(options: ParticleTexture<Texture>): ParticleTexture<Texture> {
   const frames = options.textures;
   if (frames === undefined || hasUsableTextures(frames)) {
     return options;
@@ -53,7 +53,7 @@ function createPlaceholderFrames(frameCount: number): AnimationFrames {
 }
 
 /** A static fallback preserves sizing and placement, but cannot accept animation settings. */
-function createStaticPlaceholder(options: ParticleTexture): ParticleTexture {
+function createStaticPlaceholder(options: ParticleTexture<Texture>): ParticleTexture<Texture> {
   const hasAnimationSettings =
     options.playback !== undefined ||
     options.fps !== undefined ||

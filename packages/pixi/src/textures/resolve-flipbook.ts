@@ -16,7 +16,7 @@ import type {
  * frame from its age. Once playback spans particle lifetime; looping uses FPS.
  * The returned frame list is copied, but its textures remain owned by the caller.
  */
-export function resolveFlipbook(options: ParticleTexture): Flipbook | null {
+export function resolveFlipbook(options: ParticleTexture<Texture>): Flipbook | null {
   validateSizeMode(options.sizeMode);
   const frames = options.textures;
   if (frames !== undefined) {

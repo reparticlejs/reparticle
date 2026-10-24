@@ -24,7 +24,7 @@ export class EmitterArtwork {
 
   public constructor(
     private readonly maxTextureSize: number,
-    options: ParticleTexture,
+    options: ParticleTexture<Texture>,
   ) {
     this.setTexture(options);
   }
@@ -34,7 +34,7 @@ export class EmitterArtwork {
   }
 
   /** Prepare replacement metadata before changing any current artwork state. */
-  public setTexture(options: ParticleTexture): void {
+  public setTexture(options: ParticleTexture<Texture>): void {
     const pivot = resolvePivot(options.pivot);
     const flip = resolveTextureFlip(options);
     const flipbook = resolveFlipbook(options);

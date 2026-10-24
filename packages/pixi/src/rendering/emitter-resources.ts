@@ -30,7 +30,7 @@ export class EmitterResources {
   public constructor(
     private readonly renderer: WebGLRenderer,
     emitter: Emitter,
-    options: ParticleTexture,
+    options: ParticleTexture<Texture>,
   ) {
     this.uniforms = createUniforms(emitter.configuration);
     const gl = renderer.gl;

@@ -9,6 +9,7 @@ import type { curveSchema, scalarPropertySchema } from '#src/config/schemas/defi
  * Adjacent points use cubic Hermite interpolation. A single point describes a
  * line with that point's tangent. This is authored curve data, not the float32
  * samples used during playback; boundary handling belongs to the evaluator.
+ * @interface
  */
 export type Curve = z.infer<typeof curveSchema>;
 
@@ -17,6 +18,7 @@ export type Curve = z.infer<typeof curveSchema>;
  * units, and tangent is the slope (change in value per unit of normalized time).
  * The same tangent applies on both sides of the point; it defaults to zero when
  * omitted from JSON and is always present after parsing.
+ * @interface
  */
 export type CurvePoint = Curve['points'][number];
 

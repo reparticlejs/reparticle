@@ -18,7 +18,11 @@ import {
 } from 'pixi.js';
 
 import type { ParticleEffectOptions } from '#types/particle-effect-options.js';
-import type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
+import type {
+  ParticleRendering,
+  ResolvedParticleRendering,
+  ParticleTint,
+} from '#types/particle-rendering.js';
 import type { ParticleTexture } from '#types/particle-texture.js';
 
 import { resolveRendering } from '../config/resolve-rendering';
@@ -30,7 +34,9 @@ import type { EmitterRenderer } from './emitter-renderer';
 
 const MAX_STEP_SECONDS = 0.1;
 
-/** An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller. */
+/**
+ * An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller.
+ */
 export class ParticleEffect extends ViewContainer {
   public override readonly renderPipeId = 'reparticle';
   public readonly batched = false;
@@ -40,8 +46,9 @@ export class ParticleEffect extends ViewContainer {
   private pipe: ParticlePipe | null = null;
   private currentTicker: Ticker;
   private automaticUpdates = false;
+  private paused = false;
   private readonly tickListener: (ticker: Ticker) => void;
-  private readonly renderingByEmitter = new Map<string, ParticleRendering>();
+  private readonly renderingByEmitter = new Map<string, ResolvedParticleRendering>();
   private readonly defaultTints = new Map<string, ParticleTint>();
   private readonly simulations = new Map<string, Emitter>();
   private disposed = false;
@@ -119,6 +126,11 @@ export class ParticleEffect extends ViewContainer {
     return count;
   }
 
+  /** Whether simulation updates are paused, independently of the ticker setting. */
+  public get isPaused(): boolean {
+    return this.paused;
+  }
+
   public get isSleeping(): boolean {
     return this.awakeEmitters === 0;
   }
@@ -138,6 +150,17 @@ export class ParticleEffect extends ViewContainer {
     }
   }
 
+  /** Freeze particle movement, aging, and emission without changing autoUpdate. */
+  public pause(): void {
+    this.paused = true;
+  }
+
+  /** Continue from the paused state. Manual updates remain manual. */
+  public resume(): void {
+    this.paused = false;
+  }
+
+  /** Finish the current emission loop, then let remaining particles expire. */
   public retire(): void {
     for (const emitter of this.simulations.values()) {
       emitter.retire();
@@ -155,8 +178,11 @@ export class ParticleEffect extends ViewContainer {
     this.stop({ clear: true });
   }
 
-  /** Advance initialized simulations. Playback waits for the first render. */
+  /** Advance initialized simulations unless paused. Playback waits for the first render. */
   public update(seconds: number): void {
+    if (this.paused) {
+      return;
+    }
     this.pipe?.assertAvailable();
     this.syncSceneTransform();
     for (const emitter of this.simulations.values()) {
@@ -236,7 +262,7 @@ export class ParticleEffect extends ViewContainer {
   }
 
   /** @internal Rendering configuration is independent of core simulation. */
-  public getRendering(id: string): ParticleRendering {
+  public getRendering(id: string): ResolvedParticleRendering {
     this.getEmitter(id);
     return this.renderingByEmitter.get(id)!;
   }

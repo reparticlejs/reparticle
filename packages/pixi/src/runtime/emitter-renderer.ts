@@ -51,7 +51,7 @@ export class EmitterRenderer {
   }
 
   /** Validate and prepare replacement metadata before releasing the current frames. */
-  public setTexture(options: ParticleTexture): void {
+  public setTexture(options: ParticleTexture<Texture>): void {
     this.resources.artwork.setTexture(options);
   }
 

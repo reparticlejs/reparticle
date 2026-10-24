@@ -9,16 +9,26 @@ import type { emitterSchema } from '#src/config/schemas/runtime/emitter.js';
  * Parsed effect definition with schema defaults applied.
  * Contains at least one emitter with a unique ID and an effect-level modifier list.
  * Rendering settings contain shared appearance only; artwork belongs to the renderer.
+ * @interface
  */
 export type EffectConfig = z.output<typeof effectConfigSchema>;
 
-/** Authoring input before defaults and validation. */
+/**
+ * Authoring input before defaults and validation.
+ * @interface
+ */
 export type EffectInput = z.input<typeof effectConfigSchema>;
 
-/** Emitter authoring input before defaults and validation. */
+/**
+ * Emitter authoring input before defaults and validation.
+ * @interface
+ */
 export type EmitterInput = z.input<typeof emitterConfigSchema>;
 
-/** Validated emitter data, including the shared rendering contract. */
+/**
+ * Validated emitter data, including the shared rendering contract.
+ * @interface
+ */
 export type EmitterConfig = z.output<typeof emitterConfigSchema>;
 
 /**
@@ -35,5 +45,6 @@ export type ModifierConfig = z.infer<typeof modifierSchema>;
  *
  * Uses the schema's input type so callers may omit modifier fields with defaults.
  * applyEmitterPatch() validates the patch and the resulting complete definition.
+ * @interface
  */
 export type EmitterParameters = z.input<typeof emitterSchema>;

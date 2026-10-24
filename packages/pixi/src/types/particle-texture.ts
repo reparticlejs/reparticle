@@ -15,21 +15,23 @@ export type ParticlePivot = PointData;
 export type AnimationSize = Size;
 export type AnimationFrames = readonly [Texture, Texture, ...Texture[]];
 
-/** Borrowed artwork. One frame is static; two or more enable animation settings. */
-export type ParticleTexture = {
+/** Borrowed artwork. Strings are Pixi cache names loaded before assignment.
+ * One frame is static; two or more enable animation settings.
+ */
+export type ParticleTexture<T extends Texture | string = Texture | string> = {
   sizeMode?: ParticleSizeMode | undefined;
   pivot?: ParticlePivot | undefined;
   flipX?: boolean | undefined;
   flipY?: boolean | undefined;
 } & (
   | {
-      textures?: readonly [Texture] | undefined;
+      textures?: readonly [T] | undefined;
       animationSize?: never;
       playback?: never;
       fps?: never;
     }
   | {
-      textures: AnimationFrames;
+      textures: readonly [T, T, ...T[]];
       /** Defaults to the first authored frame's original size. */
       animationSize?: AnimationSize | undefined;
       playback?: AnimationPlayback | undefined;
