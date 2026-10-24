@@ -14,6 +14,7 @@ export default function CurveEditor({
   range,
 }: CurveEditorProps) {
   const drag = useRef<CurveDrag | null>(null);
+  const tap = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const [points, setPoints] = useState(curve.points);
   let valid = points.every(
     (point, index) =>
@@ -60,7 +61,7 @@ export default function CurveEditor({
   }
 
   function startDrag(event: PointerEvent<SVGCircleElement>, index: number, tangentSide = 0) {
-    if (disabled || !valid || event.button !== 0 || drag.current) {
+    if (disabled || !valid || event.button !== 0 || !event.isPrimary || drag.current) {
       return;
     }
     const svg = event.currentTarget.ownerSVGElement;
@@ -69,6 +70,7 @@ export default function CurveEditor({
       return;
     }
     event.preventDefault();
+    tap.current = null;
     const position = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
     drag.current = {
       pointerId: event.pointerId,
@@ -85,6 +87,12 @@ export default function CurveEditor({
   }
 
   function moveDrag(event: PointerEvent<SVGSVGElement>) {
+    if (
+      tap.current?.pointerId === event.pointerId &&
+      Math.hypot(event.clientX - tap.current.x, event.clientY - tap.current.y) > 8
+    ) {
+      tap.current = null;
+    }
     const gesture = drag.current;
     const matrix = event.currentTarget.getScreenCTM();
     if (!gesture || event.pointerId !== gesture.pointerId || !matrix) {
@@ -137,7 +145,15 @@ export default function CurveEditor({
 
   function finishDrag(event: PointerEvent<SVGSVGElement>) {
     if (!drag.current) {
-      addPoint(event);
+      // A swipe, cancelled touch, or secondary finger must never create a point.
+      const pending = tap.current;
+      tap.current = null;
+      if (
+        pending?.pointerId === event.pointerId &&
+        Math.hypot(event.clientX - pending.x, event.clientY - pending.y) <= 8
+      ) {
+        addPoint(event);
+      }
       return;
     }
     if (drag.current.pointerId !== event.pointerId) {
@@ -153,6 +169,9 @@ export default function CurveEditor({
   }
 
   function cancelDrag(event: PointerEvent<SVGSVGElement>) {
+    if (tap.current?.pointerId === event.pointerId) {
+      tap.current = null;
+    }
     if (drag.current?.pointerId !== event.pointerId) {
       return;
     }
@@ -185,7 +204,7 @@ export default function CurveEditor({
     onApply({ points: next });
   }
 
-  function removePoint(event: MouseEvent<SVGCircleElement>, index: number) {
+  function removePoint(event: MouseEvent, index: number) {
     event.preventDefault();
     event.stopPropagation();
     if (disabled || !valid || drag.current || index === 0 || index === points.length - 1) {
@@ -200,6 +219,12 @@ export default function CurveEditor({
     <div className="curve-editor">
       <svg
         viewBox="0 0 280 190"
+        onPointerDownCapture={(event) => {
+          tap.current =
+            event.isPrimary && event.button === 0
+              ? { pointerId: event.pointerId, x: event.clientX, y: event.clientY }
+              : null;
+        }}
         onPointerMove={moveDrag}
         onPointerUp={finishDrag}
         onPointerCancel={cancelDrag}
@@ -289,6 +314,11 @@ export default function CurveEditor({
         {points.map((point, index) => (
           <fieldset key={index} disabled={disabled}>
             <legend>Point {index + 1}</legend>
+            {index > 0 && index < points.length - 1 && (
+              <button type="button" onClick={(event) => removePoint(event, index)}>
+                Remove point {index + 1}
+              </button>
+            )}
             <div className="curve-point">
               {(['time', 'value', 'tangent'] as const).map((field) => (
                 <label key={field}>
@@ -322,8 +352,9 @@ export default function CurveEditor({
         </div>
       </details>
       <p className="control-note">
-        Click the graph to add a point. Drag to reshape; release to apply. Right-click a middle
-        point to remove it. Blue handles adjust the shared tangent. Endpoints move vertically only.
+        Tap or click the graph to add a point. Drag to reshape; release to apply. Right-click a
+        middle point to remove it, or use Remove point in Advanced settings. Blue handles adjust the
+        shared tangent. Endpoints move vertically only.
       </p>
     </div>
   );

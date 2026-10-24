@@ -1,7 +1,20 @@
 {
   "name": "@reparticle/core",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "GPU particle engine with JSON-defined effects.",
+  "homepage": "https://github.com/reparticlejs/reparticle#readme",
+  "bugs": {
+    "url": "https://github.com/reparticlejs/reparticle/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reparticlejs/reparticle.git",
+    "directory": "packages/core"
+  },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "imports": {
     "#src/*": "./src/*",
@@ -13,11 +26,15 @@
       "import": "./dist/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "pnpm build:functions && tsdown",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run tests",
-    "build:functions": "node scripts/build-functions.ts"
+    "build:functions": "node scripts/build-functions.ts",
+    "prepack": "pnpm build"
   },
   "dependencies": {
     "gpu.js": "catalog:",

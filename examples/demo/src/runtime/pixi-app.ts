@@ -57,6 +57,9 @@ function mountApplication(app: Application<WebGLRenderer>, host: HTMLDivElement)
     const player = createExamplePlayer(app, stats);
     cleanup.push(() => player.destroy());
 
+    // The preview has no scene interactions; let touch gestures scroll and zoom the page.
+    app.renderer.events.autoPreventDefault = false;
+    app.canvas.style.touchAction = 'auto';
     host.appendChild(app.canvas);
     app.start();
     return { ...player, destroy };

@@ -308,6 +308,8 @@
   font-size: 12px;
 }
 .curve-editor svg {
+  /* Apply to the SVG viewport: touch-action on circles does not prevent browser panning. */
+  touch-action: none;
   width: 100%;
   background: hsl(var(--card));
   border-radius: 6px;
@@ -346,7 +348,9 @@
   background: transparent;
   border: 0;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 13px;
+  min-height: 44px;
+  padding: 8px 12px;
 }
 .curve-handle {
   cursor: grab;

@@ -1,10 +1,14 @@
-# Reparticle
+# reparticle
 
-**A GPU particle engine with JSON-defined effects.** Reparticle handles particle behavior and simulation; PixiJS is its first and primary renderer, and the only renderer currently available.
+**A GPU particle engine with JSON-defined effects.** reparticle handles particle behavior and simulation; PixiJS is its first and primary renderer, and the only renderer currently available.
 
 The core uses GPU.js for simulation and has no PixiJS dependency. The PixiJS integration renders directly from its GPU textures and provides the `ParticleEffect` display object. It creates no sprite per particle and does not read particle state back to the CPU. Particle concepts and behavior are inspired by [Defold](https://defold.com/).
 
-This project is in development. The packages are currently private workspace packages; a public npm release is not available from this repository yet.
+For an existing PixiJS v8 app, install `@reparticle/pixi`. The core engine is included.
+
+```sh
+npm install @reparticle/pixi
+```
 
 ## Try the examples
 
@@ -26,9 +30,8 @@ For mobile testing, open Vite's Network URL on a device connected to the same ne
 `ParticleEffect` is a Pixi display object. Add it to the stage or another container; no renderer argument is needed.
 
 ```ts
+import { ParticleEffect, type EffectInput } from '@reparticle/pixi';
 import { Application } from 'pixi.js';
-import type { EffectInput } from '@reparticle/core';
-import { ParticleEffect } from '@reparticle/pixi';
 
 const app = new Application();
 await app.init({
@@ -146,3 +149,7 @@ Example artwork attribution and full license texts are linked from the [demo REA
 
 Run `pnpm dev:site` for the Astro homepage and live examples gallery. The site reuses
 the demo player, effects, and artwork. See [site development](examples/site/README.md).
+
+## License
+
+[MIT](LICENSE). Example artwork has its own licenses listed in the [demo README](examples/demo/README.md).

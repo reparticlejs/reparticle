@@ -1,7 +1,20 @@
 {
   "name": "@reparticle/pixi",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "PixiJS renderer for the reparticle GPU particle engine.",
+  "homepage": "https://github.com/reparticlejs/reparticle#readme",
+  "bugs": {
+    "url": "https://github.com/reparticlejs/reparticle/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reparticlejs/reparticle.git",
+    "directory": "packages/pixi"
+  },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "imports": {
     "#src/*": "./src/*",
@@ -13,10 +26,14 @@
       "import": "./dist/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run tests"
+    "test": "vitest run tests",
+    "prepack": "pnpm build"
   },
   "dependencies": {
     "@reparticle/core": "workspace:*"

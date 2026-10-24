@@ -35,7 +35,7 @@ const effect = new ParticleEffect({
     capacity: 2048,
     seed: 42,
     emission: { rate: 120, shape: { type: 'point' } },
-    initial: { lifetime: 2, speed: 90, size: 12 },
+    initial: { lifetime: 2, speed: 90, direction: 0, spread: Math.PI * 2, size: 12 },
   }],
 }, {
   ticker: app.ticker,
