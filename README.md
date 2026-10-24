@@ -1,8 +1,8 @@
 # Reparticle
 
-**GPU particle simulation for PixiJS.** Define effects as JSON, add a `ParticleEffect` to your scene, and let the GPU handle particle motion and appearance.
+**A GPU particle engine with JSON-defined effects.** Reparticle handles particle behavior and simulation; PixiJS is its first and primary renderer, and the only renderer currently available.
 
-Reparticle uses GPU.js for simulation and renders directly from its GPU textures through PixiJS. It creates no sprite per particle and does not read particle state back to the CPU. Particle concepts and behavior are inspired by [Defold](https://defold.com/).
+The core uses GPU.js for simulation and has no PixiJS dependency. The PixiJS integration renders directly from its GPU textures and provides the `ParticleEffect` display object. It creates no sprite per particle and does not read particle state back to the CPU. Particle concepts and behavior are inspired by [Defold](https://defold.com/).
 
 This project is in development. The packages are currently private workspace packages; a public npm release is not available from this repository yet.
 
@@ -141,3 +141,8 @@ pnpm build   # Build the packages and demo.
 The demo imports built packages. `pnpm dev` builds them before starting Vite; rebuild after library changes, or run each library's `tsdown --watch` in a separate terminal.
 
 Example artwork attribution and full license texts are linked from the [demo README](examples/demo/README.md).
+
+## Website
+
+Run `pnpm dev:site` for the Astro homepage and live examples gallery. The site reuses
+the demo player, effects, and artwork. See [site development](examples/site/README.md).

@@ -1,4 +1,3 @@
-import { parseEffectConfig } from '@reparticle/core';
 import { ParticleEffect } from '@reparticle/pixi';
 import type { Application, WebGLRenderer } from 'pixi.js';
 
@@ -18,7 +17,7 @@ export async function loadExample(
   example: Example,
   signal: AbortSignal,
 ): Promise<MountedExample | undefined> {
-  const config = await loadEffectConfig(example.file, signal);
+  const config = example.definition ?? (await loadEffectConfig(example.file, signal));
   if (signal.aborted) {
     return undefined;
   }
@@ -40,7 +39,8 @@ async function loadEffectConfig(file: string, signal: AbortSignal) {
   if (!response.ok) {
     throw new Error(`Unable to load ${file}: ${response.status}`);
   }
-  return parseEffectConfig(await response.json());
+  // ParticleEffect validates the loaded definition when it is constructed.
+  return response.json();
 }
 
 /** Own only this effect's stage entry, resize listener, and optional motion callback. */

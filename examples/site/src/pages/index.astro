@@ -1,0 +1,122 @@
+---
+import Site from '../layouts/site.astro';
+import Player from '../components/player';
+import HeroMesh from '../components/hero-mesh.astro';
+import { Code } from 'astro:components';
+
+const base = import.meta.env.BASE_URL;
+const code = `const effect = new ParticleEffect(definition, {
+  ticker: app.ticker,
+  emitters: { sparks: { textures: [sparkTexture] } },
+});
+
+effect.position.set(400, 300);
+app.stage.addChild(effect);`;
+---
+<Site title="reparticle — GPU particle engine" description="A GPU particle engine with JSON-defined effects. PixiJS is our first and primary renderer. Explore the docs, API, and live experiments.">
+  <section class="relative overflow-hidden border-b">
+    <HeroMesh />
+    <div class="container-page relative pb-10">
+      <p class="flex flex-wrap gap-x-5 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        <span>GPU simulation</span><span>WebGL2</span><span>TypeScript</span><span>MIT</span>
+      </p>
+      <h1 class="mt-4 max-w-4xl text-5xl font-semibold tracking-tight sm:text-6xl">
+        GPU particle effects.<br /><span class="brand-text">Defined in JSON.</span>
+      </h1>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+        <strong class="text-foreground">reparticle</strong> is a configurable GPU particle engine. Build everything from a candle flame to a snowstorm with JSON-defined behavior. <span class="pixi-name">PixiJS</span> is our first and primary renderer, and the renderer available today.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90" href={`${base}docs/quick-start/`}>Get started →</a>
+        <a class="rounded-lg border bg-background px-5 py-2.5 text-sm font-semibold hover:bg-accent" href={`${base}lab/`}>Explore the lab</a>
+        <button id="copy-install" type="button" aria-label="Copy npm install command" class="inline-flex items-center gap-3 rounded-lg border bg-card px-4 py-2.5 text-sm hover:bg-accent">
+          <span class="text-muted-foreground" aria-hidden="true">$</span>
+          <code class="font-mono">npm i @reparticle/pixi</code>
+          <svg class="size-4 shrink-0 fill-none stroke-current text-muted-foreground" viewBox="0 0 24 24" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg>
+        </button>
+        <span id="copy-install-status" class="sr-only" role="status"></span>
+      </div>
+    </div>
+    <div class="container-page relative pb-16">
+      <div class="home-preview overflow-hidden rounded-2xl">
+        <Player client:only="react"><p slot="fallback" class="loading-fallback">Loading live particles…</p></Player>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page grid items-start gap-10 pt-14 pb-10 lg:grid-cols-2">
+    <div>
+      <p class="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">PixiJS integration</p>
+      <h2 class="text-3xl font-semibold tracking-tight">Particles that fit your scene.</h2>
+      <p class="mt-4 leading-relaxed text-muted-foreground">Add <code>ParticleEffect</code> to any PixiJS container. Position, rotate, scale, and tint it. With support for masks, filters, and render textures.</p>
+      <a class="mt-6 inline-block text-sm font-semibold underline underline-offset-4" href={`${base}api/pixi/classes/ParticleEffect/`}>Explore ParticleEffect →</a>
+    </div>
+    <div data-no-copy class="overflow-hidden rounded-xl border border-[hsl(var(--code-border))] bg-[hsl(var(--code-bg))] p-5 text-[13px] leading-relaxed">
+      <Code code={code} lang="ts" theme="github-dark-dimmed" />
+    </div>
+  </section>
+
+  <section class="container-page py-14">
+    <p class="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Understand what you change</p>
+    <h2 class="text-3xl font-semibold tracking-tight">Read it. Change it. See it.</h2>
+    <p class="mt-4 max-w-3xl leading-relaxed text-muted-foreground">Every effect field has an explanation and a focused experiment. Adjust a value, inspect the configuration, and see the result in the real engine.</p>
+    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <a class="rounded-xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-foreground/30" href={`${base}lab/emission-emission-rate/`}>
+        <span class="font-mono text-[11px] text-brand">01 / EMISSION</span>
+        <h3 class="mt-1.5 font-semibold">How many particles?</h3>
+        <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">Change the birth rate and watch the stream fill up.</p>
+        <code class="mt-4 block font-mono text-xs text-muted-foreground">emission.rate ↗</code>
+      </a>
+      <a class="rounded-xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-foreground/30" href={`${base}lab/over-lifetime-overlifetime-alpha/`}>
+        <span class="font-mono text-[11px] text-brand">02 / APPEARANCE</span>
+        <h3 class="mt-1.5 font-semibold">Make them fade.</h3>
+        <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">Use a curve to control opacity throughout each particle’s life.</p>
+        <code class="mt-4 block font-mono text-xs text-muted-foreground">overLifetime.alpha ↗</code>
+      </a>
+      <a class="rounded-xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-foreground/30" href={`${base}lab/transform-space/`}>
+        <span class="font-mono text-[11px] text-brand">03 / TRANSFORMS</span>
+        <h3 class="mt-1.5 font-semibold">Follow or stay behind?</h3>
+        <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">Move an effect through world and local emission spaces.</p>
+        <code class="mt-4 block font-mono text-xs text-muted-foreground">space ↗</code>
+      </a>
+    </div>
+  </section>
+
+  <section class="container-page py-14">
+    <p class="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">From sparks to storms</p>
+    <div class="flex flex-wrap items-baseline justify-between gap-3">
+      <h2 class="text-3xl font-semibold tracking-tight">Start with something alive.</h2>
+      <a class="text-sm text-muted-foreground hover:text-foreground" href={`${base}examples/`}>Browse examples ↗</a>
+    </div>
+    <p class="mt-3 max-w-3xl text-muted-foreground">Browse the existing effects, open their JSON, and use them as a starting point.</p>
+  </section>
+</Site>
+
+<style>
+  .pixi-name { color: #c21875; font-weight: 600; }
+  :global(.dark) .pixi-name { color: #e955a5; }
+  .home-preview :global(.canvas-host) { height: 420px; }
+  .home-preview :global(.player) { border-radius: 1rem; }
+  @media (max-width: 900px) {
+    .home-preview :global(.canvas-host) { height: 380px; }
+  }
+</style>
+
+<script>
+  const installButton = document.querySelector<HTMLButtonElement>('#copy-install');
+  const installStatus = document.querySelector<HTMLElement>('#copy-install-status');
+  installButton?.addEventListener('click', async () => {
+    if (!installStatus) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText('npm i @reparticle/pixi');
+      installStatus.textContent = 'Copied install command.';
+      installButton.title = 'Copied!';
+      installButton.setAttribute('aria-label', 'Copied install command');
+    } catch {
+      installStatus.textContent = 'Could not copy. Select the command to copy it manually.';
+      installButton.title = 'Select the command to copy it manually.';
+    }
+  });
+</script>

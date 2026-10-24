@@ -5,15 +5,16 @@ import { createPixiApp } from '../runtime/pixi-app';
 import type { Example } from '../types/example';
 import type { ExamplePlayer } from '../types/example-player';
 import type { ExamplePlayerState } from '../types/example-player-state';
+import type { ExampleUpdate } from '../types/example-update';
 import { useMountEffect } from './use-mount-effect';
 
 /** Own the Pixi player in refs; React state describes only what the UI displays. */
-export function useExamplePlayer() {
+export function useExamplePlayer(initialExample: Example = examples[0]!) {
   const host = useRef<HTMLDivElement>(null);
   const player = useRef<ExamplePlayer | undefined>(undefined);
   const mountSignal = useRef<AbortSignal | undefined>(undefined);
   const [state, setState] = useState<ExamplePlayerState>({
-    example: examples[0]!,
+    example: initialExample,
     paused: false,
     loading: true,
     error: '',
@@ -36,6 +37,24 @@ export function useExamplePlayer() {
       // Cancelled loads and results from a previous mount cannot change the UI.
       if (loaded && !signal.aborted) {
         setState((previous) => ({ ...previous, loading: false }));
+      }
+    } catch (cause) {
+      if (!signal.aborted) {
+        showError(cause);
+      }
+    }
+  }
+
+  /** Keep playback, motion, and pause state while updating the displayed definition. */
+  async function update(selected: Example, change: ExampleUpdate) {
+    const signal = mountSignal.current;
+    if (!player.current || !signal || signal.aborted) {
+      return;
+    }
+    try {
+      const applied = await player.current.update(selected, change);
+      if (applied && !signal.aborted) {
+        setState((previous) => ({ ...previous, example: selected, error: '' }));
       }
     } catch (cause) {
       if (!signal.aborted) {
@@ -101,5 +120,5 @@ export function useExamplePlayer() {
     setState((previous) => ({ ...previous, paused: false }));
   }
 
-  return { host, ...state, select, togglePlayback, restart };
+  return { host, ...state, select, update, togglePlayback, restart };
 }

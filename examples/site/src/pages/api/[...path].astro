@@ -1,0 +1,19 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType, MarkdownInstance } from 'astro';
+import type { ComponentProps } from 'astro/types';
+import ApiLayout from '../../layouts/api.astro';
+
+type ApiPage = MarkdownInstance<ComponentProps<typeof ApiLayout>['frontmatter']>;
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+export const getStaticPaths = (() => {
+  const pages = import.meta.glob<ApiPage>('../../content/api/**/*.md', { eager: true });
+  return Object.entries(pages).map(([file, page]) => ({
+    params: { path: file.replace('../../content/api/', '').replace(/(?:\/index)?\.md$/, '') },
+    props: { page },
+  }));
+}) satisfies GetStaticPaths;
+
+const { Content, frontmatter, getHeadings } = Astro.props.page;
+---
+<ApiLayout frontmatter={frontmatter} headings={getHeadings()}><Content /></ApiLayout>

@@ -1,0 +1,11 @@
+---
+import Catalog from '../../layouts/catalog.astro';
+import { documentation } from '../../content/navigation';
+const base = import.meta.env.BASE_URL;
+---
+<Catalog title="Documentation" description="Learn how to build GPU particle effects with reparticle. Start with a working effect, understand the concepts, then explore individual properties in the interactive lab.">
+  {documentation.map((group) => <section class="mt-12" id={group.title.toLowerCase().replaceAll(' ', '-')}>
+    <h2 class="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{group.title}</h2>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{group.links.map((link) => <a class="group rounded-xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-foreground/30" href={`${base}${link.path}`}><h3 class="font-semibold">{link.title}</h3><p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">{link.description}</p></a>)}</div>
+  </section>)}
+</Catalog>

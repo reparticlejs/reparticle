@@ -1,0 +1,23 @@
+---
+import Site from '../layouts/site.astro';
+import Player from '../components/player';
+---
+
+<Site title="Examples — reparticle" description="Explore live reparticle effects, from small sparks to swirling portals. Play an effect and open its JSON configuration.">
+  <div class="container-page pb-14">
+    <header>
+      <h1 class="text-4xl font-semibold tracking-tight">Examples</h1>
+      <p class="mt-3 max-w-3xl text-muted-foreground">Explore live reparticle effects, from small sparks to swirling portals. Play an effect and open its JSON configuration.</p>
+    </header>
+    <section class="mt-12" aria-labelledby="examples-title">
+      <div class="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 id="examples-title" class="text-2xl font-semibold tracking-tight">See what moves you.</h2>
+        <span class="text-sm text-muted-foreground">The playground</span>
+      </div>
+      <p class="mt-2 max-w-3xl text-sm text-muted-foreground">Pick an effect. Press play. Make it yours.</p>
+      <div class="mt-5">
+        <Player gallery client:only="react"><p slot="fallback" class="loading-fallback">Loading examples…</p></Player>
+      </div>
+    </section>
+  </div>
+</Site>

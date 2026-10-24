@@ -7,6 +7,7 @@ export default defineConfig({
   },
   ignorePatterns: [
     '**/dist/**',
+    '**/.astro/**',
     '**/coverage/**',
     '.pnpm-store/**',
     '.generated/**',
@@ -55,7 +56,7 @@ export default defineConfig({
   },
   overrides: [
     {
-      files: ['examples/demo/src/**/*.{ts,tsx}'],
+      files: ['examples/*/src/**/*.{ts,tsx}'],
       plugins: ['react', 'jsx-a11y'],
       env: { browser: true },
       rules: {

@@ -2,8 +2,10 @@ import type { Application, WebGLRenderer } from 'pixi.js';
 
 import type { Example } from '../types/example';
 import type { ExamplePlayer } from '../types/example-player';
+import type { ExampleUpdate } from '../types/example-update';
 import type { MountedExample } from '../types/mounted-example';
 import type { Stats } from '../types/stats';
+import { loadArtwork } from './artwork';
 import { loadExample } from './example';
 
 /** Own one selection at a time. The application and stats belong to the caller. */
@@ -11,6 +13,7 @@ export function createExamplePlayer(app: Application<WebGLRenderer>, stats: Stat
   let activeExample: MountedExample | undefined;
   let pendingLoad: AbortController | undefined;
   let destroyed = false;
+  let updateRevision = 0;
 
   /** Only the latest uncancelled request may become the active example. */
   async function select(example: Example): Promise<boolean> {
@@ -46,6 +49,47 @@ export function createExamplePlayer(app: Application<WebGLRenderer>, stats: Stat
     }
   }
 
+  /** Resolve borrowed artwork before mutation; a newer edit or selection cancels it. */
+  async function update(example: Example, change: ExampleUpdate): Promise<boolean> {
+    const current = activeExample;
+    if (!current || destroyed || pendingLoad) {
+      return false;
+    }
+    const revision = ++updateRevision;
+    let artwork: Awaited<ReturnType<typeof loadArtwork>> | undefined;
+    try {
+      artwork = change.artwork ? await loadArtwork(example) : undefined;
+    } catch (error) {
+      if (revision !== updateRevision || current !== activeExample || destroyed) {
+        return false;
+      }
+      throw error;
+    }
+    if (revision !== updateRevision || current !== activeExample || destroyed) {
+      return false;
+    }
+    const effect = current.effect;
+    if (change.parameters) {
+      effect.getEmitter(change.emitterId).setParameters(change.parameters);
+    }
+    if (change.rendering) {
+      effect.setEmitterBlendMode(change.emitterId, change.rendering.blendMode);
+      effect.setEmitterTint(
+        change.emitterId,
+        change.rendering.tint ?? {
+          red: 1,
+          green: 1,
+          blue: 1,
+          alpha: 1,
+        },
+      );
+    }
+    if (artwork) {
+      effect.setEmitterTexture(change.emitterId, artwork[change.emitterId]!);
+    }
+    return true;
+  }
+
   function setPaused(paused: boolean) {
     if (activeExample) {
       activeExample.effect.autoUpdate = !paused;
@@ -66,6 +110,7 @@ export function createExamplePlayer(app: Application<WebGLRenderer>, stats: Stat
 
   /** Detach ownership before destruction, so cleanup cannot leave a stale effect. */
   function releaseSelection() {
+    updateRevision++;
     pendingLoad?.abort();
     pendingLoad = undefined;
     stats.setEffect(undefined);
@@ -75,5 +120,5 @@ export function createExamplePlayer(app: Application<WebGLRenderer>, stats: Stat
     previous?.destroy();
   }
 
-  return { select, setPaused, restart, destroy };
+  return { select, update, setPaused, restart, destroy };
 }

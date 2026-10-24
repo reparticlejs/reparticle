@@ -1,0 +1,30 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import Site from '../../layouts/site.astro';
+import { propertyTitle } from '../../utils/property-title';
+import PropertyLab from '../../components/property-lab';
+import { labProperties as properties, propertyId } from '../../content/properties';
+export const getStaticPaths = (() => {
+  return properties.map((property) => ({ params: { property: propertyId(property) }, props: { property } }));
+}) satisfies GetStaticPaths;
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { property } = Astro.props;
+---
+<Site title={`${propertyTitle(property)} — reparticle Lab`} description={property.description}>
+  <div class="container-page lab-experiment">
+    <header class="lab-heading">
+      <a class="lab-back" href={`${import.meta.env.BASE_URL}lab/`}>← Back to Lab</a>
+      <div>
+        <h1>{propertyTitle(property)}</h1>
+        <p>{property.description}</p>
+      </div>
+    </header>
+    <PropertyLab property={property} client:only="react"><p slot="fallback" class="loading-fallback">Loading experiment…</p>
+    <details class="lab-reference">
+      <summary>About this experiment</summary>
+      <p>{property.group} · Default: <code>{property.default}</code>{property.unit && ` · ${property.unit}`}</p>
+      <p>This is a focused experiment, not a change to your saved effects. The preview uses the same runtime as the examples gallery.</p>
+    </details>
+    </PropertyLab>
+  </div>
+</Site>

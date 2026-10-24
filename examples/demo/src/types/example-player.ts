@@ -1,4 +1,5 @@
 import type { Example } from './example';
+import type { ExampleUpdate } from './example-update';
 
 /** Controls for selecting and playing examples within a shared Pixi application. */
 export interface ExamplePlayer {
@@ -7,6 +8,8 @@ export interface ExamplePlayer {
    * Returns true when mounted, false when cancelled or destroyed. Load failures reject.
    */
   select(example: Example): Promise<boolean>;
+  /** Apply live settings without resetting playback. Cancelled artwork loads return false. */
+  update(example: Example, change: ExampleUpdate): Promise<boolean>;
   /** Pause or resume the active effect; does nothing while loading. */
   setPaused(paused: boolean): void;
   /** Reset and resume the active effect, including its display-object movement. */

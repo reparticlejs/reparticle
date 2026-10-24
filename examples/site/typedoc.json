@@ -1,0 +1,21 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "tsconfig": "./tsconfig.api.json",
+  "plugin": ["typedoc-plugin-markdown"],
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "excludeExternals": true,
+  "sort": ["kind", "alphabetical"],
+  "entryFileName": "index",
+  "router": "kind",
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "hidePageTitle": true,
+  "maxTypeConversionDepth": 30,
+  "expandObjects": true,
+  "parametersFormat": "table",
+  "indexFormat": "table",
+  "disableSources": true
+}

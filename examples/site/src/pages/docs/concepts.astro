@@ -1,0 +1,33 @@
+---
+import Reference from '../../layouts/reference.astro';
+const headings = [
+  { depth: 2, slug: 'emitters', text: 'Emitters' },
+  { depth: 2, slug: 'particle-lifetime', text: 'Particle lifetime' },
+  { depth: 2, slug: 'capacity', text: 'Capacity' },
+  { depth: 2, slug: 'curves', text: 'Curves' },
+  { depth: 2, slug: 'local-and-world-space', text: 'Local and world space' },
+  { depth: 2, slug: 'modifiers', text: 'Modifiers' },
+];
+---
+<Reference headings={headings} title="How effects work" description="An effect combines emitters to create an animation. For example, a fire effect might use one emitter for flames and another for smoke.">
+  <h2 id="emitters">Emitters</h2>
+  <p>Each emitter controls where particles appear, how many it creates per second, and their starting speed, size, and color.</p>
+
+  <h2 id="particle-lifetime">Particle lifetime</h2>
+  <p>Each particle lives for a set amount of time, then disappears. During its lifetime, it can move, spin, grow, or fade.</p>
+
+  <h2 id="capacity">Capacity</h2>
+  <p>Capacity is the maximum number of particles an emitter can have at once. For example, 100 particles per second with a two-second lifetime needs about 200 capacity. Allow extra room if the rate or lifetime varies.</p>
+  <p>When the emitter is full, it waits for particles to disappear before creating more.</p>
+
+  <h2 id="curves">Curves</h2>
+  <p>Curves change a value over time. Use an emission curve to create more particles as the effect builds, or an opacity curve to fade each particle before it disappears.</p>
+  <p>Emission and initial-value curves follow the emitter’s cycle. Over-lifetime curves follow each particle from birth to disappearance.</p>
+
+  <h2 id="local-and-world-space">Local and world space</h2>
+  <p>Use world space for trails: moving the effect leaves existing particles behind. Use local space when all particles should follow the effect, like an aura around a character.</p>
+
+  <h2 id="modifiers">Modifiers</h2>
+  <p>Modifiers change how particles move. Use acceleration for gravity or wind, drag to slow particles down, radial to pull or push them, and vortex to make them swirl.</p>
+  <p>Add modifiers to one emitter or to the whole effect.</p>
+</Reference>

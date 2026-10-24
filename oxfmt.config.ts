@@ -3,6 +3,9 @@ import { defineConfig } from 'oxfmt';
 export default defineConfig({
   ignorePatterns: [
     '**/dist/**',
+    'examples/site/src/content/api/core/**',
+    'examples/site/src/content/api/pixi/**',
+    '**/.astro/**',
     '**/coverage/**',
     '.pnpm-store/**',
     '.generated/**',

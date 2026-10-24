@@ -1,11 +1,10 @@
-import { parseEffectConfig } from '@reparticle/core';
 import { ParticleEffect } from '@reparticle/pixi';
 import { Ticker, UPDATE_PRIORITY } from 'pixi.js';
 import { expect, it, vi } from 'vitest';
 
-import effectDefinition from '../fixtures/effect.json';
+import effectDefinition from '../fixtures/effect';
 
-const config = parseEffectConfig(effectDefinition);
+const config = effectDefinition;
 
 it.each([
   { speed: 1, elapsed: 16, minFPS: 10 },

@@ -1,0 +1,26 @@
+---
+import Reference from '../../layouts/reference.astro';
+import { Code } from 'astro:components';
+const headings = [
+  { depth: 2, slug: 'set-up-the-workspace', text: 'Set up' },
+  { depth: 2, slug: 'run-the-documentation-site', text: 'Run the site' },
+  { depth: 2, slug: 'run-the-standalone-examples', text: 'Run the examples' },
+  { depth: 2, slug: 'check-your-changes', text: 'Check your changes' },
+];
+---
+<Reference headings={headings} title="Development" description="Set up reparticle locally to make and test changes.">
+  <h2 id={headings[0].slug}>{headings[0].text}</h2>
+  <p>Install Node.js 24 or later and pnpm 10.32.1, then clone the repository:</p>
+  <Code theme="github-dark-dimmed" code={'git clone https://github.com/reparticlejs/reparticle.git\ncd reparticle\npnpm install'} lang="sh" />
+  <h2 id={headings[1].slug}>{headings[1].text}</h2>
+  <Code theme="github-dark-dimmed" code={'pnpm dev:site'} lang="sh" />
+  <p>Starts the website with the docs, lab, and examples. Open the URL shown in your terminal.</p>
+  <h2 id={headings[2].slug}>{headings[2].text}</h2>
+  <Code theme="github-dark-dimmed" code={'pnpm dev'} lang="sh" />
+  <p>Starts the example gallery on its own.
+  </p>
+  <p>Run these commands from the repository root. Both build the library packages before starting. After changing library code, stop and rerun the command to rebuild it. Restart <code>pnpm dev:site</code> after changing source comments or types to refresh the generated API docs.</p>
+  <h2 id={headings[3].slug}>{headings[3].text}</h2>
+  <Code theme="github-dark-dimmed" code={'pnpm check'} lang="sh" />
+  <p>Checks formatting, lint, types, and tests, then builds the project. To fix formatting, run <code>pnpm format</code>.</p>
+</Reference>

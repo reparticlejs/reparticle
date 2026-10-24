@@ -1,0 +1,13 @@
+---
+import type { MarkdownHeading } from 'astro';
+import Reference from './reference.astro';
+interface Props {
+  headings?: MarkdownHeading[];
+  frontmatter: { title: string; description: string; package: string };
+}
+const { headings } = Astro.props;
+const { title, description } = Astro.props.frontmatter;
+---
+<Reference title={title} description={description} headings={headings} showDescription={false}>
+  <slot />
+</Reference>

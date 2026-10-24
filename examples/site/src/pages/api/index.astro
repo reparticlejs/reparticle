@@ -1,0 +1,10 @@
+---
+import Reference from '../../layouts/reference.astro';
+import { apiPackages } from '../../content/api';
+const base = import.meta.env.BASE_URL;
+---
+<Reference title="API reference" description="Explore the public classes, functions, and types. Choose the engine or its PixiJS renderer.">
+  {apiPackages.map((pkg) => (
+    <h2><a href={`${base}${pkg.path}`}>{pkg.title} <span aria-hidden="true">↗</span></a></h2>
+  ))}
+</Reference>

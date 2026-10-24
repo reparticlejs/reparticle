@@ -1,11 +1,10 @@
-import { parseEffectConfig } from '@reparticle/core';
 import { ParticleEffect, validateAnimationFrames, type ParticleTexture } from '@reparticle/pixi';
 import { Texture, Ticker } from 'pixi.js';
 import { expect, expectTypeOf, it, vi } from 'vitest';
 
-import effectDefinition from '../fixtures/effect.json';
+import effectDefinition from '../fixtures/effect';
 
-const config = parseEffectConfig(effectDefinition);
+const config = effectDefinition;
 const emitterId = config.emitters[0].id;
 
 it('binds borrowed textures by emitter ID without adding artwork to core', () => {

@@ -1,0 +1,35 @@
+---
+import Reference from '../../layouts/reference.astro';
+import { Code } from 'astro:components';
+const base = import.meta.env.BASE_URL;
+const headings = [
+  { depth: 2, slug: 'curve-format', text: 'Curve format' },
+  { depth: 2, slug: 'curve-timing', text: 'Curve timing' },
+];
+---
+<Reference headings={headings} title="Curves" description="Use curves to change values over time, such as fading particles out or increasing their speed at birth.">
+  <h2 id="curve-format">Curve format</h2>
+  <p>This curve changes a value from 1 to 0. Use it for <code>overLifetime.alpha</code> to fade each particle out:</p>
+  <Code theme="github-dark-dimmed" code={`{
+  "points": [
+    { "time": 0, "value": 1 },
+    { "time": 1, "value": 0 }
+  ]
+}`} lang="json" />
+  <ul>
+    <li><code>time</code>: a position from 0 to 1. Put points in increasing order, with no repeated times.</li>
+    <li><code>value</code>: the value at that point.</li>
+    <li><code>tangent</code>: optional slope. It defaults to 0, creating a smooth transition that flattens at the point.</li>
+  </ul>
+  <p>A curve needs at least one point. For a transition, start with points at 0 and 1. You can edit points and tangents visually in the lab.</p>
+
+  <h2 id="curve-timing">Curve timing</h2>
+  <ul>
+    <li><strong>Emission and initial values:</strong> 0 is the start of the emitter’s cycle; 1 is the end. Initial curves set values for new particles.</li>
+    <li><strong>Over lifetime:</strong> 0 is a particle’s birth; 1 is when it disappears. Each particle follows the curve independently.</li>
+    <li><strong>Modifier strength:</strong> time follows the emitter clock divided by its configured <code>duration</code>. With a duration of 2 seconds, time 1 means 2 seconds. Duration spread does not change this scale. If time exceeds 1, the curve continues along its final sampled slope.</li>
+  </ul>
+  <p>Curves work for emission rate, shape dimensions, initial lifetime, speed, size, rotation, spin, stretch, color, and opacity; all over-lifetime settings; and modifier magnitude. Direction and spread settings use numbers only.</p>
+
+  <p><a href={`${base}lab/over-lifetime-overlifetime-alpha/`}>Try an opacity curve →</a></p>
+</Reference>

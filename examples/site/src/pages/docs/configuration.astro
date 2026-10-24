@@ -1,0 +1,66 @@
+---
+import '../../styles/property-table.css';
+import Reference from '../../layouts/reference.astro';
+import { propertySchema } from '../../utils/property-schema';
+import { propertyTitle } from '../../utils/property-title';
+import { properties, propertyId } from '../../content/properties';
+const coreProperties = properties.filter((property) => !property.path.startsWith('artwork.'));
+const groups = [...new Set(coreProperties.map((property) => property.group))];
+const headings = groups.map((group) => ({ depth: 2, slug: group.replaceAll(' ', '-'), text: group }));
+const base = import.meta.env.BASE_URL;
+// Omit only the context supplied by the section; keep nested names unambiguous.
+const sectionPrefixes: Record<string, string> = {
+  Emission: 'emission.',
+  'Initial properties': 'initial.',
+  'Initial spread': 'initial.',
+  Rendering: 'rendering.',
+  Effect: 'effect.',
+  'Over lifetime': 'overLifetime.',
+};
+
+function settingName(path: string, group: string, examplePath: string): string {
+  const prefix = sectionPrefixes[group];
+  if (prefix && path.startsWith(prefix)) {
+    return path.slice(prefix.length);
+  }
+  if (group === 'Modifiers' && path.startsWith('modifiers.0.')) {
+    const modifier = examplePath.slice('modifiers.'.length);
+    const field = path.slice('modifiers.0.'.length);
+    return modifier === '0.type' ? field : `${modifier}.${field}`;
+  }
+  return path;
+}
+---
+<Reference wide headings={headings} title="Effect configuration" description="Control how particles appear, move, and change over time. Explore each setting and try it in the lab.">
+  <p>Most settings apply to a single emitter. Settings marked <code>effect.</code> apply to the whole effect. Optional settings use the defaults shown below.</p>
+  <p>Texture assets and animation playback belong to <code>@reparticle/pixi</code> <a href={`${base}docs/textures/`}>artwork options</a>, not this configuration.</p>
+  <p>Modifiers change particle movement. They run in the order you list them: the emitter’s modifiers first, then the effect’s shared modifiers. You can use the same modifier more than once.</p>
+  <nav class="mb-8 flex flex-wrap gap-2 text-sm" aria-label="Property groups">{groups.map((group) => <a href={`#${group.replaceAll(' ', '-')}`}>{group}</a>)}</nav>
+  {groups.map((group) => <section class="property-group">
+    <h2 id={group.replaceAll(' ', '-')}>{group}</h2>
+      <div class="property-table">
+        <table aria-label={`${group} settings`}>
+          <thead><tr><th scope="col">Setting</th><th scope="col">Description</th><th scope="col">Default</th><th scope="col">Required</th><th scope="col">Value</th></tr></thead>
+          <tbody>
+            {coreProperties.filter((property) => property.group === group).flatMap((property) => (property.fields ?? [property]).map((field) => <tr>
+              <th scope="row">
+                <code title={field.path}>{settingName(field.path, group, property.path)}</code>
+                {property.lab !== false && <a class="property-example" href={`${base}lab/${propertyId(property)}/`} aria-label={`Try ${propertyTitle(field)} in the lab`} title="Try it live">↗</a>}
+              </th>
+              <td class="property-description">{field.description}</td>
+              <td>{field.default.startsWith('Required') ? '—' : field.default}</td>
+              <td>{field.default.startsWith('Required') ? <>
+                <strong>Yes</strong>
+                {field.default.startsWith('Required for ') && <span>{field.default.slice('Required '.length)}</span>}
+              </> : 'No'}</td>
+              <td class="property-range">{propertySchema(field.path).range}</td>
+            </tr>))}
+          </tbody>
+        </table>
+      </div>
+  </section>)}
+</Reference>
+
+<style>
+  .property-group h2 { margin-bottom: 0; }
+</style>

@@ -12,7 +12,14 @@ import type { ExampleArtwork } from '../types/example-artwork';
 export async function loadArtwork(example: Example): Promise<Record<string, ParticleTexture>> {
   const artwork: Record<string, ParticleTexture> = {};
   for (const [emitterId, asset] of Object.entries(example.artwork)) {
-    artwork[emitterId] = await loadEmitterArtwork(asset);
+    const texture = await loadEmitterArtwork(asset);
+    artwork[emitterId] = {
+      ...texture,
+      sizeMode: asset.sizeMode,
+      pivot: asset.pivot,
+      flipX: asset.flipX,
+      flipY: asset.flipY,
+    };
   }
   return artwork;
 }
@@ -46,5 +53,5 @@ function selectAnimation(sheet: Spritesheet, name: string, asset: ExampleArtwork
     throw new Error(`Missing animation ${name} in ${asset.source}`);
   }
   validateAnimationFrames(textures);
-  return { textures, playback: asset.playback, fps: asset.fps };
+  return { textures, playback: asset.playback, fps: asset.fps, animationSize: asset.animationSize };
 }

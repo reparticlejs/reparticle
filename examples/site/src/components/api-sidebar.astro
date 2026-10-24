@@ -1,0 +1,27 @@
+---
+import { apiPackages } from '../content/api';
+const base = import.meta.env.BASE_URL;
+const pathname = `${Astro.url.pathname.replace(/\/$/, '')}/`;
+---
+<aside class="md:sticky md:top-20 md:max-h-[calc(100vh-6rem)] md:self-start md:overflow-y-auto md:pb-8">
+  <nav aria-label="API navigation" class="text-sm">
+    <a class="mb-6 block text-muted-foreground hover:text-foreground aria-[current=page]:font-medium aria-[current=page]:text-brand" href={`${base}api/`} aria-current={pathname === `${base}api/` ? 'page' : undefined}>Overview</a>
+    <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Packages</div>
+    {apiPackages.map((pkg) => (
+      <details class="mb-3" open={pathname.startsWith(`${base}${pkg.path}`)}>
+        <summary class="cursor-pointer py-2 font-medium">{pkg.title}</summary>
+        <div class="ml-2 border-l pl-3">
+          <a class="block py-2 text-muted-foreground hover:text-foreground aria-[current=page]:text-brand" href={`${base}${pkg.path}`} aria-current={pathname === `${base}${pkg.path}` ? 'page' : undefined}>Package overview</a>
+          {pkg.groups.map((group) => <div class="mt-4">
+            <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">{group.title}</div>
+            <ul class="space-y-0.5">
+              {group.links.map((link) => <li>
+                <a href={`${base}${link.path}`} aria-current={pathname === `${base}${link.path}` ? 'page' : undefined} class="block py-2 text-muted-foreground hover:text-foreground aria-[current=page]:font-medium aria-[current=page]:text-brand md:py-1">{link.title}</a>
+              </li>)}
+            </ul>
+          </div>)}
+        </div>
+      </details>
+    ))}
+  </nav>
+</aside>

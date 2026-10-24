@@ -1,0 +1,16 @@
+---
+import Reference from '../../layouts/reference.astro';
+const headings = [
+  { depth: 2, slug: 'engine-and-renderer', text: 'Engine and renderer' },
+  { depth: 2, slug: 'what-you-can-make', text: 'What you can make' },
+  { depth: 2, slug: 'requirements-for-the-pixijs-integration', text: 'Requirements for the PixiJS integration' },
+];
+---
+<Reference headings={headings} title="Introduction" description="reparticle is a GPU particle engine with JSON-defined effects. PixiJS is its first and primary renderer, and the only renderer currently available.">
+  <h2 id={headings[0].slug}>{headings[0].text}</h2>
+  <p>Define how particles move and look in JSON, then add the effect to your app.</p>
+  <p>For PixiJS, use <code>@reparticle/pixi</code>. It includes the core engine and lets you add particles to your scene with <code>ParticleEffect</code>. Supply your own textures for the particle artwork.</p>
+  <p><code>@reparticle/core</code> is the engine underneath. You don’t need to install it separately when using the PixiJS package.</p>
+  <h2 id={headings[1].slug}>{headings[1].text}</h2><p>Combine point, circle, box, and cone emitters with lifetime curves, color, spin, stretch, and force modifiers. Bind a single texture or a sequence of atlas frames. Use multiple emitters for layered effects.</p>
+  <h2 id={headings[2].slug}>{headings[2].text}</h2><p>Use PixiJS v8 and a browser with <a href="https://caniuse.com/webgl2" target="_blank" rel="noopener noreferrer">WebGL2 support</a>. Install <code>@reparticle/pixi</code>; the core engine is included.</p>
+</Reference>

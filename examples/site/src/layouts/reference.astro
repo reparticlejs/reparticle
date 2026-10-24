@@ -1,0 +1,60 @@
+---
+import type { MarkdownHeading } from 'astro';
+import Site from './site.astro';
+import DocsSidebar from '../components/docs-sidebar.astro';
+import ApiSidebar from '../components/api-sidebar.astro';
+import { documentation } from '../content/navigation';
+import { apiPages } from '../content/api';
+interface Props {
+  title: string;
+  description: string;
+  headings?: MarkdownHeading[];
+  showDescription?: boolean;
+  wide?: boolean;
+}
+const { title, description, headings = [], showDescription = true, wide = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const pathname = `${Astro.url.pathname.replace(/\/$/, '')}/`;
+const isApi = pathname.startsWith(`${base}api/`);
+const currentGroup = documentation.find((group) => group.links.some((link) => pathname === `${base}${link.path}`));
+const docs = documentation.flatMap((group) => group.links);
+const docIndex = docs.findIndex((link) => pathname === `${base}${link.path}`);
+const previous = docIndex > 0 ? docs[docIndex - 1] : undefined;
+const next = docIndex >= 0 ? docs[docIndex + 1] : undefined;
+const currentApi = apiPages.find((page) => pathname === `${base}${page.path}`);
+const apiLabels: Record<string, string> = { classes: 'Class', interfaces: 'Interface', functions: 'Function', types: 'Type alias', variables: 'Variable' };
+const eyebrow = isApi ? (apiLabels[currentApi?.kind ?? ''] ?? 'Reference') : currentGroup?.title;
+const contents = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const showContents = isApi && !wide && contents.length > 0;
+---
+<Site title={`${title} — reparticle`} description={description}>
+  <div class:list={["container-page grid gap-10 pb-10 md:grid-cols-[220px_minmax(0,1fr)]", showContents && "xl:grid-cols-[220px_minmax(0,1fr)_200px]"]}>
+    {isApi ? <ApiSidebar /> : <DocsSidebar groups={documentation} />}
+    <article class:list={["prose-docs min-w-0 animate-fade-in", !wide && "max-w-3xl"]}>
+      {eyebrow && <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">{eyebrow}</div>}
+      <h1 class="!mt-0 mb-4 text-4xl font-semibold tracking-tight">{title}</h1>
+      {showDescription && <p class="!mt-0 text-lg !text-muted-foreground">{description}</p>}
+      <slot />
+      {(previous || next) && <nav aria-label="Previous and next page" class="not-prose mt-16 grid gap-3 sm:grid-cols-2">
+        {previous ? <a href={`${base}${previous.path}`} rel="prev" class="group rounded-xl border bg-card p-4 no-underline transition-all hover:-translate-y-0.5 hover:border-foreground/30">
+          <div class="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Previous</div>
+          <div class="mt-1 font-semibold text-foreground">{previous.title}</div>
+        </a> : <div />}
+        {next && <a href={`${base}${next.path}`} rel="next" class="group rounded-xl border bg-card p-4 text-right no-underline transition-all hover:-translate-y-0.5 hover:border-foreground/30">
+          <div class="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Next</div>
+          <div class="mt-1 font-semibold text-foreground">{next.title}</div>
+        </a>}
+      </nav>}
+    </article>
+    {showContents && <aside class="hidden xl:block">
+      <div class="sticky top-20 text-sm">
+        {contents.length > 0 && <nav aria-label="On this page">
+          <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">On this page</div>
+          <ul class="space-y-1.5">
+            {contents.map((heading) => <li class:list={[heading.depth === 3 && 'pl-3']}><a class="text-muted-foreground hover:text-foreground" href={`#${heading.slug}`}>{heading.text}</a></li>)}
+          </ul>
+        </nav>}
+      </div>
+    </aside>}
+  </div>
+</Site>
