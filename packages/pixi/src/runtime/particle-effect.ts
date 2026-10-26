@@ -314,8 +314,11 @@ export class ParticleEffect extends ViewContainer {
 
   /** Rebuild only explicitly supplied bounds, preserving the empty default. */
   protected override updateBounds(): void {
-    this._bounds.clear();
-    this.addBounds(this._bounds);
+    // Pixi's public bounds getter calls updateBounds(), so it would recurse here.
+    // oxlint-disable-next-line no-underscore-dangle -- Pixi's protected field name.
+    const bounds = this._bounds;
+    bounds.clear();
+    this.addBounds(bounds);
   }
 
   /** Preserve ticker time while keeping automatic birth batches close together. */
