@@ -122,9 +122,12 @@ importers:
 
   examples/demo:
     dependencies:
-      '@reparticle/pixi':
+      '@reparticle/examples':
         specifier: workspace:*
-        version: link:../../packages/pixi
+        version: link:../shared
+      '@reparticle/player':
+        specifier: workspace:*
+        version: link:../../packages/player
       pixi.js:
         specifier: 'catalog:'
         version: 8.20.1
@@ -151,57 +154,27 @@ importers:
         specifier: 'catalog:'
         version: 4.1.10(@types/node@26.6.5)(@vitest/browser-playwright@4.1.10)(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
 
-  examples/site:
+  examples/shared:
     dependencies:
-      '@astrojs/react':
-        specifier: 'catalog:'
-        version: 7.1.1(@types/node@26.6.5)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(esbuild@0.28.2)(jiti@2.7.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)
+      '@reparticle/player':
+        specifier: workspace:*
+        version: link:../../packages/player
+    devDependencies:
       '@reparticle/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@reparticle/demo':
-        specifier: workspace:*
-        version: link:../demo
-      astro:
-        specifier: 'catalog:'
-        version: 7.4.2(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)
-      react:
-        specifier: 'catalog:'
-        version: 19.3.1
-      react-dom:
-        specifier: 'catalog:'
-        version: 19.3.1(react@19.3.1)
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
-    devDependencies:
-      '@astrojs/check':
-        specifier: 'catalog:'
-        version: 0.9.12(@emnapi/runtime@1.11.3)(@typescript/typescript6@6.0.2)(prettier@3.9.10)
-      '@tailwindcss/vite':
-        specifier: 'catalog:'
-        version: 4.3.3(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.3.0
-      '@types/react-dom':
-        specifier: 'catalog:'
-        version: 19.3.0(@types/react@19.3.0)
-      tailwindcss:
-        specifier: 'catalog:'
-        version: 4.3.3
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.28.20(@typescript/typescript6@6.0.2)
-      typedoc-plugin-markdown:
-        specifier: 'catalog:'
-        version: 4.14.1(typedoc@0.28.20(@typescript/typescript6@6.0.2))
+      '@types/node':
+        specifier: 26.6.5
+        version: 26.6.5
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
+      vite:
+        specifier: 'catalog:'
+        version: 8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)
       vitest:
         specifier: 'catalog:'
-        version: 4.1.10(@types/node@26.6.5)(@vitest/browser-playwright@4.1.10)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
+        version: 4.1.10(@types/node@26.6.5)(@vitest/browser-playwright@4.1.10)(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
 
   packages/core:
     dependencies:
@@ -255,6 +228,89 @@ importers:
       tsdown:
         specifier: 'catalog:'
         version: 0.22.14(@typescript/typescript6@6.0.2)(@volar/typescript@2.4.30(@typescript/typescript6@6.0.2))
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@types/node@26.6.5)(@vitest/browser-playwright@4.1.10)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
+
+  packages/player:
+    dependencies:
+      '@reparticle/core':
+        specifier: workspace:*
+        version: link:../core
+      '@reparticle/pixi':
+        specifier: workspace:*
+        version: link:../pixi
+      pixi.js:
+        specifier: 'catalog:'
+        version: 8.20.1
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vite:
+        specifier: 'catalog:'
+        version: 8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@types/node@26.6.5)(@vitest/browser-playwright@4.1.10)(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
+
+  site:
+    dependencies:
+      '@astrojs/react':
+        specifier: 'catalog:'
+        version: 7.1.1(@types/node@26.6.5)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(esbuild@0.28.2)(jiti@2.7.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)
+      '@reparticle/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      '@reparticle/examples':
+        specifier: workspace:*
+        version: link:../examples/shared
+      '@reparticle/player':
+        specifier: workspace:*
+        version: link:../packages/player
+      astro:
+        specifier: 'catalog:'
+        version: 7.4.2(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@astrojs/check':
+        specifier: 'catalog:'
+        version: 0.9.12(@emnapi/runtime@1.11.3)(@typescript/typescript6@6.0.2)(prettier@3.9.10)
+      '@tailwindcss/vite':
+        specifier: 'catalog:'
+        version: 4.3.3(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.3.0(@types/react@19.3.0)
+      tailwindcss:
+        specifier: 'catalog:'
+        version: 4.3.3
+      typedoc:
+        specifier: 'catalog:'
+        version: 0.28.20(@typescript/typescript6@6.0.2)
+      typedoc-plugin-markdown:
+        specifier: 'catalog:'
+        version: 4.14.1(typedoc@0.28.20(@typescript/typescript6@6.0.2))
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'

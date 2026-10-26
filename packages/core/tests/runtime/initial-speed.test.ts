@@ -6,7 +6,7 @@ import { parseEffectConfig } from '#config/parse-effect.js';
 import { SampledCurve } from '#curves/sampled-curve.js';
 import { EmitterPlayback } from '#runtime/playback/emitter.js';
 
-import skeleton from '../../../../docs/effect.example.json';
+import skeleton from '../../../../site/src/content/effect.example.json';
 
 const speed = {
   points: [

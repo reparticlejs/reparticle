@@ -1,0 +1,22 @@
+{
+  "name": "@reparticle/examples",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/catalog/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run tests"
+  },
+  "dependencies": {
+    "@reparticle/player": "workspace:*"
+  },
+  "devDependencies": {
+    "@reparticle/core": "workspace:*",
+    "@types/node": "26.6.5",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

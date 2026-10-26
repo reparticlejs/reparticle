@@ -11,7 +11,7 @@
     "format": "oxfmt .",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "format:check": "oxfmt --check .",
-    "dev:site": "pnpm --filter @reparticle/demo^... build && pnpm --filter @reparticle/site dev"
+    "dev:site": "pnpm --filter @reparticle/site^... build && pnpm --filter @reparticle/site dev"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "catalog:",

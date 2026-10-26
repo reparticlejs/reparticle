@@ -8,7 +8,7 @@ import { SpawnRate } from '#runtime/playback/spawn-rate.js';
 import { SpawnSchedule } from '#runtime/playback/spawn-schedule.js';
 import { propertyVariation } from '#simulation/emission/variation.js';
 
-import skeleton from '../../../../../docs/effect.example.json';
+import skeleton from '../../../../../site/src/content/effect.example.json';
 
 const ramp = {
   points: [

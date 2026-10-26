@@ -1,0 +1,14 @@
+import type { Example } from '@reparticle/player/types';
+
+export const example: Example = {
+  id: 'falling-leaves',
+  name: 'Falling leaves',
+  file: 'effects/falling-leaves.json',
+  verticalPosition: 0,
+  fullWidth: true,
+  artwork: {
+    amber: { source: 'assets/leaf.png' },
+    rust: { source: 'assets/leaf.png' },
+    gold: { source: 'assets/leaf.png' },
+  },
+};

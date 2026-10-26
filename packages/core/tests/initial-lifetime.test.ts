@@ -5,7 +5,7 @@ import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
 import { SampledCurve } from '#curves/sampled-curve.js';
 
-import skeleton from '../../../docs/effect.example.json';
+import skeleton from '../../../site/src/content/effect.example.json';
 
 it('finds the maximum across sampled Hermite overshoot for prewarm', () => {
   const curve = new SampledCurve({

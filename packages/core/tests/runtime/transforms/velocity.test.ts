@@ -5,7 +5,7 @@ import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
 import { EmitterVelocity } from '#runtime/transforms/velocity.js';
 
-import skeleton from '../../../../../docs/effect.example.json';
+import skeleton from '../../../../../site/src/content/effect.example.json';
 
 it('estimates motion after the first sample and stops inheriting when stationary', () => {
   const motion = new EmitterVelocity();

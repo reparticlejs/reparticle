@@ -4,7 +4,7 @@ import { $ZodError as ZodError } from 'zod/v4/core';
 import { parseEffectConfig } from '#config/parse-effect.js';
 import { effectConfigSchema } from '#config/schemas/definition/effect.js';
 
-import skeleton from '../../../../docs/effect.example.json';
+import skeleton from '../../../../site/src/content/effect.example.json';
 
 function issues(input: unknown) {
   return effectConfigSchema.safeParse(input).error?.issues ?? [];

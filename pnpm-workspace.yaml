@@ -1,6 +1,7 @@
 packages:
   - packages/*
   - examples/*
+  - site
 
 catalog:
   '@astrojs/check': 0.9.12

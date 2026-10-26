@@ -4,7 +4,7 @@ import { $ZodError as ZodError } from 'zod/v4/core';
 import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
 
-import skeleton from '../../../../docs/effect.example.json';
+import skeleton from '../../../../site/src/content/effect.example.json';
 
 it('defaults property spreads to zero and updates them independently', () => {
   const source = skeleton.emitters[0]!;

@@ -4,7 +4,7 @@ import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
 import { sampleInitialProperties } from '#curves/sample-initial-properties.js';
 
-import skeleton from '../../../../docs/effect.example.json';
+import skeleton from '../../../../site/src/content/effect.example.json';
 
 it('reuses unaffected curves and replaces only patched properties', () => {
   const config = parseEffectConfig(skeleton).emitters[0];

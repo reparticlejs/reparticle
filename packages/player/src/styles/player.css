@@ -1,0 +1,195 @@
+/* Interactive previews and curve controls are independent of the documentation shell. */
+.player {
+  border: 1px solid hsl(var(--border, 240 6% 26%));
+  border-radius: 12px;
+  overflow: hidden;
+  background: hsl(var(--card, 240 6% 10%));
+}
+.preview-column {
+  min-width: 0;
+}
+.preview {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.canvas-host {
+  position: relative;
+  height: 450px;
+  overflow: hidden;
+  background-color: #151515;
+  background-image: conic-gradient(#1b1b1b 25%, transparent 0 50%, #1b1b1b 0 75%, transparent 0);
+  background-size: 32px 32px;
+}
+.canvas-host canvas {
+  display: block;
+}
+.player-message {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 40%;
+  text-align: center;
+  z-index: 2;
+  background: hsl(var(--card, 240 6% 10%));
+  padding: 16px;
+  border-radius: 6px;
+  color: hsl(var(--muted-foreground, 240 5% 65%));
+}
+.player-message.error {
+  color: #ffb5aa;
+}
+.demo-stats {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+  white-space: pre;
+  color: hsl(var(--muted-foreground, 240 5% 65%));
+  text-align: right;
+  font:
+    11px/1.5 ui-monospace,
+    monospace;
+  pointer-events: none;
+  text-shadow: 0 1px 2px #000;
+}
+.player-toolbar {
+  min-height: 58px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid hsl(var(--border, 240 6% 26%));
+  font-size: 12px;
+}
+.effect-title {
+  font-weight: 600;
+}
+.playback {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: hsl(var(--muted-foreground, 240 5% 65%));
+}
+.playback button {
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  color: inherit;
+  font-size: inherit;
+}
+.playback button:hover,
+.playback a:hover {
+  color: hsl(var(--brand, 90 65% 65%));
+}
+.gallery-player {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+}
+.gallery-player .canvas-host {
+  height: 580px;
+}
+.effect-list {
+  height: 639px;
+  overflow-y: auto;
+  border-right: 1px solid hsl(var(--border, 240 6% 26%));
+  padding: 16px 10px;
+  scrollbar-width: thin;
+}
+.list-heading {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: hsl(var(--muted-foreground, 240 5% 65%));
+}
+.effect-list button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: hsl(var(--muted-foreground, 240 5% 65%));
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.effect-list button:hover {
+  background: hsl(var(--muted, 240 4% 16%));
+}
+.effect-list button[aria-pressed='true'] {
+  background: hsl(var(--accent, 240 4% 20%));
+  color: hsl(var(--foreground, 0 0% 95%));
+  font-weight: 500;
+}
+.effect-list button:focus-visible {
+  outline: 2px solid hsl(var(--brand, 90 65% 65%));
+  outline-offset: -2px;
+}
+.effect-number {
+  font: 11px var(--font-mono, ui-monospace, monospace);
+  color: hsl(var(--muted-foreground, 240 5% 65%));
+}
+.loading-fallback {
+  min-height: 450px;
+  display: grid;
+  place-items: center;
+  color: hsl(var(--muted-foreground, 240 5% 65%));
+}
+@media (max-width: 900px) {
+  .gallery-player {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .canvas-host {
+    height: 340px;
+  }
+  .gallery-player {
+    grid-template-columns: 1fr;
+  }
+  .effect-list {
+    height: 168px;
+    border-right: 0;
+    border-bottom: 1px solid hsl(var(--border, 240 6% 26%));
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+  }
+  .list-heading {
+    grid-column: 1 / -1;
+  }
+  .gallery-player .canvas-host {
+    height: 420px;
+  }
+  .player-toolbar {
+    padding-inline: 12px;
+  }
+  .playback {
+    gap: 10px;
+  }
+}
+
+.demo-stats {
+  color: #a1a1aa;
+}
+@media (max-width: 640px) {
+  .player-toolbar,
+  .playback {
+    flex-wrap: wrap;
+  }
+  .playback {
+    align-items: center;
+  }
+  .playback button,
+  .playback a {
+    min-height: 44px;
+  }
+}

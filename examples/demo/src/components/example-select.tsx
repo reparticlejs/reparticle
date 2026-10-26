@@ -1,6 +1,6 @@
+import { examples } from '@reparticle/examples';
 import type { ChangeEvent } from 'react';
 
-import { examples } from '../examples';
 import type { ExampleSelectProps } from '../types/example-select-props';
 
 export function ExampleSelect({ example, disabled, onSelect }: ExampleSelectProps) {

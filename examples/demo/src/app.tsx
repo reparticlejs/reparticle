@@ -1,10 +1,11 @@
+import { examples } from '@reparticle/examples';
+import { PlaybackControls, useExamplePlayer } from '@reparticle/player';
+
 import { ExampleSelect } from './components/example-select';
-import { PlaybackControls } from './components/playback-controls';
-import { useExamplePlayer } from './hooks/use-example-player';
 
 export function App() {
   const { host, loading, error, example, paused, select, togglePlayback, restart } =
-    useExamplePlayer();
+    useExamplePlayer(examples[0]!);
 
   return (
     <main>

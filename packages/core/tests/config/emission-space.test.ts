@@ -4,7 +4,7 @@ import { $ZodError as ZodError } from 'zod/v4/core';
 import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
 
-import skeleton from '../../../../docs/effect.example.json';
+import skeleton from '../../../../site/src/content/effect.example.json';
 
 it('defaults to world and accepts both spaces with inheritance preserved', () => {
   for (const space of [undefined, 'world', 'local']) {

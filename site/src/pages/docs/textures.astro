@@ -1,0 +1,107 @@
+---
+import '../../styles/property-table.css';
+import Reference from '../../layouts/reference.astro';
+import { Code } from 'astro:components';
+const rows = [
+  ['textures', 'Loaded textures or cache names. Use one for a static image, or at least two from the same sheet image for animation.', 'Procedural particles', 'Texture objects\nCached names'],
+  ['sizeMode', 'manual uses particle size. For animation, auto keeps the frame’s aspect ratio and applies particle size as a multiplier.', 'manual', 'manual\nauto'],
+  ['pivot', 'Offset from the center. Positive X moves right; positive Y moves up.', '{ x: 0, y: 0 }', '{ x, y }'],
+  ['flipX', 'Mirror the artwork horizontally.', 'false', 'true\nfalse'],
+  ['flipY', 'Mirror the artwork vertically.', 'false', 'true\nfalse'],
+  ['playback', 'Choose how animation frames play. Once modes span each particle’s lifetime; loop modes repeat at the chosen FPS.', 'loop-forward', 'none\nonce-forward\nonce-backward\nonce-pingpong\nloop-forward\nloop-backward\nloop-pingpong'],
+  ['fps', 'Frames per second for looping animations.', '30', '0 or more'],
+  ['animationSize', 'Reference dimensions for animation frames.', 'First frame size', '{ width, height }\nBoth greater than 0'],
+];
+const headings = [
+  { depth: 2, slug: 'load-a-texture', text: 'Load a texture' },
+  { depth: 2, slug: 'load-a-sprite-sheet', text: 'Load a sprite sheet' },
+  { depth: 2, slug: 'animate-particles', text: 'Animate particles' },
+  { depth: 2, slug: 'artwork-options', text: 'Artwork options' },
+  { depth: 2, slug: 'cleanup', text: 'Clean up' },
+];
+---
+<Reference wide headings={headings} title="Textures & animation" description="Load images or sprite sheets with PixiJS, then choose which texture each emitter uses.">
+  <h2 id="load-a-texture">Load a texture</h2>
+  <p>Load your image with <code>Assets.load()</code> before creating the effect. Pass the texture under the emitter’s ID: <code>sparks</code> below matches <code>id: 'sparks'</code> in the effect definition.</p>
+  <Code theme="github-dark-dimmed" code={`import { Assets, type Texture } from 'pixi.js';
+import { ParticleEffect } from '@reparticle/pixi';
+
+const spark = await Assets.load<Texture>('/textures/spark.png');
+
+const effect = new ParticleEffect({
+  version: 1,
+  emitters: [{
+    id: 'sparks', // Emitter ID.
+    capacity: 2048,
+    seed: 42,
+    emission: { rate: 120, shape: { type: 'point' } },
+    initial: { lifetime: 2, speed: 90, direction: 0, spread: Math.PI * 2, size: 12 },
+  }],
+}, {
+  ticker: app.ticker,
+  emitters: {
+    sparks: { textures: [spark] }, // Must match the emitter ID above.
+  },
+});
+
+effect.position.set(app.screen.width / 2, app.screen.height / 2);
+app.stage.addChild(effect);`} lang="ts" />
+  <p>The artwork key <code>sparks</code> must match the emitter’s <code>id</code> exactly. The texture variable <code>spark</code> and filename <code>spark.png</code> can have any name.</p>
+  <p>This uses your existing PixiJS app. For multiple emitters, add an entry for each ID under <code>emitters</code>. An emitter without a supplied texture draws soft procedural particles.</p>
+
+  <p>Missing or invalid textures use a placeholder and log a warning. Load assets before assigning them.</p>
+
+  <h2 id="load-a-sprite-sheet">Load a sprite sheet</h2>
+  <p>A sprite sheet packs several images into one PNG. Its JSON file tells PixiJS where each image is.</p>
+  <p>For example, put these exported files in your textures folder:</p>
+  <Code theme="github-dark-dimmed" code={`textures/
+  particles.png
+  particles.json`} lang="text" />
+  <p>Load <code>particles.json</code>. PixiJS also loads <code>particles.png</code>, as long as that is the image referenced in the JSON. Then choose a frame and give it to your emitter:</p>
+  <Code theme="github-dark-dimmed" code={`import { Assets } from 'pixi.js';
+
+await Assets.load('/textures/particles.json');
+
+effect.setEmitterTexture('sparks', {
+  textures: ['star.png'],
+});`} lang="ts" />
+  <p><code>star.png</code> is the name of an image inside the sheet, not a separate file to load. PixiJS caches these names when the sheet loads. A frame named <code>star</code> can be passed as <code>textures: ['star']</code>. Replace it with one of the names listed under <code>frames</code> in your JSON.</p>
+  <p><code>sparks</code> selects the emitter from the previous example. This gives all its particles the star texture; it does not animate them.</p>
+
+  <h2 id="animate-particles">Animate particles</h2>
+  <p>After loading the sprite sheet, list its frame names in playback order. Use at least two frames from the same sheet image:</p>
+  <Code theme="github-dark-dimmed" code={`effect.setEmitterTexture('sparks', {
+  textures: [
+    'fire-01.png',
+    'fire-02.png',
+    'fire-03.png',
+  ],
+  playback: 'loop-forward',
+  fps: 12,
+});`} lang="ts" />
+  <p>You can also pass these same options under <code>emitters.sparks</code> when creating <code>ParticleEffect</code>. Use <code>loop-forward</code> to repeat at the chosen FPS, or <code>once-forward</code> to play once over each particle’s lifetime.</p>
+
+  <h2 id="artwork-options">Artwork options</h2>
+  <div class="property-table">
+    <table aria-label="Artwork settings">
+      <thead><tr><th scope="col">Setting</th><th scope="col">Description</th><th scope="col">Default</th><th scope="col">Required</th><th scope="col">Value</th></tr></thead>
+      <tbody>
+        {rows.map(([name, description, defaultValue, value]) => <tr>
+          <th scope="row"><code>{name}</code></th>
+          <td class="property-description">{description}</td>
+          <td>{defaultValue}</td>
+          <td>No</td>
+          <td class="property-range">{value}</td>
+        </tr>)}
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="cleanup">Clean up</h2>
+  <p>Destroy the effect when removing it from your scene. Loaded textures remain available for other effects. Unload an asset only when nothing else uses it:</p>
+  <Code theme="github-dark-dimmed" code={`effect.destroy();
+
+// Only when these assets are no longer used by your scene:
+await Assets.unload('/textures/spark.png');
+await Assets.unload('/textures/particles.json');`} lang="ts" />
+</Reference>

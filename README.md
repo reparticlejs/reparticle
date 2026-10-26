@@ -4,7 +4,7 @@
 
 The core uses WebGL2 for simulation and has no PixiJS dependency. The PixiJS integration renders directly from its GPU textures and provides the `ParticleEffect` display object. It creates no sprite per particle and does not read particle state back to the CPU. Particle concepts and behavior are inspired by [Defold](https://defold.com/).
 
-For an existing PixiJS v8 app, install `@reparticle/pixi`. The core engine is included.
+For an existing app using PixiJS v8.20.1 or later within v8, install `@reparticle/pixi`. The core engine is included.
 
 ```sh
 npm install @reparticle/pixi
@@ -90,9 +90,11 @@ A single texture is static. Multiple frames enable flipbook animation and must s
 ### Runtime controls
 
 ```ts
-effect.autoUpdate = false; // Pause simulation.
-effect.autoUpdate = true; // Resume.
+effect.pause(); // Pause simulation.
+effect.resume(); // Continue.
 effect.reset(); // Restart the effect.
+effect.stop(); // Stop emitting; let existing particles finish.
+effect.retire(); // Finish the current loop, then stop emitting.
 
 effect.getEmitter('sparks').setParameters({
   emission: { rate: 800 },
@@ -112,17 +114,19 @@ For a custom loop, construct with `autoUpdate: false` and call `effect.update(se
 
 Effect configuration is validated by core. Consumers supply data and supported parameter updates; arbitrary custom GPU functions are not part of the public API.
 
-Browse the [effect definitions](examples/demo/public/effects), [artwork bindings](examples/demo/src/examples/effects), or [configuration skeleton](docs/effect.example.json) for complete examples.
+Browse the [effect definitions](examples/shared/public/effects), [artwork bindings](examples/shared/src/catalog/effects), or [configuration skeleton](site/src/content/effect.example.json) for complete examples.
 
 ## Packages
 
-| Package            | Responsibility                                                                                                 |
-| ------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `@reparticle/core` | Configuration validation, emission scheduling, particle allocation, and WebGL2 simulation. No Pixi dependency. |
-| `@reparticle/pixi` | The `ParticleEffect` display object, artwork bindings, and rendering through PixiJS 8.                         |
-| `examples/demo`    | The React example gallery, sharing one Pixi application across effects.                                        |
+| Package              | Responsibility                                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `@reparticle/core`   | Configuration validation, emission scheduling, particle allocation, and WebGL2 simulation. No Pixi dependency. |
+| `@reparticle/pixi`   | The `ParticleEffect` display object, artwork bindings, and rendering through PixiJS 8.                         |
+| `@reparticle/player` | Private React player, playback controls, and curve editor used by the site and demo.                           |
+| `examples/shared`    | Shared effect catalog, artwork, and licenses.                                                                  |
+| `examples/demo`      | The React example gallery, sharing one Pixi application across effects.                                        |
 
-CPU bookkeeping handles births, expiration, and live counts. Particle state stays in GPU textures shared with the renderer. Simulation functions are authored in TypeScript and compiled to GLSL during the library build. TypeGPU is a build-time tool; neither TypeGPU nor its compiler is shipped to applications. Consumers need no custom build plugin or minifier configuration.
+The engine tracks births, expiration, and live counts. Particle motion runs on the GPU, and the renderer reads the resulting textures directly.
 
 ## Requirements and limits
 
@@ -134,6 +138,14 @@ CPU bookkeeping handles births, expiration, and live counts. Particle state stay
 - There is no editor included.
 
 ## Development
+
+Simulation functions are written in TypeScript with TypeGPU. The core build generates
+GLSL in `packages/core/src/simulation/shaders.json`. Applications receive the generated
+shaders, not TypeGPU or its compiler, and need no extra build plugin. WebGL compiles
+the shaders for the device when simulation is first initialized.
+
+See [particle architecture](site/src/content/development/architecture.md) for the current storage,
+update flow, and resource ownership.
 
 Install the test browser once after installing dependencies:
 
@@ -148,18 +160,17 @@ Run just browser tests with `pnpm exec turbo run test --filter=@reparticle/core 
 ```sh
 pnpm check   # Formatting, lint, typecheck, tests, and production builds.
 pnpm format  # Format the workspace.
-pnpm build   # Build the packages and demo.
+pnpm build   # Build the packages, demo, and documentation site.
 ```
 
-The demo imports built packages. `pnpm dev` builds them before starting Vite; rebuild after library changes, or run each library's `tsdown --watch` in a separate terminal.
+The demo imports built packages. `pnpm dev` builds them before starting Vite; restart the command after library changes so shader generation runs too.
 
-Example artwork attribution and full license texts are linked from the [demo README](examples/demo/README.md).
+Example artwork attribution and full license texts are linked from the [shared examples README](examples/shared/README.md).
 
 ## Website
 
-Run `pnpm dev:site` for the Astro homepage and live examples gallery. The site reuses
-the demo player, effects, and artwork. See [site development](examples/site/README.md).
+Run `pnpm dev:site` for the Astro homepage and live examples gallery. The site and demo use `@reparticle/player` and the shared effect catalog. See [site development](site/README.md).
 
 ## License
 
-[MIT](LICENSE). Example artwork has its own licenses listed in the [demo README](examples/demo/README.md).
+[MIT](LICENSE). Example artwork has its own licenses listed in the [shared examples README](examples/shared/README.md).

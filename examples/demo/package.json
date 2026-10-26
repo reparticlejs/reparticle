@@ -5,21 +5,15 @@
   "imports": {
     "#src/*": "./src/*"
   },
-  "exports": {
-    "./examples": "./src/examples/index.ts",
-    "./use-example-player": "./src/hooks/use-example-player.ts",
-    "./types/example": "./src/types/example.ts",
-    "./types/example-update": "./src/types/example-update.ts"
-  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run tests",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@reparticle/pixi": "workspace:*",
+    "@reparticle/examples": "workspace:*",
+    "@reparticle/player": "workspace:*",
     "pixi.js": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"

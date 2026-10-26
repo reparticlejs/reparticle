@@ -7,7 +7,7 @@ import { scalarPropertySchema } from '#config/schemas/definition/curve.js';
 import { evaluateCurve } from '#curves/evaluate-curve.js';
 import { sampleCurve } from '#curves/sample-curve.js';
 
-import skeleton from '../../../../docs/effect.example.json';
+import skeleton from '../../../../site/src/content/effect.example.json';
 
 it('interpolates Hermite values with slopes scaled to the segment width', () => {
   const property = scalarPropertySchema.parse({

@@ -1,0 +1,96 @@
+.curve-editor svg {
+  /* Apply to the SVG viewport: touch-action on circles does not prevent browser panning. */
+  touch-action: none;
+  width: 100%;
+  background: hsl(var(--card, 240 6% 10%));
+  border-radius: 6px;
+}
+
+.curve-editor svg text {
+  fill: hsl(var(--muted-foreground, 240 5% 65%));
+  font: 10px var(--font-sans, system-ui, sans-serif);
+}
+
+.curve-editor fieldset {
+  min-width: 0;
+  margin: 16px 0;
+  border: 1px solid hsl(var(--border, 240 6% 26%));
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.curve-editor legend {
+  font-size: 12px;
+  color: hsl(var(--brand, 90 65% 65%));
+}
+
+.curve-point {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.curve-point input {
+  width: 100%;
+  margin-top: 8px;
+  background: hsl(var(--card, 240 6% 10%));
+  color: hsl(var(--foreground, 0 0% 95%));
+  border: 1px solid hsl(var(--border, 240 6% 26%));
+  border-radius: 4px;
+  padding: 6px;
+}
+
+.curve-editor fieldset button {
+  color: hsl(var(--muted-foreground, 240 5% 65%));
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+.curve-handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.curve-handle:active {
+  cursor: grabbing;
+}
+
+.curve-editor svg {
+  border: 1px solid hsl(var(--border, 240 6% 26%));
+  background: #151518;
+}
+
+.curve-editor svg text {
+  fill: #a1a1aa;
+}
+
+.curve-editor .control-note {
+  font-size: 12px !important;
+  color: hsl(var(--muted-foreground, 240 5% 65%)) !important;
+}
+
+.curve-editor .control-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.curve-editor .control-actions button {
+  border: 1px solid hsl(var(--border, 240 6% 26%));
+  background: hsl(var(--muted, 240 4% 16%));
+  color: hsl(var(--foreground, 0 0% 95%));
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.curve-editor .value-json > summary {
+  cursor: pointer;
+  margin-block: 16px;
+  color: hsl(var(--muted-foreground, 240 5% 65%));
+  font-size: 12px;
+}

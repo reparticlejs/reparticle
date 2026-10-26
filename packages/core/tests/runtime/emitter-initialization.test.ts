@@ -4,8 +4,8 @@ import { parseEffectConfig } from '#config/parse-effect.js';
 import { Emitter } from '#runtime/emitter.js';
 import type { EmitterContext } from '#types/emitter.js';
 
-import skeleton from '../../../../docs/effect.example.json';
-import magicImpact from '../../../../examples/demo/public/effects/magic-impact.json';
+import magicImpact from '../../../../examples/shared/public/effects/magic-impact.json';
+import skeleton from '../../../../site/src/content/effect.example.json';
 
 const gpu = vi.hoisted(() => ({
   construct: vi.fn<() => void>(),

@@ -1,0 +1,7 @@
+---
+import Reference from '../../../layouts/reference.astro';
+import { Content, frontmatter, getHeadings } from '../../../content/development/architecture.md';
+---
+<Reference title={frontmatter.title} description="How the engine stores, updates, and renders particles." headings={getHeadings()}>
+  <Content />
+</Reference>

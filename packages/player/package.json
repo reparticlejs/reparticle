@@ -1,0 +1,28 @@
+{
+  "name": "@reparticle/player",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./curve-editor": "./src/curve-editor.ts",
+    "./types": "./src/types/index.ts",
+    "./styles.css": "./src/styles/player.css",
+    "./curve-editor.css": "./src/styles/curve-editor.css"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run tests"
+  },
+  "dependencies": {
+    "@reparticle/core": "workspace:*",
+    "@reparticle/pixi": "workspace:*",
+    "pixi.js": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

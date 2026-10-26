@@ -55,7 +55,11 @@ export default defineConfig({
   },
   overrides: [
     {
-      files: ['examples/*/src/**/*.{ts,tsx}'],
+      files: [
+        'examples/*/src/**/*.{ts,tsx}',
+        'site/src/**/*.{ts,tsx}',
+        'packages/player/src/**/*.{ts,tsx}',
+      ],
       plugins: ['react', 'jsx-a11y'],
       env: { browser: true },
       rules: {
