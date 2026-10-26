@@ -1,6 +1,6 @@
 import { tgpu, d } from 'typegpu';
 
-import { PARTICLE_BAND } from '#simulation/layout.ts';
+import { PARTICLE_BAND } from '#simulation/data-layout.ts';
 import { advanceRotation } from '#simulation/particles/angular-velocity.ts';
 import { integrateMotion } from '#simulation/particles/integrate-motion.ts';
 import { advanceAge, particleAlive } from '#simulation/particles/lifetime.ts';

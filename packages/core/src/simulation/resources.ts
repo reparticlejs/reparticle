@@ -1,6 +1,6 @@
 import { tgpu, d } from 'typegpu';
 
-import { CURVE_SEGMENTS, MODIFIER_WORDS } from './layout.ts';
+import { CURVE_SEGMENTS, MODIFIER_WORDS } from './data-layout.ts';
 export { readSpawn, readState } from './storage.ts';
 
 // Field order and vec4 packing match core's 5,360-byte SimulationInputs block.

@@ -1,5 +1,5 @@
 import type { EffectTransform } from '#runtime/transforms/effect.js';
-import { MODIFIER_COUNT_INDEX, MODIFIER_RADIAL_FLAG_INDEX } from '#simulation/layout.js';
+import { MODIFIER_COUNT_INDEX, MODIFIER_RADIAL_FLAG_INDEX } from '#simulation/data-layout.js';
 import type { Transform } from '#types/transform.js';
 
 import { ModifierList, MODIFIER_BUFFER_SIZE } from './list';

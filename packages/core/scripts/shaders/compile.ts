@@ -9,7 +9,7 @@ import {
   INPUT_LENGTHS,
   MODIFIER_HEADER,
   MODIFIER_STRIDE,
-} from '#simulation/layout.ts';
+} from '#simulation/data-layout.ts';
 
 /** Build-time only: consumers receive these assembled shaders, never TypeGPU. */
 export function compileSimulation() {

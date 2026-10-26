@@ -6,7 +6,7 @@ import {
   MODIFIER_WORDS,
   MODIFIER_COUNT_INDEX,
   MODIFIER_RADIAL_FLAG_INDEX,
-} from '#simulation/layout.js';
+} from '#simulation/data-layout.js';
 import type { ModifierConfig } from '#types/effect.js';
 import type { SampledModifier } from '#types/modifier.js';
 import type { Transform } from '#types/transform.js';

@@ -4,7 +4,7 @@ import type { SimulationParameters } from '#types/simulation.js';
 import { UniformBuffer } from './uniform-buffer';
 
 // Positional boundary used by the generated shader. Keep this order aligned with integrate()
-// and INPUT_ARGUMENTS in simulation/layout.ts. Each uniform occupies one vec4.
+// and INPUT_ARGUMENTS in simulation/data-layout.ts. Each uniform occupies one vec4.
 const ARGUMENT = {
   state: 0,
   step: 1,

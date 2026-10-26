@@ -1,6 +1,6 @@
 import { tgpu, d } from 'typegpu';
 
-import { MODIFIER_COUNT_INDEX, MODIFIER_RADIAL_FLAG_INDEX } from '#simulation/layout.ts';
+import { MODIFIER_COUNT_INDEX, MODIFIER_RADIAL_FLAG_INDEX } from '#simulation/data-layout.ts';
 import { applyModifiers } from '#simulation/modifiers/list.ts';
 import { readModifier } from '#simulation/resources.ts';
 import { ParticleMotion, ParticleStep } from '#types/shader-inputs.ts';
