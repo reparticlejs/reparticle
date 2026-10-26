@@ -1,9 +1,9 @@
 ---
 title: "CURVE_SEGMENTS"
-description: "Shared CPU/shader storage contract. All lengths are float32 words."
+description: "64 intervals require 65 curve samples, including both endpoints."
 package: "core"
 ---
 
 > `const` **CURVE\_SEGMENTS**: `64` = `64`
 
-Shared CPU/shader storage contract. All lengths are float32 words.
+64 intervals require 65 curve samples, including both endpoints.

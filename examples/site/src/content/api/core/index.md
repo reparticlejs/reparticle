@@ -50,7 +50,7 @@ package: "core"
 
 | Variable | Description |
 | ------ | ------ |
-| [CURVE\_SEGMENTS](variables/CURVE_SEGMENTS/) | Shared CPU/shader storage contract. All lengths are float32 words. |
+| [CURVE\_SEGMENTS](variables/CURVE_SEGMENTS/) | 64 intervals require 65 curve samples, including both endpoints. |
 | [effectConfigSchema](variables/effectConfigSchema/) | Zod Mini schema for effect JSON. Use `.parse()` or `.safeParse()` to validate. Only implemented configuration features are accepted. Compose schemas with functions from `zod/mini`; validation errors expose an `issues` array. |
 | [emitterConfigSchema](variables/emitterConfigSchema/) | Zod Mini schema for one emitter, including defaults and strict field validation. |
 | [renderingSchema](variables/renderingSchema/) | Zod Mini schema for shared appearance settings. Artwork is supplied separately by the renderer. |
