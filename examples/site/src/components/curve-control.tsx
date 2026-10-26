@@ -4,7 +4,7 @@ import type { CurveControlProps } from '../types/curve-control';
 import CurveEditor from './curve-editor';
 
 // Reuse the public schema's unconstrained scalar parser, including tangent defaults.
-const scalarSchema = emitterConfigSchema.shape.initial.shape.speed;
+const scalarSchema = emitterConfigSchema.def.shape.initial.def.shape.speed;
 
 /** Keep constant sliders simple; expose the same graph for any curve-capable scalar. */
 export default function CurveControl({ property, value, disabled, onChange }: CurveControlProps) {

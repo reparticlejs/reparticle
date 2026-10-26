@@ -1,22 +1,25 @@
-import { strictObject } from 'zod';
+import { z, _default as defaultValue } from 'zod/mini';
 
 import { scalarPropertySchema } from './curve';
 
 /** Constants or curves evaluated from particle birth (0) to expiration (1). */
-export const overLifetimeSchema = strictObject({
-  // Size and stretch
-  scale: scalarPropertySchema.default(1),
-  stretchX: scalarPropertySchema.default(0),
-  stretchY: scalarPropertySchema.default(0),
+export const overLifetimeSchema = z.prefault(
+  z.strictObject({
+    // Size and stretch
+    scale: defaultValue(scalarPropertySchema, 1),
+    stretchX: defaultValue(scalarPropertySchema, 0),
+    stretchY: defaultValue(scalarPropertySchema, 0),
 
-  // Rotation and spin
-  rotation: scalarPropertySchema.default(0),
-  angularVelocity: scalarPropertySchema.default(1),
+    // Rotation and spin
+    rotation: defaultValue(scalarPropertySchema, 0),
+    angularVelocity: defaultValue(scalarPropertySchema, 1),
 
-  // Color and opacity
-  red: scalarPropertySchema.default(1),
-  green: scalarPropertySchema.default(1),
-  blue: scalarPropertySchema.default(1),
-  alpha: scalarPropertySchema.default(1),
-  // Parse an omitted section as an empty object, applying each field's default.
-}).prefault({});
+    // Color and opacity
+    red: defaultValue(scalarPropertySchema, 1),
+    green: defaultValue(scalarPropertySchema, 1),
+    blue: defaultValue(scalarPropertySchema, 1),
+    alpha: defaultValue(scalarPropertySchema, 1),
+    // Parse an omitted section as an empty object, applying each field's default.
+  }),
+  {},
+);

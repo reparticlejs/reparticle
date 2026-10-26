@@ -1,9 +1,9 @@
 ---
 title: "renderingSchema"
-description: "Shared appearance settings. Artwork is supplied separately by the renderer."
+description: "Zod Mini schema for shared appearance settings. Artwork is supplied separately by the renderer."
 package: "core"
 ---
 
-> `const` **renderingSchema**: `ZodPrefault`\<`ZodObject`\<\{ `blendMode`: `ZodDefault`\<`ZodEnum`\<\{ `add`: `"add"`; `multiply`: `"multiply"`; `normal`: `"normal"`; `screen`: `"screen"`; \}\>\>; `tint`: `ZodOptional`\<`ZodObject`\<\{ `alpha`: `ZodNumber`; `blue`: `ZodNumber`; `green`: `ZodNumber`; `red`: `ZodNumber`; \}, `$strict`\>\>; \}, `$strict`\>\>
+> `const` **renderingSchema**: `ZodMiniPrefault`\<`ZodMiniObject`\<\{ `blendMode`: `ZodMiniDefault`\<`ZodMiniEnum`\<\{ `add`: `"add"`; `multiply`: `"multiply"`; `normal`: `"normal"`; `screen`: `"screen"`; \}\>\>; `tint`: `ZodMiniOptional`\<`ZodMiniObject`\<\{ `alpha`: `ZodMiniNumber`\<`number`\>; `blue`: `ZodMiniNumber`\<`number`\>; `green`: `ZodMiniNumber`\<`number`\>; `red`: `ZodMiniNumber`\<`number`\>; \}, `$strict`\>\>; \}, `$strict`\>\>
 
-Shared appearance settings. Artwork is supplied separately by the renderer.
+Zod Mini schema for shared appearance settings. Artwork is supplied separately by the renderer.

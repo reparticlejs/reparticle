@@ -1,48 +1,50 @@
-import { discriminatedUnion, literal, number, strictObject } from 'zod';
+import { z, _default as defaultValue } from 'zod/mini';
 
 import { scalarPropertySchema } from './curve';
 
-const pointShapeSchema = strictObject({
-  type: literal('point'),
+const pointShapeSchema = z.strictObject({
+  type: z.literal('point'),
 });
 
-const circleShapeSchema = strictObject({
-  type: literal('circle'),
+const circleShapeSchema = z.strictObject({
+  type: z.literal('circle'),
   diameter: scalarPropertySchema,
-  diameterSpread: number().nonnegative().default(0),
+  diameterSpread: defaultValue(z.number().check(z.minimum(0)), 0),
 });
 
-const boxShapeSchema = strictObject({
-  type: literal('box'),
+const boxShapeSchema = z.strictObject({
+  type: z.literal('box'),
   width: scalarPropertySchema,
-  widthSpread: number().nonnegative().default(0),
+  widthSpread: defaultValue(z.number().check(z.minimum(0)), 0),
   height: scalarPropertySchema,
-  heightSpread: number().nonnegative().default(0),
+  heightSpread: defaultValue(z.number().check(z.minimum(0)), 0),
 });
 
-const coneShapeSchema = strictObject({
-  type: literal('cone2d'),
+const coneShapeSchema = z.strictObject({
+  type: z.literal('cone2d'),
   width: scalarPropertySchema,
-  widthSpread: number().nonnegative().default(0),
+  widthSpread: defaultValue(z.number().check(z.minimum(0)), 0),
   height: scalarPropertySchema,
-  heightSpread: number().nonnegative().default(0),
+  heightSpread: defaultValue(z.number().check(z.minimum(0)), 0),
 });
 
-const emissionShapeSchema = discriminatedUnion('type', [
+const emissionShapeSchema = z.discriminatedUnion('type', [
   pointShapeSchema,
   circleShapeSchema,
   boxShapeSchema,
   coneShapeSchema,
 ]);
-
 // Constant rates cannot be negative; curves are evaluated during playback.
-const emissionRateSchema = scalarPropertySchema.refine(
-  (rate) => typeof rate !== 'number' || rate >= 0,
-  'Constant emission rate must be nonnegative',
+
+const emissionRateSchema = scalarPropertySchema.check(
+  z.refine(
+    (rate) => typeof rate !== 'number' || rate >= 0,
+    'Constant emission rate must be nonnegative',
+  ),
 );
 
-export const emissionSchema = strictObject({
+export const emissionSchema = z.strictObject({
   rate: emissionRateSchema,
-  rateSpread: number().nonnegative().default(0),
+  rateSpread: defaultValue(z.number().check(z.minimum(0)), 0),
   shape: emissionShapeSchema,
 });

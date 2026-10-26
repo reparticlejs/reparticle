@@ -51,9 +51,9 @@ package: "core"
 | Variable | Description |
 | ------ | ------ |
 | [CURVE\_SEGMENTS](variables/CURVE_SEGMENTS/) | Number of intervals in the sampled curve, not the number of stored values. |
-| [effectConfigSchema](variables/effectConfigSchema/) | Only implemented configuration features are accepted. |
-| [emitterConfigSchema](variables/emitterConfigSchema/) | - |
-| [renderingSchema](variables/renderingSchema/) | Shared appearance settings. Artwork is supplied separately by the renderer. |
+| [effectConfigSchema](variables/effectConfigSchema/) | Zod Mini schema for effect JSON. Use `.parse()` or `.safeParse()` to validate. Only implemented configuration features are accepted. Compose schemas with functions from `zod/mini`; validation errors expose an `issues` array. |
+| [emitterConfigSchema](variables/emitterConfigSchema/) | Zod Mini schema for one emitter, including defaults and strict field validation. |
+| [renderingSchema](variables/renderingSchema/) | Zod Mini schema for shared appearance settings. Artwork is supplied separately by the renderer. |
 
 ## Functions
 

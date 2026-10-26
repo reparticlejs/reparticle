@@ -1,4 +1,4 @@
-import type { z } from 'zod';
+import type { z } from 'zod/mini';
 
 import type { effectConfigSchema } from '#src/config/schemas/definition/effect.js';
 import type { emitterConfigSchema } from '#src/config/schemas/definition/emitter.js';

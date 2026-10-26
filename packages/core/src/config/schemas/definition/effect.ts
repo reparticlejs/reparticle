@@ -1,9 +1,12 @@
-import { literal, strictObject, tuple, type RefinementCtx } from 'zod';
+import { z, _default as defaultValue } from 'zod/mini';
 
 import { emitterConfigSchema } from './emitter';
 import { modifiersSchema } from './modifiers';
 
-function validateUniqueEmitterIds(emitters: { id: string }[], context: RefinementCtx): void {
+function validateUniqueEmitterIds(
+  emitters: { id: string }[],
+  context: z.core.$RefinementCtx<{ id: string }[]>,
+): void {
   const ids = new Set<string>();
   for (const [index, emitter] of emitters.entries()) {
     if (ids.has(emitter.id)) {
@@ -18,11 +21,15 @@ function validateUniqueEmitterIds(emitters: { id: string }[], context: Refinemen
 }
 
 // A required first emitter preserves the nonempty-array type after validation.
-const nonEmptyEmittersSchema = tuple([emitterConfigSchema], emitterConfigSchema);
+const nonEmptyEmittersSchema = z.tuple([emitterConfigSchema], emitterConfigSchema);
 
-/** Only implemented configuration features are accepted. */
-export const effectConfigSchema = strictObject({
-  version: literal(1),
-  modifiers: modifiersSchema.default([]),
-  emitters: nonEmptyEmittersSchema.superRefine(validateUniqueEmitterIds),
+/**
+ * Zod Mini schema for effect JSON. Use `.parse()` or `.safeParse()` to validate.
+ * Only implemented configuration features are accepted. Compose schemas with
+ * functions from `zod/mini`; validation errors expose an `issues` array.
+ */
+export const effectConfigSchema = z.strictObject({
+  version: z.literal(1),
+  modifiers: defaultValue(modifiersSchema, []),
+  emitters: nonEmptyEmittersSchema.check(z.superRefine(validateUniqueEmitterIds)),
 });

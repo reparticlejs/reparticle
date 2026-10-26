@@ -1,8 +1,9 @@
 import { effectConfigSchema, emitterConfigSchema } from '@reparticle/core';
+import { toJSONSchema } from 'zod/mini';
 
 // Zod's public JSON Schema output keeps documentation tied to validation rules.
-const emitter = emitterConfigSchema.toJSONSchema({ io: 'input', reused: 'inline' });
-const effect = effectConfigSchema.toJSONSchema({ io: 'input', reused: 'inline' });
+const emitter = toJSONSchema(emitterConfigSchema, { io: 'input', reused: 'inline' });
+const effect = toJSONSchema(effectConfigSchema, { io: 'input', reused: 'inline' });
 type Schema = Exclude<NonNullable<typeof emitter.properties>[string], boolean>;
 
 function variants(schema: Schema): Schema[] {

@@ -1,3 +1,9 @@
+import { config } from 'zod/mini';
+import en from 'zod/v4/locales/en.js';
+
+// Keep English validation messages for every public schema and engine entry point.
+config(en());
+
 // Effect definitions and validation.
 export { parseEffectConfig } from './config/parse-effect';
 export { effectConfigSchema } from './config/schemas/definition/effect';

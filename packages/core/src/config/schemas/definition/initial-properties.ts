@@ -1,43 +1,43 @@
-import { number, strictObject } from 'zod';
+import { z, _default as defaultValue } from 'zod/mini';
 
 import { scalarPropertySchema } from './curve';
 
-export const initialPropertiesSchema = strictObject({
+export const initialPropertiesSchema = z.strictObject({
   // Lifetime
   lifetime: scalarPropertySchema,
-  lifetimeSpread: number().nonnegative().default(0),
+  lifetimeSpread: defaultValue(z.number().check(z.minimum(0)), 0),
 
   // Motion
   speed: scalarPropertySchema,
-  speedSpread: number().nonnegative().default(0),
-  direction: number(),
-  spread: number().nonnegative(),
+  speedSpread: defaultValue(z.number().check(z.minimum(0)), 0),
+  direction: z.number(),
+  spread: z.number().check(z.minimum(0)),
 
   // Size
-  size: scalarPropertySchema.default(24),
-  sizeSpread: number().nonnegative().default(0),
+  size: defaultValue(scalarPropertySchema, 24),
+  sizeSpread: defaultValue(z.number().check(z.minimum(0)), 0),
 
   // Rotation and spin
-  rotation: scalarPropertySchema.default(0),
-  rotationSpread: number().nonnegative().default(0),
-  angularVelocity: scalarPropertySchema.default(0),
-  angularVelocitySpread: number().nonnegative().default(0),
+  rotation: defaultValue(scalarPropertySchema, 0),
+  rotationSpread: defaultValue(z.number().check(z.minimum(0)), 0),
+  angularVelocity: defaultValue(scalarPropertySchema, 0),
+  angularVelocitySpread: defaultValue(z.number().check(z.minimum(0)), 0),
 
   // Stretch
-  stretchX: scalarPropertySchema.default(0),
-  stretchXSpread: number().nonnegative().default(0),
-  stretchY: scalarPropertySchema.default(0),
-  stretchYSpread: number().nonnegative().default(0),
+  stretchX: defaultValue(scalarPropertySchema, 0),
+  stretchXSpread: defaultValue(z.number().check(z.minimum(0)), 0),
+  stretchY: defaultValue(scalarPropertySchema, 0),
+  stretchYSpread: defaultValue(z.number().check(z.minimum(0)), 0),
 
   // Color
-  red: scalarPropertySchema.default(1),
-  redSpread: number().nonnegative().default(0),
-  green: scalarPropertySchema.default(1),
-  greenSpread: number().nonnegative().default(0),
-  blue: scalarPropertySchema.default(1),
-  blueSpread: number().nonnegative().default(0),
+  red: defaultValue(scalarPropertySchema, 1),
+  redSpread: defaultValue(z.number().check(z.minimum(0)), 0),
+  green: defaultValue(scalarPropertySchema, 1),
+  greenSpread: defaultValue(z.number().check(z.minimum(0)), 0),
+  blue: defaultValue(scalarPropertySchema, 1),
+  blueSpread: defaultValue(z.number().check(z.minimum(0)), 0),
 
   // Opacity
-  alpha: scalarPropertySchema.default(1),
-  alphaSpread: number().nonnegative().default(0),
+  alpha: defaultValue(scalarPropertySchema, 1),
+  alphaSpread: defaultValue(z.number().check(z.minimum(0)), 0),
 });

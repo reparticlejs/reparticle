@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError } from 'zod';
+import { $ZodError as ZodError } from 'zod/v4/core';
 
 import { parseEffectConfig } from '#src/config/parse-effect.js';
 import { effectConfigSchema } from '#src/config/schemas/definition/effect.js';

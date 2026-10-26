@@ -1,14 +1,17 @@
-import { enum as enumSchema, number, strictObject } from 'zod';
+import { z, _default as defaultValue } from 'zod/mini';
 
-const tintSchema = strictObject({
-  red: number(),
-  green: number(),
-  blue: number(),
-  alpha: number(),
+const tintSchema = z.strictObject({
+  red: z.number(),
+  green: z.number(),
+  blue: z.number(),
+  alpha: z.number(),
 });
 
-/** Shared appearance settings. Artwork is supplied separately by the renderer. */
-export const renderingSchema = strictObject({
-  blendMode: enumSchema(['normal', 'add', 'multiply', 'screen']).default('normal'),
-  tint: tintSchema.optional(),
-}).prefault({});
+/** Zod Mini schema for shared appearance settings. Artwork is supplied separately by the renderer. */
+export const renderingSchema = z.prefault(
+  z.strictObject({
+    blendMode: defaultValue(z.enum(['normal', 'add', 'multiply', 'screen']), 'normal'),
+    tint: z.optional(tintSchema),
+  }),
+  {},
+);

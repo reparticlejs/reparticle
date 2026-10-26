@@ -1,4 +1,4 @@
-import type { z } from 'zod';
+import type { z } from 'zod/mini';
 
 import type { curveSchema, scalarPropertySchema } from '#src/config/schemas/definition/curve.js';
 
