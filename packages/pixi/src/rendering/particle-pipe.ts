@@ -33,7 +33,7 @@ export class ParticlePipe implements RenderPipe<ParticleEffect> {
   private readonly emittersByView = new Map<ParticleEffect, Map<string, EmitterRenderer>>();
 
   public constructor(private readonly renderer: WebGLRenderer) {
-    // GPU.js changes framebuffers while compiling. Prepare before renderStart binds
+    // Simulation initialization changes framebuffers. Prepare before renderStart binds
     // Pixi's target, and before traversal temporarily detaches a rendered subtree.
     this.boundary = new SimulationBoundary(renderer);
     this.assertContextAvailable = this.assertAvailable.bind(this);
@@ -85,7 +85,7 @@ export class ParticlePipe implements RenderPipe<ParticleEffect> {
     this.boundary.assertAvailable();
   }
 
-  /** Return control to Pixi after GPU.js changes WebGL state. */
+  /** Return control to Pixi after simulation changes WebGL state. */
   public restoreState(): void {
     this.assertAvailable();
     restoreSimulationState(this.renderer);
@@ -139,7 +139,7 @@ export class ParticlePipe implements RenderPipe<ParticleEffect> {
           assertAvailable: this.assertContextAvailable,
           restoreState: this.restoreContextState,
         });
-        // GPU.js initialization changes GL bindings before EmitterRenderer binds its shader.
+        // simulation initialization changes GL bindings before EmitterRenderer binds its shader.
         this.restoreState();
         emitterRenderers.set(
           id,

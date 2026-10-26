@@ -10,21 +10,19 @@
  * lifetime tracking and GPU spawning therefore use the same integer hash.
  */
 export function propertyVariation(particleId: number, seed: number, stream: number): number {
+  'use gpu';
   // A prime modulus bounds each mixing round to [0, 65520].
   const modulus = 65521;
   const seedWeight = 127;
   const streamWeight = 8191;
   const midpoint = 32760; // Half of the maximum hash value: maps to zero.
-
   let hash = ((particleId % modulus) + seed * seedWeight + stream * streamWeight) % modulus;
-
   // Fixed mixing coefficients scramble nearby inputs. Keep their values and
   // operation order stable so existing seeds reproduce the same particles.
   hash = (hash * 251 + 17) % modulus;
   hash = (hash * 241 + 31) % modulus;
   const finalMultiplier = (hash % 127) + 1;
   hash = (hash * finalMultiplier + 97) % modulus;
-
   // Map both endpoints, 0 and 65520, to -1 and +1 respectively.
   return hash / midpoint - 1;
 }

@@ -1,4 +1,7 @@
-import { movementRotation } from './movement-rotation';
+import { tgpu, d } from 'typegpu';
+
+import { readCurve } from '../resources.ts';
+import { movementRotation } from './movement-rotation.ts';
 
 /**
  * Return the particle's visual heading as a unit vector [x, y].
@@ -12,31 +15,42 @@ import { movementRotation } from './movement-rotation';
  * Age is sampled after the current step. The curve has 65 values over 64
  * intervals; clamp age/lifetime to [0, 1], using zero for nonpositive lifetime.
  */
-export function particleHeading(
-  baseRotation: number,
-  age: number,
-  lifetime: number,
-  rotationCurve: Float32Array,
-  velocityX: number,
-  velocityY: number,
-  orientToMovement: number,
-  handedness: number,
-): [number, number] {
-  const segmentCount = 64;
-  const normalizedAge = lifetime > 0 ? Math.max(0, Math.min(1, age / lifetime)) : 0;
-  const samplePosition = normalizedAge * segmentCount;
-
-  // At the endpoint, use the last interval with a blend of one.
-  const segment = Math.min(Math.floor(samplePosition), segmentCount - 1);
-  const blend = samplePosition - segment;
-  const startRotation = rotationCurve[segment]!;
-  const endRotation = rotationCurve[segment + 1]!;
-  const lifetimeRotation = startRotation + (endRotation - startRotation) * blend;
-
-  const movementAlignment = orientToMovement > 0.5 ? movementRotation(velocityX, velocityY) : 0;
-  const rotationDegrees = baseRotation + lifetimeRotation * handedness + movementAlignment;
-
-  // Canvas Y points down. Negate counterclockwise degrees, then rotate local up (-Y).
-  const clockwiseRadians = (-rotationDegrees * Math.PI) / 180;
-  return [Math.sin(clockwiseRadians), -Math.cos(clockwiseRadians)];
-}
+export const particleHeading = tgpu
+  .fn(
+    [d.f32, d.f32, d.f32, d.f32, d.f32, d.f32, d.f32, d.f32],
+    d.vec2f,
+  )(
+    (
+      baseRotation,
+      age,
+      lifetime,
+      rotationCurve,
+      velocityX,
+      velocityY,
+      orientToMovement,
+      handedness,
+    ) => {
+      'use gpu';
+      const segmentCount = 64;
+      let normalizedAge = d.f32(0);
+      if (lifetime > 0) {
+        normalizedAge = Math.max(0, Math.min(1, age / lifetime));
+      }
+      const samplePosition = normalizedAge * segmentCount;
+      // At the endpoint, use the last interval with a blend of one.
+      const segment = Math.min(Math.floor(samplePosition), segmentCount - 1);
+      const blend = samplePosition - segment;
+      const startRotation = readCurve(rotationCurve, segment);
+      const endRotation = readCurve(rotationCurve, segment + 1);
+      const lifetimeRotation = startRotation + (endRotation - startRotation) * blend;
+      let movementAlignment = d.f32(0);
+      if (orientToMovement > 0.5) {
+        movementAlignment = movementRotation(velocityX, velocityY);
+      }
+      const rotationDegrees = baseRotation + lifetimeRotation * handedness + movementAlignment;
+      // Canvas Y points down. Negate counterclockwise degrees, then rotate local up (-Y).
+      const clockwiseRadians = (-rotationDegrees * Math.PI) / 180;
+      return d.vec2f(Math.sin(clockwiseRadians), -Math.cos(clockwiseRadians));
+    },
+  )
+  .$name('particleHeading');

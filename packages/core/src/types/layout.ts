@@ -1,7 +1,7 @@
 /**
- * GPU.js-provided `this` for a particle-state kernel.
+ * CPU test-fixture context for the logical particle-state kernel.
  * Each invocation writes one texel, not one complete particle. These declarations
- * describe the compiled kernel's environment; they allocate no runtime objects.
+ * describe the reference texture view; runtime storage uses split GPU textures.
  */
 export interface KernelContext {
   /** Output column and row across the full texture, including all five bands. */
@@ -23,7 +23,7 @@ export type ParticleTexel = [number, number, number, number];
 
 /**
  * Kernel indexing view of particle state: state[row][column][channel].
- * At runtime this input is a GPU.js pipeline texture, not a CPU nested array.
+ * At runtime this input is GPU texture storage, not a CPU nested array.
  *
  * Each fixed particle slot occupies one texel in each of five stacked bands:
  * 0. motion: [x, y, velocityX, velocityY]

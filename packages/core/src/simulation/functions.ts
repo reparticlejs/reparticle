@@ -1,5 +1,4 @@
-// Build entry only; runtime code imports the generated function strings.
-export { initialize } from './kernels/initialize';
+// Authored shader exports. Used at build time and in CPU behavior tests only.
 export { integrate } from './kernels/integrate';
 
 export { propertyVariation } from './emission/variation';

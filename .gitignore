@@ -9,3 +9,5 @@ docs/.vitepress/cache/
 docs/public/demos/
 
 .astro/
+
+**/__screenshots__/

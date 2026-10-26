@@ -1,4 +1,4 @@
-/** Mutable CPU array explicitly bound as a GPU.js Array(4), uploaded as a vec4 uniform. */
+/** Mutable CPU array packed as one vec4 in the simulation input block. */
 export type UniformVector = [number, number, number, number];
 
 /**
@@ -9,7 +9,7 @@ export type UniformVector = [number, number, number, number];
  * remain arrays for the kernel to sample separately for each particle.
  *
  * SimulationInputs packs each object group into one vec4, padding unused lanes
- * with zero. The final four arrays are borrowed texture inputs, not vec4 uniforms.
+ * with zero. The final four arrays are borrowed inputs, not vec4 uniforms.
  * Positions and velocities use the emitter's local or world simulation space.
  */
 export interface SimulationParameters {
@@ -100,7 +100,7 @@ export interface SimulationParameters {
     handedness: number;
   };
 
-  /** Numeric mode flags for GPU.js, plus the sampled birth angular velocity. */
+  /** Numeric mode flags for the shader, plus the sampled birth angular velocity. */
   orientation: {
     /** Align with the initial emission direction when 1; otherwise 0. */
     direction: number;

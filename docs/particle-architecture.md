@@ -6,13 +6,13 @@ This is capability coverage, not a promise of Defold file compatibility or numer
 
 ## Architecture decisions
 
-Keep the existing core and Pixi packages. Within core, separate configuration validation, emission scheduling, particle lifecycle, built-in mathematical behaviors, and GPU.js storage/execution. These responsibilities do not require new packages.
+Keep the existing core and Pixi packages. Within core, separate configuration validation, emission scheduling, particle lifecycle, built-in mathematical behaviors, and WebGL2 storage/execution. These responsibilities do not require new packages.
 
 The configuration boundary uses strict Zod schemas to validate unknown input before GPU allocation and produce typed owned data. Configuration types live in `src/types` and are inferred from the schemas. Parsing throws a `ZodError` with structured issue paths; callers can use the exported schema with `safeParse` instead. Runtime updates use a restricted typed API. Never evaluate consumer code, generate functions from JSON, or traverse configuration per particle per frame.
 
-Core has no Pixi dependency. GPU.js remains the simulation backend. Pixi owns visual output and accepts textures loaded by the host. Host texture objects do not belong in JSON. Shared GPU textures remain resident; normal playback must not read particle state back to the CPU.
+Core has no Pixi dependency. WebGL2 remains the simulation backend. Pixi owns visual output and accepts textures loaded by the host. Host texture objects do not belong in JSON. Shared GPU textures remain resident; normal playback must not read particle state back to the CPU.
 
-Keep ordinary typed kernel functions and explicit helper registration. The package build compiles their source strings into tracked `src/simulation/functions.json`; consumers need no build plugin, source rewriting or minifier configuration. Test kernels after production minification.
+Author shader functions in TypeScript with TypeGPU. The package build generates tracked `src/simulation/shaders.json` through public APIs; consumers need no build plugin or compiler dependency. Curves and modifiers are read directly from the packed uniform buffer. Test the generated shaders after production minification.
 
 Capacity is explicit. No automatic bounds, hit-area calculation, particle scanning, or hidden CPU fallback. Consumers supply bounds and hit areas. Resource destruction respects the renderer's ownership of the shared GL context.
 
@@ -705,9 +705,9 @@ binding, and uniform uploads. Emitters share the cached program and own separate
 dynamic uniform groups, including reusable vector and curve arrays. Groups sync
 on each draw so values from another emitter cannot leak across draws. Destroying
 an emitter destroys its shader bindings, leaving the shared program cache to Pixi.
-GPU.js particle textures are borrowed through cached Pixi `ExternalSource` wrappers.
+Simulation particle textures are borrowed through cached Pixi `ExternalSource` wrappers.
 Particle state, artwork, and animation-frame sources use `Shader.resources`; Pixi
-assigns and binds their sampler units. GPU.js retains ownership of simulation
+assigns and binds their sampler units. Core retains ownership of simulation
 textures, with no copies or readbacks. Each kernel output is wrapped once on first use.
 
 Particle draw state uses Pixi's reusable `State.for2d()` and state system for
@@ -729,7 +729,7 @@ keeps world/local simulation coordinates separate from the requested projection.
 The prerender listener is removed when the view is destroyed.
 
 Particle draws use Pixi's encoder and retain its geometry, shader, texture and
-blend/depth state caches for subsequent draws. After GPU.js simulation,
+blend/depth state caches for subsequent draws. After simulation,
 its scissor test is disabled before the usual renderer state reset. Neither path
 reads GPU particle data. Bounds and filter areas remain explicitly caller-owned.
 Core configuration, simulation textures and particle slot allocation are unchanged.
@@ -747,7 +747,7 @@ also supplies `assertAvailable` and `restoreState` callbacks, protecting direct
 not run a reset in a `finally` block. Completed or failed GPU work restores state
 before lifecycle notifications; a state listener may then render synchronously.
 These callbacks are optional for other core consumers. CPU-only parameter and tint
-changes do not run GPU.js. The guard does not repair Pixi's own partially completed
+changes do not advance simulation. The guard does not repair Pixi's own partially completed
 render pass if unrelated rendering code throws.
 
 ### Artwork flipping (Pixi only)
@@ -774,6 +774,6 @@ order. No GPU readback or particle simulation change is involved.
 
 `ParticleEffect` is constructed with an effect definition containing per-emitter rendering data, plus separate ticker/runtime options. Its CPU emitters are available immediately. `ParticlePipe` is a registered WebGL extension instantiated by Pixi with the renderer. It owns per-view drawing resources and inserts particle draw instructions between Pixi batch boundaries.
 
-The pipe prepares particle views in the rendered subtree during `prerender`, before temporary root transforms, framebuffer binding, filters, or masks. This is necessary because GPU.js kernel compilation changes GL state. The draw instruction only renders existing textures; it never advances simulation.
+The pipe prepares particle views in the rendered subtree during `prerender`, before temporary root transforms, framebuffer binding, filters, or masks. This is necessary because simulation initialization changes GL state. The draw instruction only renders existing textures; it never advances simulation.
 
 Before first render, updates validate arguments but leave playback paused, with no queued steps. Playback controls and configuration changes are retained. First initialization warms both GPU paths without resetting those controls. Subsequent updates and prewarm operate normally, even offstage. Views are bound to one renderer, and renderer destruction releases its attached views.

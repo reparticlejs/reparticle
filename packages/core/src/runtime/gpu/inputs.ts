@@ -1,12 +1,10 @@
-import type { KernelVariable } from 'gpu.js';
-
 import type { PipelineTexture } from '#types/emitter.js';
 import type { SimulationParameters } from '#types/simulation.js';
 
 import { UniformBuffer } from './uniform-buffer';
 
-// Positional boundary required by GPU.js. Keep this order aligned with integrate()
-// and the argument types in arguments.ts. Each uniform occupies one vec4.
+// Positional boundary used by the generated shader. Keep this order aligned with integrate()
+// and INPUT_ARGUMENTS in simulation/layout.ts. Each uniform occupies one vec4.
 const ARGUMENT = {
   state: 0,
   step: 1,
@@ -28,18 +26,10 @@ const ARGUMENT = {
 } as const;
 const ARGUMENT_COUNT = ARGUMENT.modifiers + 1;
 
-/**
- * Pack named parameters into reusable vec4 uniforms for one update kernel.
- * Each kernel owns its buffers because GPU.js caches the last uploaded array
- * by reference. Never share an instance between the alternating update kernels.
- * UniformBuffer preserves those cached references until their values change.
- *
- * The final four inputs are texture-backed arrays. Forward them without copying;
- * their storage and upload behavior are owned by the existing simulation code.
- */
+/** Pack named parameters into reusable arrays for the generated shader input layout. */
 export class SimulationInputs {
   /** Borrowed kernel arguments; call write() before the first run. Reused each step. */
-  public readonly args: KernelVariable[] = new Array(ARGUMENT_COUNT).fill(0);
+  public readonly args: (PipelineTexture | ArrayLike<number>)[] = new Array(ARGUMENT_COUNT).fill(0);
   private readonly step = new UniformBuffer();
   private readonly emission = new UniformBuffer();
   private readonly shape = new UniformBuffer();

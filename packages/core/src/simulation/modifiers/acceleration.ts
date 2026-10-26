@@ -1,3 +1,5 @@
+import { tgpu, d } from 'typegpu';
+
 /**
  * Return one axis of acceleration, in simulation units per second squared.
  *
@@ -9,13 +11,13 @@
  * A negative sampled magnitude reverses acceleration. The caller multiplies
  * the result by elapsed seconds and adds it to that axis's velocity.
  */
-export function applyAcceleration(
-  directionComponent: number,
-  magnitude: number,
-  spread: number,
-  spreadFactor: number,
-): number {
-  const sampledMagnitude = magnitude + spread * spreadFactor;
-
-  return directionComponent * sampledMagnitude;
-}
+export const applyAcceleration = tgpu
+  .fn(
+    [d.f32, d.f32, d.f32, d.f32],
+    d.f32,
+  )((directionComponent, magnitude, spread, spreadFactor) => {
+    'use gpu';
+    const sampledMagnitude = magnitude + spread * spreadFactor;
+    return directionComponent * sampledMagnitude;
+  })
+  .$name('applyAcceleration');

@@ -1,8 +1,9 @@
 import { expect, it } from 'vitest';
 
 import { propertyVariation } from '#src/simulation/emission/variation.js';
-import { integrate } from '#src/simulation/kernels/integrate.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
+
+import { integrate } from '../../support/simulation';
 
 it('captures independent stretch spread, retains it, and replaces it on slot reuse', () => {
   const state: ParticleTexture = [

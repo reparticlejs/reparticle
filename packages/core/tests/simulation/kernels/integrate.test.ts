@@ -1,8 +1,10 @@
 import { expect, it } from 'vitest';
 
-import { integrate } from '#src/simulation/kernels/integrate.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
 
+import { integrate } from '../../support/simulation';
+
+// Authored TypeGPU vectors round components to float32, as GPU textures do.
 it('maps motion and properties texels without changing the behavior math', () => {
   const state: ParticleTexture = [
     [[10, 20, 30, -40]],
@@ -38,7 +40,7 @@ it('maps motion and properties texels without changing the behavior math', () =>
     );
   expect(step()).toEqual([13, 17, 30, -30]);
   context.thread.y = 1;
-  expect(step()).toEqual([0.6, 2, 1, 0]);
+  expect(step()).toEqual([0.6, 2, 1, 0].map(Math.fround));
   context.thread.y = 0;
   state[1]![0]![0] = 1.9;
   expect(step()).toEqual([13, 17, 30, -30]);
@@ -86,7 +88,7 @@ it('reinitializes a recycled slot and moves and ages on its birth step', () => {
     );
   expect(step()).toEqual([27, 7, 220, 10]);
   context.thread.y = 1;
-  expect(step()).toEqual([0.1, 3, 24, 0]);
+  expect(step()).toEqual([0.1, 3, 24, 0].map(Math.fround));
   // Read every band from the same previous texture, just as the GPU does.
   function tick() {
     const output = state.map((_, row) => {
@@ -148,7 +150,7 @@ it('preserves lifetime captured at spawn and stops motion at expiry despite new 
     );
   expect(step()).toEqual([10, 20, 0, 0]);
   context.thread.y = 1;
-  expect(step()).toEqual([2.1, 2, 1, 0]);
+  expect(step()).toEqual([2.1, 2, 1, 0].map(Math.fround));
 });
 
 it('uses radial circle spawning independently of point direction and spread', () => {
@@ -249,7 +251,7 @@ it('spawns a cone independently of point direction and advances birth age', () =
   expect(born[1]).toBeLessThan(20);
   expect(Math.hypot(born[2], born[3] - 10)).toBeCloseTo(220);
   context.thread.y = 1;
-  expect(step(0, 0)).toEqual([0.1, 3, 24, 0]);
+  expect(step(0, 0)).toEqual([0.1, 3, 24, 0].map(Math.fround));
 });
 
 it('captures size at birth, preserves it when initial size changes, and replaces it on reuse', () => {
@@ -305,7 +307,7 @@ it('captures size at birth, preserves it when initial size changes, and replaces
     new Float32Array(65).fill(1),
     new Float32Array([0, 0]),
   );
-  expect(recycled).toEqual([0.1, 2, 48, 0]);
+  expect(recycled).toEqual([0.1, 2, 48, 0].map(Math.fround));
 });
 
 it('preserves initial alpha until the slot is recycled', () => {
@@ -361,7 +363,7 @@ it('preserves initial alpha until the slot is recycled', () => {
     new Float32Array(65).fill(1),
     new Float32Array([0, 0]),
   );
-  expect(recycled).toEqual([1, 1, 1, 0.75]);
+  expect(recycled).toEqual([1, 1, 1, 0.75].map(Math.fround));
 });
 
 it('continues simulating transparent particles and keeps unused slots inactive', () => {
@@ -436,8 +438,8 @@ it('captures initial RGB, preserves it, and replaces it when a slot is reused', 
       new Float32Array(65).fill(1),
       new Float32Array([0, 0]),
     );
-  expect(step(0)).toEqual([0.1, 0.2, 0.3, 0.5]);
-  expect(step(1)).toEqual([0.7, 0.8, 0.9, 1]);
+  expect(step(0)).toEqual([0.1, 0.2, 0.3, 0.5].map(Math.fround));
+  expect(step(1)).toEqual([0.7, 0.8, 0.9, 1].map(Math.fround));
   context.thread.y = 1;
   expect(step(0)).toEqual([expect.closeTo(0.3), 2, 24, 0]);
 });
@@ -476,7 +478,7 @@ it('captures initial rotation and preserves it until slot reuse', () => {
       new Float32Array([0, 0]),
     );
   expect(step(0)[3]).toBe(-45);
-  expect(step(1)).toEqual([0.1, 2, 24, 450]);
+  expect(step(1)).toEqual([0.1, 2, 24, 450].map(Math.fround));
 });
 
 it('captures alignment at zero speed, adds initial rotation, and retains it under gravity', () => {
@@ -513,7 +515,7 @@ it('captures alignment at zero speed, adds initial rotation, and retains it unde
       new Float32Array([1, 0, 0, 160, 0, 0, 0, 0, 1, 0, 0]),
     );
   const born = step(1);
-  expect(born).toEqual([0.1, 2, 24, -60]);
+  expect(born).toEqual([0.1, 2, 24, -60].map(Math.fround));
   state[1]![0] = born;
   expect(step(0)[3]).toBe(-60);
   context.thread.y = 0;

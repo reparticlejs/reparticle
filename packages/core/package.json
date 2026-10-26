@@ -13,7 +13,8 @@
     "directory": "packages/core"
   },
   "files": [
-    "dist"
+    "dist",
+    "THIRD_PARTY_NOTICES"
   ],
   "type": "module",
   "imports": {
@@ -30,19 +31,24 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm build:functions && tsdown",
+    "build": "pnpm build:shaders && tsdown",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run tests",
-    "build:functions": "node scripts/build-functions.ts",
-    "prepack": "pnpm build"
+    "test": "vitest run",
+    "prepack": "pnpm build",
+    "build:shaders": "node scripts/build-shaders.ts"
   },
   "dependencies": {
-    "gpu.js": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "terser": "catalog:",
+    "@typegpu/gl": "0.12.8",
+    "@types/node": "26.6.5",
+    "@vitest/browser-playwright": "4.1.10",
+    "playwright": "1.58.2",
     "tsdown": "catalog:",
+    "typegpu": "0.12.9",
+    "typescript": "catalog:",
+    "unplugin-typegpu": "0.12.7",
     "vitest": "catalog:"
   }
 }

@@ -12,6 +12,6 @@ it('keeps spawn direction within its range and scalar speed exact', () => {
     expect(spawnDirection(0, 2, variation)).toBeGreaterThanOrEqual(-1);
     expect(spawnDirection(0, 2, variation)).toBeLessThan(1);
     const [, , velocityX, velocityY] = spawnMotion(id, 1, 0, 0, 100, 0, 2);
-    expect(Math.hypot(velocityX, velocityY)).toBeCloseTo(100, 10);
+    expect(Math.hypot(velocityX, velocityY)).toBeCloseTo(100, 4);
   }
 });

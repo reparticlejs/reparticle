@@ -120,7 +120,7 @@ export class Emitter {
       const simulation = new GpuSimulation(context, this.width, this.rows, this.capacity);
       this.simulation = simulation;
       try {
-        // Compile both paths without changing playback, seeds, or queued controls.
+        // Warm both state targets without changing playback, seeds, or queued controls.
         simulation.reset();
         this.integrate(0, 0, this.initialProperties.lifetime.at(0), 0);
         this.integrate(0, 0, this.initialProperties.lifetime.at(0), 0);
@@ -329,7 +329,16 @@ export class Emitter {
     return this.particleSlots.count;
   }
 
-  /** GPU resource handle for renderer adapters. Never calls toArray/readPixels. */
+  /** Borrowed birth-data texture for renderer adapters: three RGBA bands. */
+  public get birthTexture(): WebGLTexture {
+    this.assertAlive();
+    if (!this.simulation) {
+      throw new Error('Emitter has not been initialized');
+    }
+    return this.simulation.birthTexture;
+  }
+
+  /** Borrowed changing-state texture for renderer adapters: two RGBA bands. */
   public get texture(): WebGLTexture {
     this.assertAlive();
     if (!this.simulation) {
@@ -434,7 +443,10 @@ export class Emitter {
     }
     const shouldEmit = this.playback.advance(seconds);
     const emitterAge = this.playback.normalizedAge;
-    const rate = shouldEmit && this.emitting ? this.spawnRate.at(emitterAge) : 0;
+    const rate =
+      shouldEmit && this.emitting
+        ? this.spawnRate.average(this.playback.emissionStartAge, this.playback.emissionEndAge)
+        : 0;
     const requested = this.spawnSchedule.next(rate, seconds);
     const lifetime = this.initialProperties.lifetime.at(emitterAge);
     const settings = this.settings;

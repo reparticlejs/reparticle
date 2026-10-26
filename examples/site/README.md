@@ -45,7 +45,7 @@ automatically; rerun it after editing library source during a running dev sessio
 Generated pages remain in the repository so they are inspectable. Never edit them
 by hand: regeneration replaces each package directory and removes stale pages.
 
-`tsconfig.api.json` resolves both packages from source, including core's GPU.js
+`tsconfig.api.json` resolves both packages from source, including core's shader
 ambient declarations. TypeDoc uses TypeScript's compatibility API for analysis;
 it does not change the library compiler. The `@interface` JSDoc tag exposes
 object-shaped Zod aliases as property reference pages without changing their types.

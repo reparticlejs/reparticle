@@ -32,7 +32,10 @@ import { resolveFlipbook } from '../textures/resolve-flipbook';
 import { resolveTexture } from '../textures/resolve-texture';
 import type { EmitterRenderer } from './emitter-renderer';
 
-const MAX_STEP_SECONDS = 0.1;
+// Match prewarm's cadence so a slow frame cannot emit one widely spaced batch.
+const TICK_STEP_SECONDS = 1 / 60;
+// Accept rounded 60 Hz ticker values without doubling ordinary-frame GPU work.
+const TICK_ROUNDING_SECONDS = 0.0001;
 
 /**
  * An effect display object. Bounds and hit areas remain opt-in; textures belong to the caller.
@@ -315,17 +318,17 @@ export class ParticleEffect extends ViewContainer {
     this.addBounds(this._bounds);
   }
 
-  /** Preserve ticker time while keeping every simulation step within core's limit. */
+  /** Preserve ticker time while keeping automatic birth batches close together. */
   private onTick(ticker: Ticker): void {
     const seconds = ticker.deltaMS / 1000;
-    if (!Number.isFinite(seconds) || seconds <= MAX_STEP_SECONDS) {
+    if (!Number.isFinite(seconds) || seconds <= TICK_STEP_SECONDS + TICK_ROUNDING_SECONDS) {
       this.update(seconds);
       return;
     }
 
-    // Pixi applies ticker speed after its elapsed-time cap, so even capped frames
-    // can exceed the simulation limit. Equal substeps preserve the full scaled delta.
-    const stepCount = Math.ceil(seconds / MAX_STEP_SECONDS);
+    // Long startup frames otherwise move every new droplet by the whole delta,
+    // leaving a gap after the prewarmed stream. Keep all time, using equal substeps.
+    const stepCount = Math.ceil(seconds / (TICK_STEP_SECONDS + TICK_ROUNDING_SECONDS));
     const stepSeconds = seconds / stepCount;
     for (let step = 0; step < stepCount && !this.disposed; step++) {
       this.update(stepSeconds);

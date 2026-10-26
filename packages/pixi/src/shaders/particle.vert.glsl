@@ -1,6 +1,8 @@
 #version 300 es
 precision highp float;
 precision highp int;
+// Preserve floating-point state and animation metadata on mobile GPUs.
+precision highp sampler2D;
 
 #include <curve-constants>
 #include <pixi-global-uniforms>
@@ -78,14 +80,18 @@ struct ArtworkFrame {
 };
 
 // Each slot occupies the same column in five row bands.
+uniform sampler2D birthParticles;
 Particle readParticle() {
   int slot = gl_InstanceID;
   ivec2 address = ivec2(slot % width, slot / width);
   vec4 motion = texelFetch(particles, address, 0);
-  vec4 lifetime = texelFetch(particles, address + ivec2(0, rows), 0);
-  vec4 color = texelFetch(particles, address + ivec2(0, rows * 2), 0);
-  vec4 dynamics = texelFetch(particles, address + ivec2(0, rows * 3), 0);
-  vec4 geometry = texelFetch(particles, address + ivec2(0, rows * 4), 0);
+  vec4 d = texelFetch(particles, address + ivec2(0, rows), 0);
+  vec4 b0 = texelFetch(birthParticles, address, 0);
+  vec4 b2 = texelFetch(birthParticles, address + ivec2(0, rows * 2), 0);
+  vec4 lifetime = vec4(d.x, b0.xyz);
+  vec4 color = texelFetch(birthParticles, address + ivec2(0, rows), 0);
+  vec4 dynamics = vec4(d.y, b0.w, b2.x, d.z);
+  vec4 geometry = vec4(b2.yzw, d.w);
 
   Particle particle;
   particle.position = motion.xy;

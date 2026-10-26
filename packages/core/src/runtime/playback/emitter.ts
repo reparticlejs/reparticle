@@ -13,6 +13,9 @@ import { propertyVariation } from '../../simulation/emission/variation';
 export class EmitterPlayback {
   // Counts delay time first, then time within the current emission cycle.
   private elapsed = 0;
+  /** Normalized interval consumed by the last emitting step, before loop wrapping. */
+  public emissionStartAge = 0;
+  public emissionEndAge = 0;
   private emissionStopped = false;
   private retireAfterLoop = false;
   private waitingForDelay = true;
@@ -110,7 +113,9 @@ export class EmitterPlayback {
       this.setState('spawning');
     }
 
+    this.emissionStartAge = this.normalizedAge;
     this.elapsed = Math.min(this.elapsed + seconds, this.duration);
+    this.emissionEndAge = this.normalizedAge;
     if (this.durationReached) {
       if (this.playMode === 'loop' && !this.retireAfterLoop) {
         // Discard duration overshoot; start delay only applies after reset.
@@ -126,6 +131,8 @@ export class EmitterPlayback {
   /** Restart the delay and cancel stop/retirement, keeping the sampled timing values. */
   public reset(): void {
     this.elapsed = 0;
+    this.emissionStartAge = 0;
+    this.emissionEndAge = 0;
     this.emissionStopped = false;
     this.retireAfterLoop = false;
     this.waitingForDelay = true;

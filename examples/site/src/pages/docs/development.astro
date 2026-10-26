@@ -21,6 +21,8 @@ const headings = [
   </p>
   <p>Run these commands from the repository root. Both build the library packages before starting. After changing library code, stop and rerun the command to rebuild it. Restart <code>pnpm dev:site</code> after changing source comments or types to refresh the generated API docs.</p>
   <h2 id={headings[3].slug}>{headings[3].text}</h2>
+  <p>Install the browser used by the tests once:</p>
+  <Code theme="github-dark-dimmed" code={'pnpm --filter @reparticle/core exec playwright install chromium'} lang="sh" />
   <Code theme="github-dark-dimmed" code={'pnpm check'} lang="sh" />
   <p>Checks formatting, lint, types, and tests, then builds the project. To fix formatting, run <code>pnpm format</code>.</p>
 </Reference>

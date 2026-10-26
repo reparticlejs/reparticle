@@ -27,7 +27,7 @@ it('fills a centered rectangle uniformly with parallel upward velocity', () => {
 });
 
 it('supports degenerate dimensions without losing upward velocity', () => {
-  expect(spawnBox(1, 17, 10, 20, 220, 0, 0)).toEqual([10, 20, 0, -220]);
+  expect([...spawnBox(1, 17, 10, 20, 220, 0, 0)]).toEqual([10, 20, 0, -220]);
   expect(spawnBox(1, 17, 10, 20, 220, 0, 100)[0]).toBe(10);
   expect(spawnBox(1, 17, 10, 20, 220, 200, 0)[1]).toBe(20);
 });

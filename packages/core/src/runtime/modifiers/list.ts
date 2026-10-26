@@ -19,9 +19,11 @@ const FIELDS = {
   directional: 8,
 } as const;
 
-const HEADER_SIZE = 2;
-const MODIFIER_STRIDE = 9;
-const MAX_MODIFIERS = 128;
+import {
+  MODIFIER_HEADER as HEADER_SIZE,
+  MODIFIER_STRIDE,
+  MAX_MODIFIERS,
+} from '../../simulation/layout';
 /** Space for both 64-entry scopes: emitter modifiers followed by effect modifiers. */
 export const MODIFIER_BUFFER_SIZE = HEADER_SIZE + MAX_MODIFIERS * MODIFIER_STRIDE;
 

@@ -114,6 +114,20 @@ Gate new births without pausing the simulation or resetting playback.
 
 ## Accessors
 
+### birthTexture
+
+#### Get Signature
+
+> **get** **birthTexture**(): `WebGLTexture`
+
+Borrowed birth-data texture for renderer adapters: three RGBA bands.
+
+##### Returns
+
+`WebGLTexture`
+
+***
+
 ### configuration
 
 #### Get Signature
@@ -566,7 +580,7 @@ Whether Y stretch follows the current simulation speed.
 
 > **get** **texture**(): `WebGLTexture`
 
-GPU resource handle for renderer adapters. Never calls toArray/readPixels.
+Borrowed changing-state texture for renderer adapters: two RGBA bands.
 
 ##### Returns
 

@@ -10,7 +10,7 @@ import { SimulationSources } from '../textures/simulation-sources';
 import { restoreSimulationState } from './restore-simulation-state';
 import { createUniforms } from './uniforms';
 
-const PARTICLE_BANDS = 5;
+const PARTICLE_BANDS = 2;
 
 /**
  * Owns one emitter's draw resources and reusable draw command.
@@ -21,6 +21,7 @@ export class EmitterResources {
   public readonly artwork: EmitterArtwork;
   public readonly shader: Shader;
   public readonly particleSources: SimulationSources;
+  public readonly birthSources: SimulationSources;
   public readonly state = State.for2d();
   public readonly geometry: Geometry;
   public readonly drawOptions: Parameters<WebGLRenderer['encoder']['draw']>[0];
@@ -39,6 +40,7 @@ export class EmitterResources {
       emitter.width,
       emitter.rows * PARTICLE_BANDS,
     );
+    this.birthSources = new SimulationSources(renderer, emitter.width, emitter.rows * 3);
     let artwork: EmitterArtwork | undefined;
     let shader: Shader | undefined;
     let geometry: Geometry | undefined;
@@ -50,6 +52,7 @@ export class EmitterResources {
         resources: {
           particleUniforms: this.uniforms,
           particles: this.particleSources.get(emitter.texture),
+          birthParticles: this.birthSources.get(emitter.birthTexture),
           artwork: Texture.EMPTY.source,
           animationFrames: Texture.EMPTY.source,
         },
@@ -74,6 +77,7 @@ export class EmitterResources {
       shader?.destroy();
       artwork?.destroy();
       this.particleSources.destroy();
+      this.birthSources.destroy();
       throw error;
     } finally {
       restoreSimulationState(renderer);
@@ -92,6 +96,7 @@ export class EmitterResources {
       this.shader.destroy();
       this.artwork.destroy();
       this.particleSources.destroy();
+      this.birthSources.destroy();
     } finally {
       restoreSimulationState(this.renderer);
     }

@@ -2,7 +2,8 @@ import { expect, it } from 'vitest';
 
 import { ModifierSampler } from '#src/runtime/modifiers/sampler.js';
 import { EffectTransform } from '#src/runtime/transforms/effect.js';
-import { applyModifiers } from '#src/simulation/modifiers/list.js';
+
+import { applyModifiers } from '../../support/simulation';
 
 const identity = new EffectTransform();
 const sample = (local: unknown, shared: unknown = []) =>
@@ -75,7 +76,7 @@ it('handles negative and collapsed local scale and restores the shared list afte
 });
 
 it('handles empty lists and the full supported list without dropping entries', () => {
-  expect(advance(sample([]))).toEqual([10, 0]);
+  expect([...advance(sample([]))]).toEqual([10, 0]);
   const entries = Array.from({ length: 64 }, () => ({ type: 'acceleration', magnitude: 1 }));
   const values = sample(entries, entries);
   expect(values[0]).toBe(128);

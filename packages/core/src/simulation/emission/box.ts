@@ -1,6 +1,6 @@
-import type { ParticleTexel } from '#types/layout.js';
+import { tgpu, d } from 'typegpu';
 
-import { spawnVariation } from './direction';
+import { spawnVariation } from './direction.ts';
 
 /**
  * Spawn inside a rectangle centered on the emitter.
@@ -13,18 +13,15 @@ import { spawnVariation } from './direction';
  * regardless of their spawn position. The integration kernel applies the
  * emitter's rotation, scale, and inherited velocity afterward.
  */
-export function spawnBox(
-  particleId: number,
-  seed: number,
-  emitterX: number,
-  emitterY: number,
-  speed: number,
-  dimensionX: number,
-  dimensionY: number,
-): ParticleTexel {
-  // Use a different seed for Y so both axes do not sample the same diagonal.
-  const offsetX = (spawnVariation(particleId, seed) - 0.5) * dimensionX;
-  const offsetY = (spawnVariation(particleId, seed + 173) - 0.5) * dimensionY;
-
-  return [emitterX + offsetX, emitterY + offsetY, 0, -speed];
-}
+export const spawnBox = tgpu
+  .fn(
+    [d.f32, d.f32, d.f32, d.f32, d.f32, d.f32, d.f32],
+    d.vec4f,
+  )((particleId, seed, emitterX, emitterY, speed, dimensionX, dimensionY) => {
+    'use gpu';
+    // Use a different seed for Y so both axes do not sample the same diagonal.
+    const offsetX = (spawnVariation(particleId, seed) - 0.5) * dimensionX;
+    const offsetY = (spawnVariation(particleId, seed + 173) - 0.5) * dimensionY;
+    return d.vec4f(emitterX + offsetX, emitterY + offsetY, 0, -speed);
+  })
+  .$name('spawnBox');

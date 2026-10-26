@@ -1,14 +1,8 @@
 import type { UniformVector } from '#types/simulation.js';
 
 /**
- * Reusable CPU storage for one vec4 uniform on one GPU.js kernel.
- *
- * GPU.js retains the uploaded array itself when caching uniform values. Editing
- * that array in place would also edit the cache, making a change look unchanged.
- * Keep current values intact and write changes into the spare array instead.
- *
- * Each alternating simulation kernel needs its own instance. These arrays are
- * ordinary numeric inputs; this class neither creates GL buffers nor uploads.
+ * Reusable vec4 input storage. Changed values use the spare array, preserving
+ * the previous borrowed value until the next change. No GL uploads happen here.
  */
 export class UniformBuffer {
   private current: UniformVector = [0, 0, 0, 0];
@@ -31,7 +25,7 @@ export class UniformBuffer {
       return this.current;
     }
 
-    // Preserve the array GPU.js may still be comparing against.
+    // Preserve the previous borrowed input until the next change.
     const next = this.spare;
     next[0] = x;
     next[1] = y;

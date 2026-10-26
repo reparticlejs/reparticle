@@ -1,7 +1,8 @@
 import { expect, it } from 'vitest';
 
-import { integrate } from '#src/simulation/kernels/integrate.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
+
+import { integrate } from '../../support/simulation';
 
 it('samples independent signed speed and lifetime offsets once per birth', () => {
   const state: ParticleTexture = [
@@ -97,7 +98,7 @@ it('captures signed size and rotation independently, adds orientation, and resam
       new Float32Array(65).fill(1),
       new Float32Array([0, 0]),
     );
-  expect(run(1, 1, 0, 0, 0)).toEqual([0.1, 1, 10, 30]);
+  expect(run(1, 1, 0, 0, 0)).toEqual([0.1, 1, 10, 30].map(Math.fround));
   const sizes: number[] = [];
   const rotations: number[] = [];
   for (let seed = 0; seed < 100; seed++) {
@@ -151,7 +152,7 @@ it('samples RGBA independently without birth clamping and retains values until r
       new Float32Array(65).fill(1),
       new Float32Array([0, 0]),
     );
-  expect(run(1, 1, 0)).toEqual([0.5, 0.5, 0.5, 0.5]);
+  expect(run(1, 1, 0)).toEqual([0.5, 0.5, 0.5, 0.5].map(Math.fround));
   const samples = Array.from({ length: 100 }, (_, seed) => run(seed, 1, 1));
   for (let channel = 0; channel < 4; channel++) {
     const values = samples.map((sample) => sample[channel]!);

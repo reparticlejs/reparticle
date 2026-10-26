@@ -1,6 +1,6 @@
-import type { ParticleTexel } from '#types/layout.js';
+import { tgpu, d } from 'typegpu';
 
-import { spawnVariation } from './direction';
+import { spawnVariation } from './direction.ts';
 
 /**
  * Spawn uniformly inside a triangle with its tip at the emitter.
@@ -14,35 +14,29 @@ import { spawnVariation } from './direction';
  * undefined, use local -Y. The integration kernel applies the emitter's
  * rotation, scale, and inherited velocity afterward.
  */
-export function spawnCone2D(
-  particleId: number,
-  seed: number,
-  emitterX: number,
-  emitterY: number,
-  speed: number,
-  dimensionX: number,
-  dimensionY: number,
-): ParticleTexel {
-  // Separate samples along the left and right sides avoid a fixed center line.
-  // Keep the arbitrary offset stable to preserve seeded particle positions.
-  const sideSeedOffset = 173;
-  const leftSample = spawnVariation(particleId, seed);
-  const rightSample = spawnVariation(particleId, seed + sideSeedOffset);
-  const offsetX = (rightSample - leftSample) * dimensionX * 0.5;
-  let distanceUp = (leftSample + rightSample) * dimensionY;
-
-  // Reflect across the base without changing the horizontal offset.
-  if (distanceUp > dimensionY) {
-    distanceUp = 2 * dimensionY - distanceUp;
-  }
-
-  const distanceFromTip = Math.sqrt(offsetX * offsetX + distanceUp * distanceUp);
-  if (distanceFromTip === 0) {
-    return [emitterX, emitterY, 0, -speed];
-  }
-
-  const velocityX = (offsetX / distanceFromTip) * speed;
-  const velocityY = (-distanceUp / distanceFromTip) * speed;
-
-  return [emitterX + offsetX, emitterY - distanceUp, velocityX, velocityY];
-}
+export const spawnCone2D = tgpu
+  .fn(
+    [d.f32, d.f32, d.f32, d.f32, d.f32, d.f32, d.f32],
+    d.vec4f,
+  )((particleId, seed, emitterX, emitterY, speed, dimensionX, dimensionY) => {
+    'use gpu';
+    // Separate samples along the left and right sides avoid a fixed center line.
+    // Keep the arbitrary offset stable to preserve seeded particle positions.
+    const sideSeedOffset = 173;
+    const leftSample = spawnVariation(particleId, seed);
+    const rightSample = spawnVariation(particleId, seed + sideSeedOffset);
+    const offsetX = (rightSample - leftSample) * dimensionX * 0.5;
+    let distanceUp = (leftSample + rightSample) * dimensionY;
+    // Reflect across the base without changing the horizontal offset.
+    if (distanceUp > dimensionY) {
+      distanceUp = 2 * dimensionY - distanceUp;
+    }
+    const distanceFromTip = Math.sqrt(offsetX * offsetX + distanceUp * distanceUp);
+    if (distanceFromTip === 0) {
+      return d.vec4f(emitterX, emitterY, 0, -speed);
+    }
+    const velocityX = (offsetX / distanceFromTip) * speed;
+    const velocityY = (-distanceUp / distanceFromTip) * speed;
+    return d.vec4f(emitterX + offsetX, emitterY - distanceUp, velocityX, velocityY);
+  })
+  .$name('spawnCone2D');

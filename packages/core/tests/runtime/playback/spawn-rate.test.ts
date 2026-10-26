@@ -34,19 +34,36 @@ it('samples absolute rates and clamps negative values after interpolation', () =
   expect(() => new SpawnRate(1e100)).toThrow(RangeError);
 });
 
-it('samples once at the end and loop at the start of a boundary frame', () => {
+it('integrates the consumed interval before wrapping a loop', () => {
   for (const mode of ['once', 'loop'] as const) {
     const clock = new EmitterPlayback(0.2, mode);
     const rate = new SpawnRate(ramp);
     const schedule = new SpawnSchedule(100);
     const counts = [0.1, 0.1, 0.1].map((dt) =>
-      schedule.next(clock.advance(dt) ? rate.at(clock.normalizedAge) : 0, dt),
+      schedule.next(
+        clock.advance(dt) ? rate.average(clock.emissionStartAge, clock.emissionEndAge) : 0,
+        dt,
+      ),
     );
-    expect(counts).toEqual(mode === 'once' ? [5, 10, 0] : [5, 0, 5]);
+    expect(counts).toEqual(mode === 'once' ? [2, 8, 0] : [2, 8, 2]);
     clock.reset();
-    expect(clock.normalizedAge).toBe(0);
+    expect(clock.emissionStartAge).toBe(0);
+    expect(clock.emissionEndAge).toBe(0);
     expect(clock.advance(0)).toBe(false);
   }
+});
+
+it('integrates only positive rates including a zero crossing inside a sample segment', () => {
+  const rate = new SpawnRate({
+    points: [
+      { time: 0, value: -49.5, tangent: 100 },
+      { time: 1, value: 50.5, tangent: 100 },
+    ],
+  });
+  expect(rate.average(0, 1)).toBeCloseTo((50.5 * 0.505) / 2, 8);
+  expect(new SpawnRate(25).average(0, 1)).toBe(25);
+  expect(new SpawnRate(-25).average(0, 1)).toBe(0);
+  expect(new SpawnRate(25).average(0, 0)).toBe(25);
 });
 
 it('waits for start delay, samples zero duration at zero, and retains fractional emission', () => {

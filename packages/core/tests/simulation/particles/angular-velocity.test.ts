@@ -1,7 +1,8 @@
 import { expect, it } from 'vitest';
 
 import { sampleCurve } from '#src/curves/sample-curve.js';
-import { advanceRotation } from '#src/simulation/particles/angular-velocity.js';
+
+import { advanceRotation } from '../../support/simulation';
 
 it('integrates signed degrees per second independently of the frame rate', () => {
   const curve = sampleCurve(1);

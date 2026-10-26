@@ -11,7 +11,6 @@ export default defineConfig({
     '**/coverage/**',
     '.pnpm-store/**',
     '.generated/**',
-    'packages/core/src/simulation/functions.json',
     '.turbo/**',
   ],
   options: {

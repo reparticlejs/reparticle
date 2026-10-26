@@ -47,3 +47,22 @@ Times outside the range use the curve's endpoint values.
 #### Returns
 
 `number`
+
+***
+
+### average()
+
+> **average**(`start`, `end`): `number`
+
+Average the nonnegative rate across a step, including every crossed curve segment.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `start` | `number` |
+| `end` | `number` |
+
+#### Returns
+
+`number`

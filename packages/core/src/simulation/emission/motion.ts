@@ -1,6 +1,7 @@
-import type { ParticleTexel } from '#types/layout.js';
+import { tgpu, d } from 'typegpu';
 
-import { spawnDirection, spawnVariation } from './direction';
+import { spawnVariation } from './direction.ts';
+import { spawnDirection } from './direction.ts';
 
 /**
  * Spawn at the emitter's position with velocity inside an angular spread.
@@ -13,19 +14,16 @@ import { spawnDirection, spawnVariation } from './direction';
  * by speed in simulation units per second. The integration kernel applies the
  * emitter's rotation, scale, and inherited velocity afterward.
  */
-export function spawnMotion(
-  particleId: number,
-  seed: number,
-  emitterX: number,
-  emitterY: number,
-  speed: number,
-  direction: number,
-  spread: number,
-): ParticleTexel {
-  const variation = spawnVariation(particleId, seed);
-  const angle = spawnDirection(direction, spread, variation);
-  const velocityX = Math.cos(angle) * speed;
-  const velocityY = Math.sin(angle) * speed;
-
-  return [emitterX, emitterY, velocityX, velocityY];
-}
+export const spawnMotion = tgpu
+  .fn(
+    [d.f32, d.f32, d.f32, d.f32, d.f32, d.f32, d.f32],
+    d.vec4f,
+  )((particleId, seed, emitterX, emitterY, speed, direction, spread) => {
+    'use gpu';
+    const variation = spawnVariation(particleId, seed);
+    const angle = spawnDirection(direction, spread, variation);
+    const velocityX = Math.cos(angle) * speed;
+    const velocityY = Math.sin(angle) * speed;
+    return d.vec4f(emitterX, emitterY, velocityX, velocityY);
+  })
+  .$name('spawnMotion');

@@ -5,6 +5,7 @@ import { Emitter } from '#src/runtime/emitter.js';
 import type { EmitterContext } from '#types/emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
+import magicImpact from '../../../../examples/demo/public/effects/magic-impact.json';
 
 const gpu = vi.hoisted(() => ({
   construct: vi.fn<() => void>(),
@@ -171,4 +172,21 @@ it('restores host state before notifications and when simulation fails', () => {
   expect(() => emitter.update(0.1)).toThrow('GPU failure');
   expect(restored).toBe(true);
   emitter.destroy();
+});
+
+it('emits the magic-impact ring on a slow first frame and after reset', () => {
+  const ring = parseEffectConfig(magicImpact).emitters.find((entry) => entry.id === 'ring')!;
+  const slow = new Emitter(context, ring);
+  const fast = new Emitter(context, ring);
+  slow.update(0.1);
+  for (let frame = 0; frame < 6; frame++) {
+    fast.update(1 / 60);
+  }
+  expect(slow.particleCount).toBeGreaterThan(0);
+  expect(slow.particleCount).toBe(fast.particleCount);
+  slow.reset();
+  slow.update(0.1);
+  expect(slow.particleCount).toBe(fast.particleCount);
+  slow.destroy();
+  fast.destroy();
 });

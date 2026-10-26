@@ -26,7 +26,7 @@ Optional host guard, called before simulation operations mutate CPU or GPU state
 
 > **canvas**: `HTMLCanvasElement`
 
-Canvas belonging to gl, passed to GPU.js and preserved across kernel compilation.
+Canvas belonging to gl; borrowed and never resized by the simulation.
 
 ***
 

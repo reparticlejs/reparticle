@@ -9,6 +9,14 @@
     },
     "test": {
       "dependsOn": ["^build"]
+    },
+    "@reparticle/core#test": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "@reparticle/pixi#test": {
+      "dependsOn": ["build"],
+      "cache": false
     }
   }
 }

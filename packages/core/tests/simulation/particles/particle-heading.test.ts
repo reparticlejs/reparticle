@@ -1,7 +1,8 @@
 import { expect, it } from 'vitest';
 
 import { sampleCurve } from '#src/curves/sample-curve.js';
-import { particleHeading } from '#src/simulation/particles/heading.js';
+
+import { particleHeading } from '../../support/simulation';
 
 it('combines initial rotation with the lifetime rotation curve', () => {
   const curve = sampleCurve({

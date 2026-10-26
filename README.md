@@ -2,7 +2,7 @@
 
 **A GPU particle engine with JSON-defined effects.** reparticle handles particle behavior and simulation; PixiJS is its first and primary renderer, and the only renderer currently available.
 
-The core uses GPU.js for simulation and has no PixiJS dependency. The PixiJS integration renders directly from its GPU textures and provides the `ParticleEffect` display object. It creates no sprite per particle and does not read particle state back to the CPU. Particle concepts and behavior are inspired by [Defold](https://defold.com/).
+The core uses WebGL2 for simulation and has no PixiJS dependency. The PixiJS integration renders directly from its GPU textures and provides the `ParticleEffect` display object. It creates no sprite per particle and does not read particle state back to the CPU. Particle concepts and behavior are inspired by [Defold](https://defold.com/).
 
 For an existing PixiJS v8 app, install `@reparticle/pixi`. The core engine is included.
 
@@ -118,11 +118,11 @@ Browse the [effect definitions](examples/demo/public/effects), [artwork bindings
 
 | Package            | Responsibility                                                                                                 |
 | ------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `@reparticle/core` | Configuration validation, emission scheduling, particle allocation, and GPU.js simulation. No Pixi dependency. |
+| `@reparticle/core` | Configuration validation, emission scheduling, particle allocation, and WebGL2 simulation. No Pixi dependency. |
 | `@reparticle/pixi` | The `ParticleEffect` display object, artwork bindings, and rendering through PixiJS 8.                         |
 | `examples/demo`    | The React example gallery, sharing one Pixi application across effects.                                        |
 
-CPU bookkeeping handles births, expiration, and live counts. Particle state stays in GPU textures shared with the renderer. GPU functions are authored in TypeScript and packaged as source strings during the library build; GPU.js compiles them on the device. Consumers need no custom build plugin or minifier configuration.
+CPU bookkeeping handles births, expiration, and live counts. Particle state stays in GPU textures shared with the renderer. Simulation functions are authored in TypeScript and compiled to GLSL during the library build. TypeGPU is a build-time tool; neither TypeGPU nor its compiler is shipped to applications. Consumers need no custom build plugin or minifier configuration.
 
 ## Requirements and limits
 
@@ -131,9 +131,19 @@ CPU bookkeeping handles births, expiration, and live counts. Particle state stay
 - **Particles draw in fixed slot order.** There is no per-particle depth or lifetime sorting; emitters draw in definition order.
 - **Bounds are not calculated automatically.** Supply bounds, hit areas, or filter areas when your use requires them.
 - **An effect belongs to one renderer.** Moving live simulation between WebGL contexts and context-loss recovery are not supported.
-- **GPU.js adds runtime compilation and bundle cost.** There is no editor included.
+- There is no editor included.
 
 ## Development
+
+Install the test browser once after installing dependencies:
+
+```sh
+pnpm --filter @reparticle/core exec playwright install chromium
+```
+
+`pnpm test` includes real WebGL2 browser tests. The tests live alongside each package’s unit tests in `packages/core/tests/browser` and `packages/pixi/tests/browser`. On Linux CI, add `--with-deps` to the browser installation command.
+
+Run just browser tests with `pnpm exec turbo run test --filter=@reparticle/core --filter=@reparticle/pixi -- --project=browser`.
 
 ```sh
 pnpm check   # Formatting, lint, typecheck, tests, and production builds.

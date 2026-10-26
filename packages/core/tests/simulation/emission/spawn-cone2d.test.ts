@@ -42,7 +42,7 @@ it('folds samples beyond the far edge back into the triangle', () => {
 });
 
 it('handles collapsed dimensions without NaN or losing initial speed', () => {
-  expect(spawnCone2D(1, 17, 10, 20, 220, 0, 0)).toEqual([10, 20, 0, -220]);
+  expect([...spawnCone2D(1, 17, 10, 20, 220, 0, 0)]).toEqual([10, 20, 0, -220]);
   for (let id = 0; id < 100; id++) {
     const vertical = spawnCone2D(id, 17, 10, 20, 220, 0, 100);
     expect(vertical[0]).toBe(10);

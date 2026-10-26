@@ -1,7 +1,8 @@
 import { expect, it } from 'vitest';
 
-import { integrate } from '#src/simulation/kernels/integrate.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
+
+import { integrate } from '../../support/simulation';
 
 it('retains spread for the lifetime, resamples on birth, and damps after gravity', () => {
   const state: ParticleTexture = [

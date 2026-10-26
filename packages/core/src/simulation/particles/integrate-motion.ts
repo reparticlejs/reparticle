@@ -1,8 +1,9 @@
-import type { ParticleTexel } from '#types/layout.js';
+import { tgpu, d } from 'typegpu';
 
-import { applyModifiers } from '../modifiers/list';
-import { advanceRotation } from './angular-velocity';
-import { particleHeading } from './heading';
+import { applyModifiers } from '../modifiers/list.ts';
+import { readModifier } from '../resources.ts';
+import { advanceRotation } from './angular-velocity.ts';
+import { particleHeading } from './heading.ts';
 
 /**
  * Advance one particle with semi-implicit Euler integration:
@@ -17,74 +18,93 @@ import { particleHeading } from './heading';
  * in degrees. Return [x, y, velocityX, velocityY]. This function does not update
  * stored age or rotation; their texture bands are written separately.
  */
-export function integrateMotion(
-  x: number,
-  y: number,
-  velocityX: number,
-  velocityY: number,
-  ageAfterStep: number,
-  lifetime: number,
-  initialRotation: number,
-  accumulatedRotation: number,
-  initialAngularVelocity: number,
-  spreadFactor: number,
-  handedness: number,
-  seconds: number,
-  orientToMovement: number,
-  orientToAngularVelocity: number,
-  rotationCurve: Float32Array,
-  angularVelocityCurve: Float32Array,
-  modifiers: Float32Array,
-): ParticleTexel {
-  const modifierCount = modifiers[0]!;
-  if (modifierCount === 0) {
-    return [x + velocityX * seconds, y + velocityY * seconds, velocityX, velocityY];
-  }
-
-  // Only radial modifiers need a heading for particles exactly at their center.
-  const containsRadial = modifiers[1]!;
-  let heading: [number, number] = [0, -1];
-  if (containsRadial > 0) {
-    let angularRotation = 0;
-    if (orientToAngularVelocity > 0.5) {
-      const rotationAfterStep = advanceRotation(
-        accumulatedRotation,
-        initialAngularVelocity,
-        ageAfterStep,
-        lifetime,
-        angularVelocityCurve,
-        seconds,
-      );
-      angularRotation = rotationAfterStep * handedness;
-    }
-
-    // Use this step's rotation but the velocity before modifiers change it.
-    const baseRotation = initialRotation + angularRotation;
-    heading = particleHeading(
-      baseRotation,
-      ageAfterStep,
-      lifetime,
-      rotationCurve,
+export const integrateMotion = tgpu
+  .fn(
+    [
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+      d.f32,
+    ],
+    d.vec4f,
+  )(
+    (
+      x,
+      y,
       velocityX,
       velocityY,
-      orientToMovement,
+      ageAfterStep,
+      lifetime,
+      initialRotation,
+      accumulatedRotation,
+      initialAngularVelocity,
+      spreadFactor,
       handedness,
-    );
-  }
-
-  const nextVelocity = applyModifiers(
-    x,
-    y,
-    velocityX,
-    velocityY,
-    heading[0],
-    heading[1],
-    spreadFactor,
-    seconds,
-    modifiers,
-  );
-  const nextX = x + nextVelocity[0] * seconds;
-  const nextY = y + nextVelocity[1] * seconds;
-
-  return [nextX, nextY, nextVelocity[0], nextVelocity[1]];
-}
+      seconds,
+      orientToMovement,
+      orientToAngularVelocity,
+      rotationCurve,
+      angularVelocityCurve,
+    ) => {
+      'use gpu';
+      const modifierCount = readModifier(0);
+      if (modifierCount === 0) {
+        return d.vec4f(x + velocityX * seconds, y + velocityY * seconds, velocityX, velocityY);
+      }
+      // Only radial modifiers need a heading for particles exactly at their center.
+      const containsRadial = readModifier(1);
+      let heading = d.vec2f(0, -1);
+      if (containsRadial > 0) {
+        let angularRotation = d.f32(0);
+        if (orientToAngularVelocity > 0.5) {
+          const rotationAfterStep = advanceRotation(
+            accumulatedRotation,
+            initialAngularVelocity,
+            ageAfterStep,
+            lifetime,
+            angularVelocityCurve,
+            seconds,
+          );
+          angularRotation = rotationAfterStep * handedness;
+        }
+        // Use this step's rotation but the velocity before modifiers change it.
+        const baseRotation = initialRotation + angularRotation;
+        heading = particleHeading(
+          baseRotation,
+          ageAfterStep,
+          lifetime,
+          rotationCurve,
+          velocityX,
+          velocityY,
+          orientToMovement,
+          handedness,
+        );
+      }
+      const nextVelocity = applyModifiers(
+        x,
+        y,
+        velocityX,
+        velocityY,
+        heading[0],
+        heading[1],
+        spreadFactor,
+        seconds,
+      );
+      const nextX = x + nextVelocity[0] * seconds;
+      const nextY = y + nextVelocity[1] * seconds;
+      return d.vec4f(nextX, nextY, nextVelocity[0], nextVelocity[1]);
+    },
+  )
+  .$name('integrateMotion');

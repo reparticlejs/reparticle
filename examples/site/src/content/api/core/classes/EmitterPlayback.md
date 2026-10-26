@@ -28,6 +28,20 @@ drained through finish(); this class does not track particle counts.
 
 `EmitterPlayback`
 
+## Properties
+
+### emissionEndAge
+
+> **emissionEndAge**: `number` = `0`
+
+***
+
+### emissionStartAge
+
+> **emissionStartAge**: `number` = `0`
+
+Normalized interval consumed by the last emitting step, before loop wrapping.
+
 ## Accessors
 
 ### emitting

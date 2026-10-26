@@ -1,7 +1,8 @@
 import { expect, it } from 'vitest';
 
-import { integrate } from '#src/simulation/kernels/integrate.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
+
+import { integrate } from '../../support/simulation';
 
 it.each([0, 1, 2, 3])(
   'reflects shape %s at birth and retains its handedness after the emitter flips',

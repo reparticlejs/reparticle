@@ -1,5 +1,3 @@
-import type { Texture } from 'gpu.js';
-
 /**
  * Renderer-owned resources borrowed by an emitter's GPU simulation.
  * Simulation and rendering share a context so particle textures can be consumed
@@ -9,7 +7,7 @@ export interface EmitterContext {
   /** Shared WebGL2 context; simulation requires EXT_color_buffer_float support. */
   gl: WebGL2RenderingContext;
 
-  /** Canvas belonging to gl, passed to GPU.js and preserved across kernel compilation. */
+  /** Canvas belonging to gl; borrowed and never resized by the simulation. */
   canvas: HTMLCanvasElement;
 
   /** Optional host guard, called before simulation operations mutate CPU or GPU state. */
@@ -19,15 +17,8 @@ export interface EmitterContext {
   restoreState?: () => void;
 }
 
-/**
- * GPU.js pipeline output with the WebGL handles required by the simulation.
- * isPipelineTexture() checks that an output belongs to the expected context.
- *
- * The simulation owns this texture and reuses its storage on later steps.
- * Consumers borrow the current handle; it is not a persistent particle snapshot
- * and must not be deleted by the renderer. Reading its handle performs no readback.
- */
-export interface PipelineTexture extends Texture {
+/** Borrowed simulation output; owned by the simulation, never a CPU snapshot. */
+export interface PipelineTexture {
   /** Particle-state storage, used directly by the next kernel or renderer. */
   texture: WebGLTexture;
 

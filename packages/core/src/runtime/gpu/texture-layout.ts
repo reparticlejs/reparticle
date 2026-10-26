@@ -1,11 +1,14 @@
-/** Each particle uses one texel in each of five vertically stacked state bands. */
+/**
+ * Preserve the established slot addressing and device-capacity limits.
+ * Storage now splits these five logical bands into two state and three birth bands.
+ */
 const PARTICLE_BANDS = 5;
 
 /**
  * Choose the smallest particle-state texture for a validated emitter capacity.
  *
  * `width` is the number of slots across a band. `rows` is the height of ONE band,
- * so the actual texture height is `rows * PARTICLE_BANDS`. For example, capacity
+ * the historical combined layout height is `rows * PARTICLE_BANDS`. For example, capacity
  * 16 uses width 8 and rows 2: an 8 × 10 texture with no unused slots.
  *
  * Minimize allocated slots first. When allocations tie, prefer the full texture

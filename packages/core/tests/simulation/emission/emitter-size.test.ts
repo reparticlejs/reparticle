@@ -5,8 +5,9 @@ import { spawnCircle } from '#src/simulation/emission/circle.js';
 import { spawnCone2D } from '#src/simulation/emission/cone2d.js';
 import { spawnRotation } from '#src/simulation/emission/rotation.js';
 import { propertyVariation } from '#src/simulation/emission/variation.js';
-import { integrate } from '#src/simulation/kernels/integrate.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
+
+import { integrate } from '../../support/simulation';
 
 it.each([1, 2, 3])(
   'uses independent signed dimensions for shape %s position and initial orientation',
@@ -53,9 +54,9 @@ it.each([1, 2, 3])(
           new Float32Array([0, 0]),
         );
       context.thread.y = 0;
-      expect(run(1)).toEqual(expected);
+      expect(run(1)).toEqual([...expected]);
       state[0]![0] = expected;
-      expect(run(0)).toEqual(expected);
+      expect(run(0)).toEqual([...expected]);
       context.thread.y = 1;
       expect(run(1)[3]).toBeCloseTo(spawnRotation(expected[2], expected[3]));
     }

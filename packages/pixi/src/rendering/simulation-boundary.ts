@@ -1,7 +1,7 @@
 import { Container, type RenderOptions, type WebGLRenderer } from 'pixi.js';
 
 /**
- * Protect the WebGL context shared by Pixi and GPU.js.
+ * Protect the WebGL context shared by Pixi and simulation.
  * Simulation is allowed between renders and during the particle pipe's preparation.
  * It is blocked throughout the rest of a render, including user callbacks.
  *
