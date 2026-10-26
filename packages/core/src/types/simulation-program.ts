@@ -32,3 +32,17 @@ export interface SharedSimulationProgram {
   /** Last uploaded birthPass value; undefined forces the first upload. */
   pass?: number;
 }
+
+/** Generated std140 location and storage size for one simulation input. */
+export interface SimulationUniformLayout {
+  offset: number;
+  length: number;
+  padded: number;
+}
+
+/** Owned texture and its permanent framebuffer attachment. */
+export interface SimulationTarget {
+  texture: WebGLTexture;
+  framebuffer: WebGLFramebuffer;
+  height: number;
+}
