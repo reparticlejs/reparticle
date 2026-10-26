@@ -46,3 +46,12 @@ export const INPUT_LENGTHS = {
   angularVelocityCurve: CURVE_SEGMENTS + 1,
   modifiers: MODIFIER_WORDS,
 } as const;
+
+/** Logical bands exposed by readState; physical state and birth textures are split. */
+export const PARTICLE_BAND = {
+  motion: 0,
+  properties: 1,
+  color: 2,
+  dynamics: 3,
+  geometry: 4,
+} as const;

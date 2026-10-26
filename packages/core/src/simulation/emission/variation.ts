@@ -1,3 +1,19 @@
+/** Stable random streams. Changing an ID changes the particles produced by existing seeds. */
+export const VARIATION_STREAM = {
+  speed: 1,
+  lifetime: 2,
+  size: 3,
+  rotation: 4,
+  red: 5,
+  green: 6,
+  blue: 7,
+  alpha: 8,
+  modifier: 14,
+  angularVelocity: 15,
+  stretchX: 16,
+  stretchY: 17,
+} as const;
+
 /**
  * Produce repeatable variation in [-1, 1] for a particle property.
  *
