@@ -14,9 +14,12 @@
     "dev:site": "pnpm --filter @reparticle/site^... build && pnpm --filter @reparticle/site dev",
     "prepare": "husky",
     "precommit": "lint-staged",
-    "prepush": "pnpm typecheck && pnpm test"
+    "prepush": "pnpm typecheck && pnpm test",
+    "changeset": "changeset",
+    "release:version": "changeset version && pnpm install --lockfile-only --ignore-scripts && oxfmt packages/*/CHANGELOG.md"
   },
   "devDependencies": {
+    "@changesets/cli": "3.0.3",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript/lib-dom": "npm:@types/web@0.0.359",
     "@typescript/native": "catalog:",
