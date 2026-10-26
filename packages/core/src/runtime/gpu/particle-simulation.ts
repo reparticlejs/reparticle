@@ -141,16 +141,16 @@ export class GpuSimulation {
       // These uniforms belong to the shared program, not the simulation instance.
       const shared = this.shared!;
       if (
-        shared.width !== this.width ||
-        shared.height !== this.height ||
-        shared.capacity !== this.capacity
+        shared.uploadedWidth !== this.width ||
+        shared.uploadedHeight !== this.height ||
+        shared.uploadedCapacity !== this.capacity
       ) {
-        gl.uniform1i(shared.constants[0]!, this.width);
-        gl.uniform1i(shared.constants[1]!, this.rows);
-        gl.uniform1i(shared.constants[2]!, this.capacity);
-        shared.width = this.width;
-        shared.height = this.height;
-        shared.capacity = this.capacity;
+        gl.uniform1i(shared.widthLocation, this.width);
+        gl.uniform1i(shared.rowsLocation, this.rows);
+        gl.uniform1i(shared.capacityLocation, this.capacity);
+        shared.uploadedWidth = this.width;
+        shared.uploadedHeight = this.height;
+        shared.uploadedCapacity = this.capacity;
       }
       let unit = 0;
       let firstChanged = this.uniformUploaded ? this.uniformData.length : 0;

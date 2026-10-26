@@ -117,3 +117,27 @@ it('looks up only active standalone uniforms; other inputs use the uniform block
   ]);
   releaseSimulationProgram(gl, shared);
 });
+
+it('cleans up shader compilation failures before allowing a retry', () => {
+  const { gl, mocks } = context();
+  gl.getShaderInfoLog = vi.fn<WebGL2RenderingContext['getShaderInfoLog']>(() => 'Invalid shader');
+  mocks.getShaderParameter.mockReturnValueOnce(false);
+  expect(() => acquireSimulationProgram(gl)).toThrow('Invalid shader');
+  expect(mocks.deleteShader).toHaveBeenCalledTimes(1);
+  expect(mocks.deleteProgram).toHaveBeenCalledTimes(1);
+  const retry = acquireSimulationProgram(gl);
+  expect(retry.users).toBe(1);
+  releaseSimulationProgram(gl, retry);
+});
+
+it('cleans up both shaders and the program when linking fails', () => {
+  const { gl, mocks } = context();
+  gl.getProgramInfoLog = vi.fn<WebGL2RenderingContext['getProgramInfoLog']>(() => 'Cannot link');
+  mocks.getProgramParameter.mockReturnValueOnce(false);
+  expect(() => acquireSimulationProgram(gl)).toThrow('Cannot link');
+  expect(mocks.deleteShader).toHaveBeenCalledTimes(2);
+  expect(mocks.deleteProgram).toHaveBeenCalledTimes(1);
+  const retry = acquireSimulationProgram(gl);
+  expect(retry.users).toBe(1);
+  releaseSimulationProgram(gl, retry);
+});
