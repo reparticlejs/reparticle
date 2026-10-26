@@ -39,7 +39,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "prepack": "pnpm build",
-    "build:shaders": "node scripts/build-shaders.ts"
+    "build:shaders": "node scripts/build-shaders.ts",
+    "prepublishOnly": "pnpm --workspace-root check"
   },
   "dependencies": {
     "zod": "catalog:"

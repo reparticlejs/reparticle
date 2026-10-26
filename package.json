@@ -11,13 +11,18 @@
     "format": "oxfmt .",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "format:check": "oxfmt --check .",
-    "dev:site": "pnpm --filter @reparticle/site^... build && pnpm --filter @reparticle/site dev"
+    "dev:site": "pnpm --filter @reparticle/site^... build && pnpm --filter @reparticle/site dev",
+    "prepare": "husky",
+    "precommit": "lint-staged",
+    "prepush": "pnpm typecheck && pnpm test"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript/lib-dom": "npm:@types/web@0.0.359",
     "@typescript/native": "catalog:",
     "eslint-plugin-import-x": "catalog:",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
@@ -26,6 +31,13 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
+  },
+  "lint-staged": {
+    "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}": [
+      "oxfmt --check",
+      "oxlint"
+    ],
+    "*.{json,jsonc,yaml,yml,md,mdx,html,css,scss,less,vue,astro}": "oxfmt --check"
   },
   "engines": {
     "node": ">=24"

@@ -35,4 +35,6 @@ const headings = [
   <Code theme="github-dark-dimmed" code={'pnpm check'} lang="sh" />
   <p>Tests include real WebGL2 simulation and Pixi rendering in Chromium. On Linux CI, add <code>--with-deps</code> when installing Chromium.</p>
   <p>Checks formatting, lint, types, and tests, then builds the project. To fix formatting, run <code>pnpm format</code>.</p>
+  <p><code>pnpm install</code> enables Git hooks. Commits check formatting and lint on staged files; pushes run type checks and tests. Install Chromium before your first push using the command above.</p>
+  <p>GitHub Actions runs <code>pnpm check</code> on pull requests and pushes to <code>main</code>. Publishing a package from this workspace also runs the full check first. Publishing a prebuilt tarball bypasses package hooks, so run <code>pnpm check</code> before packing a release.</p>
 </Reference>
