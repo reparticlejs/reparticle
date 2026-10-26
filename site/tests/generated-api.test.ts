@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url';
 import { expect, it } from 'vitest';
 
 const root = fileURLToPath(new URL('../src/content/api/', import.meta.url));
-const files = readdirSync(root, { recursive: true, encoding: 'utf8' }).filter((file) =>
-  file.endsWith('.md'),
-);
+const files = readdirSync(root, { recursive: true, encoding: 'utf8' })
+  .filter((file) => file.endsWith('.md'))
+  .map((file) => file.replaceAll('\\', '/'));
 
 it('generates both packages and the public display object API', () => {
   expect(files).toContain('core/index.md');
@@ -21,7 +21,7 @@ it('generates both packages and the public display object API', () => {
 it('resolves every generated local page link', () => {
   for (const file of files) {
     const source = readFileSync(path.join(root, file), 'utf8');
-    const route = path.join(root, file).replace(/(?:\/index)?\.md$/, '');
+    const route = path.join(root, file.replace(/(?:\/index)?\.md$/, ''));
     for (const match of source.matchAll(/\]\(([^)\s]+)\)/g)) {
       const href = match[1];
       if (!href) {

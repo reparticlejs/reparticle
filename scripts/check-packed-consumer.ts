@@ -128,6 +128,17 @@ document.body.dataset.passed = 'true';
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
       page.on('console', (message) => {
+        // The pixel assertion deliberately waits for a GPU readback. Some drivers
+        // report that stall; keep it visible without treating it as an app failure.
+        if (
+          message.type() === 'warning' &&
+          /^\[\.WebGL-[^\]]+\]GL Driver Message \(OpenGL, Performance, GL_CLOSE_PATH_NV, High\): GPU stall due to ReadPixels$/.test(
+            message.text(),
+          )
+        ) {
+          console.warn(message.text());
+          return;
+        }
         if (message.type() === 'error' || message.type() === 'warning') {
           errors.push(message.text());
         }
