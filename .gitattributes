@@ -1,0 +1,2 @@
+# Keep text and shell hooks consistent on every OS; leave binary files untouched.
+* text=auto eol=lf

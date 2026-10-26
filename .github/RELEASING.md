@@ -3,12 +3,15 @@
 ## Checks
 
 `check.yml` runs `pnpm check` and `pnpm packages:check` on pull requests, pushes to
-`main`, and manual runs. The consumer check installs the actual tarballs in a
+`main`, and manual runs on Ubuntu, Windows, and macOS. The consumer check installs the actual tarballs in a
 temporary app, audits production dependencies, checks TypeScript without
 `skipLibCheck`, and renders particles in Chromium.
 
-Make **Release checks** a required status check in the repository's `main` branch
+Make all three **Release checks (OS)** jobs required status checks in the repository's `main` branch
 rules if merges must wait for CI. The workflow file alone does not enforce this.
+
+Git enforces LF line endings for text on all three systems. Only Ubuntu uploads
+the Pages artifact; deployment and releases wait for the entire matrix to pass.
 
 ## Package releases
 

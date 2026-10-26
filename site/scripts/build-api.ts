@@ -60,7 +60,7 @@ async function adaptAstroPage(file: string, packageName: string, summary?: strin
  * External links and heading fragments are preserved.
  */
 function rewritePageLinks(markdown: string, file: string): string {
-  const currentPage = file.replace(/(?:\/index)?\.md$/, '');
+  const currentPage = file.replaceAll('\\', '/').replace(/(?:\/index)?\.md$/, '');
   return markdown.replace(
     /\]\(([^)\s]+\.md)(#[^)\s]*)?\)/g,
     (match, target: string, fragment: string = '') => {
@@ -68,8 +68,9 @@ function rewritePageLinks(markdown: string, file: string): string {
         return match;
       }
       const targetFile = path.resolve(path.dirname(file), target);
-      const targetPage = targetFile.replace(/(?:\/index)?\.md$/, '');
-      const relativePath = path.relative(currentPage, targetPage) || '.';
+      const targetPage = targetFile.replaceAll('\\', '/').replace(/(?:\/index)?\.md$/, '');
+      // Filesystem paths may use backslashes; browser links always use forward slashes.
+      const relativePath = path.relative(currentPage, targetPage).replaceAll('\\', '/') || '.';
       return `](${relativePath}/${fragment})`;
     },
   );
