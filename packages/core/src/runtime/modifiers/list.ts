@@ -1,6 +1,8 @@
 import { modifiersSchema } from '#config/schemas/definition/modifiers.js';
 import { SampledCurve } from '#curves/sampled-curve.js';
+import { MODIFIER_HEADER, MODIFIER_STRIDE, MODIFIER_WORDS } from '#simulation/layout.js';
 import type { ModifierConfig } from '#types/effect.js';
+import type { SampledModifier } from '#types/modifier.js';
 
 const MODIFIER_TYPES = { acceleration: 0, drag: 1, radial: 2, vortex: 3 } as const;
 const COUNT_INDEX = 0;
@@ -18,30 +20,27 @@ const FIELDS = {
   directional: 8,
 } as const;
 
-import {
-  MODIFIER_HEADER as HEADER_SIZE,
-  MODIFIER_STRIDE,
-  MAX_MODIFIERS,
-} from '#simulation/layout.js';
-/** Space for both 64-entry scopes: emitter modifiers followed by effect modifiers. */
-export const MODIFIER_BUFFER_SIZE = HEADER_SIZE + MAX_MODIFIERS * MODIFIER_STRIDE;
+/** Space for emitter modifiers followed by effect modifiers. */
+export const MODIFIER_BUFFER_SIZE = MODIFIER_WORDS;
 
 // Buffer header: [active count, contains radial modifier]. Each entry stores:
 // [type, magnitude, spread, centerX, centerY, directionX, directionY, cutoff, directional].
 // This layout must match simulation/modifiers/dispatch.ts.
 
 /**
- * One authored scope of modifiers, validated and sampled at construction.
- * write() evaluates the cached magnitude curves and appends GPU records in order.
+ * Packs one authored modifier list into the simulation's shared input buffer.
+ * Validate definitions and cache curves once; sample and transform them in write().
+ * Records preserve authored order, including repeated modifier types.
  * It reuses the caller's buffer without allocating per-modifier objects.
  */
 export class ModifierList {
-  private readonly definitions: ModifierConfig[];
-  private readonly magnitudes: SampledCurve[];
+  private readonly modifiers: SampledModifier[];
 
   public constructor(input: unknown) {
-    this.definitions = modifiersSchema.parse(input);
-    this.magnitudes = this.definitions.map(({ magnitude }) => new SampledCurve(magnitude));
+    this.modifiers = modifiersSchema.parse(input).map((definition) => ({
+      definition,
+      magnitude: new SampledCurve(definition.magnitude),
+    }));
   }
 
   /**
@@ -49,12 +48,13 @@ export class ModifierList {
    * The caller resets the header once before writing both scopes.
    * Origin, rotation (counterclockwise degrees), scale, and handedness map this
    * list's authored coordinates into the particle simulation space.
-   * Magnitudes use emitter age and may extend beyond the end of their curves.
+   * The caller supplies modifier time (emitter age divided by duration).
+   * Magnitude curves extrapolate when that time exceeds their final point.
    * Zero magnitude with zero spread contributes nothing and is skipped.
    */
   public write(
     values: Float32Array,
-    emitterAge: number,
+    modifierAge: number,
     originX: number,
     originY: number,
     rotationDegrees: number,
@@ -66,9 +66,8 @@ export class ModifierList {
     const cosine = Math.cos(radians);
     const sine = Math.sin(radians);
 
-    for (let index = 0; index < this.definitions.length; index++) {
-      const modifier = this.definitions[index]!;
-      const magnitude = this.magnitudes[index]!.extrapolate(emitterAge);
+    for (const { definition: modifier, magnitude: curve } of this.modifiers) {
+      const magnitude = curve.extrapolate(modifierAge);
       if (magnitude === 0 && modifier.spread === 0) {
         continue;
       }
@@ -87,8 +86,10 @@ export class ModifierList {
 
       const cutoff = 'maxDistance' in modifier ? modifier.maxDistance * Math.abs(scale) : 0;
       const directional = modifier.type === 'drag' && modifier.useDirection;
-      const offset = HEADER_SIZE + values[COUNT_INDEX]! * MODIFIER_STRIDE;
+      const count = values[COUNT_INDEX]!;
+      const offset = MODIFIER_HEADER + count * MODIFIER_STRIDE;
 
+      // Append one complete record before publishing the new active count.
       values[offset + FIELDS.type] = MODIFIER_TYPES[modifier.type];
       values[offset + FIELDS.magnitude] = magnitude * strengthScale;
       values[offset + FIELDS.spread] = modifier.spread * strengthScale;
@@ -101,7 +102,7 @@ export class ModifierList {
       if (modifier.type === 'radial') {
         values[RADIAL_FLAG_INDEX] = 1;
       }
-      values[COUNT_INDEX] = values[COUNT_INDEX]! + 1;
+      values[COUNT_INDEX] = count + 1;
     }
   }
 
