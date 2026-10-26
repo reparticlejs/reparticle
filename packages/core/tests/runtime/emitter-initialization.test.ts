@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 
-import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { Emitter } from '#src/runtime/emitter.js';
+import { parseEffectConfig } from '#config/parse-effect.js';
+import { Emitter } from '#runtime/emitter.js';
 import type { EmitterContext } from '#types/emitter.js';
 
 import skeleton from '../../../../docs/effect.example.json';
@@ -15,7 +15,7 @@ const gpu = vi.hoisted(() => ({
   destroy: vi.fn<() => void>(),
 }));
 
-vi.mock('#src/runtime/gpu/simulation.js', () => ({
+vi.mock('#runtime/gpu/particle-simulation.js', () => ({
   GpuSimulation: class {
     public reset = gpu.reset;
     public clear = gpu.clear;

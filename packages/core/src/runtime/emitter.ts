@@ -1,25 +1,24 @@
+import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
+import { emitterConfigSchema } from '#config/schemas/definition/emitter.js';
+import { modifiersSchema } from '#config/schemas/definition/modifiers.js';
+import { sampleCurve } from '#curves/sample-curve.js';
+import { sampleInitialProperties } from '#curves/sample-initial-properties.js';
+import { SampledShape } from '#curves/sampled-shape.js';
+import { createSimulationParameters } from '#runtime/gpu/parameters.js';
+import { GpuSimulation } from '#runtime/gpu/particle-simulation.js';
+import { textureLayout } from '#runtime/gpu/texture-layout.js';
+import { ModifierSampler } from '#runtime/modifiers/sampler.js';
+import { ParticleSlots } from '#runtime/particles/slots.js';
+import { EmitterPlayback } from '#runtime/playback/emitter.js';
+import { prewarm } from '#runtime/playback/prewarm.js';
+import { SpawnRate } from '#runtime/playback/spawn-rate.js';
+import { SpawnSchedule } from '#runtime/playback/spawn-schedule.js';
+import { EffectTransform } from '#runtime/transforms/effect.js';
+import { EmitterVelocity } from '#runtime/transforms/velocity.js';
 import type { EmitterConfig, EmitterParameters, ModifierConfig } from '#types/effect.js';
 import type { EmitterContext } from '#types/emitter.js';
 import type { InitialPropertyCurves } from '#types/initial-property-curves.js';
 import type { EmitterState, EmitterStateListener, StopOptions } from '#types/lifecycle.js';
-
-import { mergeEmitterParameters } from '../config/merge-emitter-parameters';
-import { emitterConfigSchema } from '../config/schemas/definition/emitter';
-import { modifiersSchema } from '../config/schemas/definition/modifiers';
-import { sampleCurve } from '../curves/sample-curve';
-import { sampleInitialProperties } from '../curves/sample-initial-properties';
-import { SampledShape } from '../curves/sampled-shape';
-import { createSimulationParameters } from './gpu/parameters';
-import { GpuSimulation } from './gpu/simulation';
-import { textureLayout } from './gpu/texture-layout';
-import { ModifierSampler } from './modifiers/sampler';
-import { ParticleSlots } from './particles/slots';
-import { EmitterPlayback } from './playback/emitter';
-import { prewarm } from './playback/prewarm';
-import { SpawnRate } from './playback/spawn-rate';
-import { SpawnSchedule } from './playback/spawn-schedule';
-import { EffectTransform } from './transforms/effect';
-import { EmitterVelocity } from './transforms/velocity';
 
 /**
  * Coordinate one emitter's playback, CPU slot metadata, and GPU simulation.

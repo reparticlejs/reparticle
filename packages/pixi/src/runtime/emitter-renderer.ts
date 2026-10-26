@@ -1,12 +1,11 @@
 import type { Emitter, StopOptions } from '@reparticle/core';
 import { color32BitToUniform, type Texture, type WebGLRenderer, type Matrix } from 'pixi.js';
 
+import { resolveRendering } from '#config/resolve-rendering.js';
+import { EmitterResources } from '#rendering/emitter-resources.js';
+import { resolveTint } from '#rendering/resolve-tint.js';
 import type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
 import type { ParticleTexture } from '#types/particle-texture.js';
-
-import { resolveRendering } from '../config/resolve-rendering';
-import { EmitterResources } from '../rendering/emitter-resources';
-import { resolveTint } from '../rendering/resolve-tint';
 
 /**
  * Draws one core emitter using Pixi resources and its current simulation texture.

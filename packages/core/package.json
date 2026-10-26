@@ -19,6 +19,10 @@
   "type": "module",
   "imports": {
     "#src/*": "./src/*",
+    "#config/*": "./src/config/*",
+    "#curves/*": "./src/curves/*",
+    "#runtime/*": "./src/runtime/*",
+    "#simulation/*": "./src/simulation/*",
     "#types/*": "./src/types/*"
   },
   "exports": {

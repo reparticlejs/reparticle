@@ -1,6 +1,6 @@
 import { extensions } from 'pixi.js';
 
-import { ParticlePipe } from './rendering/particle-pipe';
+import { ParticlePipe } from '#rendering/particle-pipe.js';
 
 extensions.add(ParticlePipe);
 
@@ -8,7 +8,7 @@ extensions.add(ParticlePipe);
 export type { EffectInput, EmitterParameters, RenderingConfig } from '@reparticle/core';
 
 // Effect display object.
-export { ParticleEffect } from './runtime/particle-effect';
+export { ParticleEffect } from '#runtime/particle-effect.js';
 
 // Renderer configuration and lifecycle events.
 export type {
@@ -27,4 +27,4 @@ export type {
 } from '#types/particle-rendering.js';
 export type { ParticleEffectOptions } from '#types/particle-effect-options.js';
 
-export { validateAnimationFrames } from './textures/resolve-flipbook';
+export { validateAnimationFrames } from '#textures/resolve-flipbook.js';

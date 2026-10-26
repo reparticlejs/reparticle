@@ -3,8 +3,8 @@ import type { ScalarProperty } from '#types/curve.js';
 import { evaluateCurve } from './evaluate-curve';
 
 /** Number of intervals in the sampled curve, not the number of stored values. */
-export { CURVE_SEGMENTS } from '../simulation/layout';
-import { CURVE_SEGMENTS } from '../simulation/layout';
+export { CURVE_SEGMENTS } from '#simulation/layout.js';
+import { CURVE_SEGMENTS } from '#simulation/layout.js';
 
 /**
  * Bake a constant or validated curve into 65 evenly spaced float32 values.

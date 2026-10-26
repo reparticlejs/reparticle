@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { spawnBox } from '#src/simulation/emission/box.js';
+import { spawnBox } from '#simulation/emission/box.js';
 
 it('fills a centered rectangle uniformly with parallel upward velocity', () => {
   const quadrants = [0, 0, 0, 0];

@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { sampleCurve } from '#src/curves/sample-curve.js';
+import { sampleCurve } from '#curves/sample-curve.js';
 
 import { particleHeading } from '../../support/simulation';
 

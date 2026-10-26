@@ -1,13 +1,12 @@
 import { renderingSchema } from '@reparticle/core';
 import { Cache, Texture } from 'pixi.js';
 
+import { resolveArtwork } from '#textures/resolve-artwork.js';
+import { resolveFlipbook } from '#textures/resolve-flipbook.js';
+import { resolvePivot } from '#textures/resolve-pivot.js';
+import { resolveTextureFlip } from '#textures/resolve-texture-flip.js';
 import type { ParticleRendering, ResolvedParticleRendering } from '#types/particle-rendering.js';
 import type { ParticleTexture } from '#types/particle-texture.js';
-
-import { resolveArtwork } from '../textures/resolve-artwork';
-import { resolveFlipbook } from '../textures/resolve-flipbook';
-import { resolvePivot } from '../textures/resolve-pivot';
-import { resolveTextureFlip } from '../textures/resolve-texture-flip';
 
 /**
  * Prepare renderer settings before creating or replacing an emitter's artwork.

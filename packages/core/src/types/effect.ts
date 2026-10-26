@@ -1,9 +1,9 @@
 import type { z } from 'zod/mini';
 
-import type { effectConfigSchema } from '#src/config/schemas/definition/effect.js';
-import type { emitterConfigSchema } from '#src/config/schemas/definition/emitter.js';
-import type { modifierSchema } from '#src/config/schemas/definition/modifiers.js';
-import type { emitterSchema } from '#src/config/schemas/runtime/emitter.js';
+import type { effectConfigSchema } from '#config/schemas/definition/effect.js';
+import type { emitterConfigSchema } from '#config/schemas/definition/emitter.js';
+import type { modifierSchema } from '#config/schemas/definition/modifiers.js';
+import type { emitterSchema } from '#config/schemas/runtime/emitter.js';
 
 /**
  * Parsed effect definition with schema defaults applied.

@@ -1,7 +1,6 @@
+import { emitterConfigSchema } from '#config/schemas/definition/emitter.js';
+import { emitterSchema } from '#config/schemas/runtime/emitter.js';
 import type { EmitterConfig } from '#types/effect.js';
-
-import { emitterConfigSchema } from './schemas/definition/emitter';
-import { emitterSchema } from './schemas/runtime/emitter';
 
 /** Validate the complete candidate before replacing runtime settings. */
 export function mergeEmitterParameters(current: EmitterConfig, input: unknown): EmitterConfig {

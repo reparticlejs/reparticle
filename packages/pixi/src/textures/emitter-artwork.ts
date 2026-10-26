@@ -1,9 +1,9 @@
 import { Texture, type BufferImageSource, type Shader } from 'pixi.js';
 
+import type { createUniforms } from '#rendering/uniforms.js';
 import type { Flipbook } from '#types/flipbook.js';
 import type { ParticleTexture, ParticlePivot } from '#types/particle-texture.js';
 
-import type { createUniforms } from '../rendering/uniforms';
 import { createAnimationFrameSource } from './create-animation-frame-source';
 import { resolveFlipbook } from './resolve-flipbook';
 import { resolvePivot } from './resolve-pivot';

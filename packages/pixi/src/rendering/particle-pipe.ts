@@ -6,8 +6,9 @@ import {
   type WebGLRenderer,
 } from 'pixi.js';
 
-import { EmitterRenderer } from '../runtime/emitter-renderer';
-import { ParticleEffect } from '../runtime/particle-effect';
+import { EmitterRenderer } from '#runtime/emitter-renderer.js';
+import { ParticleEffect } from '#runtime/particle-effect.js';
+
 import { restoreSimulationState } from './restore-simulation-state';
 import { SimulationBoundary } from './simulation-boundary';
 

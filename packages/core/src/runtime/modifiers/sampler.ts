@@ -1,4 +1,5 @@
-import type { EffectTransform } from '../transforms/effect';
+import type { EffectTransform } from '#runtime/transforms/effect.js';
+
 import { ModifierList, MODIFIER_BUFFER_SIZE } from './list';
 
 /**

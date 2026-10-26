@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { $ZodError as ZodError } from 'zod/v4/core';
 
-import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { effectConfigSchema } from '#src/config/schemas/definition/effect.js';
+import { parseEffectConfig } from '#config/parse-effect.js';
+import { effectConfigSchema } from '#config/schemas/definition/effect.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 

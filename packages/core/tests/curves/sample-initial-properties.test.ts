@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 
-import { mergeEmitterParameters } from '#src/config/merge-emitter-parameters.js';
-import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { sampleInitialProperties } from '#src/curves/sample-initial-properties.js';
+import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
+import { parseEffectConfig } from '#config/parse-effect.js';
+import { sampleInitialProperties } from '#curves/sample-initial-properties.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 

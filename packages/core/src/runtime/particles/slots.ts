@@ -1,7 +1,6 @@
+import { propertyVariation } from '#simulation/emission/variation.js';
 import type { ParticleLifetimeVisitor } from '#types/particle-lifetime.js';
 import type { ParticleSlotBatch } from '#types/particle-slots.js';
-
-import { propertyVariation } from '../../simulation/emission/variation';
 
 // Every integer up to 24 bits is represented exactly by a float32.
 const SLOTS_PER_MASK_WORD = 24;

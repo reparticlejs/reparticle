@@ -1,4 +1,4 @@
-import type { SampledCurve } from '#src/curves/sampled-curve.js';
+import type { SampledCurve } from '#curves/sampled-curve.js';
 
 /**
  * Cached birth-property curves evaluated at normalized emitter age.

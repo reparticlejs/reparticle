@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 
-import { spawnCone2D } from '#src/simulation/emission/cone2d.js';
-import { spawnVariation } from '#src/simulation/emission/direction.js';
+import { spawnCone2D } from '#simulation/emission/cone2d.js';
+import { spawnVariation } from '#simulation/emission/direction.js';
 
 it('fills the triangle uniformly and directs velocity away from the tip', () => {
   let sumX = 0;

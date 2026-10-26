@@ -18,6 +18,12 @@
   "type": "module",
   "imports": {
     "#src/*": "./src/*",
+    "#config/*": "./src/config/*",
+    "#curves/*": "./src/curves/*",
+    "#rendering/*": "./src/rendering/*",
+    "#runtime/*": "./src/runtime/*",
+    "#shaders/*": "./src/shaders/*",
+    "#textures/*": "./src/textures/*",
     "#types/*": "./src/types/*"
   },
   "exports": {

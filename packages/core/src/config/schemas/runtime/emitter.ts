@@ -1,6 +1,7 @@
 import { z } from 'zod/mini';
 
-import { modifiersSchema } from '../definition/modifiers';
+import { modifiersSchema } from '#config/schemas/definition/modifiers.js';
+
 import { emissionSchema } from './emission';
 import { initialPropertiesSchema } from './initial-properties';
 

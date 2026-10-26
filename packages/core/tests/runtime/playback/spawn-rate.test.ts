@@ -1,12 +1,12 @@
 import { expect, it } from 'vitest';
 import { $ZodError as ZodError } from 'zod/v4/core';
 
-import { mergeEmitterParameters } from '#src/config/merge-emitter-parameters.js';
-import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { EmitterPlayback } from '#src/runtime/playback/emitter.js';
-import { SpawnRate } from '#src/runtime/playback/spawn-rate.js';
-import { SpawnSchedule } from '#src/runtime/playback/spawn-schedule.js';
-import { propertyVariation } from '#src/simulation/emission/variation.js';
+import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
+import { parseEffectConfig } from '#config/parse-effect.js';
+import { EmitterPlayback } from '#runtime/playback/emitter.js';
+import { SpawnRate } from '#runtime/playback/spawn-rate.js';
+import { SpawnSchedule } from '#runtime/playback/spawn-schedule.js';
+import { propertyVariation } from '#simulation/emission/variation.js';
 
 import skeleton from '../../../../../docs/effect.example.json';
 

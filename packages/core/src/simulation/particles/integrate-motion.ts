@@ -1,7 +1,8 @@
 import { tgpu, d } from 'typegpu';
 
-import { applyModifiers } from '../modifiers/list.ts';
-import { readModifier } from '../resources.ts';
+import { applyModifiers } from '#simulation/modifiers/list.ts';
+import { readModifier } from '#simulation/resources.ts';
+
 import { advanceRotation } from './angular-velocity.ts';
 import { particleHeading } from './heading.ts';
 

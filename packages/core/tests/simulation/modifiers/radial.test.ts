@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { applyRadial } from '#src/simulation/modifiers/radial.js';
+import { applyRadial } from '#simulation/modifiers/radial.js';
 
 it('repels or attracts at constant strength inside the inclusive cutoff', () => {
   expect([...applyRadial(3, 4, 0, 0, 0, -1, 100, 0, 0, 5)]).toEqual([60, 80]);

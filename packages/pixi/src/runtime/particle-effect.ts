@@ -17,6 +17,11 @@ import {
   type Texture,
 } from 'pixi.js';
 
+import { resolveRendering } from '#config/resolve-rendering.js';
+import type { ParticlePipe } from '#rendering/particle-pipe.js';
+import { resolveTint } from '#rendering/resolve-tint.js';
+import { resolveFlipbook } from '#textures/resolve-flipbook.js';
+import { resolveTexture } from '#textures/resolve-texture.js';
 import type { ParticleEffectOptions } from '#types/particle-effect-options.js';
 import type {
   ParticleRendering,
@@ -25,11 +30,6 @@ import type {
 } from '#types/particle-rendering.js';
 import type { ParticleTexture } from '#types/particle-texture.js';
 
-import { resolveRendering } from '../config/resolve-rendering';
-import type { ParticlePipe } from '../rendering/particle-pipe';
-import { resolveTint } from '../rendering/resolve-tint';
-import { resolveFlipbook } from '../textures/resolve-flipbook';
-import { resolveTexture } from '../textures/resolve-texture';
 import type { EmitterRenderer } from './emitter-renderer';
 
 // Match prewarm's cadence so a slow frame cannot emit one widely spaced batch.

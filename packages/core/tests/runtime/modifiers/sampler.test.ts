@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 
-import { ModifierSampler } from '#src/runtime/modifiers/sampler.js';
-import { EffectTransform } from '#src/runtime/transforms/effect.js';
+import { ModifierSampler } from '#runtime/modifiers/sampler.js';
+import { EffectTransform } from '#runtime/transforms/effect.js';
 
 import { applyModifiers } from '../../support/simulation';
 

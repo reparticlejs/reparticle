@@ -1,36 +1,10 @@
-import shaders from '../../simulation/shaders.json';
+import shaders from '#simulation/shaders.json';
+import type { SharedSimulationProgram } from '#types/simulation-program.js';
 
-export interface Binding {
-  name: string;
-  index: number;
-  location: WebGLUniformLocation | null;
-  size: WebGLUniformLocation | null;
-  dim: WebGLUniformLocation | null;
-  width?: number;
-  height?: number;
-  x?: number;
-  y?: number;
-  unit?: number;
-}
-export interface SharedProgram {
-  program: WebGLProgram;
-  users: number;
-  bindings: Binding[];
-  birthPass: WebGLUniformLocation | null;
-  birthState: WebGLUniformLocation | null;
-  dimensions: WebGLUniformLocation | null;
-  textureSize: WebGLUniformLocation | null;
-  constants: (WebGLUniformLocation | null)[];
-  width?: number;
-  height?: number;
-  capacity?: number;
-  birthSamplerSet?: boolean;
-  pass?: number;
-}
 // Programs belong to a context and are released after their last simulation.
-const programs = new WeakMap<WebGL2RenderingContext, SharedProgram>();
+const programs = new WeakMap<WebGL2RenderingContext, SharedSimulationProgram>();
 
-export function acquireProgram(gl: WebGL2RenderingContext): SharedProgram {
+export function acquireSimulationProgram(gl: WebGL2RenderingContext): SharedSimulationProgram {
   if (gl.isContextLost()) {
     throw new Error('Cannot create a simulation on a lost WebGL context');
   }
@@ -71,14 +45,14 @@ export function acquireProgram(gl: WebGL2RenderingContext): SharedProgram {
         bindings: Object.keys(shaders.arguments).map((name, index) => ({
           name,
           index,
-          location: gl.getUniformLocation(program, 'user_' + name),
-          size: gl.getUniformLocation(program, 'user_' + name + 'Size'),
-          dim: gl.getUniformLocation(program, 'user_' + name + 'Dim'),
+          // Other inputs are packed into SimulationInputs, not standalone uniforms.
+          location:
+            name === 'state' || name === 'spawnMask'
+              ? gl.getUniformLocation(program, 'user_' + name)
+              : null,
         })),
         birthPass: gl.getUniformLocation(program, 'birthPass'),
         birthState: gl.getUniformLocation(program, 'birthState'),
-        dimensions: gl.getUniformLocation(program, 'uOutputDim'),
-        textureSize: gl.getUniformLocation(program, 'uTexSize'),
         constants: ['width', 'rows', 'capacity'].map((name) =>
           gl.getUniformLocation(program, 'constants_' + name),
         ),
@@ -95,7 +69,10 @@ export function acquireProgram(gl: WebGL2RenderingContext): SharedProgram {
   return shared;
 }
 
-export function releaseProgram(gl: WebGL2RenderingContext, shared: SharedProgram | null) {
+export function releaseSimulationProgram(
+  gl: WebGL2RenderingContext,
+  shared: SharedSimulationProgram | null,
+) {
   if (!shared || --shared.users !== 0) {
     return;
   }

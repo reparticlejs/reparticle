@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest';
 import { $ZodError as ZodError } from 'zod/v4/core';
 
-import { mergeEmitterParameters } from '#src/config/merge-emitter-parameters.js';
-import { parseEffectConfig } from '#src/config/parse-effect.js';
-import { SampledShape } from '#src/curves/sampled-shape.js';
+import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
+import { parseEffectConfig } from '#config/parse-effect.js';
+import { SampledShape } from '#curves/sampled-shape.js';
 
 import skeleton from '../../../../docs/effect.example.json';
 

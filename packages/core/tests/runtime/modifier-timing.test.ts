@@ -1,10 +1,10 @@
 import { expect, it } from 'vitest';
 
-import { SampledCurve } from '#src/curves/sampled-curve.js';
-import { ModifierSampler } from '#src/runtime/modifiers/sampler.js';
-import { EmitterPlayback } from '#src/runtime/playback/emitter.js';
-import { EffectTransform } from '#src/runtime/transforms/effect.js';
-import { propertyVariation } from '#src/simulation/emission/variation.js';
+import { SampledCurve } from '#curves/sampled-curve.js';
+import { ModifierSampler } from '#runtime/modifiers/sampler.js';
+import { EmitterPlayback } from '#runtime/playback/emitter.js';
+import { EffectTransform } from '#runtime/transforms/effect.js';
+import { propertyVariation } from '#simulation/emission/variation.js';
 
 const ramp = {
   points: [

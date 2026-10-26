@@ -1,6 +1,6 @@
 import type { z } from 'zod/mini';
 
-import type { renderingSchema } from '#src/config/schemas/definition/rendering.js';
+import type { renderingSchema } from '#config/schemas/definition/rendering.js';
 
 /**
  * Serializable rendering settings with defaults applied. Shared by every renderer.

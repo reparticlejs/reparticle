@@ -1,10 +1,10 @@
 import { d } from 'typegpu';
 import { vi } from 'vitest';
 
-import { integrate as shaderIntegrate } from '#src/simulation/kernels/integrate.js';
-import { applyModifiers as shaderApplyModifiers } from '#src/simulation/modifiers/list.js';
-import { advanceRotation as shaderAdvanceRotation } from '#src/simulation/particles/angular-velocity.js';
-import { particleHeading as shaderParticleHeading } from '#src/simulation/particles/heading.js';
+import { integrate as shaderIntegrate } from '#simulation/kernels/integrate.js';
+import { applyModifiers as shaderApplyModifiers } from '#simulation/modifiers/list.js';
+import { advanceRotation as shaderAdvanceRotation } from '#simulation/particles/angular-velocity.js';
+import { particleHeading as shaderParticleHeading } from '#simulation/particles/heading.js';
 import type { KernelContext, ParticleTexel, ParticleTexture } from '#types/layout.js';
 import type { UniformVector } from '#types/simulation.js';
 

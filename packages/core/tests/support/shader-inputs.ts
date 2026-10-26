@@ -19,7 +19,7 @@ const inputs = vi.hoisted(
     modifiers: new Float32Array(1154),
   }),
 );
-vi.mock('#src/simulation/resources.ts', () => ({
+vi.mock('#simulation/resources.ts', () => ({
   readCurve: (selector: number, index: number) =>
     (selector === 0 ? inputs.rotation : inputs.angular)[index]!,
   readModifier: (index: number) => inputs.modifiers[index]!,

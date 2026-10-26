@@ -1,14 +1,14 @@
 import { tgpu, d } from 'typegpu';
 
-import { spawnRotation } from '../emission/rotation.ts';
-import { sampleShape } from '../emission/shape.ts';
-import { propertyVariation } from '../emission/variation.ts';
-import { advanceRotation } from '../particles/angular-velocity.ts';
-import { integrateMotion } from '../particles/integrate-motion.ts';
-import { advanceAge } from '../particles/lifetime.ts';
-import { particleAlive } from '../particles/lifetime.ts';
-import { movementRotation } from '../particles/movement-rotation.ts';
-import { readSpawn, readState } from '../resources.ts';
+import { spawnRotation } from '#simulation/emission/rotation.ts';
+import { sampleShape } from '#simulation/emission/shape.ts';
+import { propertyVariation } from '#simulation/emission/variation.ts';
+import { advanceRotation } from '#simulation/particles/angular-velocity.ts';
+import { integrateMotion } from '#simulation/particles/integrate-motion.ts';
+import { advanceAge } from '#simulation/particles/lifetime.ts';
+import { particleAlive } from '#simulation/particles/lifetime.ts';
+import { movementRotation } from '#simulation/particles/movement-rotation.ts';
+import { readSpawn, readState } from '#simulation/resources.ts';
 
 /**
  * Write one RGBA texel of the next particle-state texture.

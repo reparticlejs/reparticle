@@ -1,6 +1,6 @@
 import type { z } from 'zod/mini';
 
-import type { curveSchema, scalarPropertySchema } from '#src/config/schemas/definition/curve.js';
+import type { curveSchema, scalarPropertySchema } from '#config/schemas/definition/curve.js';
 
 /**
  * Parsed scalar curve with at least one point and strictly increasing times.

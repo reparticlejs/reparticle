@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 
-import { spawnDirection, spawnVariation } from '#src/simulation/emission/direction.js';
-import { spawnMotion } from '#src/simulation/emission/motion.js';
+import { spawnDirection, spawnVariation } from '#simulation/emission/direction.js';
+import { spawnMotion } from '#simulation/emission/motion.js';
 
 it('keeps spawn direction within its range and scalar speed exact', () => {
   for (let id = 0; id < 100; id++) {

@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { UniformBuffer } from '#src/runtime/gpu/uniform-buffer.js';
+import { UniformBuffer } from '#runtime/gpu/uniform-buffer.js';
 
 it('preserves the cached upload through unchanged steps and a later change', () => {
   const buffer = new UniformBuffer();

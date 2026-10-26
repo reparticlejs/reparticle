@@ -1,8 +1,8 @@
 import { expect, it, vi } from 'vitest';
 
-import { acquireProgram, releaseProgram } from '#src/runtime/gpu/program.js';
+import { acquireSimulationProgram, releaseSimulationProgram } from '#runtime/gpu/shared-program.js';
 
-/** WebGL ownership tests; real shader execution is checked by the browser parity suite. */
+/** WebGL ownership tests; real shader execution is checked by the browser integration suite. */
 function context() {
   const Context = vi.fn<typeof WebGL2RenderingContext>();
   const Program = vi.fn<typeof WebGLProgram>();
@@ -57,48 +57,63 @@ function context() {
 
 it('shares a program within one context and deletes it only after the last owner', () => {
   const { gl, mocks } = context();
-  const first = acquireProgram(gl);
-  const second = acquireProgram(gl);
+  const first = acquireSimulationProgram(gl);
+  const second = acquireSimulationProgram(gl);
   expect(first).toBe(second);
   expect(mocks.createProgram).toHaveBeenCalledTimes(1);
-  releaseProgram(gl, first);
+  releaseSimulationProgram(gl, first);
   expect(mocks.deleteProgram).not.toHaveBeenCalled();
-  releaseProgram(gl, second);
+  releaseSimulationProgram(gl, second);
   expect(mocks.deleteProgram).toHaveBeenCalledExactlyOnceWith(first.program);
-  const next = acquireProgram(gl);
+  const next = acquireSimulationProgram(gl);
   expect(next.program).not.toBe(first.program);
-  releaseProgram(gl, next);
+  releaseSimulationProgram(gl, next);
 });
 
 it('does not share programs across contexts', () => {
   const a = context(),
     b = context();
-  const first = acquireProgram(a.gl),
-    second = acquireProgram(b.gl);
+  const first = acquireSimulationProgram(a.gl),
+    second = acquireSimulationProgram(b.gl);
   expect(first.program).not.toBe(second.program);
-  releaseProgram(a.gl, first);
+  releaseSimulationProgram(a.gl, first);
   expect(b.gl.isProgram(second.program)).toBe(true);
-  releaseProgram(b.gl, second);
+  releaseSimulationProgram(b.gl, second);
 });
 
 it('does not let a stale owner delete the restored context program', () => {
   const { gl, live } = context();
-  const stale = acquireProgram(gl);
+  const stale = acquireSimulationProgram(gl);
   live.clear(); // Context loss invalidates all old handles.
-  const restored = acquireProgram(gl);
-  releaseProgram(gl, stale);
+  const restored = acquireSimulationProgram(gl);
+  releaseSimulationProgram(gl, stale);
   expect(gl.isProgram(restored.program)).toBe(true);
-  expect(acquireProgram(gl)).toBe(restored);
-  releaseProgram(gl, restored);
-  releaseProgram(gl, restored);
+  expect(acquireSimulationProgram(gl)).toBe(restored);
+  releaseSimulationProgram(gl, restored);
+  releaseSimulationProgram(gl, restored);
 });
 
 it('cleans up failed shader allocation and allows a later retry', () => {
   const { gl, mocks } = context();
   mocks.createShader.mockReturnValueOnce(null);
-  expect(() => acquireProgram(gl)).toThrow('Shader allocation failed');
+  expect(() => acquireSimulationProgram(gl)).toThrow('Shader allocation failed');
   expect(mocks.deleteProgram).toHaveBeenCalledTimes(1);
-  const retry = acquireProgram(gl);
+  const retry = acquireSimulationProgram(gl);
   expect(gl.isProgram(retry.program)).toBe(true);
-  releaseProgram(gl, retry);
+  releaseSimulationProgram(gl, retry);
+});
+
+it('looks up only active standalone uniforms; other inputs use the uniform block', () => {
+  const { gl, mocks } = context();
+  const shared = acquireSimulationProgram(gl);
+  expect(mocks.getUniformLocation.mock.calls.map(([, name]) => name)).toEqual([
+    'user_state',
+    'user_spawnMask',
+    'birthPass',
+    'birthState',
+    'constants_width',
+    'constants_rows',
+    'constants_capacity',
+  ]);
+  releaseSimulationProgram(gl, shared);
 });

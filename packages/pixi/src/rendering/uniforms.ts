@@ -1,8 +1,8 @@
 import { CURVE_SEGMENTS, type EmitterConfig } from '@reparticle/core';
 import { Matrix, UniformGroup } from 'pixi.js';
 
-import { packColorCurves } from '../curves/pack-color-curves';
-import { packGeometryCurves } from '../curves/pack-geometry-curves';
+import { packColorCurves } from '#curves/pack-color-curves.js';
+import { packGeometryCurves } from '#curves/pack-geometry-curves.js';
 
 /**
  * Create one emitter's shader settings, with names matching the particle GLSL shaders.

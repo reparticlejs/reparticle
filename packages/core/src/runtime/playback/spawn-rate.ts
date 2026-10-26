@@ -1,8 +1,7 @@
+import { CURVE_SEGMENTS } from '#curves/sample-curve.js';
+import { SampledCurve } from '#curves/sampled-curve.js';
+import { propertyVariation } from '#simulation/emission/variation.js';
 import type { ScalarProperty } from '#types/curve.js';
-
-import { CURVE_SEGMENTS } from '../../curves/sample-curve';
-import { SampledCurve } from '../../curves/sampled-curve';
-import { propertyVariation } from '../../simulation/emission/variation';
 
 // Dedicated random channel for the emitter's rate variation.
 const RATE_VARIATION_CHANNEL = 11;

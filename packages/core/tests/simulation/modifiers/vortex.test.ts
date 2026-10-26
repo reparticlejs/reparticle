@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { applyVortex } from '#src/simulation/modifiers/vortex.js';
+import { applyVortex } from '#simulation/modifiers/vortex.js';
 
 it('turns tangentially with signed magnitude and no distance falloff', () => {
   expect([...applyVortex(3, 4, 0, 0, -1, 0, 100, 0, 0, 5)]).toEqual([80, -60]);

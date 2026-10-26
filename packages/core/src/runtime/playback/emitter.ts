@@ -1,8 +1,7 @@
+import { propertyVariation } from '#simulation/emission/variation.js';
 import type { EmitterConfig } from '#types/effect.js';
 import type { EmitterState } from '#types/lifecycle.js';
 import type { PlaybackVariation } from '#types/playback.js';
-
-import { propertyVariation } from '../../simulation/emission/variation';
 
 /**
  * Frame-based emission clock, independent of individual particle ages.

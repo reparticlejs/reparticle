@@ -1,43 +1,18 @@
+// Execute the build-time compiled simulation; programs are shared per WebGL context.
+import shaders from '#simulation/shaders.json';
+import type { DataTexture } from '#types/data-texture.js';
 import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
+import type { SimulationBinding, SharedSimulationProgram } from '#types/simulation-program.js';
 import type { SimulationParameters } from '#types/simulation.js';
 
-// Execute the build-time compiled simulation; programs are shared per WebGL context.
-import shaders from '../../simulation/shaders.json';
 import { SimulationInputs } from './inputs';
-import { acquireProgram, releaseProgram, type Binding, type SharedProgram } from './program';
+import { acquireSimulationProgram, releaseSimulationProgram } from './shared-program';
 
-interface DataTexture {
-  texture: WebGLTexture;
-  data: Float32Array<ArrayBuffer>;
-  width: number;
-  height: number;
-  uploaded?: boolean;
-}
 const layouts: Record<string, { offset: number; length: number; padded: number }> = shaders.layout;
-
-function setDimensions(
-  gl: WebGL2RenderingContext,
-  binding: Binding,
-  width: number,
-  height: number,
-  x: number,
-  y: number,
-) {
-  if (binding.width !== width || binding.height !== height) {
-    gl.uniform2i(binding.size, width, height);
-    binding.width = width;
-    binding.height = height;
-  }
-  if (binding.x !== x || binding.y !== y) {
-    gl.uniform3i(binding.dim, x, y, 1);
-    binding.x = x;
-    binding.y = y;
-  }
-}
 
 /**
  * Owns two changing-state textures, one birth-data texture and per-emitter inputs.
- * GLSL is generated during the package build; only linking happens on the device.
+ * GLSL is generated during the package build; the device compiles and links it.
  * The host restores rendering state after calls. Reset before the first update.
  */
 export class GpuSimulation {
@@ -51,9 +26,9 @@ export class GpuSimulation {
   private readonly framebuffers: WebGLFramebuffer[] = [];
   private readonly dataTextures: DataTexture[] = [];
   private disposed = false;
-  private shared: SharedProgram | null = null;
+  private shared: SharedSimulationProgram | null = null;
   private program!: WebGLProgram;
-  private bindings: Binding[] = [];
+  private bindings: SimulationBinding[] = [];
   private vao: WebGLVertexArrayObject | null = null;
   private uniformBuffer: WebGLBuffer | null = null;
   private output!: PipelineTexture;
@@ -79,7 +54,7 @@ export class GpuSimulation {
       throw Error('Capacity exceeds GPU texture limits');
     }
     try {
-      this.shared = acquireProgram(gl);
+      this.shared = acquireSimulationProgram(gl);
       this.program = this.shared.program;
       this.bindings = this.shared.bindings;
       this.vao = gl.createVertexArray();
@@ -170,8 +145,6 @@ export class GpuSimulation {
         shared.height !== this.height ||
         shared.capacity !== this.capacity
       ) {
-        gl.uniform3i(shared.dimensions, this.width, this.height, 1);
-        gl.uniform2i(shared.textureSize, this.width, this.height);
         gl.uniform1i(shared.constants[0]!, this.width);
         gl.uniform1i(shared.constants[1]!, this.rows);
         gl.uniform1i(shared.constants[2]!, this.capacity);
@@ -215,7 +188,6 @@ export class GpuSimulation {
         gl.bindSampler(unit, null);
         if ('texture' in input) {
           gl.bindTexture(gl.TEXTURE_2D, input.texture);
-          setDimensions(gl, binding, this.width, this.height, this.width, this.height);
         } else {
           const spawnMask = input;
           const target = this.dataTextures[binding.index - 13]!;
@@ -244,7 +216,6 @@ export class GpuSimulation {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, w, h, gl.RGBA, gl.FLOAT, target.data);
             target.uploaded = true;
           }
-          setDimensions(gl, binding, w, h, spawnMask.length, 1);
         }
         if (binding.unit !== unit) {
           gl.uniform1i(binding.location, unit);
@@ -313,7 +284,7 @@ export class GpuSimulation {
     if (this.uniformBuffer && gl.isBuffer(this.uniformBuffer)) {
       gl.deleteBuffer(this.uniformBuffer);
     }
-    releaseProgram(gl, this.shared);
+    releaseSimulationProgram(gl, this.shared);
     this.shared = null;
     if (this.vao && gl.isVertexArray(this.vao)) {
       gl.deleteVertexArray(this.vao);

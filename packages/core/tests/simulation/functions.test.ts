@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 
-import { INPUT_ARGUMENTS, INPUT_LENGTHS } from '#src/simulation/layout.js';
-import shaders from '#src/simulation/shaders.json';
+import { INPUT_ARGUMENTS, INPUT_LENGTHS } from '#simulation/layout.js';
+import shaders from '#simulation/shaders.json';
 
 it('keeps the packed input contract aligned with the generated WebGL2 shader', () => {
   expect(Object.keys(shaders.arguments)).toEqual(INPUT_ARGUMENTS);

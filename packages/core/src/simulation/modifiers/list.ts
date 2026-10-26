@@ -1,6 +1,7 @@
 import { tgpu, d } from 'typegpu';
 
-import { readModifier } from '../resources.ts';
+import { readModifier } from '#simulation/resources.ts';
+
 import { dispatchModifier } from './dispatch.ts';
 
 /**

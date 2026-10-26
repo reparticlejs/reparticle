@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { advanceAge, particleAlive } from '#src/simulation/particles/lifetime.js';
+import { advanceAge, particleAlive } from '#simulation/particles/lifetime.js';
 
 it('expires strictly after the lifetime boundary', () => {
   expect(particleAlive(0, 0)).toBe(1);

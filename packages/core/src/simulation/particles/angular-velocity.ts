@@ -1,6 +1,6 @@
 import { tgpu, d } from 'typegpu';
 
-import { readCurve } from '../resources.ts';
+import { readCurve } from '#simulation/resources.ts';
 
 /**
  * Advance accumulated rotation in degrees by one timestep.

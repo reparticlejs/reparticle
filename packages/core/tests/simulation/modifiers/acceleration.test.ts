@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { applyAcceleration } from '#src/simulation/modifiers/acceleration.js';
+import { applyAcceleration } from '#simulation/modifiers/acceleration.js';
 
 it('projects signed magnitude and the persistent particle spread onto each axis', () => {
   expect(applyAcceleration(-1, 100, 40, 0.5)).toBe(-120);

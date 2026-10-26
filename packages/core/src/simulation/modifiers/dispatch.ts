@@ -1,6 +1,7 @@
 import { tgpu, d } from 'typegpu';
 
-import { readModifier } from '../resources.ts';
+import { readModifier } from '#simulation/resources.ts';
+
 import { applyAcceleration } from './acceleration.ts';
 import { applyDragVelocity } from './drag.ts';
 import { applyRadial } from './radial.ts';

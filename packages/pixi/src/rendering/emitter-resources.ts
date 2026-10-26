@@ -1,12 +1,12 @@
 import type { Emitter } from '@reparticle/core';
 import { Geometry, GlProgram, Shader, State, Texture, type WebGLRenderer } from 'pixi.js';
 
+import fragment from '#shaders/particle.frag.glsl';
+import vertex from '#shaders/particle.vert.glsl';
+import { EmitterArtwork } from '#textures/emitter-artwork.js';
+import { SimulationSources } from '#textures/simulation-sources.js';
 import type { ParticleTexture } from '#types/particle-texture.js';
 
-import fragment from '../shaders/particle.frag.glsl';
-import vertex from '../shaders/particle.vert.glsl';
-import { EmitterArtwork } from '../textures/emitter-artwork';
-import { SimulationSources } from '../textures/simulation-sources';
 import { restoreSimulationState } from './restore-simulation-state';
 import { createUniforms } from './uniforms';
 

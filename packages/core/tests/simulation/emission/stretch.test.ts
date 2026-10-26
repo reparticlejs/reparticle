@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { propertyVariation } from '#src/simulation/emission/variation.js';
+import { propertyVariation } from '#simulation/emission/variation.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
 
 import { integrate } from '../../support/simulation';

@@ -5,9 +5,9 @@ import en from 'zod/v4/locales/en.js';
 config(en());
 
 // Effect definitions and validation.
-export { parseEffectConfig } from './config/parse-effect';
-export { effectConfigSchema } from './config/schemas/definition/effect';
-export { emitterConfigSchema } from './config/schemas/definition/emitter';
+export { parseEffectConfig } from '#config/parse-effect.js';
+export { effectConfigSchema } from '#config/schemas/definition/effect.js';
+export { emitterConfigSchema } from '#config/schemas/definition/emitter.js';
 export type {
   EffectConfig,
   EffectInput,
@@ -18,7 +18,7 @@ export type {
 } from '#types/effect.js';
 
 // Emitter runtime and lifecycle.
-export { Emitter } from './runtime/emitter';
+export { Emitter } from '#runtime/emitter.js';
 export type { EmitterContext } from '#types/emitter.js';
 export type {
   EmitterState,
@@ -28,26 +28,26 @@ export type {
 } from '#types/lifecycle.js';
 
 // Effect transforms.
-export { EffectTransform } from './runtime/transforms/effect';
+export { EffectTransform } from '#runtime/transforms/effect.js';
 export type { Transform } from '#types/transform.js';
 
 // Curve sampling.
-export { SampledCurve } from './curves/sampled-curve';
-export { sampleCurve, CURVE_SEGMENTS } from './curves/sample-curve';
+export { SampledCurve } from '#curves/sampled-curve.js';
+export { sampleCurve, CURVE_SEGMENTS } from '#curves/sample-curve.js';
 export type { Curve, CurvePoint, ScalarProperty } from '#types/curve.js';
 
 // Playback and birth scheduling.
-export { EmitterPlayback } from './runtime/playback/emitter';
-export { SpawnRate } from './runtime/playback/spawn-rate';
-export { SpawnSchedule } from './runtime/playback/spawn-schedule';
-export { prewarm } from './runtime/playback/prewarm';
+export { EmitterPlayback } from '#runtime/playback/emitter.js';
+export { SpawnRate } from '#runtime/playback/spawn-rate.js';
+export { SpawnSchedule } from '#runtime/playback/spawn-schedule.js';
+export { prewarm } from '#runtime/playback/prewarm.js';
 
 // CPU allocation metadata and deterministic variation.
-export { ParticleSlots } from './runtime/particles/slots';
+export { ParticleSlots } from '#runtime/particles/slots.js';
 export type { ParticleLifetimeVisitor } from '#types/particle-lifetime.js';
-export { propertyVariation } from './simulation/emission/variation';
+export { propertyVariation } from '#simulation/emission/variation.js';
 
-export { renderingSchema } from './config/schemas/definition/rendering';
+export { renderingSchema } from '#config/schemas/definition/rendering.js';
 export type {
   RenderingConfig,
   RenderingInput,

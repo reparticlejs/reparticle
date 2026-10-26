@@ -1,10 +1,10 @@
 import { expect, it } from 'vitest';
 
-import { spawnBox } from '#src/simulation/emission/box.js';
-import { spawnCircle } from '#src/simulation/emission/circle.js';
-import { spawnCone2D } from '#src/simulation/emission/cone2d.js';
-import { spawnRotation } from '#src/simulation/emission/rotation.js';
-import { propertyVariation } from '#src/simulation/emission/variation.js';
+import { spawnBox } from '#simulation/emission/box.js';
+import { spawnCircle } from '#simulation/emission/circle.js';
+import { spawnCone2D } from '#simulation/emission/cone2d.js';
+import { spawnRotation } from '#simulation/emission/rotation.js';
+import { propertyVariation } from '#simulation/emission/variation.js';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
 
 import { integrate } from '../../support/simulation';

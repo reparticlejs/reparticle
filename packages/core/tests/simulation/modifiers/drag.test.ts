@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { applyDrag } from '#src/simulation/modifiers/drag.js';
+import { applyDrag } from '#simulation/modifiers/drag.js';
 
 it('uses linear damping capped at one, with signed spread and negative drag', () => {
   expect(applyDrag(100, 100, 2, 0, 0, 0.1)).toBe(80);

@@ -1,9 +1,9 @@
 import { Cache, Texture } from 'pixi.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { resolveRendering } from '../src/config/resolve-rendering';
+import { resolveRendering } from '#config/resolve-rendering.js';
 
-vi.mock('../src/textures/missing-texture', () => ({
+vi.mock('#textures/missing-texture.js', () => ({
   getMissingTexture: () => Texture.EMPTY,
 }));
 

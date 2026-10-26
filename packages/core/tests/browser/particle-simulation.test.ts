@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
-import { createSimulationParameters } from '../../src/runtime/gpu/parameters';
-import { GpuSimulation } from '../../src/runtime/gpu/simulation';
+import { createSimulationParameters } from '#runtime/gpu/parameters.js';
+import { GpuSimulation } from '#runtime/gpu/particle-simulation.js';
 
 let gl: WebGL2RenderingContext;
 let canvas: HTMLCanvasElement;

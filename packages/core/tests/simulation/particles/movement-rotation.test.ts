@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { movementRotation } from '#src/simulation/particles/movement-rotation.js';
+import { movementRotation } from '#simulation/particles/movement-rotation.js';
 
 it.each([
   [0, -10, 0],

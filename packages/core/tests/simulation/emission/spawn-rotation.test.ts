@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest';
 
-import { spawnBox } from '#src/simulation/emission/box.js';
-import { spawnCircle } from '#src/simulation/emission/circle.js';
-import { spawnCone2D } from '#src/simulation/emission/cone2d.js';
-import { spawnRotation } from '#src/simulation/emission/rotation.js';
+import { spawnBox } from '#simulation/emission/box.js';
+import { spawnCircle } from '#simulation/emission/circle.js';
+import { spawnCone2D } from '#simulation/emission/cone2d.js';
+import { spawnRotation } from '#simulation/emission/rotation.js';
 
 it('aligns local up to the point direction', () => {
   for (const [direction, rotation] of [

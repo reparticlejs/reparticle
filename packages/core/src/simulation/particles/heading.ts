@@ -1,6 +1,7 @@
 import { tgpu, d } from 'typegpu';
 
-import { readCurve } from '../resources.ts';
+import { readCurve } from '#simulation/resources.ts';
+
 import { movementRotation } from './movement-rotation.ts';
 
 /**

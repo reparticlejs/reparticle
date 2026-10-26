@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { spawnVariation } from '#src/simulation/emission/direction.js';
+import { spawnVariation } from '#simulation/emission/direction.js';
 
 it.each([0, 1, 65535])('spreads high slot IDs across both coordinates with seed %i', (seed) => {
   const bins = new Uint32Array(16 * 16);

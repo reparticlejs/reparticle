@@ -1,7 +1,6 @@
+import { modifiersSchema } from '#config/schemas/definition/modifiers.js';
+import { SampledCurve } from '#curves/sampled-curve.js';
 import type { ModifierConfig } from '#types/effect.js';
-
-import { modifiersSchema } from '../../config/schemas/definition/modifiers';
-import { SampledCurve } from '../../curves/sampled-curve';
 
 const MODIFIER_TYPES = { acceleration: 0, drag: 1, radial: 2, vortex: 3 } as const;
 const COUNT_INDEX = 0;
@@ -23,7 +22,7 @@ import {
   MODIFIER_HEADER as HEADER_SIZE,
   MODIFIER_STRIDE,
   MAX_MODIFIERS,
-} from '../../simulation/layout';
+} from '#simulation/layout.js';
 /** Space for both 64-entry scopes: emitter modifiers followed by effect modifiers. */
 export const MODIFIER_BUFFER_SIZE = HEADER_SIZE + MAX_MODIFIERS * MODIFIER_STRIDE;
 

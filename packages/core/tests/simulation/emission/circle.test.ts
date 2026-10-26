@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { spawnCircle } from '#src/simulation/emission/circle.js';
+import { spawnCircle } from '#simulation/emission/circle.js';
 
 it('spawns throughout the disk with outward velocity and exact scalar speed', () => {
   const quadrants = [0, 0, 0, 0];
