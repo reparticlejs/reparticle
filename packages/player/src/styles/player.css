@@ -12,6 +12,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  background: #151515;
 }
 .canvas-host {
   position: relative;
@@ -60,7 +61,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-top: 1px solid hsl(var(--border, 240 6% 26%));
+  background: hsl(var(--card, 240 6% 10%));
   font-size: 12px;
 }
 .effect-title {
