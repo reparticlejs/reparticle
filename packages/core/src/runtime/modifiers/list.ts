@@ -1,12 +1,17 @@
 import { modifiersSchema } from '#config/schemas/definition/modifiers.js';
 import { SampledCurve } from '#curves/sampled-curve.js';
-import { MODIFIER_HEADER, MODIFIER_STRIDE, MODIFIER_WORDS } from '#simulation/layout.js';
+import {
+  MODIFIER_HEADER,
+  MODIFIER_STRIDE,
+  MODIFIER_WORDS,
+  MODIFIER_COUNT_INDEX,
+  MODIFIER_RADIAL_FLAG_INDEX,
+} from '#simulation/layout.js';
 import type { ModifierConfig } from '#types/effect.js';
 import type { SampledModifier } from '#types/modifier.js';
+import type { Transform } from '#types/transform.js';
 
 const MODIFIER_TYPES = { acceleration: 0, drag: 1, radial: 2, vortex: 3 } as const;
-const COUNT_INDEX = 0;
-const RADIAL_FLAG_INDEX = 1;
 
 const FIELDS = {
   type: 0,
@@ -52,17 +57,10 @@ export class ModifierList {
    * Magnitude curves extrapolate when that time exceeds their final point.
    * Zero magnitude with zero spread contributes nothing and is skipped.
    */
-  public write(
-    values: Float32Array,
-    modifierAge: number,
-    originX: number,
-    originY: number,
-    rotationDegrees: number,
-    scale: number,
-    handedness = 1,
-  ): void {
+  public write(values: Float32Array, modifierAge: number, transform: Readonly<Transform>): void {
+    const { x: originX, y: originY, rotation, scale, handedness } = transform;
     // Canvas Y points down, so counterclockwise angles use a negative sign.
-    const radians = (-rotationDegrees * Math.PI) / 180;
+    const radians = (-rotation * Math.PI) / 180;
     const cosine = Math.cos(radians);
     const sine = Math.sin(radians);
 
@@ -86,7 +84,7 @@ export class ModifierList {
 
       const cutoff = 'maxDistance' in modifier ? modifier.maxDistance * Math.abs(scale) : 0;
       const directional = modifier.type === 'drag' && modifier.useDirection;
-      const count = values[COUNT_INDEX]!;
+      const count = values[MODIFIER_COUNT_INDEX]!;
       const offset = MODIFIER_HEADER + count * MODIFIER_STRIDE;
 
       // Append one complete record before publishing the new active count.
@@ -100,9 +98,9 @@ export class ModifierList {
       values[offset + FIELDS.directional] = directional ? 1 : 0;
 
       if (modifier.type === 'radial') {
-        values[RADIAL_FLAG_INDEX] = 1;
+        values[MODIFIER_RADIAL_FLAG_INDEX] = 1;
       }
-      values[COUNT_INDEX] = count + 1;
+      values[MODIFIER_COUNT_INDEX] = count + 1;
     }
   }
 

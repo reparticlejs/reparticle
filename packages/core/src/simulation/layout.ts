@@ -1,6 +1,9 @@
 /** Shared CPU/shader storage contract. All lengths are float32 words. */
 export const CURVE_SEGMENTS = 64;
 export const MODIFIER_HEADER = 2;
+/** Header fields shared by the runtime writer and sampler. */
+export const MODIFIER_COUNT_INDEX = 0;
+export const MODIFIER_RADIAL_FLAG_INDEX = 1;
 export const MODIFIER_STRIDE = 9;
 export const MAX_MODIFIERS = 128;
 export const MODIFIER_WORDS = MODIFIER_HEADER + MODIFIER_STRIDE * MAX_MODIFIERS;

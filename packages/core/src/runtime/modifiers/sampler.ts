@@ -1,6 +1,16 @@
 import type { EffectTransform } from '#runtime/transforms/effect.js';
+import { MODIFIER_COUNT_INDEX, MODIFIER_RADIAL_FLAG_INDEX } from '#simulation/layout.js';
+import type { Transform } from '#types/transform.js';
 
 import { ModifierList, MODIFIER_BUFFER_SIZE } from './list';
+
+const LOCAL_TRANSFORM: Readonly<Transform> = {
+  x: 0,
+  y: 0,
+  rotation: 0,
+  scale: 1,
+  handedness: 1,
+};
 
 /**
  * Prepare modifier inputs once per emitter step, never per particle.
@@ -10,6 +20,21 @@ import { ModifierList, MODIFIER_BUFFER_SIZE } from './list';
 export class ModifierSampler {
   private readonly emitterModifiers: ModifierList;
   private readonly effectModifiers: ModifierList;
+  // Reused scratch space: transforming a list must not allocate on every step.
+  private readonly emitterToWorld: Transform = {
+    x: 0,
+    y: 0,
+    rotation: 0,
+    scale: 1,
+    handedness: 1,
+  };
+  private readonly effectToEmitter: Transform = {
+    x: 0,
+    y: 0,
+    rotation: 0,
+    scale: 1,
+    handedness: 1,
+  };
   private readonly buffer = new Float32Array(MODIFIER_BUFFER_SIZE);
 
   public constructor(emitterModifiers: unknown = [], effectModifiers: unknown = []) {
@@ -35,8 +60,8 @@ export class ModifierSampler {
     effect: EffectTransform,
   ): Float32Array {
     // Reset active count and radial flag; records beyond the new count are ignored.
-    this.buffer[0] = 0;
-    this.buffer[1] = 0;
+    this.buffer[MODIFIER_COUNT_INDEX] = 0;
+    this.buffer[MODIFIER_RADIAL_FLAG_INDEX] = 0;
 
     if (localParticleSpace) {
       this.sampleLocalSpace(modifierAge, emitterX, emitterY, emitterRotation, emitterScale);
@@ -47,6 +72,7 @@ export class ModifierSampler {
     return this.buffer;
   }
 
+  /** Emitter modifiers are already local; shared modifiers need the inverse emitter transform. */
   private sampleLocalSpace(
     modifierAge: number,
     emitterX: number,
@@ -55,7 +81,7 @@ export class ModifierSampler {
     emitterScale: number,
   ): void {
     // Emitter modifiers already use emitter-local coordinates.
-    this.emitterModifiers.write(this.buffer, modifierAge, 0, 0, 0, 1);
+    this.emitterModifiers.write(this.buffer, modifierAge, LOCAL_TRANSFORM);
     // Zero scale has no inverse. Emitter-local modifiers still apply above.
     if (emitterScale === 0) {
       return;
@@ -66,22 +92,17 @@ export class ModifierSampler {
     const cosine = Math.cos(radians);
     const sine = Math.sin(radians);
     const inverseScale = 1 / emitterScale;
-    const inverseX = (-cosine * emitterX + sine * emitterY) * inverseScale;
-    const inverseY = (-sine * emitterX - cosine * emitterY) * inverseScale;
+    const transform = this.effectToEmitter;
+    transform.x = (-cosine * emitterX + sine * emitterY) * inverseScale;
+    transform.y = (-sine * emitterX - cosine * emitterY) * inverseScale;
 
-    // Represent negative uniform scale as a half-turn plus a positive scale.
-    const inverseRotation = -emitterRotation + (emitterScale < 0 ? 180 : 0);
-    const inverseMagnitudeScale = Math.abs(inverseScale);
-    this.effectModifiers.write(
-      this.buffer,
-      modifierAge,
-      inverseX,
-      inverseY,
-      inverseRotation,
-      inverseMagnitudeScale,
-    );
+    // Negative uniform scale flips both axes: a half-turn preserves that orientation.
+    transform.rotation = -emitterRotation + (emitterScale < 0 ? 180 : 0);
+    transform.scale = Math.abs(inverseScale);
+    this.effectModifiers.write(this.buffer, modifierAge, transform);
   }
 
+  /** Compose emitter → effect → world; shared modifiers only need effect → world. */
   private sampleWorldSpace(
     modifierAge: number,
     emitterX: number,
@@ -90,30 +111,14 @@ export class ModifierSampler {
     emitterScale: number,
     effect: EffectTransform,
   ): void {
-    // Compose emitter → effect → world once for the emitter-owned modifier list.
-    const worldX = effect.applyX(emitterX, emitterY);
-    const worldY = effect.applyY(emitterX, emitterY);
-    const worldRotation = emitterRotation * effect.handedness + effect.rotation;
-    const worldScale = emitterScale * effect.scale;
-    this.emitterModifiers.write(
-      this.buffer,
-      modifierAge,
-      worldX,
-      worldY,
-      worldRotation,
-      worldScale,
-      effect.handedness,
-    );
+    const transform = this.emitterToWorld;
+    transform.x = effect.applyX(emitterX, emitterY);
+    transform.y = effect.applyY(emitterX, emitterY);
+    transform.rotation = emitterRotation * effect.handedness + effect.rotation;
+    transform.scale = emitterScale * effect.scale;
+    transform.handedness = effect.handedness;
 
-    // Shared modifiers use the effect-to-world transform directly.
-    this.effectModifiers.write(
-      this.buffer,
-      modifierAge,
-      effect.x,
-      effect.y,
-      effect.rotation,
-      effect.scale,
-      effect.handedness,
-    );
+    this.emitterModifiers.write(this.buffer, modifierAge, transform);
+    this.effectModifiers.write(this.buffer, modifierAge, effect);
   }
 }
