@@ -15,7 +15,8 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: ['tests/browser/**/*.test.ts'],
-          testTimeout: 30000,
+          // Hosted runners can be slow to initialize WebGL and compile filter shaders.
+          testTimeout: 60000,
           fileParallelism: false,
           browser: {
             enabled: true,

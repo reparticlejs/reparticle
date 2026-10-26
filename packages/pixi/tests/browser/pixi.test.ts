@@ -20,6 +20,7 @@ it('renders textures, masks and filters and preserves playback and resource owne
   onTestFinished(() => warnings.mockRestore());
   let filter: AlphaFilter | undefined;
   try {
+    console.info('Pixi integration: initializing WebGL2');
     await app.init({
       width: 256,
       height: 256,
@@ -30,6 +31,7 @@ it('renders textures, masks and filters and preserves playback and resource owne
       background: 0x000000,
     });
     document.body.appendChild(app.canvas);
+    console.info('Pixi integration: rendering textures and checking playback');
     const canvas = document.createElement('canvas');
     canvas.width = 16;
     canvas.height = 16;
@@ -87,6 +89,7 @@ it('renders textures, masks and filters and preserves playback and resource owne
     effect.update(0.1);
     expect(effect.emitter.texture !== current, 'resume').toBe(true);
     const mask = new Graphics().rect(0, 0, 128, 256).fill(0xffffff);
+    console.info('Pixi integration: checking masks, filters, and render textures');
     app.stage.addChild(mask);
     group.mask = mask;
     image = pixels();
@@ -119,6 +122,7 @@ it('renders textures, masks and filters and preserves playback and resource owne
       autoUpdate: false,
       emitters: { test: { textures: [artwork] } },
     });
+    console.info('Pixi integration: checking shared resources and ticker updates');
     other.position.set(192, 128);
     app.stage.addChild(other);
     app.render();
@@ -174,6 +178,7 @@ it('renders textures, masks and filters and preserves playback and resource owne
     expect(app.renderer.gl.getError() === app.renderer.gl.NO_ERROR, 'noGlError').toBe(true);
     other.destroy();
   } finally {
+    console.info('Pixi integration: cleaning up');
     // Pixi keeps the filter input in a shared bind group after Filter.destroy().
     // Detach that input and sampler before the app destroys pooled render textures.
     filter?.groups[0]?.setResource(Texture.EMPTY.source, 1);
