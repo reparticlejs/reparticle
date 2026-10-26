@@ -1,7 +1,9 @@
 import { tgpu, d } from 'typegpu';
 
+import { MODIFIER_COUNT_INDEX, MODIFIER_RADIAL_FLAG_INDEX } from '#simulation/layout.ts';
 import { applyModifiers } from '#simulation/modifiers/list.ts';
 import { readModifier } from '#simulation/resources.ts';
+import { ParticleMotion, ParticleStep } from '#types/shader-inputs.ts';
 
 import { advanceRotation } from './angular-velocity.ts';
 import { particleHeading } from './heading.ts';
@@ -21,91 +23,60 @@ import { particleHeading } from './heading.ts';
  */
 export const integrateMotion = tgpu
   .fn(
-    [
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-      d.f32,
-    ],
+    [ParticleMotion, ParticleStep],
     d.vec4f,
-  )(
-    (
-      x,
-      y,
-      velocityX,
-      velocityY,
-      ageAfterStep,
-      lifetime,
-      initialRotation,
-      accumulatedRotation,
-      initialAngularVelocity,
-      spreadFactor,
-      handedness,
-      seconds,
-      orientToMovement,
-      orientToAngularVelocity,
-      rotationCurve,
-      angularVelocityCurve,
-    ) => {
-      'use gpu';
-      const modifierCount = readModifier(0);
-      if (modifierCount === 0) {
-        return d.vec4f(x + velocityX * seconds, y + velocityY * seconds, velocityX, velocityY);
-      }
-      // Only radial modifiers need a heading for particles exactly at their center.
-      const containsRadial = readModifier(1);
-      let heading = d.vec2f(0, -1);
-      if (containsRadial > 0) {
-        let angularRotation = d.f32(0);
-        if (orientToAngularVelocity > 0.5) {
-          const rotationAfterStep = advanceRotation(
-            accumulatedRotation,
-            initialAngularVelocity,
-            ageAfterStep,
-            lifetime,
-            angularVelocityCurve,
-            seconds,
-          );
-          angularRotation = rotationAfterStep * handedness;
-        }
-        // Use this step's rotation but the velocity before modifiers change it.
-        const baseRotation = initialRotation + angularRotation;
-        heading = particleHeading(
-          baseRotation,
-          ageAfterStep,
-          lifetime,
-          rotationCurve,
-          velocityX,
-          velocityY,
-          orientToMovement,
-          handedness,
-        );
-      }
-      const nextVelocity = applyModifiers(
-        x,
-        y,
-        velocityX,
-        velocityY,
-        heading[0],
-        heading[1],
-        spreadFactor,
-        seconds,
+  )((particle, step) => {
+    'use gpu';
+    const modifierCount = readModifier(MODIFIER_COUNT_INDEX);
+    if (modifierCount === 0) {
+      return d.vec4f(
+        particle.position.x + particle.velocity.x * step.seconds,
+        particle.position.y + particle.velocity.y * step.seconds,
+        particle.velocity.x,
+        particle.velocity.y,
       );
-      const nextX = x + nextVelocity[0] * seconds;
-      const nextY = y + nextVelocity[1] * seconds;
-      return d.vec4f(nextX, nextY, nextVelocity[0], nextVelocity[1]);
-    },
-  )
+    }
+    // Only radial modifiers need a heading for particles exactly at their center.
+    const containsRadial = readModifier(MODIFIER_RADIAL_FLAG_INDEX);
+    let heading = d.vec2f(0, -1);
+    if (containsRadial > 0) {
+      let angularRotation = d.f32(0);
+      if (step.orientToAngularVelocity > 0.5) {
+        const rotationAfterStep = advanceRotation(
+          particle.accumulatedRotation,
+          particle.initialAngularVelocity,
+          particle.ageAfterStep,
+          particle.lifetime,
+          step.angularVelocityCurve,
+          step.seconds,
+        );
+        angularRotation = rotationAfterStep * particle.handedness;
+      }
+      // Use this step's rotation but the velocity before modifiers change it.
+      const baseRotation = particle.initialRotation + angularRotation;
+      heading = particleHeading(
+        baseRotation,
+        particle.ageAfterStep,
+        particle.lifetime,
+        step.rotationCurve,
+        particle.velocity.x,
+        particle.velocity.y,
+        step.orientToMovement,
+        particle.handedness,
+      );
+    }
+    const nextVelocity = applyModifiers(
+      particle.position.x,
+      particle.position.y,
+      particle.velocity.x,
+      particle.velocity.y,
+      heading.x,
+      heading.y,
+      particle.modifierVariation,
+      step.seconds,
+    );
+    const nextX = particle.position.x + nextVelocity.x * step.seconds;
+    const nextY = particle.position.y + nextVelocity.y * step.seconds;
+    return d.vec4f(nextX, nextY, nextVelocity.x, nextVelocity.y);
+  })
   .$name('integrateMotion');

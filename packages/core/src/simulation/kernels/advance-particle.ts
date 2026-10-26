@@ -6,7 +6,7 @@ import { integrateMotion } from '#simulation/particles/integrate-motion.ts';
 import { advanceAge, particleAlive } from '#simulation/particles/lifetime.ts';
 import { movementRotation } from '#simulation/particles/movement-rotation.ts';
 import { readState } from '#simulation/resources.ts';
-import { ParticleAddress, ParticleStep } from '#types/shader-inputs.ts';
+import { ParticleAddress, ParticleMotion, ParticleStep } from '#types/shader-inputs.ts';
 
 /**
  * Advance one logical band of an existing particle.
@@ -130,25 +130,17 @@ export const advanceParticle = tgpu
       address.column,
       address.row + address.rows * PARTICLE_BAND.geometry,
     );
-    return d.vec4f(
-      integrateMotion(
-        motion.x,
-        motion.y,
-        motion.z,
-        motion.w,
-        age + step.seconds,
-        lifetime,
-        initialRotation,
-        accumulatedRotation,
-        angularVelocity,
-        modifierVariation,
-        geometry.z,
-        step.seconds,
-        step.orientToMovement,
-        step.orientToAngularVelocity,
-        step.rotationCurve,
-        step.angularVelocityCurve,
-      ),
-    );
+    const particle = ParticleMotion({
+      position: d.vec2f(motion.x, motion.y),
+      velocity: d.vec2f(motion.z, motion.w),
+      ageAfterStep: age + step.seconds,
+      lifetime,
+      initialRotation,
+      accumulatedRotation,
+      initialAngularVelocity: angularVelocity,
+      modifierVariation,
+      handedness: geometry.z,
+    });
+    return d.vec4f(integrateMotion(particle, step));
   })
   .$name('advanceParticle');

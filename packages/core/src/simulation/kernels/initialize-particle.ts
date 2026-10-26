@@ -7,7 +7,7 @@ import { PARTICLE_BAND } from '#simulation/layout.ts';
 import { advanceRotation } from '#simulation/particles/angular-velocity.ts';
 import { integrateMotion } from '#simulation/particles/integrate-motion.ts';
 import { movementRotation } from '#simulation/particles/movement-rotation.ts';
-import { ParticleBirth, ParticleStep } from '#types/shader-inputs.ts';
+import { ParticleBirth, ParticleMotion, ParticleStep } from '#types/shader-inputs.ts';
 
 /**
  * Initialize one logical band of a newborn particle.
@@ -139,25 +139,17 @@ export const initializeParticle = tgpu
       birth.initialAngularVelocity +
       propertyVariation(particleId, birth.seed, VARIATION_STREAM.angularVelocity) *
         birth.angularVelocitySpread;
-    return d.vec4f(
-      integrateMotion(
-        positionX,
-        positionY,
-        birthVelocityX,
-        birthVelocityY,
-        step.seconds,
-        sampledLifetime,
-        rotation,
-        0,
-        angularVelocity,
-        birthSpreadFactor,
-        birth.handedness,
-        step.seconds,
-        step.orientToMovement,
-        step.orientToAngularVelocity,
-        step.rotationCurve,
-        step.angularVelocityCurve,
-      ),
-    );
+    const particle = ParticleMotion({
+      position: d.vec2f(positionX, positionY),
+      velocity: d.vec2f(birthVelocityX, birthVelocityY),
+      ageAfterStep: step.seconds,
+      lifetime: sampledLifetime,
+      initialRotation: rotation,
+      accumulatedRotation: 0,
+      initialAngularVelocity: angularVelocity,
+      modifierVariation: birthSpreadFactor,
+      handedness: birth.handedness,
+    });
+    return d.vec4f(integrateMotion(particle, step));
   })
   .$name('initializeParticle');

@@ -65,3 +65,20 @@ export const ParticleAddress = d
     rows: d.f32,
   })
   .$name('ParticleAddress');
+
+/** Per-particle values for one motion step; independent of texture storage layout. */
+export const ParticleMotion = d
+  .struct({
+    position: d.vec2f,
+    velocity: d.vec2f,
+    /** Age after this step, including the first step for newborns. */
+    ageAfterStep: d.f32,
+    lifetime: d.f32,
+    initialRotation: d.f32,
+    /** Rotation accumulated before this step. */
+    accumulatedRotation: d.f32,
+    initialAngularVelocity: d.f32,
+    modifierVariation: d.f32,
+    handedness: d.f32,
+  })
+  .$name('ParticleMotion');
