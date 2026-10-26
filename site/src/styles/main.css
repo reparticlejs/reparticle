@@ -136,12 +136,6 @@
     padding-inline: 1.5rem;
   }
 
-  .glass {
-    background: hsl(var(--background) / 0.72);
-    backdrop-filter: saturate(1.6) blur(14px);
-    -webkit-backdrop-filter: saturate(1.6) blur(14px);
-  }
-
   .brand-text {
     color: hsl(var(--brand));
     background: linear-gradient(100deg, #467423, #739b45);
