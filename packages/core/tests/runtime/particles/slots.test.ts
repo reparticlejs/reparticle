@@ -55,8 +55,9 @@ it.each([1, 7, 24, 25, 100, 8192])('matches float32 slot lifetimes at capacity %
     const births = selected(slots.spawnMask, capacity);
     expect(admitted).toBe(Math.min(requested, available));
     expect(births).toHaveLength(admitted);
+    // Check every birth before updating the reference, with one assertion per frame.
+    expect(births.filter((slot) => reference.has(slot))).toEqual([]);
     for (const slot of births) {
-      expect(reference.has(slot)).toBe(false);
       const variation = f(f(propertyVariation(slot, seed, 2) + 1) - 1);
       reference.set(slot, { age: f(seconds), lifetime: f(f(lifetime) + f(f(spread) * variation)) });
     }
