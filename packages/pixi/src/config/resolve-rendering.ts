@@ -1,12 +1,12 @@
 import { renderingSchema } from '@reparticle/core';
-import { Cache, Texture } from 'pixi.js';
+import { Cache, type Texture } from 'pixi.js';
 
 import { resolveArtwork } from '#textures/resolve-artwork.js';
 import { resolveFlipbook } from '#textures/resolve-flipbook.js';
 import { resolvePivot } from '#textures/resolve-pivot.js';
 import { resolveTextureFlip } from '#textures/resolve-texture-flip.js';
 import type { ParticleRendering, ResolvedParticleRendering } from '#types/particle-rendering.js';
-import type { ParticleTexture } from '#types/particle-texture.js';
+import type { ParticleTexture, UnvalidatedArtwork } from '#types/particle-texture.js';
 
 /**
  * Prepare renderer settings before creating or replacing an emitter's artwork.
@@ -40,23 +40,25 @@ export function resolveRendering(options: ParticleRendering): ResolvedParticleRe
 }
 
 /** Check settings before a renderer is attached; drawing resources are created later. */
-function validateArtworkSettings(artwork: ParticleTexture<Texture>): void {
+function validateArtworkSettings(
+  artwork: UnvalidatedArtwork,
+): asserts artwork is ParticleTexture<Texture> {
   resolveFlipbook(artwork);
   resolvePivot(artwork.pivot);
   resolveTextureFlip(artwork);
 }
 
 /** Resolve loaded cache names once, before validation; never load or own assets here. */
-function resolveTextureNames(options: ParticleTexture): ParticleTexture<Texture> {
+function resolveTextureNames(options: ParticleTexture): UnvalidatedArtwork {
   if (
     !Array.isArray(options.textures) ||
     !options.textures.some((frame) => typeof frame === 'string')
   ) {
-    return options as ParticleTexture<Texture>;
+    return options;
   }
   const textures = options.textures.map((frame) =>
     typeof frame === 'string' ? (Cache.has(frame) ? Cache.get(frame) : undefined) : frame,
   );
-  // Mapping preserves tuple length. resolveArtwork checks missing and invalid cache entries.
-  return { ...options, textures } as unknown as ParticleTexture<Texture>;
+  // Cache values remain unvalidated until artwork and animation checks succeed.
+  return { ...options, textures };
 }

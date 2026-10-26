@@ -8,7 +8,9 @@ import type { ParticleTexture } from '#types/particle-texture.js';
  * the pivot offset and particle rotation. Flipping does not change particle motion
  * or reverse the pivot offset.
  */
-export function resolveTextureFlip(options: ParticleTexture): [number, number] {
+export function resolveTextureFlip(
+  options: Pick<ParticleTexture, 'flipX' | 'flipY'>,
+): [number, number] {
   const { flipX = false, flipY = false } = options;
 
   if (typeof flipX !== 'boolean' || typeof flipY !== 'boolean') {

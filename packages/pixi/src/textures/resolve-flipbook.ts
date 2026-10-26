@@ -6,6 +6,7 @@ import type {
   AnimationPlayback,
   AnimationSize,
   ParticleTexture,
+  UnvalidatedArtwork,
 } from '#types/particle-texture.js';
 
 /**
@@ -16,7 +17,7 @@ import type {
  * frame from its age. Once playback spans particle lifetime; looping uses FPS.
  * The returned frame list is copied, but its textures remain owned by the caller.
  */
-export function resolveFlipbook(options: ParticleTexture<Texture>): Flipbook | null {
+export function resolveFlipbook(options: UnvalidatedArtwork): Flipbook | null {
   validateSizeMode(options.sizeMode);
   const frames = options.textures;
   if (frames !== undefined) {

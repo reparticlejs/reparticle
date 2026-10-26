@@ -1,6 +1,10 @@
 import { Texture } from 'pixi.js';
 
-import type { AnimationFrames, ParticleTexture } from '#types/particle-texture.js';
+import type {
+  AnimationFrames,
+  ParticleTexture,
+  UnvalidatedArtwork,
+} from '#types/particle-texture.js';
 
 import { getMissingTexture } from './missing-texture';
 
@@ -12,7 +16,7 @@ import { getMissingTexture } from './missing-texture';
  * that identity to warn once per invalid assignment, after validating the other settings.
  * Caller-owned textures and arrays are never modified.
  */
-export function resolveArtwork(options: ParticleTexture<Texture>): ParticleTexture<Texture> {
+export function resolveArtwork(options: UnvalidatedArtwork): UnvalidatedArtwork {
   const frames = options.textures;
   if (frames === undefined || hasUsableTextures(frames)) {
     return options;
@@ -53,7 +57,7 @@ function createPlaceholderFrames(frameCount: number): AnimationFrames {
 }
 
 /** A static fallback preserves sizing and placement, but cannot accept animation settings. */
-function createStaticPlaceholder(options: ParticleTexture<Texture>): ParticleTexture<Texture> {
+function createStaticPlaceholder(options: UnvalidatedArtwork): ParticleTexture<Texture> {
   const hasAnimationSettings =
     options.playback !== undefined ||
     options.fps !== undefined ||

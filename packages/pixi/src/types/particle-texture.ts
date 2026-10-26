@@ -38,3 +38,11 @@ export type ParticleTexture<T extends Texture | string = Texture | string> = {
       fps?: number | undefined;
     }
 );
+
+/**
+ * Internal artwork awaiting validation. Cache lookups and JavaScript callers can
+ * supply missing or invalid frames, so texture tuples are established only after checks.
+ */
+export type UnvalidatedArtwork = Omit<ParticleTexture<Texture>, 'textures'> & {
+  textures?: unknown;
+};
