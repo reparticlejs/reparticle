@@ -11,11 +11,14 @@ import {
   Ticker,
   type WebGLRenderer,
 } from 'pixi.js';
-import { expect, it } from 'vitest';
+import { expect, it, onTestFinished, vi } from 'vitest';
 
 it('renders textures, masks and filters and preserves playback and resource ownership', async () => {
   const app = new Application<WebGLRenderer>();
   const cleanup: (() => void)[] = [];
+  const warnings = vi.spyOn(console, 'warn');
+  onTestFinished(() => warnings.mockRestore());
+  let filter: AlphaFilter | undefined;
   try {
     await app.init({
       width: 256,
@@ -89,8 +92,7 @@ it('renders textures, masks and filters and preserves playback and resource owne
     image = pixels();
     expect(red(image, 120, 128) > 200 && red(image, 136, 128) < 5, 'maskClips').toBe(true);
     group.filterArea = new Rectangle(0, 0, 256, 256);
-    const filter = new AlphaFilter({ alpha: 0.5 });
-    cleanup.push(() => filter.destroy());
+    filter = new AlphaFilter({ alpha: 0.5 });
     group.filters = [filter];
     image = pixels();
     expect(
@@ -172,9 +174,15 @@ it('renders textures, masks and filters and preserves playback and resource owne
     expect(app.renderer.gl.getError() === app.renderer.gl.NO_ERROR, 'noGlError').toBe(true);
     other.destroy();
   } finally {
+    // Pixi keeps the filter input in a shared bind group after Filter.destroy().
+    // Detach that input and sampler before the app destroys pooled render textures.
+    filter?.groups[0]?.setResource(Texture.EMPTY.source, 1);
+    filter?.groups[0]?.setResource(Texture.EMPTY.source.style, 2);
+    filter?.destroy();
     app.destroy(true, { children: true, texture: false, textureSource: false });
     for (const dispose of cleanup.reverse()) {
       dispose();
     }
   }
+  expect(warnings).not.toHaveBeenCalled();
 });
