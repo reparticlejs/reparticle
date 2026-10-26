@@ -16,10 +16,12 @@
     "precommit": "lint-staged",
     "prepush": "pnpm typecheck && pnpm test",
     "changeset": "changeset",
-    "release:version": "changeset version && pnpm install --lockfile-only --ignore-scripts && oxfmt packages/*/CHANGELOG.md"
+    "release:version": "changeset version && pnpm install --lockfile-only --ignore-scripts && oxfmt packages/*/CHANGELOG.md",
+    "packages:check": "tsc -p scripts/tsconfig.json && node scripts/check-packed-consumer.ts"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",
+    "@types/node": "26.6.5",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript/lib-dom": "npm:@types/web@0.0.359",
     "@typescript/native": "catalog:",
@@ -29,6 +31,7 @@
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
+    "playwright": "1.58.2",
     "tsdown": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:",

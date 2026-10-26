@@ -13,4 +13,5 @@ Run `pnpm release:version` to update package versions, generate changelogs, and
 refresh the lockfile. Review and commit those changes, then run `pnpm check`.
 
 Versioning does not publish packages, create Git tags, or commit changes automatically.
-Publishing automation will be configured separately.
+GitHub Actions manages release PRs and publication after CI passes. See
+[release setup](../.github/RELEASING.md) for the one-time configuration.

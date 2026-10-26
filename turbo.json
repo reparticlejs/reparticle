@@ -1,6 +1,7 @@
 {
   "tasks": {
     "build": {
+      "env": ["SITE_URL", "SITE_BASE"],
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },

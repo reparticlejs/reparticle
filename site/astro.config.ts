@@ -3,6 +3,9 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
+  site: process.env.SITE_URL ?? 'https://reparticlejs.github.io',
+  base: process.env.SITE_BASE ?? '/',
+  trailingSlash: 'always',
   markdown: { shikiConfig: { theme: 'github-dark-dimmed' } },
   integrations: [react()],
   vite: { plugins: [tailwindcss()] },
