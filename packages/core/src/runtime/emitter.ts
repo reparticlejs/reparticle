@@ -3,7 +3,7 @@ import type { EmitterContext } from '#types/emitter.js';
 import type { InitialPropertyCurves } from '#types/initial-property-curves.js';
 import type { EmitterState, EmitterStateListener, StopOptions } from '#types/lifecycle.js';
 
-import { applyEmitterPatch } from '../config/apply-emitter-patch';
+import { mergeEmitterParameters } from '../config/merge-emitter-parameters';
 import { emitterConfigSchema } from '../config/schemas/definition/emitter';
 import { modifiersSchema } from '../config/schemas/definition/modifiers';
 import { sampleCurve } from '../curves/sample-curve';
@@ -292,7 +292,7 @@ export class Emitter {
   /** Apply a validated patch atomically, rebuilding only affected sampled data. */
   public setParameters(patch: EmitterParameters): void {
     this.assertAlive();
-    const settings = applyEmitterPatch(this.settings, patch);
+    const settings = mergeEmitterParameters(this.settings, patch);
     let modifiers = this.modifiers;
     let shape = this.shape;
     let spawnRate = this.spawnRate;

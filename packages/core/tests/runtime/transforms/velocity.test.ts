@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { $ZodError as ZodError } from 'zod/v4/core';
 
-import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
+import { mergeEmitterParameters } from '#src/config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
 import { EmitterVelocity } from '#src/runtime/transforms/velocity.js';
 
@@ -35,9 +35,11 @@ it('defaults inheritance to zero and accepts finite runtime factors', () => {
   const config = parseEffectConfig({ version: 1, emitters: [source] }).emitters[0];
   expect(config.inheritVelocity).toBe(0);
   for (const inheritVelocity of [-1, 0, 0.5, 1, 2]) {
-    expect(applyEmitterPatch(config, { inheritVelocity }).inheritVelocity).toBe(inheritVelocity);
+    expect(mergeEmitterParameters(config, { inheritVelocity }).inheritVelocity).toBe(
+      inheritVelocity,
+    );
   }
   for (const inheritVelocity of [NaN, Infinity, '1', null]) {
-    expect(() => applyEmitterPatch(config, { inheritVelocity })).toThrow(ZodError);
+    expect(() => mergeEmitterParameters(config, { inheritVelocity })).toThrow(ZodError);
   }
 });

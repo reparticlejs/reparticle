@@ -1,6 +1,6 @@
 ---
 title: "EmitterParameters"
-description: "Input patch for changing an existing emitter through setParameters().\nOmitted fields retain their current values; a supplied modifier list replaces\nthe whole list. Only fields exposed by the runtime schema can be changed.\n\nUses the schema's input type so callers may omit modifier fields with defaults.\napplyEmitterPatch() validates the patch and the resulting complete definition."
+description: "Input patch for changing an existing emitter through setParameters().\nOmitted fields retain their current values; a supplied modifier list replaces\nthe whole list. Only fields exposed by the runtime schema can be changed.\n\nUses the schema's input type so callers may omit modifier fields with defaults.\nmergeEmitterParameters() validates the patch and the resulting complete definition."
 package: "core"
 ---
 
@@ -9,7 +9,7 @@ Omitted fields retain their current values; a supplied modifier list replaces
 the whole list. Only fields exposed by the runtime schema can be changed.
 
 Uses the schema's input type so callers may omit modifier fields with defaults.
-applyEmitterPatch() validates the patch and the resulting complete definition.
+mergeEmitterParameters() validates the patch and the resulting complete definition.
 
 ## Properties
 

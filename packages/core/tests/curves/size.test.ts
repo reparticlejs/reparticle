@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { $ZodError as ZodError } from 'zod/v4/core';
 
-import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
+import { mergeEmitterParameters } from '#src/config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
 import { scalarPropertySchema } from '#src/config/schemas/definition/curve.js';
 import { evaluateCurve } from '#src/curves/evaluate-curve.js';
@@ -97,9 +97,9 @@ it('defaults old definitions to size 24 and constant scale 1', () => {
 
 it('updates initial size atomically without resetting it on unrelated patches', () => {
   const original = parseEffectConfig(skeleton).emitters[0];
-  const changed = applyEmitterPatch(original, { initial: { size: 48 } });
-  expect(applyEmitterPatch(changed, { initial: { speed: 50 } }).initial.size).toBe(48);
+  const changed = mergeEmitterParameters(original, { initial: { size: 48 } });
+  expect(mergeEmitterParameters(changed, { initial: { speed: 50 } }).initial.size).toBe(48);
   expect(original.initial.size).toBe(24);
-  expect(applyEmitterPatch(changed, { initial: { size: -1 } }).initial.size).toBe(-1);
-  expect(() => applyEmitterPatch(changed, { overLifetime: { scale: 0 } })).toThrow(ZodError);
+  expect(mergeEmitterParameters(changed, { initial: { size: -1 } }).initial.size).toBe(-1);
+  expect(() => mergeEmitterParameters(changed, { overLifetime: { scale: 0 } })).toThrow(ZodError);
 });

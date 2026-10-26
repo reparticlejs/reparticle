@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { $ZodError as ZodError } from 'zod/v4/core';
 
-import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
+import { mergeEmitterParameters } from '#src/config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
 import { SampledCurve } from '#src/curves/sampled-curve.js';
 import { EmitterPlayback } from '#src/runtime/playback/emitter.js';
@@ -35,9 +35,11 @@ it('accepts size curves, preserves them on unrelated edits, and allows numeric r
     version: 1,
     emitters: [{ ...source, initial: { ...source.initial, size } }],
   }).emitters[0];
-  expect(applyEmitterPatch(config, { initial: { sizeSpread: 20 } }).initial.size).toEqual(size);
-  expect(applyEmitterPatch(config, { initial: { size: -30 } }).initial.size).toBe(-30);
-  expect(() => applyEmitterPatch(config, { initial: { size } })).toThrow(ZodError);
+  expect(mergeEmitterParameters(config, { initial: { sizeSpread: 20 } }).initial.size).toEqual(
+    size,
+  );
+  expect(mergeEmitterParameters(config, { initial: { size: -30 } }).initial.size).toBe(-30);
+  expect(() => mergeEmitterParameters(config, { initial: { size } })).toThrow(ZodError);
   expect(() =>
     parseEffectConfig({
       version: 1,

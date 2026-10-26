@@ -4,7 +4,7 @@ import { emitterConfigSchema } from './schemas/definition/emitter';
 import { emitterSchema } from './schemas/runtime/emitter';
 
 /** Validate the complete candidate before replacing runtime settings. */
-export function applyEmitterPatch(current: EmitterConfig, input: unknown): EmitterConfig {
+export function mergeEmitterParameters(current: EmitterConfig, input: unknown): EmitterConfig {
   const patch = emitterSchema.parse(input);
 
   const position = { ...current.position, ...patch.position };

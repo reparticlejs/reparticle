@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { $ZodError as ZodError } from 'zod/v4/core';
 
-import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
+import { mergeEmitterParameters } from '#src/config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
 
 import skeleton from '../../../../docs/effect.example.json';
@@ -14,7 +14,7 @@ it('validates shared rendering data and preserves it through simulation patches'
   const rendering = { blendMode: 'add', tint: { red: 1, green: 0.5, blue: 0, alpha: 1 } };
   const config = parseEffectConfig(definition(rendering)).emitters[0];
   expect(config.rendering).toEqual(rendering);
-  expect(applyEmitterPatch(config, { initial: { size: 10 } }).rendering).toEqual(rendering);
+  expect(mergeEmitterParameters(config, { initial: { size: 10 } }).rendering).toEqual(rendering);
   expect(parseEffectConfig(JSON.parse(JSON.stringify(definition(rendering))))).toEqual(
     parseEffectConfig(definition(rendering)),
   );
@@ -57,5 +57,5 @@ it('rejects blend mode as a simulation field or runtime simulation patch', () =>
   expect(() =>
     parseEffectConfig({ version: 1, emitters: [{ ...config, blendMode: 'add' }] }),
   ).toThrow(ZodError);
-  expect(() => applyEmitterPatch(config, { blendMode: 'add' })).toThrow(ZodError);
+  expect(() => mergeEmitterParameters(config, { blendMode: 'add' })).toThrow(ZodError);
 });

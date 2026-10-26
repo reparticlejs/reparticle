@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { $ZodError as ZodError } from 'zod/v4/core';
 
-import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
+import { mergeEmitterParameters } from '#src/config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
 
 import skeleton from '../../../../docs/effect.example.json';
@@ -59,14 +59,16 @@ it('supports independent constants and curves for each channel', () => {
 
 it('updates initial color channels independently without resetting unspecified values', () => {
   const original = parseEffectConfig(skeleton).emitters[0];
-  const changed = applyEmitterPatch(original, { initial: { red: 0.25, green: -1, blue: 2 } });
-  const next = applyEmitterPatch(changed, { initial: { alpha: 0.5 } });
+  const changed = mergeEmitterParameters(original, { initial: { red: 0.25, green: -1, blue: 2 } });
+  const next = mergeEmitterParameters(changed, { initial: { alpha: 0.5 } });
   expect([next.initial.red, next.initial.green, next.initial.blue]).toEqual([0.25, -1, 2]);
   expect(original.initial.red).toBe(1);
   for (const channel of ['red', 'green', 'blue']) {
     for (const value of [undefined, NaN, Infinity, null, '1']) {
-      expect(() => applyEmitterPatch(next, { initial: { [channel]: value } })).toThrow(ZodError);
+      expect(() => mergeEmitterParameters(next, { initial: { [channel]: value } })).toThrow(
+        ZodError,
+      );
     }
   }
-  expect(() => applyEmitterPatch(next, { overLifetime: { red: 0 } })).toThrow(ZodError);
+  expect(() => mergeEmitterParameters(next, { overLifetime: { red: 0 } })).toThrow(ZodError);
 });

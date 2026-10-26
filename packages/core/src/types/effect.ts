@@ -44,7 +44,7 @@ export type ModifierConfig = z.infer<typeof modifierSchema>;
  * the whole list. Only fields exposed by the runtime schema can be changed.
  *
  * Uses the schema's input type so callers may omit modifier fields with defaults.
- * applyEmitterPatch() validates the patch and the resulting complete definition.
+ * mergeEmitterParameters() validates the patch and the resulting complete definition.
  * @interface
  */
 export type EmitterParameters = z.input<typeof emitterSchema>;

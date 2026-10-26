@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { $ZodError as ZodError } from 'zod/v4/core';
 
-import { applyEmitterPatch } from '#src/config/apply-emitter-patch.js';
+import { mergeEmitterParameters } from '#src/config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#src/config/parse-effect.js';
 import { SampledCurve } from '#src/curves/sampled-curve.js';
 
@@ -31,10 +31,10 @@ it('preserves lifetime curves and accepts nonpositive numeric lifetimes', () => 
     version: 1,
     emitters: [{ ...source, initial: { ...source.initial, lifetime } }],
   }).emitters[0];
-  expect(applyEmitterPatch(config, { initial: { lifetimeSpread: 0.5 } }).initial.lifetime).toEqual(
-    lifetime,
-  );
-  expect(applyEmitterPatch(config, { initial: { lifetime: 0 } }).initial.lifetime).toBe(0);
-  expect(applyEmitterPatch(config, { initial: { lifetime: -1 } }).initial.lifetime).toBe(-1);
-  expect(() => applyEmitterPatch(config, { initial: { lifetime } })).toThrow(ZodError);
+  expect(
+    mergeEmitterParameters(config, { initial: { lifetimeSpread: 0.5 } }).initial.lifetime,
+  ).toEqual(lifetime);
+  expect(mergeEmitterParameters(config, { initial: { lifetime: 0 } }).initial.lifetime).toBe(0);
+  expect(mergeEmitterParameters(config, { initial: { lifetime: -1 } }).initial.lifetime).toBe(-1);
+  expect(() => mergeEmitterParameters(config, { initial: { lifetime } })).toThrow(ZodError);
 });
