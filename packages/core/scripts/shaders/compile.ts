@@ -3,13 +3,13 @@ import { readFileSync } from 'node:fs';
 import { glOptions } from '@typegpu/gl';
 import { tgpu } from 'typegpu';
 
-import { integrate } from '#simulation/kernels/integrate.ts';
 import {
   INPUT_ARGUMENTS,
   INPUT_LENGTHS,
   MODIFIER_HEADER,
   MODIFIER_STRIDE,
 } from '#simulation/data-layout.ts';
+import { integrate } from '#simulation/kernels/integrate.ts';
 
 /** Build-time only: consumers receive these assembled shaders, never TypeGPU. */
 export function compileSimulation() {

@@ -1,9 +1,9 @@
 import { tgpu, d } from 'typegpu';
 
+import { PARTICLE_BAND } from '#simulation/data-layout.ts';
 import { spawnRotation } from '#simulation/emission/rotation.ts';
 import { sampleShape } from '#simulation/emission/shape.ts';
 import { propertyVariation, VARIATION_STREAM } from '#simulation/emission/variation.ts';
-import { PARTICLE_BAND } from '#simulation/data-layout.ts';
 import { advanceRotation } from '#simulation/particles/angular-velocity.ts';
 import { integrateMotion } from '#simulation/particles/integrate-motion.ts';
 import { movementRotation } from '#simulation/particles/movement-rotation.ts';
