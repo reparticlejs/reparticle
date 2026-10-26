@@ -88,9 +88,9 @@ export class EmitterResources {
     this.disposed = true;
     try {
       this.geometry.destroy();
-      this.artwork.destroy();
       // GlProgram.from() is shared; Pixi owns the compiled program cache.
       this.shader.destroy();
+      this.artwork.destroy();
       this.particleSources.destroy();
     } finally {
       restoreSimulationState(this.renderer);

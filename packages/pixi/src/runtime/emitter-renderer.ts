@@ -52,7 +52,7 @@ export class EmitterRenderer {
 
   /** Validate and prepare replacement metadata before releasing the current frames. */
   public setTexture(options: ParticleTexture<Texture>): void {
-    this.resources.artwork.setTexture(options);
+    this.resources.artwork.setTexture(options, this.resources.shader);
   }
 
   /** Advance simulation and retain its half-step for flipbook frame sampling. */

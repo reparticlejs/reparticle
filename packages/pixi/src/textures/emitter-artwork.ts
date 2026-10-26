@@ -34,7 +34,7 @@ export class EmitterArtwork {
   }
 
   /** Prepare replacement metadata before changing any current artwork state. */
-  public setTexture(options: ParticleTexture<Texture>): void {
+  public setTexture(options: ParticleTexture<Texture>, shader?: Shader): void {
     const pivot = resolvePivot(options.pivot);
     const flip = resolveTextureFlip(options);
     const flipbook = resolveFlipbook(options);
@@ -42,6 +42,11 @@ export class EmitterArtwork {
     const frames = flipbook
       ? createAnimationFrameSource(flipbook.frames, this.maxTextureSize)
       : null;
+    // Detach metadata from the bind group before releasing its texture.
+    // Keep the old binding intact if resolving replacement artwork fails.
+    if (shader) {
+      shader.resources.animationFrames = frames ?? Texture.EMPTY.source;
+    }
     this.frameSource?.destroy();
     this.frameSource = frames;
     this.flipbook = flipbook;
