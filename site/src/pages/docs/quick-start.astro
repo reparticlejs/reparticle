@@ -32,8 +32,14 @@ const headings = [
 ---
 <Reference headings={headings} title="Quick start" description="Add reparticle to your PixiJS app. Create an effect and add it to the stage.">
   <h2 id={headings[0].slug}>{headings[0].text}</h2><Code theme="github-dark-dimmed" code={'npm install @reparticle/pixi'} lang="sh" />
-  <p>This guide assumes you already have a PixiJS application using v8.20.1 or later within v8. The core engine is included as a dependency of <code>@reparticle/pixi</code>.</p>
+  <p>This guide assumes you already have a PixiJS application using v8.22.0 or later within v8. The core engine is included as a dependency of <code>@reparticle/pixi</code>.</p>
   <p>Your PixiJS app must use WebGL2.</p>
+  <details>
+    <summary>TypeScript 6 and 7: missing WebGPU types</summary>
+    <p>Some compiler versions ship incomplete DOM declarations. Install the complete declarations:</p>
+    <Code theme="github-dark-dimmed" code={'npm install --save-dev @typescript/lib-dom@npm:@types/web'} lang="sh" />
+    <p>Keep <code>DOM</code> in your <code>lib</code> settings. Remove <code>@webgpu/types</code> from <code>compilerOptions.types</code> if present.</p>
+  </details>
   <h2 id={headings[1].slug}>{headings[1].text}</h2><Code theme="github-dark-dimmed" code={code} lang="ts" />
   <p>The effect starts automatically using your app’s ticker. Without artwork, it draws soft procedural particles.</p>
   <h2 id={headings[2].slug}>{headings[2].text}</h2><Code theme="github-dark-dimmed" code={`import { Assets } from 'pixi.js';

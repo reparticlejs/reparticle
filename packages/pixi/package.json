@@ -53,6 +53,6 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "pixi.js": "^8.20.1"
+    "pixi.js": "^8.22.0"
   }
 }

@@ -17,7 +17,7 @@ catalog:
   'oxfmt': '0.63.0'
   'oxlint': '1.78.0'
   'oxlint-tsgolint': '7.0.2001'
-  'pixi.js': '8.20.1'
+  'pixi.js': '8.22.0'
   'react': '19.3.1'
   'react-dom': '19.3.1'
   tailwindcss: ^4.3.3

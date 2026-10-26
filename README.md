@@ -4,7 +4,7 @@
 
 The core uses WebGL2 for simulation and has no PixiJS dependency. The PixiJS integration renders directly from its GPU textures and provides the `ParticleEffect` display object. It creates no sprite per particle and does not read particle state back to the CPU. Particle concepts and behavior are inspired by [Defold](https://defold.com/).
 
-For an existing app using PixiJS v8.20.1 or later within v8, install `@reparticle/pixi`. The core engine is included.
+For an existing app using PixiJS v8.22.0 or later within v8, install `@reparticle/pixi`. The core engine is included.
 
 ```sh
 npm install @reparticle/pixi
