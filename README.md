@@ -1,170 +1,91 @@
 # reparticle
 
-**A GPU particle engine with JSON-defined effects.** reparticle handles particle behavior and simulation; PixiJS is its first and primary renderer, and the only renderer currently available.
+**GPU particle effects. Defined in JSON.**
 
-The core uses WebGL2 for simulation and has no PixiJS dependency. The PixiJS integration renders directly from its GPU textures and provides the `ParticleEffect` display object. It creates no sprite per particle and does not read particle state back to the CPU. Particle concepts and behavior are inspired by [Defold](https://defold.com/).
+From candle flames and drifting smoke to magical auras and showers of coins, reparticle brings particle effects to your scenes. Define how they appear, move, and fade, then let the engine bring them to life.
 
-For an existing app using PixiJS v8.22.0 or later within v8, install `@reparticle/pixi`. The core engine is included.
+PixiJS is our first and primary renderer, and the renderer available today.
+
+**[Documentation](https://reparticlejs.github.io/reparticle/docs/) · [Live examples](https://reparticlejs.github.io/reparticle/examples/) · [Interactive Lab](https://reparticlejs.github.io/reparticle/lab/) · [API](https://reparticlejs.github.io/reparticle/api/)**
+
+## See it in action
+
+|                                                                     Magical aura                                                                      |                                                            Fire plume                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------: |
+| [![Green rings and sparkling particles forming a magical aura](.github/images/magical-aura.png)](https://reparticlejs.github.io/reparticle/examples/) |       [![A glowing orange fire plume](.github/images/fire-plume.png)](https://reparticlejs.github.io/reparticle/examples/)       |
+|                                                                     Coin fountain                                                                     |                                                           Water stream                                                           |
+|     [![Animated colorful coins spraying from a fountain](.github/images/coin-fountain.png)](https://reparticlejs.github.io/reparticle/examples/)      | [![Blue water droplets flowing in an arc](.github/images/water-stream.png)](https://reparticlejs.github.io/reparticle/examples/) |
+
+[Explore all the effects →](https://reparticlejs.github.io/reparticle/examples/) Pick an effect, play it, and open its JSON to use as a starting point.
+
+## Make it yours
+
+- **Describe effects in JSON.** Combine emitters, shapes, movement, and colors.
+- **Shape the animation.** Use curves to control how particles grow, fade, and change over time.
+- **Bring your own artwork.** Use textures or animated sprite-sheet frames.
+- **Fit particles into your Pixi scene.** Add an effect to a container, move it with a character, or apply masks and filters.
+- **Experiment live.** Adjust settings in the [Lab](https://reparticlejs.github.io/reparticle/lab/) and see what changes.
+
+## Add it to your app
+
+For an existing **PixiJS v8.22.0+ (v8)** application using **WebGL2**:
 
 ```sh
 npm install @reparticle/pixi
 ```
 
-## Try the examples
-
-Requires **Node.js 24+** and **pnpm 10.32.1**.
-
-```sh
-git clone https://github.com/reparticlejs/reparticle.git
-cd reparticle
-pnpm install
-pnpm dev
-```
-
-Open the URL printed by Vite. Choose an effect, pause it, or restart it. The gallery includes fire, smoke, water, sparks, animated coins, explosions, and a 500,000-particle snowstorm. Live particle count and FPS appear over the canvas.
-
-For mobile testing, open Vite's Network URL on a device connected to the same network. Performance depends on the device, particle capacity, texture size, and screen coverage.
-
-## Use with PixiJS
-
-`ParticleEffect` is a Pixi display object. Add it to the stage or another container; no renderer argument is needed.
+Create an effect and add it to your stage:
 
 ```ts
-import { ParticleEffect, type EffectInput } from '@reparticle/pixi';
-import { Application } from 'pixi.js';
+import { ParticleEffect } from '@reparticle/pixi';
 
-const app = new Application();
-await app.init({
-  resizeTo: window,
-  preference: 'webgl',
-  preferWebGLVersion: 2,
-  background: '#111111',
-});
-document.body.appendChild(app.canvas);
-
-const definition = {
-  version: 1,
-  emitters: [
-    {
-      id: 'sparks',
-      capacity: 2048,
-      seed: 1,
-      emission: { rate: 500, shape: { type: 'point' } },
-      initial: {
-        lifetime: 2,
-        speed: 180,
-        direction: -Math.PI / 2,
-        spread: Math.PI / 3,
-        size: 6,
+const effect = new ParticleEffect(
+  {
+    version: 1,
+    emitters: [
+      {
+        id: 'sparks',
+        capacity: 512,
+        seed: 42,
+        emission: { rate: 120, shape: { type: 'point' } },
+        initial: { lifetime: 2, speed: 90, size: 6 },
       },
-      rendering: { blendMode: 'add' },
-    },
-  ],
-} satisfies EffectInput;
+    ],
+  },
+  { ticker: app.ticker },
+);
 
-const effect = new ParticleEffect(definition, { ticker: app.ticker });
 effect.position.set(app.screen.width / 2, app.screen.height / 2);
 app.stage.addChild(effect);
 ```
 
-Omitted artwork uses soft procedural particles. GPU resources initialize on the first render, and automatic updates run on the supplied ticker. Call `effect.destroy()` when removing an effect permanently; shared textures remain owned by the caller.
-
-### Textures and animation
-
-Artwork is separate from effect JSON and is bound by emitter ID:
+This uses the built-in soft particle texture. See the [quick start](https://reparticlejs.github.io/reparticle/docs/quick-start/) for app setup, or learn to [add textures and animation](https://reparticlejs.github.io/reparticle/docs/textures/).
 
 ```ts
-import { Assets } from 'pixi.js';
-
-const spark = await Assets.load('/assets/spark.png');
-const effect = new ParticleEffect(definition, {
-  ticker: app.ticker,
-  emitters: {
-    sparks: { textures: [spark] },
-  },
-});
-```
-
-A single texture is static. Multiple frames enable flipbook animation and must share the same atlas texture source. Use `validateAnimationFrames` to validate a loaded frame array before passing it with `playback` and `fps` settings. Artwork bindings also support sizing, pivot, and horizontal or vertical flips.
-
-### Runtime controls
-
-```ts
-effect.pause(); // Pause simulation.
+effect.pause(); // Pause.
 effect.resume(); // Continue.
-effect.reset(); // Restart the effect.
+effect.reset(); // Start again.
 effect.stop(); // Stop emitting; let existing particles finish.
-effect.retire(); // Finish the current loop, then stop emitting.
-
-effect.getEmitter('sparks').setParameters({
-  emission: { rate: 800 },
-  initial: { speed: 240 },
-});
+effect.destroy(); // Clean up when finished.
 ```
 
-For a custom loop, construct with `autoUpdate: false` and call `effect.update(seconds)` after the first render initializes it. Manual steps must be between 0 and 0.1 seconds. Automatic updates split longer ticker deltas into bounded steps.
+## Learn more
 
-## What is supported
+- [Effect configuration](https://reparticlejs.github.io/reparticle/docs/configuration/) — explore the settings behind each effect.
+- [Core API](https://reparticlejs.github.io/reparticle/api/core/) — the particle engine.
+- [PixiJS API](https://reparticlejs.github.io/reparticle/api/pixi/) — use effects in your PixiJS application.
 
-- Multiple emitters, point/circle/box/2D cone shapes, local or world emission space, and inherited emitter velocity.
-- Once or looping playback, delays, prewarm, spread, lifecycle events, and runtime parameter changes.
-- Curves for emission and initial properties over emitter lifetime; size, color, alpha, rotation, angular velocity, and stretch over particle lifetime.
-- Acceleration, drag, radial, and vortex modifiers, including shared effect modifiers and repeated modifier types.
-- Pixi transforms, tint, blend modes, atlas frames, flipbooks, filters, masks, and render textures.
+## Contributing
 
-Effect configuration is validated by core. Consumers supply data and supported parameter updates; arbitrary custom GPU functions are not part of the public API.
-
-Browse the [effect definitions](examples/shared/public/effects), [artwork bindings](examples/shared/src/catalog/effects), or [configuration skeleton](site/src/content/effect.example.json) for complete examples.
-
-## Packages
-
-| Package              | Responsibility                                                                                                 |
-| -------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `@reparticle/core`   | Configuration validation, emission scheduling, particle allocation, and WebGL2 simulation. No Pixi dependency. |
-| `@reparticle/pixi`   | The `ParticleEffect` display object, artwork bindings, and rendering through PixiJS 8.                         |
-| `@reparticle/player` | Private React player, playback controls, and curve editor used by the site and demo.                           |
-| `examples/shared`    | Shared effect catalog, artwork, and licenses.                                                                  |
-| `examples/demo`      | The React example gallery, sharing one Pixi application across effects.                                        |
-
-The engine tracks births, expiration, and live counts. Particle motion runs on the GPU, and the renderer reads the resulting textures directly.
-
-## Requirements and limits
-
-- **WebGL2 with `EXT_color_buffer_float`** is required. There is no CPU fallback or WebGPU backend.
-- **Capacity is explicit.** When full, an emitter keeps living particles and drops excess births. Simulation and drawing costs depend on capacity, not only the live count; choose it to fit the effect.
-- **Particles draw in fixed slot order.** There is no per-particle depth or lifetime sorting; emitters draw in definition order.
-- **Bounds are not calculated automatically.** Supply bounds, hit areas, or filter areas when your use requires them.
-- **An effect belongs to one renderer.** Moving live simulation between WebGL contexts and context-loss recovery are not supported.
-- There is no editor included.
-
-## Development
-
-Simulation functions are written in TypeScript with TypeGPU. The core build generates
-GLSL in `packages/core/src/simulation/shaders.json`. Applications receive the generated
-shaders, not TypeGPU or its compiler, and need no extra build plugin. WebGL compiles
-the shaders for the device when simulation is first initialized.
-
-See [particle architecture](site/src/content/development/architecture.md) for the current storage,
-update flow, and resource ownership.
-
-`pnpm test` installs Chromium automatically when needed, then runs unit tests and real WebGL2 browser tests. CI installs the additional Linux system dependencies separately.
-
-The browser tests live in `packages/core/tests/browser` and `packages/pixi/tests/browser`. Run only those tests with `pnpm test --filter=@reparticle/core --filter=@reparticle/pixi -- --project=browser`.
+To run the project locally, use Node.js 24+ and pnpm 10.32.1:
 
 ```sh
-pnpm check   # Formatting, lint, typecheck, tests, and production builds.
-pnpm format  # Format the workspace.
-pnpm build   # Build the packages, demo, and documentation site.
+pnpm install
+pnpm dev:site
 ```
 
-The demo imports built packages. `pnpm dev` builds them before starting Vite; restart the command after library changes so shader generation runs too.
-
-Example artwork attribution and full license texts are linked from the [shared examples README](examples/shared/README.md).
-
-## Website
-
-Run `pnpm dev:site` for the Astro homepage and live examples gallery. The site and demo use `@reparticle/player` and the shared effect catalog. See [site development](site/README.md).
+Run `pnpm check` before submitting changes. Tests install Chromium automatically when needed. See the [Development guide](https://reparticlejs.github.io/reparticle/docs/development/) for the full workflow.
 
 ## License
 
-[MIT](LICENSE). Example artwork has its own licenses listed in the [shared examples README](examples/shared/README.md).
+[MIT](LICENSE). Example artwork has its own [licenses and credits](examples/shared/README.md). Particle concepts and behavior are inspired by [Defold](https://defold.com/).
