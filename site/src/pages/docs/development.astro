@@ -30,12 +30,10 @@ const headings = [
   <p>Do not edit generated shaders or API pages by hand. Both are rebuilt by <code>pnpm build</code>.</p>
   <p>See <a href={`${base}docs/development/architecture/`}>Particle architecture</a> for storage, updates, and resource ownership.</p>
   <h2 id={headings[4].slug}>{headings[4].text}</h2>
-  <p>Install the browser used by the tests once:</p>
-  <Code theme="github-dark-dimmed" code={'pnpm --filter @reparticle/core exec playwright install chromium'} lang="sh" />
   <Code theme="github-dark-dimmed" code={'pnpm check'} lang="sh" />
-  <p>Tests include real WebGL2 simulation and Pixi rendering in Chromium. On Linux CI, add <code>--with-deps</code> when installing Chromium.</p>
+  <p>Tests include real WebGL2 simulation and Pixi rendering. <code>pnpm test</code> installs Chromium automatically when needed. CI installs Linux system dependencies separately.</p>
   <p>Checks formatting, lint, types, and tests, then builds the project. To fix formatting, run <code>pnpm format</code>.</p>
-  <p><code>pnpm install</code> enables Git hooks. Commits check formatting and lint on staged files; pushes run type checks and tests. Install Chromium before your first push using the command above.</p>
+  <p><code>pnpm install</code> enables Git hooks. Commits check formatting and lint on staged files; pushes run type checks and tests.</p>
   <p>Type-aware linting first builds core and pixi so their exported types are available. Turbo reuses those builds when the packages have not changed.</p>
   <p>GitHub Actions runs <code>pnpm check</code> on pull requests and pushes to <code>main</code>. Publishing a package from this workspace also runs the full check first. Publishing a prebuilt tarball bypasses package hooks, so run <code>pnpm check</code> before packing a release.</p>
 </Reference>

@@ -6,7 +6,7 @@
     "dev": "pnpm --filter @reparticle/demo^... build && pnpm --filter @reparticle/demo dev",
     "build": "turbo run build",
     "build:packages": "turbo run build --filter=@reparticle/pixi",
-    "test": "turbo run test",
+    "test": "playwright install chromium && turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "pnpm build:packages && oxlint .",
     "format": "oxfmt .",

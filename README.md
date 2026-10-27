@@ -147,15 +147,9 @@ the shaders for the device when simulation is first initialized.
 See [particle architecture](site/src/content/development/architecture.md) for the current storage,
 update flow, and resource ownership.
 
-Install the test browser once after installing dependencies:
+`pnpm test` installs Chromium automatically when needed, then runs unit tests and real WebGL2 browser tests. CI installs the additional Linux system dependencies separately.
 
-```sh
-pnpm --filter @reparticle/core exec playwright install chromium
-```
-
-`pnpm test` includes real WebGL2 browser tests. The tests live alongside each package’s unit tests in `packages/core/tests/browser` and `packages/pixi/tests/browser`. On Linux CI, add `--with-deps` to the browser installation command.
-
-Run just browser tests with `pnpm exec turbo run test --filter=@reparticle/core --filter=@reparticle/pixi -- --project=browser`.
+The browser tests live in `packages/core/tests/browser` and `packages/pixi/tests/browser`. Run only those tests with `pnpm test --filter=@reparticle/core --filter=@reparticle/pixi -- --project=browser`.
 
 ```sh
 pnpm check   # Formatting, lint, typecheck, tests, and production builds.

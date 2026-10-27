@@ -39,10 +39,8 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @reparticle/core exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install-deps chromium
         if: runner.os == 'Linux'
-      - run: pnpm --filter @reparticle/core exec playwright install chromium
-        if: runner.os != 'Linux'
       - run: pnpm check
       - run: pnpm packages:check
       - name: Upload Pages site
