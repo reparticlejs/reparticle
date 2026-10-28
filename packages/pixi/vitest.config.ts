@@ -36,6 +36,9 @@ export default defineConfig({
                 channel: 'chromium',
                 args: [
                   '--enable-unsafe-webgpu',
+                  // Headless Chromium can otherwise choose SwiftShader for WebGL
+                  // while WebGPU uses Metal, giving different trig precision.
+                  ...(process.platform === 'darwin' ? ['--use-angle=metal'] : []),
                   // Hosted Windows/Linux runners use software WebGL2 only.
                   ...(backend === 'webgl2' && process.env.REPARTICLE_SOFTWARE_GPU === '1'
                     ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']
