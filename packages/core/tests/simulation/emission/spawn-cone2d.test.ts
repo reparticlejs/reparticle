@@ -7,22 +7,38 @@ it('fills the triangle uniformly and directs velocity away from the tip', () => 
   let sumX = 0;
   let sumHeight = 0;
   let lowerHalf = 0;
+  let minHeight = Infinity;
+  let maxHeight = -Infinity;
+  let maxEdgeExcess = -Infinity;
+  let maxSpeedError = 0;
+  let maxDirectionError = 0;
+  let minOutwardVelocity = Infinity;
+  // Check every sample, but aggregate errors to avoid thousands of matcher calls.
   for (let id = 0; id < 10000; id++) {
     const [x, y, velocityX, velocityY] = spawnCone2D(id, 17, 10, 20, 220, 200, 100);
     const offsetX = x - 10;
     const height = 20 - y;
-    expect(height).toBeGreaterThanOrEqual(0);
-    expect(height).toBeLessThanOrEqual(100);
-    expect(Math.abs(offsetX)).toBeLessThanOrEqual(height + 1e-10);
-    expect(Math.hypot(velocityX, velocityY)).toBeCloseTo(220);
-    expect(offsetX * velocityY + height * velocityX).toBeCloseTo(0);
-    expect(offsetX * velocityX - height * velocityY).toBeGreaterThanOrEqual(0);
+    minHeight = Math.min(minHeight, height);
+    maxHeight = Math.max(maxHeight, height);
+    maxEdgeExcess = Math.max(maxEdgeExcess, Math.abs(offsetX) - (height + 1e-10));
+    maxSpeedError = Math.max(maxSpeedError, Math.abs(Math.hypot(velocityX, velocityY) - 220));
+    maxDirectionError = Math.max(
+      maxDirectionError,
+      Math.abs(offsetX * velocityY + height * velocityX),
+    );
+    minOutwardVelocity = Math.min(minOutwardVelocity, offsetX * velocityX - height * velocityY);
     sumX += offsetX;
     sumHeight += height;
     if (height < 50) {
       lowerHalf++;
     }
   }
+  expect(minHeight).toBeGreaterThanOrEqual(0);
+  expect(maxHeight).toBeLessThanOrEqual(100);
+  expect(maxEdgeExcess).toBeLessThanOrEqual(0);
+  expect(maxSpeedError).toBeCloseTo(0);
+  expect(maxDirectionError).toBeCloseTo(0);
+  expect(minOutwardVelocity).toBeGreaterThanOrEqual(0);
   expect(Math.abs(sumX / 10000)).toBeLessThan(1);
   expect(Math.abs(sumHeight / 10000 - 200 / 3)).toBeLessThan(1);
   // The half nearest the tip occupies one quarter of the triangle's area.
