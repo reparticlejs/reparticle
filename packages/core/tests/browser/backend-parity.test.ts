@@ -59,16 +59,60 @@ it.each([
           const expected = readGL(left, a.width, a.rows * bands);
           const actual = await readGPU(device, right);
           expect(actual.length).toBe(expected.length);
-          // Check every word with the same tolerance, but avoid constructing an
-          // assertion for each float in large textures on software-rendered CI.
-          // Negating the comparison also rejects NaN, as the old assertion did.
-          const mismatch = expected.findIndex(
-            (value, word) => !(Math.abs(actual[word]! - value) < 0.005 + Math.abs(value) * 0.0001),
-          );
-          expect(
-            mismatch,
-            `${stage}: emitter ${index}, bands ${bands}, word ${mismatch}: WebGL2 ${expected[mismatch]}, WebGPU ${actual[mismatch]}`,
-          ).toBe(-1);
+          // Keep checking after a mismatch so CI reports birth data, motion,
+          // and later steps together. Soft assertions still fail the test.
+          const fields =
+            bands === 2
+              ? [
+                  'position.x',
+                  'position.y',
+                  'velocity.x',
+                  'velocity.y',
+                  'age',
+                  'alive',
+                  'rotation',
+                  'heading',
+                ]
+              : [
+                  'lifetime',
+                  'size',
+                  'initialRotation',
+                  'modifierVariation',
+                  'red',
+                  'green',
+                  'blue',
+                  'alpha',
+                  'angularVelocity',
+                  'stretch.x',
+                  'stretch.y',
+                  'handedness',
+                ];
+          const wordsPerBand = a.width * a.rows * 4;
+          const failures: string[] = [];
+          let mismatchCount = 0;
+          let largestDifference = 0;
+          for (let word = 0; word < expected.length; word++) {
+            const difference = Math.abs(actual[word]! - expected[word]!);
+            // Negating the comparison also rejects NaN.
+            if (!(difference < 0.005 + Math.abs(expected[word]!) * 0.0001)) {
+              mismatchCount++;
+              largestDifference = Math.max(largestDifference, difference);
+              if (failures.length < 8) {
+                const field = fields[Math.floor(word / wordsPerBand) * 4 + (word % 4)];
+                const slot = Math.floor((word % wordsPerBand) / 4);
+                failures.push(
+                  `${field}, slot ${slot}: WebGL2 ${expected[word]}, WebGPU ${actual[word]}`,
+                );
+              }
+            }
+          }
+          expect
+            .soft(
+              mismatchCount,
+              `${stage}: emitter ${index}, ${bands === 2 ? 'motion' : 'birth'}: ` +
+                `${mismatchCount} mismatches, largest difference ${largestDifference}\n${failures.join('\n')}`,
+            )
+            .toBe(0);
         }
       }
     };
