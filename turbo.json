@@ -1,4 +1,5 @@
 {
+  "globalEnv": ["REPARTICLE_SOFTWARE_GPU"],
   "tasks": {
     "build": {
       "env": ["SITE_URL", "SITE_BASE"],

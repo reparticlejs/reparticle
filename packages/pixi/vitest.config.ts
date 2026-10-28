@@ -22,7 +22,20 @@ export default defineConfig({
             enabled: true,
             headless: true,
             provider: playwright({
-              launchOptions: { channel: 'chromium', args: ['--enable-unsafe-webgpu'] },
+              launchOptions: {
+                channel: 'chromium',
+                args: [
+                  '--enable-unsafe-webgpu',
+                  // Hosted Windows/Linux runners may have no usable hardware adapter.
+                  ...(process.env.REPARTICLE_SOFTWARE_GPU === '1'
+                    ? [
+                        '--use-webgpu-adapter=swiftshader',
+                        '--use-angle=swiftshader',
+                        '--enable-unsafe-swiftshader',
+                      ]
+                    : []),
+                ],
+              },
             }),
             instances: [{ browser: 'chromium' }],
           },

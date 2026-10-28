@@ -12,9 +12,15 @@ import coins from '../../../../examples/shared/public/effects/spinning-coins.jso
 import water from '../../../../examples/shared/public/effects/water-stream.json';
 import { readGPU } from '../support/read-gpu-texture';
 
-it.each([magicImpact, water, confetti, cyclone, coins])(
-  'matches WebGL2 birth and motion state, reset, and shared-pipeline lifetime on WebGPU',
-  async (definition) => {
+it.each([
+  { name: 'magic impact', definition: magicImpact },
+  { name: 'water stream', definition: water },
+  { name: 'confetti', definition: confetti },
+  { name: 'cyclone', definition: cyclone },
+  { name: 'spinning coins', definition: coins },
+])(
+  '$name matches WebGL2 birth and motion state, reset, and shared-pipeline lifetime on WebGPU',
+  async ({ definition }) => {
     const adapter = await navigator.gpu.requestAdapter();
     expect(adapter, 'WebGPU adapter required').not.toBeNull();
     const device = await adapter!.requestDevice();
@@ -37,11 +43,15 @@ it.each([magicImpact, water, confetti, cyclone, coins])(
       gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, data);
       return Array.from(data);
     };
-    const compare = async () => {
+    const compare = async (stage: string) => {
       for (let index = 0; index < glEmitters.length; index++) {
         const a = glEmitters[index]!;
         const b = gpuEmitters[index]!;
         expect(b.particleCount).toBe(a.particleCount);
+        expect([b.width, b.rows], `${stage}: emitter ${index} texture layout`).toEqual([
+          a.width,
+          a.rows,
+        ]);
         for (const [left, right, bands] of [
           [a.texture, b.texture, 2],
           [a.birthTexture, b.birthTexture, 3],
@@ -49,13 +59,16 @@ it.each([magicImpact, water, confetti, cyclone, coins])(
           const expected = readGL(left, a.width, a.rows * bands);
           const actual = await readGPU(device, right);
           expect(actual.length).toBe(expected.length);
-          // Float32 devices can differ in transcendental rounding, but not shape or state.
-          for (let word = 0; word < expected.length; word++) {
-            expect(
-              Math.abs(actual[word]! - expected[word]!),
-              `emitter ${index}, word ${word}`,
-            ).toBeLessThan(0.005 + Math.abs(expected[word]!) * 0.0001);
-          }
+          // Check every word with the same tolerance, but avoid constructing an
+          // assertion for each float in large textures on software-rendered CI.
+          // Negating the comparison also rejects NaN, as the old assertion did.
+          const mismatch = expected.findIndex(
+            (value, word) => !(Math.abs(actual[word]! - value) < 0.005 + Math.abs(value) * 0.0001),
+          );
+          expect(
+            mismatch,
+            `${stage}: emitter ${index}, bands ${bands}, word ${mismatch}: WebGL2 ${expected[mismatch]}, WebGPU ${actual[mismatch]}`,
+          ).toBe(-1);
         }
       }
     };
@@ -65,20 +78,20 @@ it.each([magicImpact, water, confetti, cyclone, coins])(
           emitter.update(1 / 60);
         }
         if (step === 0 || step === 10 || step === 34) {
-          await compare();
+          await compare(`step ${step}`);
         }
       }
       for (const emitter of [...glEmitters, ...gpuEmitters]) {
         emitter.reset();
         emitter.update(1 / 60);
       }
-      await compare();
+      await compare('after reset');
       glEmitters.pop()!.destroy();
       gpuEmitters.pop()!.destroy();
       for (const emitter of [...glEmitters, ...gpuEmitters]) {
         emitter.update(1 / 60);
       }
-      await compare();
+      await compare('after destroying another emitter');
     } finally {
       for (const emitter of [...glEmitters, ...gpuEmitters]) {
         emitter.destroy();
@@ -90,4 +103,6 @@ it.each([magicImpact, water, confetti, cyclone, coins])(
       expect(error?.message).toBeUndefined();
     }
   },
+  // Software GPU shader compilation and readbacks take longer on hosted runners.
+  60000,
 );

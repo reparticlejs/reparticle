@@ -27,6 +27,9 @@ jobs:
         os: [ubuntu-24.04, windows-2025, macos-26]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
+    env:
+      # Keep native GPU coverage on macOS; use software rendering on hosted VMs.
+      REPARTICLE_SOFTWARE_GPU: ${{ matrix.os == 'macos-26' && '0' || '1' }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
