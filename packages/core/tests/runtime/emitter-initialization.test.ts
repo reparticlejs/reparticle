@@ -1,11 +1,10 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 
 import { parseEffectConfig } from '#config/parse-effect.js';
+import skeleton from '#effect-example';
+import magicImpact from '#examples/effects/magic-impact.json';
 import { Emitter } from '#runtime/webgl2/emitter.js';
 import type { EmitterContext } from '#types/webgl2/emitter.js';
-
-import magicImpact from '../../../../examples/shared/public/effects/magic-impact.json';
-import skeleton from '../../../../site/src/content/effect.example.json';
 
 const gpu = vi.hoisted(() => ({
   construct: vi.fn<() => void>(),

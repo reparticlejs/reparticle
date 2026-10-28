@@ -2,6 +2,10 @@
   "name": "@reparticle/player",
   "private": true,
   "type": "module",
+  "imports": {
+    "#runtime/*": "./src/runtime/*.ts",
+    "#types/*": "./src/types/*.ts"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./curve-editor": "./src/curve-editor.ts",

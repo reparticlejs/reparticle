@@ -7,7 +7,11 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "#examples/*": ["./examples/shared/public/*"],
+      "#effect-example": ["./site/src/content/effect.example.json"]
+    }
   },
   "include": [
     "packages/*/src",

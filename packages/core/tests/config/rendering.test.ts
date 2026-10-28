@@ -3,8 +3,7 @@ import { $ZodError as ZodError } from 'zod/v4/core';
 
 import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
-
-import skeleton from '../../../../site/src/content/effect.example.json';
+import skeleton from '#effect-example';
 
 function definition(rendering?: unknown) {
   return { version: 1, emitters: [{ ...skeleton.emitters[0]!, rendering }] };

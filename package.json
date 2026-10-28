@@ -7,6 +7,7 @@
     "build": "turbo run build",
     "build:packages": "turbo run build --filter=@reparticle/pixi",
     "test": "playwright install chromium && turbo run test",
+    "test:webgpu": "playwright install chromium && turbo run test:webgpu",
     "typecheck": "turbo run typecheck",
     "lint": "pnpm build:packages && oxlint .",
     "format": "oxfmt .",
@@ -18,9 +19,7 @@
     "prepush": "pnpm typecheck && pnpm test",
     "changeset": "changeset",
     "release:version": "changeset version && pnpm install --lockfile-only --ignore-scripts && oxfmt packages/*/CHANGELOG.md",
-    "packages:check": "tsc -p scripts/tsconfig.json && node scripts/check-packed-consumer.ts",
-    "test:webgpu": "playwright install chromium && turbo run test:webgpu",
-    "test:all": "pnpm test && pnpm test:webgpu"
+    "packages:check": "tsc -p scripts/tsconfig.json && node scripts/check-packed-consumer.ts"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",
@@ -28,6 +27,7 @@
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript/lib-dom": "npm:@types/web@0.0.359",
     "@typescript/native": "catalog:",
+    "@vitest/browser-playwright": "4.1.10",
     "eslint-plugin-import-x": "catalog:",
     "husky": "9.1.7",
     "lint-staged": "17.6.0",

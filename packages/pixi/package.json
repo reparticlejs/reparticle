@@ -24,7 +24,8 @@
     "#runtime/*": "./src/runtime/*",
     "#shaders/*": "./src/shaders/*",
     "#textures/*": "./src/textures/*",
-    "#types/*": "./src/types/*"
+    "#types/*": "./src/types/*",
+    "#test-support/*": "./tests/support/*.ts"
   },
   "exports": {
     ".": {
@@ -55,11 +56,11 @@
     "@reparticle/core": "workspace:*"
   },
   "devDependencies": {
-    "@vitest/browser-playwright": "4.1.10",
     "pixi.js": "catalog:",
     "playwright": "1.58.2",
     "tsdown": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {

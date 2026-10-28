@@ -23,7 +23,8 @@
     "#curves/*": "./src/curves/*",
     "#runtime/*": "./src/runtime/*",
     "#simulation/*": "./src/simulation/*",
-    "#types/*": "./src/types/*"
+    "#types/*": "./src/types/*",
+    "#test-support/*": "./tests/support/*.ts"
   },
   "exports": {
     ".": {
@@ -57,12 +58,12 @@
   "devDependencies": {
     "@typegpu/gl": "0.12.8",
     "@types/node": "26.6.5",
-    "@vitest/browser-playwright": "4.1.10",
     "playwright": "1.58.2",
     "tsdown": "catalog:",
     "typegpu": "0.12.9",
     "typescript": "catalog:",
     "unplugin-typegpu": "0.12.7",
+    "vite": "catalog:",
     "vitest": "catalog:"
   }
 }

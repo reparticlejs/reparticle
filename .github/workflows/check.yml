@@ -24,37 +24,58 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2025, macos-26]
+        # Capabilities are declared here; steps below do not infer them from OS names.
+        include:
+          - os: ubuntu-24.04
+            renderer: software
+            webgpu: false
+            verify-lockfile: true
+            upload-site: true
+          - os: windows-2025
+            renderer: software
+            webgpu: false
+            verify-lockfile: false
+            upload-site: false
+          - os: macos-26
+            renderer: metal
+            webgpu: true
+            verify-lockfile: false
+            upload-site: false
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     env:
-      # Keep native GPU coverage on macOS; use software rendering on hosted VMs.
-      REPARTICLE_SOFTWARE_GPU: ${{ matrix.os == 'macos-26' && '0' || '1' }}
+      # Hosted Linux/Windows lack a reliable GPU adapter. Software WebGL2 keeps
+      # their browser coverage; macOS uses native Metal for backend comparisons.
+      REPARTICLE_TEST_RENDERER: ${{ matrix.renderer }}
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@v6.1.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-        with:
-          run_install: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version-file: .node-version
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install-deps chromium
-        if: runner.os == 'Linux'
-      - run: pnpm check
+      # Verify once per matrix: lockfile coverage and upstream commit identity.
+      - name: Verify Actions lockfile
+        if: matrix.verify-lockfile
         env:
-          # Include Chromium startup errors when a hosted VM cannot create an adapter.
-          DEBUG: pw:browser
-      - name: WebGPU tests (required on macOS)
-        if: runner.os == 'macOS'
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh extension install github/gh-actions-lock --pin v0.4.0
+          gh actions-lock --verify
+      - name: Set up workspace
+        uses: $/.github/actions/setup
+        with:
+          browser: 'true'
+      - name: Check formatting, lint, types, common tests, and builds
+        run: pnpm check
+      # WebGPU is required here, not silently skipped when an adapter is missing.
+      # This is a hosted-runner limitation, not a limit on supported user platforms.
+      - name: WebGPU tests
+        if: matrix.webgpu
         run: pnpm test:webgpu
-      - run: pnpm packages:check
+      - name: Verify packed packages in a separate application
+        run: pnpm packages:check
+      # Upload once; deployment below still waits for all three OS checks.
       - name: Upload Pages site
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && runner.os == 'Linux' && vars.PAGES_ENABLED == 'true'
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.upload-site && vars.PAGES_ENABLED == 'true'
+        uses: actions/upload-pages-artifact@v3.0.1
         with:
           path: site/dist
 
@@ -76,4 +97,4 @@ jobs:
     steps:
       - name: Deploy Pages site
         id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        uses: actions/deploy-pages@v4.0.5

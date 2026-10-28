@@ -1,8 +1,7 @@
 import { expect, it } from 'vitest';
 
+import { integrate } from '#test-support/simulation';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
-
-import { integrate } from '../../support/simulation';
 
 // Authored TypeGPU vectors round components to float32, as GPU textures do.
 it('maps motion and properties texels without changing the behavior math', () => {

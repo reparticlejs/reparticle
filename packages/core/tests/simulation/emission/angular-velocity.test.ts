@@ -1,9 +1,8 @@
 import { expect, it } from 'vitest';
 
 import { propertyVariation } from '#simulation/emission/variation.js';
+import { integrate } from '#test-support/simulation';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
-
-import { integrate } from '../../support/simulation';
 
 it('captures spread once, accumulates spin, and resets on slot reuse', () => {
   const state: ParticleTexture = [

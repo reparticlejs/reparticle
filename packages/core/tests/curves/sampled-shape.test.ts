@@ -4,8 +4,7 @@ import { $ZodError as ZodError } from 'zod/v4/core';
 import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
 import { SampledShape } from '#curves/sampled-shape.js';
-
-import skeleton from '../../../../site/src/content/effect.example.json';
+import skeleton from '#effect-example';
 
 const curve = {
   points: [

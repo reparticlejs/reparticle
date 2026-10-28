@@ -3,7 +3,8 @@
   "compilerOptions": {
     "types": ["node"],
     "lib": ["ES2022", "DOM"],
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
   },
   "include": ["*.ts"]
 }

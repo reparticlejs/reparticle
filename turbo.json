@@ -1,5 +1,5 @@
 {
-  "globalEnv": ["REPARTICLE_SOFTWARE_GPU"],
+  "globalEnv": ["REPARTICLE_TEST_RENDERER"],
   "globalPassThroughEnv": ["DEBUG"],
   "tasks": {
     "build": {

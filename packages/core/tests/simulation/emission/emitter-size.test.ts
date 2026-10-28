@@ -5,9 +5,8 @@ import { spawnCircle } from '#simulation/emission/circle.js';
 import { spawnCone2D } from '#simulation/emission/cone2d.js';
 import { spawnRotation } from '#simulation/emission/rotation.js';
 import { propertyVariation } from '#simulation/emission/variation.js';
+import { integrate } from '#test-support/simulation';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
-
-import { integrate } from '../../support/simulation';
 
 it.each([1, 2, 3])(
   'uses independent signed dimensions for shape %s position and initial orientation',

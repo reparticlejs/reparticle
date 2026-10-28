@@ -1,8 +1,7 @@
 import { expect, it } from 'vitest';
 
+import { integrate } from '#test-support/simulation';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
-
-import { integrate } from '../../support/simulation';
 
 it.each([0, 0.5, 2, -2])(
   'scales birth offsets, speed and size by %s without scaling inherited velocity',

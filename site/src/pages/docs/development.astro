@@ -31,7 +31,7 @@ const headings = [
   <p>See <a href={`${base}docs/development/architecture/`}>Particle architecture</a> for storage, updates, and resource ownership.</p>
   <h2 id={headings[4].slug}>{headings[4].text}</h2>
   <Code theme="github-dark-dimmed" code={'pnpm check'} lang="sh" />
-  <p>Run <code>pnpm test:webgpu</code> for WebGPU rendering and backend comparisons, or <code>pnpm test:all</code> for both suites. WebGPU tests need a working browser GPU adapter on your machine. CI requires them on macOS.</p>
+  <p>Run <code>pnpm test</code> for unit and WebGL2 tests. Run <code>pnpm test:webgpu</code> for additional WebGPU tests, which need a working browser GPU adapter. CI runs the normal tests on all three operating systems and adds WebGPU tests on macOS.</p>
   <p>Tests include unit tests, real WebGL2 simulation and Pixi rendering. <code>pnpm test</code> installs Chromium automatically when needed. CI installs Linux system dependencies separately.</p>
   <p>Checks formatting, lint, types, and tests, then builds the project. To fix formatting, run <code>pnpm format</code>.</p>
   <p><code>pnpm install</code> enables Git hooks. Commits check formatting and lint on staged files; pushes run type checks and tests.</p>

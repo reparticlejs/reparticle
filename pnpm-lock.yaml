@@ -101,6 +101,9 @@ importers:
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
+      '@vitest/browser-playwright':
+        specifier: 4.1.10
+        version: 4.1.10(playwright@1.58.2)(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.10)
       eslint-plugin-import-x:
         specifier: 'catalog:'
         version: 4.17.1(@typescript-eslint/utils@8.72.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(jiti@2.7.0)))(eslint@10.13.0(jiti@2.7.0))
@@ -206,9 +209,6 @@ importers:
       '@types/node':
         specifier: 26.6.5
         version: 26.6.5
-      '@vitest/browser-playwright':
-        specifier: 4.1.10
-        version: 4.1.10(playwright@1.58.2)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.10)
       playwright:
         specifier: 1.58.2
         version: 1.58.2
@@ -223,10 +223,13 @@ importers:
         version: '@typescript/typescript6@6.0.2'
       unplugin-typegpu:
         specifier: 0.12.7
-        version: 0.12.7(acorn@8.19.0)(esbuild@0.28.2)(rolldown@1.2.14)(typegpu@0.12.9)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
+        version: 0.12.7(acorn@8.19.0)(esbuild@0.28.2)(rolldown@1.2.14)(typegpu@0.12.9)(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
+      vite:
+        specifier: 'catalog:'
+        version: 8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)
       vitest:
         specifier: 'catalog:'
-        version: 4.1.10(@types/node@26.6.5)(@vitest/browser-playwright@4.1.10)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
+        version: 4.1.10(@types/node@26.6.5)(@vitest/browser-playwright@4.1.10)(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
 
   packages/pixi:
     dependencies:
@@ -234,9 +237,6 @@ importers:
         specifier: workspace:*
         version: link:../core
     devDependencies:
-      '@vitest/browser-playwright':
-        specifier: 4.1.10
-        version: 4.1.10(playwright@1.58.2)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.10)
       pixi.js:
         specifier: 'catalog:'
         version: 8.22.0
@@ -249,9 +249,12 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
+      vite:
+        specifier: 'catalog:'
+        version: 8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)
       vitest:
         specifier: 'catalog:'
-        version: 4.1.10(@types/node@26.6.5)(@vitest/browser-playwright@4.1.10)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
+        version: 4.1.10(@types/node@26.6.5)(@vitest/browser-playwright@4.1.10)(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
 
   packages/player:
     dependencies:
@@ -5811,7 +5814,6 @@ snapshots:
       - msw
       - utf-8-validate
       - vite
-    optional: true
 
   '@vitest/browser-playwright@4.1.10(playwright@1.58.2)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.10)':
     dependencies:
@@ -5825,6 +5827,7 @@ snapshots:
       - msw
       - utf-8-validate
       - vite
+    optional: true
 
   '@vitest/browser@4.1.10(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.10)':
     dependencies:
@@ -5842,7 +5845,6 @@ snapshots:
       - msw
       - utf-8-validate
       - vite
-    optional: true
 
   '@vitest/browser@4.1.10(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))(vitest@4.1.10)':
     dependencies:
@@ -5860,6 +5862,7 @@ snapshots:
       - msw
       - utf-8-validate
       - vite
+    optional: true
 
   '@vitest/expect@4.1.10':
     dependencies:
@@ -7616,7 +7619,7 @@ snapshots:
       unist-util-is: 6.0.1
       unist-util-visit-parents: 6.0.2
 
-  unplugin-typegpu@0.12.7(acorn@8.19.0)(esbuild@0.28.2)(rolldown@1.2.14)(typegpu@0.12.9)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)):
+  unplugin-typegpu@0.12.7(acorn@8.19.0)(esbuild@0.28.2)(rolldown@1.2.14)(typegpu@0.12.9)(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)):
     dependencies:
       '@babel/parser': 7.29.9
       '@babel/traverse': 7.29.10
@@ -7630,7 +7633,7 @@ snapshots:
       tinyest: 0.3.4
       tinyest-for-wgsl: 0.4.3(@babel/types@7.29.8)(acorn@8.19.0)
       typegpu: 0.12.9
-      unplugin: 3.5.0(esbuild@0.28.2)(rolldown@1.2.14)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
+      unplugin: 3.5.0(esbuild@0.28.2)(rolldown@1.2.14)(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1))
     transitivePeerDependencies:
       - '@farmfe/core'
       - '@rsbuild/core'
@@ -7645,7 +7648,7 @@ snapshots:
       - vite
       - webpack
 
-  unplugin@3.5.0(esbuild@0.28.2)(rolldown@1.2.14)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)):
+  unplugin@3.5.0(esbuild@0.28.2)(rolldown@1.2.14)(vite@8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       picomatch: 4.0.7
@@ -7653,7 +7656,7 @@ snapshots:
     optionalDependencies:
       esbuild: 0.28.2
       rolldown: 1.2.14
-      vite: 8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)
+      vite: 8.2.1(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.51.2)(yaml@2.9.1)
 
   unrs-resolver@1.12.2:
     dependencies:

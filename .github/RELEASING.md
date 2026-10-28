@@ -9,14 +9,65 @@ temporary app, audits production dependencies, checks TypeScript without
 
 Common tests include unit and WebGL2 tests on every OS. macOS also runs the required
 `pnpm test:webgpu` suite, including backend parity. WebGPU tests require a working
-browser adapter and fail explicitly when one is unavailable. Run `pnpm test:all`
-locally to run both suites on any supported OS.
+browser adapter and fail explicitly when one is unavailable. Locally, use
+`pnpm test` for normal checks and `pnpm test:webgpu` for additional WebGPU coverage.
+
+### Local commands and file layout
+
+| Command               | Checks                                                    |
+| --------------------- | --------------------------------------------------------- |
+| `pnpm test`           | Unit and WebGL2 tests across the workspace                |
+| `pnpm test:webgpu`    | WebGPU rendering and backend parity (requires an adapter) |
+| `pnpm check`          | Formatting, lint, types, common tests, and builds         |
+| `pnpm packages:check` | Install and verify the packed packages in a separate app  |
+
+Browser tests live in each package's `tests/browser/webgl2` or
+`tests/browser/webgpu` folder. Put comparisons that need both backends in
+`webgpu`. There is no test-file list to maintain.
+
+`scripts/testing/browser-project.ts` defines the browser projects;
+`scripts/testing/chromium.ts` owns renderer selection. macOS uses Metal for both
+backends to avoid comparing hardware WebGPU with SwiftShader's different math
+precision. Hosted Linux and Windows use software WebGL2; local runs use their
+normal renderer unless `REPARTICLE_TEST_RENDERER` selects `metal` or `software`.
+The Checks matrix declares the renderer, WebGPU coverage, and separate
+`verify-lockfile` and `upload-site` flags for tasks that run only once. Steps use those capabilities
+rather than checking OS names.
+
+`scripts/check-packed-consumer.ts` packs, installs, and checks the application in
+`scripts/consumer/main.ts`. That fixture is type-checked against the installed
+tarballs, outside the workspace.
+
+Both workflows use `.github/actions/setup` for Node.js, pnpm, and dependency
+installation. Jobs that launch a browser pass `browser: 'true'`; the setup action
+lets Playwright install Chromium and the required platform libraries.
 
 Make all three **Release checks (OS)** jobs required status checks in the repository's `main` branch
 rules if merges must wait for CI. The workflow file alone does not enforce this.
 
 Git enforces LF line endings for text on all three systems. Only Ubuntu uploads
 the Pages artifact; deployment and releases wait for the entire matrix to pass.
+
+## Action dependencies
+
+Workflow `uses` entries keep readable version tags. GitHub executes the commits
+recorded in `.github/workflows/actions.lock`, including nested action dependencies.
+The lockfile is generated; do not edit it by hand.
+
+After adding or changing an action, run:
+
+```sh
+gh extension install github/gh-actions-lock --pin v0.4.0
+gh actions-lock --migrate-local-actions
+gh actions-lock --verify
+```
+
+The extension requires `gh auth login`. Review and commit the workflow changes
+and lockfile together. CI verifies the lockfile on Ubuntu; Dependabot checks
+weekly for action updates and updates their locks in the same PR.
+
+Same-repository actions use `$/` so GitHub resolves them at the workflow's commit.
+Workflow lockfiles are currently a GitHub public-preview feature.
 
 ## Package releases
 

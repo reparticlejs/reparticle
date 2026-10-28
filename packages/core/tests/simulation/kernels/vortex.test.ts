@@ -1,8 +1,7 @@
 import { expect, it } from 'vitest';
 
+import { integrate } from '#test-support/simulation';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
-
-import { integrate } from '../../support/simulation';
 
 it('combines vortex and radial after drag with stable spread and one position step', () => {
   const state: ParticleTexture = [

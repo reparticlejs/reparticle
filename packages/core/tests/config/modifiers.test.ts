@@ -4,8 +4,7 @@ import { $ZodError as ZodError } from 'zod/v4/core';
 import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
 import { modifierSchema } from '#config/schemas/definition/modifiers.js';
-
-import skeleton from '../../../../site/src/content/effect.example.json';
+import skeleton from '#effect-example';
 
 it('keeps repeated types and authored order in both scopes', () => {
   const modifiers = [

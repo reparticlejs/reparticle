@@ -1,4 +1,4 @@
 import { ParticleEffect } from '@reparticle/pixi/webgl2';
 
-import { renderingSuite } from '../support/rendering-suite';
+import { renderingSuite } from '#test-support/rendering-suite';
 renderingSuite(ParticleEffect, ['webgl']);

@@ -12,12 +12,15 @@ permissions:
 env:
   HUSKY: 0
 
+# Serialize releases without interrupting a publication already in progress.
 concurrency:
   group: release-main
   cancel-in-progress: false
 
 jobs:
   select:
+    # workflow_run also fires for failed checks. Only successful main pushes
+    # from this repository may enter the release flow, never PR or fork runs.
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
@@ -28,19 +31,17 @@ jobs:
       mode: ${{ steps.mode.outputs.mode }}
       plan: ${{ steps.mode.outputs.publish-plan-artifact-id }}
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@v6.1.0
         with:
+          # Use the checked commit, even if main moved while the job was queued.
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
           persist-credentials: false
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      - name: Set up workspace
+        uses: $/.github/actions/setup
         with:
-          run_install: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: '24.13.0'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile --ignore-scripts
+          ignore-scripts: 'true'
+      # Do not release an older successful run after a newer commit reaches main.
       - name: Require the current main commit
         env:
           GH_TOKEN: ${{ github.token }}
@@ -50,7 +51,7 @@ jobs:
           test "$current" = "$CANDIDATE"
       - name: Select versioning or publication
         id: mode
-        uses: changesets/action/select-mode@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        uses: changesets/action/select-mode@v2.1.2
 
   version:
     needs: select
@@ -62,22 +63,18 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@v6.1.0
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
           persist-credentials: false
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      - name: Set up workspace
+        uses: $/.github/actions/setup
         with:
-          run_install: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: '24.13.0'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile --ignore-scripts
+          ignore-scripts: 'true'
       - name: Create or update the release pull request
         id: version
-        uses: changesets/action/version@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        uses: changesets/action/version@v2.1.2
         with:
           pr-base-branch: main
           pr-title: Prepare the next reparticle release
@@ -92,6 +89,8 @@ jobs:
           head=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .head.ref)
           gh api --method POST "repos/$GITHUB_REPOSITORY/actions/workflows/check.yml/dispatches" -f ref="$head"
 
+  # Build and verify without npm publishing permissions. Pass the packed artifact
+  # to a separate publishing job rather than rebuilding with elevated permissions.
   pack:
     needs: select
     if: needs.select.outputs.mode == 'publish'
@@ -100,28 +99,26 @@ jobs:
     outputs:
       artifact: ${{ steps.pack.outputs.pack-dir-artifact-id }}
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@v6.1.0
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
           persist-credentials: false
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      - name: Set up workspace
+        uses: $/.github/actions/setup
         with:
-          run_install: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: '24.13.0'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @reparticle/core exec playwright install --with-deps chromium
+          browser: 'true'
       - run: pnpm build
-      - run: pnpm packages:check
+      - name: Verify packed packages in a separate application
+        run: pnpm packages:check
       - name: Pack the release candidate
         id: pack
-        uses: changesets/action/pack@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        uses: changesets/action/pack@v2.1.2
         with:
           publish-plan-artifact-id: ${{ needs.select.outputs.plan }}
 
+  # The repository variable is an explicit publication switch. OIDC below
+  # authenticates to npm through trusted publishing, without a stored npm token.
   publish:
     needs: [select, pack]
     if: needs.select.outputs.mode == 'publish' && vars.NPM_TRUSTED_PUBLISHING == 'true'
@@ -131,19 +128,16 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@v6.1.0
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
           persist-credentials: false
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      - name: Set up workspace
+        uses: $/.github/actions/setup
         with:
-          run_install: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: '24.13.0'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile --ignore-scripts
+          ignore-scripts: 'true'
+      # Recheck after packing: main may have advanced since the select job.
       - name: Require the current main commit
         env:
           GH_TOKEN: ${{ github.token }}
@@ -152,7 +146,7 @@ jobs:
           current=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
           test "$current" = "$CANDIDATE"
       - name: Publish through npm trusted authentication
-        uses: changesets/action/publish@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        uses: changesets/action/publish@v2.1.2
         with:
           pack-dir-artifact-id: ${{ needs.pack.outputs.artifact }}
           create-github-releases: true

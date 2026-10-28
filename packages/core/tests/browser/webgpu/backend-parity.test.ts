@@ -1,16 +1,15 @@
 import { expect, it } from 'vitest';
 
 import { parseEffectConfig } from '#config/parse-effect.js';
+import confetti from '#examples/effects/confetti.json';
+import cyclone from '#examples/effects/cyclone.json';
+import magicImpact from '#examples/effects/magic-impact.json';
+import coins from '#examples/effects/spinning-coins.json';
+import water from '#examples/effects/water-stream.json';
 import { EmitterController } from '#runtime/emitter-controller.js';
 import { Emitter } from '#runtime/webgl2/emitter.js';
 import { createSimulationContext } from '#runtime/webgpu/context.js';
-
-import confetti from '../../../../examples/shared/public/effects/confetti.json';
-import cyclone from '../../../../examples/shared/public/effects/cyclone.json';
-import magicImpact from '../../../../examples/shared/public/effects/magic-impact.json';
-import coins from '../../../../examples/shared/public/effects/spinning-coins.json';
-import water from '../../../../examples/shared/public/effects/water-stream.json';
-import { readGPU } from '../support/read-gpu-texture';
+import { readGPU } from '#test-support/read-gpu-texture';
 
 it.each([
   { name: 'magic impact', definition: magicImpact },

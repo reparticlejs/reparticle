@@ -3,8 +3,7 @@ import { expect, it } from 'vitest';
 import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
 import { sampleInitialProperties } from '#curves/sample-initial-properties.js';
-
-import skeleton from '../../../../site/src/content/effect.example.json';
+import skeleton from '#effect-example';
 
 it('reuses unaffected curves and replaces only patched properties', () => {
   const config = parseEffectConfig(skeleton).emitters[0];

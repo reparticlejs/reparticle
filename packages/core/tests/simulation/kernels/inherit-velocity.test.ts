@@ -1,8 +1,7 @@
 import { expect, it } from 'vitest';
 
+import { integrate } from '#test-support/simulation';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
-
-import { integrate } from '../../support/simulation';
 
 it('adds inherited motion only at birth without changing initial-direction orientation', () => {
   const state: ParticleTexture = [

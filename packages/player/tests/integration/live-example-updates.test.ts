@@ -2,14 +2,15 @@ import { ParticleEffect } from '@reparticle/pixi';
 import { Application, Texture, type WebGLRenderer } from 'pixi.js';
 import { afterEach, expect, it, vi } from 'vitest';
 
-import { loadArtwork } from '../../src/runtime/artwork';
-import { loadExample } from '../../src/runtime/example';
-import { createExamplePlayer } from '../../src/runtime/example-player';
-import type { Example } from '../../src/types/example';
+import { loadArtwork } from '#runtime/artwork';
+import { loadExample } from '#runtime/example';
+import { createExamplePlayer } from '#runtime/example-player';
+import type { Example } from '#types/example';
+
 import effectDefinition from '../fixtures/effect';
 
-vi.mock('../../src/runtime/example');
-vi.mock('../../src/runtime/artwork');
+vi.mock('#runtime/example');
+vi.mock('#runtime/artwork');
 
 afterEach(() => vi.resetAllMocks());
 

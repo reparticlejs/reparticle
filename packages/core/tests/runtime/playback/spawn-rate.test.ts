@@ -3,12 +3,11 @@ import { $ZodError as ZodError } from 'zod/v4/core';
 
 import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
+import skeleton from '#effect-example';
 import { EmitterPlayback } from '#runtime/playback/emitter.js';
 import { SpawnRate } from '#runtime/playback/spawn-rate.js';
 import { SpawnSchedule } from '#runtime/playback/spawn-schedule.js';
 import { propertyVariation } from '#simulation/emission/variation.js';
-
-import skeleton from '../../../../../site/src/content/effect.example.json';
 
 const ramp = {
   points: [

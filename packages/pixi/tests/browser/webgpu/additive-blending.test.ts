@@ -11,8 +11,9 @@ import {
 } from 'pixi.js';
 import { expect, it } from 'vitest';
 
-import atlas from '../../../../examples/shared/public/assets/wispy-smoke.json';
-import definition from '../../../../examples/shared/public/effects/wispy-smoke.json';
+import atlas from '#examples/assets/wispy-smoke.json';
+import smokeImage from '#examples/assets/wispy-smoke.png?url';
+import definition from '#examples/effects/wispy-smoke.json';
 
 it('matches WebGL2 smoke alpha on transparent targets without changing Pixi additive sprites', async () => {
   const originalBlend = structuredClone(GpuBlendModesToPixi.add);
@@ -31,9 +32,7 @@ it('matches WebGL2 smoke alpha on transparent targets without changing Pixi addi
     // so switching backends cannot reuse a shader with too many bindings.
     app.renderer.limits.maxBatchableTextures = 8;
     const target = RenderTexture.create({ width: 512, height: 512 });
-    const source = await Assets.load<Texture>(
-      new URL('../../../../examples/shared/public/assets/wispy-smoke.png', import.meta.url).href,
-    );
+    const source = await Assets.load<Texture>(smokeImage);
     const sheet = new Spritesheet(source, atlas);
     await sheet.parse();
     const frames = sheet.animations.play;

@@ -3,8 +3,7 @@ import { $ZodError as ZodError } from 'zod/v4/core';
 
 import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
-
-import skeleton from '../../../../site/src/content/effect.example.json';
+import skeleton from '#effect-example';
 
 it('defaults emitter scale to one and updates it independently of particle size', () => {
   const config = parseEffectConfig({

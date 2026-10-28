@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -11,6 +11,7 @@ import { build, preview } from 'vite';
 import workspace from '../package.json' with { type: 'json' };
 import core from '../packages/core/package.json' with { type: 'json' };
 import pixi from '../packages/pixi/package.json' with { type: 'json' };
+import { chromiumOptions } from './testing/chromium.ts';
 
 /** Install unchanged tarballs outside the workspace and verify their public API and rendering. */
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -81,43 +82,7 @@ try {
     join(consumer, 'index.html'),
     '<!doctype html><html><head><link rel="icon" href="data:,"></head><body><script type="module" src="/main.ts"></script></body></html>',
   );
-  writeFileSync(
-    join(consumer, 'main.ts'),
-    `
-import { parseEffectConfig, effectConfigSchema, EmitterController } from '@reparticle/core';
-import { Emitter as WebGL2Emitter } from '@reparticle/core/webgl2';
-import { ParticleEffect, type EffectInput, type ParticleEffectOptions } from '@reparticle/pixi';
-import { ParticleEffect as WebGL2Effect } from '@reparticle/pixi/webgl2';
-import { ParticleEffect as WebGPUEffect } from '@reparticle/pixi/webgpu';
-import { Emitter as WebGPUEmitter } from '@reparticle/core/webgpu';
-import { Application, Texture, Rectangle, type WebGLRenderer } from 'pixi.js';
-
-const definition: EffectInput = { version: 1, emitters: [{
-  id: 'smoke', capacity: 64, seed: 42,
-  emission: { rate: 60, shape: { type: 'point' } },
-  initial: { lifetime: 2, speed: 0, direction: 0, spread: 0, size: 32 },
-}] };
-const sameAPI: typeof ParticleEffect[] = [WebGL2Effect, WebGPUEffect];
-if (sameAPI.length !== 2 || typeof WebGPUEmitter !== 'function' || typeof WebGL2Emitter !== 'function' || typeof EmitterController !== 'function') throw new Error('Missing explicit backend exports');
-const options: ParticleEffectOptions = { autoUpdate: false, emitters: { smoke: { textures: [Texture.WHITE] } } };
-parseEffectConfig(definition);
-if (effectConfigSchema.safeParse({}).success) throw new Error('Invalid effect accepted');
-const app = new Application<WebGLRenderer>();
-await app.init({ width: 128, height: 128, preference: 'webgl', preferWebGLVersion: 2, autoStart: false });
-document.body.append(app.canvas);
-const effect = new ParticleEffect(definition, options);
-effect.position.set(64, 64);
-app.stage.addChild(effect);
-app.render();
-effect.update(0.1);
-app.render();
-const pixels = app.renderer.extract.pixels({ target: app.stage, frame: new Rectangle(0, 0, 128, 128) }).pixels;
-if (pixels[(64 * 128 + 64) * 4]! < 200 || effect.emitter.particleCount === 0) throw new Error('Particles did not render');
-effect.destroy();
-app.destroy(true, { children: true });
-document.body.dataset.passed = 'true';
-`,
-  );
+  copyFileSync(new URL('./consumer/main.ts', import.meta.url), join(consumer, 'main.ts'));
   pnpm(consumer, 'install', '--no-frozen-lockfile', '--ignore-scripts');
   pnpm(consumer, 'audit', '--prod', '--audit-level', 'high');
   pnpm(consumer, 'exec', 'tsc', '-p', 'tsconfig.json');
@@ -128,7 +93,7 @@ document.body.dataset.passed = 'true';
     preview: { host: '127.0.0.1', port: 0 },
   });
   try {
-    const browser = await chromium.launch({ channel: 'chromium', headless: true });
+    const browser = await chromium.launch(chromiumOptions('webgl2'));
     try {
       const page = await browser.newPage();
       const errors: string[] = [];

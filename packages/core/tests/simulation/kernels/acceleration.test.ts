@@ -1,8 +1,7 @@
 import { expect, it } from 'vitest';
 
+import { integrate } from '#test-support/simulation';
 import type { KernelContext, ParticleTexture } from '#types/layout.js';
-
-import { integrate } from '../../support/simulation';
 
 it('shares persistent spread with drag and applies acceleration first on both axes', () => {
   const state: ParticleTexture = [

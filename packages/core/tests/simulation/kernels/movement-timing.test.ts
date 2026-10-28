@@ -1,8 +1,7 @@
 import { expect, it } from 'vitest';
 
+import { integrate } from '#test-support/simulation';
 import type { ParticleTexture } from '#types/layout.js';
-
-import { integrate } from '../../support/simulation';
 
 function simulation({
   speed = 10,

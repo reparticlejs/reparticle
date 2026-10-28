@@ -3,9 +3,8 @@ import { $ZodError as ZodError } from 'zod/v4/core';
 
 import { mergeEmitterParameters } from '#config/merge-emitter-parameters.js';
 import { parseEffectConfig } from '#config/parse-effect.js';
+import skeleton from '#effect-example';
 import { EmitterVelocity } from '#runtime/transforms/velocity.js';
-
-import skeleton from '../../../../../site/src/content/effect.example.json';
 
 it('estimates motion after the first sample and stops inheriting when stationary', () => {
   const motion = new EmitterVelocity();

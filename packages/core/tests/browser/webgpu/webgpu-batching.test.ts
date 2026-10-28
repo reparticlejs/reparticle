@@ -1,13 +1,12 @@
 import { expect, it, vi } from 'vitest';
 
 import { parseEffectConfig } from '#config/parse-effect.js';
+import impact from '#examples/effects/magic-impact.json';
+import water from '#examples/effects/water-stream.json';
 import { EmitterController } from '#runtime/emitter-controller.js';
 import { createSimulationParameters } from '#runtime/shared/parameters.js';
 import { createSimulationContext } from '#runtime/webgpu/context.js';
-
-import impact from '../../../../examples/shared/public/effects/magic-impact.json';
-import water from '../../../../examples/shared/public/effects/water-stream.json';
-import { readGPU } from '../support/read-gpu-texture';
+import { readGPU } from '#test-support/read-gpu-texture';
 
 it.each([water, impact])(
   'preserves exact GPU state through batched updates and lifecycle operations',

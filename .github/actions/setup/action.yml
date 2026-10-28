@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: Set up workspace
+description: Install the repository Node.js, pnpm, and locked dependencies.
+inputs:
+  browser:
+    description: Install Chromium and its platform dependencies for browser checks.
+    default: 'false'
+  ignore-scripts:
+    description: Disable lifecycle scripts for release metadata and publishing jobs.
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v5.0.0
+      with:
+        run_install: false
+    - uses: actions/setup-node@v6.5.0
+      with:
+        node-version-file: .node-version
+        cache: pnpm
+    - name: Install dependencies
+      if: inputs.ignore-scripts != 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile
+    # Metadata/publish jobs do not build. Avoid running dependency hooks there;
+    # the pack job uses the normal install so build tooling is initialized.
+    - name: Install dependencies without lifecycle scripts
+      if: inputs.ignore-scripts == 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile --ignore-scripts
+    # Playwright handles OS-specific libraries (including Linux packages).
+    # Metadata and publishing jobs leave this off because they never launch a browser.
+    - name: Install test browser
+      if: inputs.browser == 'true'
+      shell: bash
+      run: pnpm exec playwright install --with-deps chromium
