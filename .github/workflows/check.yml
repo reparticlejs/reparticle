@@ -48,7 +48,7 @@ jobs:
       # their browser coverage; macOS uses native Metal for backend comparisons.
       REPARTICLE_TEST_RENDERER: ${{ matrix.renderer }}
     steps:
-      - uses: actions/checkout@v6.1.0
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       # Verify once per matrix: lockfile coverage and upstream commit identity.
