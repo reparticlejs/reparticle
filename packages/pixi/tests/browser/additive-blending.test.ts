@@ -27,6 +27,9 @@ it('matches WebGL2 smoke alpha on transparent targets without changing Pixi addi
       backgroundAlpha: 0,
       autoStart: false,
     });
+    // Pixi shares its sprite shader across renderers. Keep batch limits equal
+    // so switching backends cannot reuse a shader with too many bindings.
+    app.renderer.limits.maxBatchableTextures = 8;
     const target = RenderTexture.create({ width: 512, height: 512 });
     const source = await Assets.load<Texture>(
       new URL('../../../../examples/shared/public/assets/wispy-smoke.png', import.meta.url).href,

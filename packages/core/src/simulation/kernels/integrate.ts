@@ -78,9 +78,10 @@ export const integrate = tgpu
       const particleRow = threadY % rows;
       const particleId = particleRow * width + threadX;
 
-      // Each float32 mask word packs 24 exact birth bits.
+      // Each float32 mask word packs 24 exact birth bits. Decode with integer
+      // operations: floating-point pow/division can round a bit boundary.
       const spawnWord = readSpawn(spawnMask, Math.floor(particleId / 24));
-      const spawnBit = Math.floor(spawnWord / Math.pow(2, particleId % 24)) % 2;
+      const spawnBit = (d.u32(spawnWord) >> (d.u32(particleId) % 24)) & 1;
       const isSpawning = particleId < capacity && spawnCount > 0 && spawnBit > 0.5;
       // Decode packed inputs here so particle math can use named fields.
       const step = ParticleStep({

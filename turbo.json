@@ -1,5 +1,6 @@
 {
   "globalEnv": ["REPARTICLE_SOFTWARE_GPU"],
+  "globalPassThroughEnv": ["DEBUG"],
   "tasks": {
     "build": {
       "env": ["SITE_URL", "SITE_BASE"],

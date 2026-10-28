@@ -37,6 +37,9 @@ export function renderingSuite(
           autoStart: false,
           background: 0x000000,
         });
+        // Pixi shares its sprite shader across renderers. Keep batch limits equal
+        // so switching backends cannot reuse a shader with too many bindings.
+        app.renderer.limits.maxBatchableTextures = 8;
         expect('gpu' in app.renderer ? 'webgpu' : 'webgl').toBe(backend);
         if ('gpu' in app.renderer) {
           app.renderer.gpu.device.pushErrorScope('validation');

@@ -51,11 +51,12 @@ vec4 evaluateBand(ivec2 address, int band) {
 void writeBirthState(ivec2 address, int outputBand) {
   int slot = address.y * constants_width + address.x;
   float mask = readSpawn(user_spawnMask, float(slot / SLOTS_PER_MASK_WORD));
-  float spawnBit = mod(floor(mask / pow(2.0, float(slot % SLOTS_PER_MASK_WORD))), 2.0);
+  // Integer decoding keeps packed birth bits exact across GPU drivers.
+  uint spawnBit = (uint(mask) >> uint(slot % SLOTS_PER_MASK_WORD)) & 1u;
   float birthCount = data.stepInput.y;
 
   // Keep existing birth data untouched unless this slot is being recycled.
-  if (slot >= constants_capacity || birthCount <= 0.0 || spawnBit <= 0.5) {
+  if (slot >= constants_capacity || birthCount <= 0.0 || spawnBit == 0u) {
     discard;
   }
 

@@ -36,6 +36,9 @@ it.each(modes)(
         resolution: 1,
         preserveDrawingBuffer: true,
       });
+      // Pixi shares its sprite shader across renderers. Keep batch limits equal
+      // so switching backends cannot reuse a shader with too many bindings.
+      app.renderer.limits.maxBatchableTextures = 8;
       const canvas = document.createElement('canvas');
       canvas.width = 16;
       canvas.height = 16;

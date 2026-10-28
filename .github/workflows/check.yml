@@ -45,6 +45,9 @@ jobs:
       - run: pnpm exec playwright install-deps chromium
         if: runner.os == 'Linux'
       - run: pnpm check
+        env:
+          # Include Chromium startup errors when a hosted VM cannot create an adapter.
+          DEBUG: pw:browser
       - run: pnpm packages:check
       - name: Upload Pages site
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && runner.os == 'Linux' && vars.PAGES_ENABLED == 'true'
