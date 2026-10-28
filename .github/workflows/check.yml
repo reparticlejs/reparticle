@@ -75,7 +75,7 @@ jobs:
       # Upload once; deployment below still waits for all three OS checks.
       - name: Upload Pages site
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.upload-site && vars.PAGES_ENABLED == 'true'
-        uses: actions/upload-pages-artifact@v3.0.1
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: site/dist
 
