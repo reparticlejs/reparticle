@@ -48,7 +48,7 @@ jobs:
       # their browser coverage; macOS uses native Metal for backend comparisons.
       REPARTICLE_TEST_RENDERER: ${{ matrix.renderer }}
     steps:
-      - uses: actions/checkout@v6.1.0
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       # Verify once per matrix: lockfile coverage and upstream commit identity.
@@ -75,7 +75,7 @@ jobs:
       # Upload once; deployment below still waits for all three OS checks.
       - name: Upload Pages site
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.upload-site && vars.PAGES_ENABLED == 'true'
-        uses: actions/upload-pages-artifact@v3.0.1
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: site/dist
 
@@ -97,4 +97,4 @@ jobs:
     steps:
       - name: Deploy Pages site
         id: deployment
-        uses: actions/deploy-pages@v4.0.5
+        uses: actions/deploy-pages@v5.0.1
