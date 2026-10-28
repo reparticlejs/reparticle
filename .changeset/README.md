@@ -5,7 +5,8 @@ package, the bump (patch, minor, or major), and a short description of the chang
 Commit the generated Markdown file with your code. Documentation-only and tooling
 changes do not need a changeset.
 
-Core and pixi share one release version. A changeset for either package bumps both.
+Core and pixi are versioned independently. Select only the packages affected by
+your change. Changesets updates internal dependencies when needed.
 The player, examples, and site are private and are not versioned or published.
 
 Before preparing a release, inspect the pending changes with `pnpm changeset status`.
