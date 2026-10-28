@@ -1,6 +1,15 @@
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 
+const webgpuTests = [
+  'tests/browser/additive-blending.test.ts',
+  'tests/browser/blend-modes.test.ts',
+  'tests/browser/update-path.test.ts',
+  'tests/browser/webgpu.test.ts',
+  'tests/browser/pixi-webgpu.test.ts',
+  'tests/browser/webgl2-mismatch.test.ts',
+];
+
 export default defineConfig({
   test: {
     projects: [
@@ -11,11 +20,12 @@ export default defineConfig({
           exclude: ['tests/browser/**'],
         },
       },
-      {
+      ...(['webgl2', 'webgpu'] as const).map((backend) => ({
         test: {
-          name: 'browser',
-          include: ['tests/browser/**/*.test.ts'],
-          // Hosted runners can be slow to initialize WebGL and compile filter shaders.
+          name: backend,
+          include: backend === 'webgpu' ? webgpuTests : ['tests/browser/**/*.test.ts'],
+          exclude: backend === 'webgpu' ? [] : webgpuTests,
+          setupFiles: backend === 'webgpu' ? ['tests/support/require-webgpu.ts'] : [],
           testTimeout: 60000,
           fileParallelism: false,
           browser: {
@@ -26,21 +36,17 @@ export default defineConfig({
                 channel: 'chromium',
                 args: [
                   '--enable-unsafe-webgpu',
-                  // Hosted Windows/Linux runners may have no usable hardware adapter.
-                  ...(process.env.REPARTICLE_SOFTWARE_GPU === '1'
-                    ? [
-                        '--use-webgpu-adapter=swiftshader',
-                        '--use-angle=swiftshader',
-                        '--enable-unsafe-swiftshader',
-                      ]
+                  // Hosted Windows/Linux runners use software WebGL2 only.
+                  ...(backend === 'webgl2' && process.env.REPARTICLE_SOFTWARE_GPU === '1'
+                    ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']
                     : []),
                 ],
               },
             }),
-            instances: [{ browser: 'chromium' }],
+            instances: [{ browser: 'chromium' as const }],
           },
         },
-      },
+      })),
     ],
   },
 });

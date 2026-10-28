@@ -18,7 +18,9 @@
     "prepush": "pnpm typecheck && pnpm test",
     "changeset": "changeset",
     "release:version": "changeset version && pnpm install --lockfile-only --ignore-scripts && oxfmt packages/*/CHANGELOG.md",
-    "packages:check": "tsc -p scripts/tsconfig.json && node scripts/check-packed-consumer.ts"
+    "packages:check": "tsc -p scripts/tsconfig.json && node scripts/check-packed-consumer.ts",
+    "test:webgpu": "playwright install chromium && turbo run test:webgpu",
+    "test:all": "pnpm test && pnpm test:webgpu"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",

@@ -45,10 +45,11 @@
   "scripts": {
     "build": "pnpm build:shaders && tsdown",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run",
+    "test": "vitest run --project unit --project webgl2",
     "prepack": "pnpm build",
     "build:shaders": "node scripts/build-shaders.ts",
-    "prepublishOnly": "pnpm --workspace-root check"
+    "prepublishOnly": "pnpm --workspace-root check",
+    "test:webgpu": "vitest run --project webgpu"
   },
   "dependencies": {
     "zod": "catalog:"

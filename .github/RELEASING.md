@@ -7,6 +7,11 @@
 temporary app, audits production dependencies, checks TypeScript without
 `skipLibCheck`, and renders particles in Chromium.
 
+Common tests include unit and WebGL2 tests on every OS. macOS also runs the required
+`pnpm test:webgpu` suite, including backend parity. WebGPU tests require a working
+browser adapter and fail explicitly when one is unavailable. Run `pnpm test:all`
+locally to run both suites on any supported OS.
+
 Make all three **Release checks (OS)** jobs required status checks in the repository's `main` branch
 rules if merges must wait for CI. The workflow file alone does not enforce this.
 

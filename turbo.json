@@ -20,6 +20,14 @@
     "@reparticle/pixi#test": {
       "dependsOn": ["build"],
       "cache": false
+    },
+    "@reparticle/core#test:webgpu": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "@reparticle/pixi#test:webgpu": {
+      "dependsOn": ["build"],
+      "cache": false
     }
   }
 }

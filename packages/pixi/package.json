@@ -46,9 +46,10 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run",
+    "test": "vitest run --project unit --project webgl2",
     "prepack": "pnpm build",
-    "prepublishOnly": "pnpm --workspace-root check"
+    "prepublishOnly": "pnpm --workspace-root check",
+    "test:webgpu": "vitest run --project webgpu"
   },
   "dependencies": {
     "@reparticle/core": "workspace:*"

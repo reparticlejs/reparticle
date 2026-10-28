@@ -1,6 +1,11 @@
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 
+const webgpuTests = [
+  'tests/browser/backend-parity.test.ts',
+  'tests/browser/webgpu-batching.test.ts',
+];
+
 export default defineConfig({
   test: {
     projects: [
@@ -12,11 +17,13 @@ export default defineConfig({
           setupFiles: ['tests/support/shader-inputs.ts'],
         },
       },
-      {
+      ...(['webgl2', 'webgpu'] as const).map((backend) => ({
         test: {
-          name: 'browser',
-          include: ['tests/browser/**/*.test.ts'],
-          testTimeout: 30000,
+          name: backend,
+          include: backend === 'webgpu' ? webgpuTests : ['tests/browser/**/*.test.ts'],
+          exclude: backend === 'webgpu' ? [] : webgpuTests,
+          setupFiles: backend === 'webgpu' ? ['tests/support/require-webgpu.ts'] : [],
+          testTimeout: 60000,
           fileParallelism: false,
           browser: {
             enabled: true,
@@ -26,21 +33,17 @@ export default defineConfig({
                 channel: 'chromium',
                 args: [
                   '--enable-unsafe-webgpu',
-                  // Hosted Windows/Linux runners may have no usable hardware adapter.
-                  ...(process.env.REPARTICLE_SOFTWARE_GPU === '1'
-                    ? [
-                        '--use-webgpu-adapter=swiftshader',
-                        '--use-angle=swiftshader',
-                        '--enable-unsafe-swiftshader',
-                      ]
+                  // Hosted Windows/Linux runners use software WebGL2 only.
+                  ...(backend === 'webgl2' && process.env.REPARTICLE_SOFTWARE_GPU === '1'
+                    ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']
                     : []),
                 ],
               },
             }),
-            instances: [{ browser: 'chromium' }],
+            instances: [{ browser: 'chromium' as const }],
           },
         },
-      },
+      })),
     ],
   },
 });

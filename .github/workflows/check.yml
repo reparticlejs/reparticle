@@ -48,6 +48,9 @@ jobs:
         env:
           # Include Chromium startup errors when a hosted VM cannot create an adapter.
           DEBUG: pw:browser
+      - name: WebGPU tests (required on macOS)
+        if: runner.os == 'macOS'
+        run: pnpm test:webgpu
       - run: pnpm packages:check
       - name: Upload Pages site
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && runner.os == 'Linux' && vars.PAGES_ENABLED == 'true'
