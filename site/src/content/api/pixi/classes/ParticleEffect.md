@@ -80,13 +80,13 @@ Disable automatic updates before driving update(seconds) yourself.
 
 #### Get Signature
 
-> **get** **emitter**(): `Emitter`
+> **get** **emitter**(): `EmitterController`
 
 Single-emitter convenience; multi-emitter callers must select by ID.
 
 ##### Returns
 
-`Emitter`
+`EmitterController`
 
 ***
 
@@ -94,13 +94,13 @@ Single-emitter convenience; multi-emitter callers must select by ID.
 
 #### Get Signature
 
-> **get** **emitters**(): `ReadonlyMap`\<`string`, `Emitter`\>
+> **get** **emitters**(): `ReadonlyMap`\<`string`, `EmitterController`\<`WebGLTexture` \| `GPUTexture`\>\>
 
 Read-only lookup; use getEmitter to require a known ID.
 
 ##### Returns
 
-`ReadonlyMap`\<`string`, `Emitter`\>
+`ReadonlyMap`\<`string`, `EmitterController`\<`WebGLTexture` \| `GPUTexture`\>\>
 
 ***
 
@@ -250,7 +250,7 @@ Automatic particle hit testing is disabled; consumers can assign Pixi's hitArea.
 
 ### getEmitter()
 
-> **getEmitter**(`id`): `Emitter`
+> **getEmitter**(`id`): `EmitterController`
 
 #### Parameters
 
@@ -260,7 +260,7 @@ Automatic particle hit testing is disabled; consumers can assign Pixi's hitArea.
 
 #### Returns
 
-`Emitter`
+`EmitterController`
 
 ***
 

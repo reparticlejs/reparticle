@@ -1,7 +1,7 @@
-import { Container, type RenderOptions, type WebGLRenderer } from 'pixi.js';
+import { Container, type RenderOptions, type Renderer } from 'pixi.js';
 
 /**
- * Protect the WebGL context shared by Pixi and simulation.
+ * Protect the GPU context shared by Pixi and simulation.
  * Simulation is allowed between renders and during the particle pipe's preparation.
  * It is blocked throughout the rest of a render, including user callbacks.
  *
@@ -11,10 +11,10 @@ import { Container, type RenderOptions, type WebGLRenderer } from 'pixi.js';
 export class SimulationBoundary {
   private renderInProgress = false;
   private preparingResources = false;
-  private readonly originalRender: WebGLRenderer['render'];
-  private readonly guardedRender: WebGLRenderer['render'];
+  private readonly originalRender: Renderer['render'];
+  private readonly guardedRender: Renderer['render'];
 
-  public constructor(private readonly renderer: WebGLRenderer) {
+  public constructor(private readonly renderer: Renderer) {
     this.originalRender = renderer.render.bind(renderer);
     this.guardedRender = this.render.bind(this);
     renderer.render = this.guardedRender;
@@ -52,7 +52,7 @@ export class SimulationBoundary {
   /** Keep the guard active for the entire call, including prerender and postrender callbacks. */
   private render(
     options: RenderOptions | Container,
-    legacyOptions?: Parameters<WebGLRenderer['render']>[1],
+    legacyOptions?: Parameters<Renderer['render']>[1],
   ): void {
     if (this.renderInProgress) {
       throw new Error(

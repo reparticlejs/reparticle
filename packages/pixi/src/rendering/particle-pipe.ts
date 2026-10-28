@@ -1,19 +1,14 @@
-import {
-  ExtensionType,
-  type Container,
-  type InstructionSet,
-  type RenderPipe,
-  type WebGLRenderer,
-} from 'pixi.js';
+import type { SimulationContext } from '@reparticle/core';
+import { type Container, type InstructionSet, type RenderPipe } from 'pixi.js';
 
 import { EmitterRenderer } from '#runtime/emitter-renderer.js';
 import { ParticleEffect } from '#runtime/particle-effect.js';
+import type { ParticleBackend, ParticleRenderer } from '#types/backend.js';
 
-import { restoreSimulationState } from './restore-simulation-state';
 import { SimulationBoundary } from './simulation-boundary';
 
 /**
- * Connect ParticleEffect to one Pixi WebGL renderer.
+ * Connect ParticleEffect to one Pixi renderer.
  *
  * Before rendering, capture scene transforms and initialize each view's GPU resources.
  * During rendering, insert particle draws into Pixi's instruction order so masks,
@@ -24,21 +19,28 @@ import { SimulationBoundary } from './simulation-boundary';
  * is destroyed. This lets initialized effects continue simulating while offstage.
  */
 export class ParticlePipe implements RenderPipe<ParticleEffect> {
-  public static readonly extension = {
-    type: ExtensionType.WebGLPipes,
-    name: 'reparticle',
-  } as const;
+  private simulationContext: SimulationContext<WebGLTexture | GPUTexture> | null = null;
   private readonly boundary: SimulationBoundary;
   private readonly assertContextAvailable: () => void;
   private readonly restoreContextState: () => void;
   private readonly emittersByView = new Map<ParticleEffect, Map<string, EmitterRenderer>>();
 
-  public constructor(private readonly renderer: WebGLRenderer) {
+  public constructor(
+    private readonly renderer: ParticleRenderer,
+    private readonly backend: ParticleBackend,
+  ) {
     // Simulation initialization changes framebuffers. Prepare before renderStart binds
     // Pixi's target, and before traversal temporarily detaches a rendered subtree.
     this.boundary = new SimulationBoundary(renderer);
     this.assertContextAvailable = this.assertAvailable.bind(this);
-    this.restoreContextState = this.restoreState.bind(this);
+    // Choose once: WebGL restores shared bindings; WebGPU only needs the guard.
+    const restoreState = backend.restoreState?.bind(backend);
+    this.restoreContextState = restoreState
+      ? () => {
+          this.assertContextAvailable();
+          restoreState();
+        }
+      : this.assertContextAvailable;
     renderer.runners.prerender.add(this);
   }
 
@@ -88,8 +90,7 @@ export class ParticlePipe implements RenderPipe<ParticleEffect> {
 
   /** Return control to Pixi after simulation changes WebGL state. */
   public restoreState(): void {
-    this.assertAvailable();
-    restoreSimulationState(this.renderer);
+    this.restoreContextState();
   }
 
   /** Release draw resources; ParticleEffect separately destroys its core simulations. */
@@ -131,20 +132,21 @@ export class ParticlePipe implements RenderPipe<ParticleEffect> {
 
   /** Publish resources only after every emitter succeeds; dispose partial work on failure. */
   private initializeView(view: ParticleEffect): void {
+    // Pixi creates pipes before initializing the device; borrow it on first render.
+    this.simulationContext ??= this.backend.createContext(
+      this.assertContextAvailable,
+      this.restoreContextState,
+    );
+    view.configureUpdates(this.simulationContext.batchUpdates?.bind(this.simulationContext));
     const emitterRenderers = new Map<string, EmitterRenderer>();
     try {
       for (const [id, emitter] of view.emitters) {
-        emitter.initialize({
-          gl: this.renderer.gl,
-          canvas: this.renderer.canvas,
-          assertAvailable: this.assertContextAvailable,
-          restoreState: this.restoreContextState,
-        });
+        emitter.initialize(this.simulationContext);
         // simulation initialization changes GL bindings before EmitterRenderer binds its shader.
         this.restoreState();
         emitterRenderers.set(
           id,
-          new EmitterRenderer(this.renderer, emitter, view.getRendering(id)),
+          new EmitterRenderer(this.renderer, emitter, this.backend, view.getRendering(id)),
         );
       }
       this.emittersByView.set(view, emitterRenderers);

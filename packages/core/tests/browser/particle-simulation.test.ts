@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
-import { createSimulationParameters } from '#runtime/gpu/parameters.js';
-import { GpuSimulation } from '#runtime/gpu/particle-simulation.js';
+import { createSimulationParameters } from '#runtime/shared/parameters.js';
+import { WebGL2Simulation } from '#runtime/webgl2/particle-simulation.js';
 
 let gl: WebGL2RenderingContext;
 let canvas: HTMLCanvasElement;
 let framebuffer: WebGLFramebuffer;
-let simulations: GpuSimulation[];
+let simulations: WebGL2Simulation[];
 
 beforeEach(() => {
   simulations = [];
@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 function simulation(width = 4, rows = 1) {
-  const result = new GpuSimulation({ gl, canvas }, width, rows, width * rows);
+  const result = new WebGL2Simulation({ gl, canvas }, width, rows, width * rows);
   simulations.push(result);
   result.reset();
   return result;

@@ -1,7 +1,7 @@
 import {
   parseEffectConfig,
   EffectTransform,
-  Emitter,
+  EmitterController,
   type EmitterState,
   type EffectConfig,
   type EffectInput,
@@ -13,6 +13,9 @@ import {
   UPDATE_PRIORITY,
   ViewContainer,
   type Bounds,
+  type InstructionSet,
+  type Renderer,
+  type RenderLayer,
   type PointData,
   type Texture,
 } from 'pixi.js';
@@ -47,13 +50,14 @@ export class ParticleEffect extends ViewContainer {
   private readonly sceneTransform = new Matrix();
   private readonly drawTransform = new Matrix();
   private pipe: ParticlePipe | null = null;
+  private advanceEmitters = this.updateEmitters.bind(this);
   private currentTicker: Ticker;
   private automaticUpdates = false;
   private paused = false;
   private readonly tickListener: (ticker: Ticker) => void;
   private readonly renderingByEmitter = new Map<string, ResolvedParticleRendering>();
   private readonly defaultTints = new Map<string, ParticleTint>();
-  private readonly simulations = new Map<string, Emitter>();
+  private readonly simulations = new Map<string, EmitterController>();
   private disposed = false;
   private readonly emitterStates = new Map<string, EmitterState>();
 
@@ -102,12 +106,12 @@ export class ParticleEffect extends ViewContainer {
   }
 
   /** Read-only lookup; use getEmitter to require a known ID. */
-  public get emitters(): ReadonlyMap<string, Emitter> {
+  public get emitters(): ReadonlyMap<string, EmitterController> {
     return this.simulations;
   }
 
   /** Single-emitter convenience; multi-emitter callers must select by ID. */
-  public get emitter(): Emitter {
+  public get emitter(): EmitterController {
     return this.getEmitter(this.singleEmitterId);
   }
 
@@ -173,7 +177,7 @@ export class ParticleEffect extends ViewContainer {
   public stop(options: StopOptions = {}): void {
     this.pipe?.assertAvailable();
     for (const emitter of this.simulations.values()) {
-      this.playbackFor(emitter).stop(options);
+      emitter.stop(options);
     }
   }
 
@@ -188,9 +192,7 @@ export class ParticleEffect extends ViewContainer {
     }
     this.pipe?.assertAvailable();
     this.syncSceneTransform();
-    for (const emitter of this.simulations.values()) {
-      this.playbackFor(emitter).update(seconds);
-    }
+    this.advanceEmitters(seconds);
   }
 
   public reset(): void {
@@ -200,7 +202,7 @@ export class ParticleEffect extends ViewContainer {
     }
   }
 
-  public getEmitter(id: string): Emitter {
+  public getEmitter(id: string): EmitterController {
     const emitter = this.simulations.get(id);
     if (!emitter) {
       throw new Error(`Unknown particle emitter: ${id}`);
@@ -255,6 +257,23 @@ export class ParticleEffect extends ViewContainer {
     this.setEmitterTexture(this.singleEmitterId, options);
   }
 
+  /** @internal Check the renderer integration before Pixi collects draw instructions. */
+  public override collectRenderablesSimple(
+    instructionSet: InstructionSet,
+    renderer: Renderer,
+    currentLayer: RenderLayer,
+  ): void {
+    // An explicit backend import may not match the app's renderer. Check its actual
+    // pipes rather than registering placeholders or tracking loaded modules globally.
+    if (!('reparticle' in renderer.renderPipes)) {
+      const backend = 'gl' in renderer ? 'webgl2' : 'webgpu';
+      throw new Error(
+        `Particle backend ${backend} is not loaded. Import @reparticle/pixi/${backend}, or use @reparticle/pixi for automatic selection.`,
+      );
+    }
+    super.collectRenderablesSimple(instructionSet, renderer, currentLayer);
+  }
+
   /** @internal Called before Pixi changes the rendered root's transform. */
   public prepare(pipe: ParticlePipe): void {
     if (this.pipe && this.pipe !== pipe) {
@@ -262,6 +281,14 @@ export class ParticleEffect extends ViewContainer {
     }
     this.syncSceneTransform();
     this.pipe = pipe;
+  }
+
+  /** @internal Choose the update path once GPU resources are attached. */
+  public configureUpdates(batchUpdates?: (updates: () => void) => void): void {
+    this.advanceEmitters =
+      batchUpdates && this.simulations.size > 1
+        ? (seconds) => batchUpdates(() => this.updateEmitters(seconds))
+        : this.updateEmitters.bind(this);
   }
 
   /** @internal Rendering configuration is independent of core simulation. */
@@ -305,6 +332,7 @@ export class ParticleEffect extends ViewContainer {
     }
     this.pipe?.restoreState();
     this.pipe = null;
+    this.advanceEmitters = this.updateEmitters.bind(this);
     this.emitterStates.clear();
     this.renderingByEmitter.clear();
     this.defaultTints.clear();
@@ -319,6 +347,13 @@ export class ParticleEffect extends ViewContainer {
     const bounds = this._bounds;
     bounds.clear();
     this.addBounds(bounds);
+  }
+
+  /** Keep each emitter's animation sampling in sync with its simulation step. */
+  private updateEmitters(seconds: number): void {
+    for (const emitter of this.simulations.values()) {
+      this.playbackFor(emitter).update(seconds);
+    }
   }
 
   /** Preserve ticker time while keeping automatic birth batches close together. */
@@ -362,7 +397,7 @@ export class ParticleEffect extends ViewContainer {
   /** Core emitters share the effect transform and report lifecycle changes through Pixi. */
   private createEmitters(effect: EffectConfig): void {
     for (const config of effect.emitters) {
-      const emitter = new Emitter(null, config, effect.modifiers, this.effectTransform);
+      const emitter = new EmitterController(null, config, effect.modifiers, this.effectTransform);
       const rendering = this.renderingByEmitter.get(emitter.id)!;
       const tint = resolveTint(rendering.tint);
       this.renderingByEmitter.set(emitter.id, { ...rendering, tint });
@@ -378,7 +413,7 @@ export class ParticleEffect extends ViewContainer {
   }
 
   /** Before first render only core exists; afterward the renderer also tracks animation timing. */
-  private playbackFor(emitter: Emitter): Emitter | EmitterRenderer {
+  private playbackFor(emitter: EmitterController): EmitterController | EmitterRenderer {
     return this.pipe?.getEmitterRenderer(this, emitter.id) ?? emitter;
   }
 

@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { textureLayout } from '#runtime/gpu/texture-layout.js';
+import { textureLayout } from '#runtime/shared/texture-layout.js';
 
 it('packs small and million-slot emitters without padding', () => {
   expect(textureLayout(1, 16384)).toEqual({ width: 1, rows: 1 });

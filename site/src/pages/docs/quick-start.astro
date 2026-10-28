@@ -33,7 +33,14 @@ const headings = [
 <Reference headings={headings} title="Quick start" description="Add reparticle to your PixiJS app. Create an effect and add it to the stage.">
   <h2 id={headings[0].slug}>{headings[0].text}</h2><Code theme="github-dark-dimmed" code={'npm install @reparticle/pixi'} lang="sh" />
   <p>This guide assumes you already have a PixiJS application using v8.22.0 or later within v8. The core engine is included as a dependency of <code>@reparticle/pixi</code>.</p>
-  <p>Your PixiJS app must use WebGL2.</p>
+  <p>Your PixiJS app can use WebGL2 or WebGPU. Import reparticle before <code>app.init()</code>; it loads the matching backend automatically.</p>
+  <details>
+    <summary>Use only one backend</summary>
+    <Code theme="github-dark-dimmed" code={`import { ParticleEffect } from '@reparticle/pixi/webgl2';
+// Or, for a WebGPU app:
+import { ParticleEffect } from '@reparticle/pixi/webgpu';`} lang="ts" />
+    <p>Choose one import matching your Pixi renderer. Explicit imports exclude the other backend. Your effect JSON and playback code stay the same.</p>
+  </details>
   <details>
     <summary>TypeScript 6 and 7: missing WebGPU types</summary>
     <p>Some compiler versions ship incomplete DOM declarations. Install the complete declarations:</p>

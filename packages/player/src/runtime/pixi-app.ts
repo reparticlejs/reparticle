@@ -1,6 +1,7 @@
-import { Application, type WebGLRenderer } from 'pixi.js';
+import { Application } from 'pixi.js';
 
 import type { ExamplePlayer } from '../types/example-player';
+import type { PlayerBackend } from '../types/player-backend';
 import { runCleanup } from '../utils/run-cleanup';
 import { createExamplePlayer } from './example-player';
 import { createStats } from './stats';
@@ -12,14 +13,19 @@ import { createStats } from './stats';
 export async function createPixiApp(
   host: HTMLDivElement,
   signal: AbortSignal,
+  backend: PlayerBackend = 'auto',
 ): Promise<ExamplePlayer | undefined> {
-  const app = new Application<WebGLRenderer>();
+  const app = new Application();
 
   try {
     await app.init({
       resizeTo: host,
+      // A single-entry preference prevents silent fallback during backend testing.
+      ...(backend === 'auto'
+        ? {}
+        : { preference: [backend === 'webgl2' ? ('webgl' as const) : ('webgpu' as const)] }),
       backgroundAlpha: 0,
-      preference: 'webgl',
+      // Let Pixi choose the backend; require WebGL2 if it selects WebGL.
       preferWebGLVersion: 2,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
@@ -27,6 +33,27 @@ export async function createPixiApp(
     });
   } catch (error) {
     destroyApplication(app);
+    if (
+      backend === 'webgpu' &&
+      error instanceof Error &&
+      error.message === 'No available renderer for the current environment'
+    ) {
+      if (!window.isSecureContext) {
+        throw new Error(
+          'WebGPU requires HTTPS or localhost. Open this page using a secure address.',
+          { cause: error },
+        );
+      }
+      if (!navigator.gpu) {
+        throw new Error('WebGPU is not available in this browser. Try WebGL2 or Auto.', {
+          cause: error,
+        });
+      }
+      throw new Error(
+        'The browser could not create a WebGPU device. In Chrome, check graphics acceleration in Settings and WebGPU status at chrome://gpu. You can use WebGL2 or Auto.',
+        { cause: error },
+      );
+    }
     throw error;
   }
 
@@ -39,7 +66,7 @@ export async function createPixiApp(
 }
 
 /** Mount shared resources in order and release them in reverse order. */
-function mountApplication(app: Application<WebGLRenderer>, host: HTMLDivElement) {
+function mountApplication(app: Application, host: HTMLDivElement) {
   const cleanup: (() => void)[] = [() => destroyApplication(app)];
   let destroyed = false;
 
@@ -70,7 +97,7 @@ function mountApplication(app: Application<WebGLRenderer>, host: HTMLDivElement)
 }
 
 /** Pixi can fail before a renderer exists; its stage still needs releasing. */
-function destroyApplication(app: Application<WebGLRenderer>) {
+function destroyApplication(app: Application) {
   if (app.renderer) {
     app.destroy(true, { children: true });
   } else {

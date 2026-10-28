@@ -1,24 +1,30 @@
 ---
-title: "Emitter"
-description: "Coordinate one emitter's playback, CPU slot metadata, and GPU simulation.\nParticle state stays in GPU textures; CPU metadata controls birth admission\nand expiration without readbacks. The renderer owns the GL context."
+title: "EmitterController"
+description: "Coordinate one emitter's playback, CPU slot metadata, and GPU simulation.\nParticle state stays in GPU textures; CPU metadata controls birth admission\nand expiration without readbacks. The renderer owns the GPU context."
 package: "core"
 ---
 
 Coordinate one emitter's playback, CPU slot metadata, and GPU simulation.
 Particle state stays in GPU textures; CPU metadata controls birth admission
-and expiration without readbacks. The renderer owns the GL context.
+and expiration without readbacks. The renderer owns the GPU context.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| <a id="t"></a> `T` *extends* `WebGLTexture` \| `GPUTexture` | `WebGLTexture` \| `GPUTexture` |
 
 ## Constructors
 
 ### Constructor
 
-> **new Emitter**(`context`, `definition`, `sharedModifiers?`, `effectTransform?`): `Emitter`
+> **new EmitterController**\<`T`\>(`context`, `definition`, `sharedModifiers?`, `effectTransform?`): `EmitterController`\<`T`\>
 
 #### Parameters
 
 | Parameter | Type | Default value |
 | ------ | ------ | ------ |
-| `context` | [`EmitterContext`](../../interfaces/EmitterContext/) \| `null` | `undefined` |
+| `context` | [`SimulationContext`](../../interfaces/SimulationContext/)\<`T`\> \| `null` | `undefined` |
 | `definition` | \{ `capacity`: `number`; `duration`: `number`; `durationSpread`: `number`; `emission`: \{ `rate`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `rateSpread`: `number`; `shape`: \{ `type`: `"point"`; \} \| \{ `diameter`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `diameterSpread`: `number`; `type`: `"circle"`; \} \| \{ `height`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `heightSpread`: `number`; `type`: `"box"`; `width`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `widthSpread`: `number`; \} \| \{ `height`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `heightSpread`: `number`; `type`: `"cone2d"`; `width`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `widthSpread`: `number`; \}; \}; `id`: `string`; `inheritVelocity`: `number`; `initial`: \{ `alpha`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `alphaSpread`: `number`; `angularVelocity`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `angularVelocitySpread`: `number`; `blue`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `blueSpread`: `number`; `direction`: `number`; `green`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `greenSpread`: `number`; `lifetime`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `lifetimeSpread`: `number`; `red`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `redSpread`: `number`; `rotation`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `rotationSpread`: `number`; `size`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `sizeSpread`: `number`; `speed`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `speedSpread`: `number`; `spread`: `number`; `stretchX`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `stretchXSpread`: `number`; `stretchY`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `stretchYSpread`: `number`; \}; `modifiers`: (\{ `magnitude`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `rotation`: `number`; `spread`: `number`; `type`: `"acceleration"`; \} \| \{ `magnitude`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `rotation`: `number`; `spread`: `number`; `type`: `"drag"`; `useDirection`: `boolean`; \} \| \{ `magnitude`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `maxDistance`: `number`; `spread`: `number`; `type`: `"radial"`; `x`: `number`; `y`: `number`; \} \| \{ `magnitude`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `maxDistance`: `number`; `rotation`: `number`; `spread`: `number`; `type`: `"vortex"`; `x`: `number`; `y`: `number`; \})[]; `orientation`: `"default"` \| `"initial-direction"` \| `"movement-direction"` \| `"angular-velocity"`; `overLifetime`: \{ `alpha`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `angularVelocity`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `blue`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `green`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `red`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `rotation`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `scale`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `stretchX`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; `stretchY`: `number` \| \{ `points`: \{ `tangent`: `number`; `time`: `number`; `value`: `number`; \}[]; \}; \}; `playMode`: `"once"` \| `"loop"`; `position`: \{ `x`: `number`; `y`: `number`; \}; `rendering`: \{ `blendMode`: `"normal"` \| `"add"` \| `"multiply"` \| `"screen"`; `tint?`: \{ `alpha`: `number`; `blue`: `number`; `green`: `number`; `red`: `number`; \}; \}; `rotation`: `number`; `scale`: `number`; `seed`: `number`; `space`: `"world"` \| `"local"`; `startDelay`: `number`; `startDelaySpread`: `number`; `startOffset`: `number`; `stretchWithVelocity`: `boolean`; \} | `undefined` |
 | `definition.capacity?` | `number` | `...` |
 | `definition.duration?` | `number` | `...` |
@@ -90,7 +96,7 @@ and expiration without readbacks. The renderer owns the GL context.
 
 #### Returns
 
-`Emitter`
+`EmitterController`\<`T`\>
 
 ## Properties
 
@@ -118,13 +124,13 @@ Gate new births without pausing the simulation or resetting playback.
 
 #### Get Signature
 
-> **get** **birthTexture**(): `WebGLTexture`
+> **get** **birthTexture**(): `T`
 
 Borrowed birth-data texture for renderer adapters: three RGBA bands.
 
 ##### Returns
 
-`WebGLTexture`
+`T`
 
 ***
 
@@ -402,18 +408,6 @@ Owned snapshot for serialization or explicit recreation.
 
 ***
 
-### gl
-
-#### Get Signature
-
-> **get** **gl**(): `WebGL2RenderingContext`
-
-##### Returns
-
-`WebGL2RenderingContext`
-
-***
-
 ### id
 
 #### Get Signature
@@ -578,13 +572,13 @@ Whether Y stretch follows the current simulation speed.
 
 #### Get Signature
 
-> **get** **texture**(): `WebGLTexture`
+> **get** **texture**(): `T`
 
 Borrowed changing-state texture for renderer adapters: two RGBA bands.
 
 ##### Returns
 
-`WebGLTexture`
+`T`
 
 ***
 
@@ -750,7 +744,7 @@ Attach the renderer's context once. CPU controls are usable before attachment.
 
 | Parameter | Type |
 | ------ | ------ |
-| `context` | [`EmitterContext`](../../interfaces/EmitterContext/) |
+| `context` | [`SimulationContext`](../../interfaces/SimulationContext/)\<`T`\> |
 
 #### Returns
 

@@ -1,10 +1,21 @@
 import { useExamplePlayer } from '../hooks/use-example-player';
 import type { PlayerProps } from '../types/player-props';
+import { BackendSelect } from './backend-select';
 
 /** Reusable preview with an optional effect picker; the caller supplies the catalog. */
 export function Player({ initialExample, examples = [], gallery = false }: PlayerProps) {
-  const { host, example, loading, error, paused, select, togglePlayback, restart } =
-    useExamplePlayer(initialExample);
+  const {
+    host,
+    example,
+    loading,
+    error,
+    paused,
+    backend,
+    selectBackend,
+    select,
+    togglePlayback,
+    restart,
+  } = useExamplePlayer(initialExample);
 
   return (
     <div className={gallery ? 'player gallery-player' : 'player'}>
@@ -39,6 +50,7 @@ export function Player({ initialExample, examples = [], gallery = false }: Playe
         <div className="player-toolbar">
           <span className="effect-title">{example.name}</span>
           <div className="playback">
+            {gallery && <BackendSelect value={backend} onChange={selectBackend} />}
             <button type="button" disabled={loading || !!error} onClick={togglePlayback}>
               {paused ? 'Resume' : 'Pause'}
             </button>

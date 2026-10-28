@@ -26,8 +26,7 @@ export type {
 } from '#types/rendering.js';
 
 // Runtime.
-export { Emitter } from '#runtime/emitter.js';
-export type { EmitterContext } from '#types/emitter.js';
+export { EmitterController } from '#runtime/emitter-controller.js';
 export type {
   EmitterState,
   EmitterStateChange,
@@ -51,3 +50,5 @@ export { propertyVariation } from '#simulation/emission/variation.js';
 export { SampledCurve } from '#curves/sampled-curve.js';
 export { sampleCurve, CURVE_SEGMENTS } from '#curves/sample-curve.js';
 export type { Curve, CurvePoint, ScalarProperty } from '#types/curve.js';
+
+export type { Simulation, SimulationContext } from '#types/backend.js';

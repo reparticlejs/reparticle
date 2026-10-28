@@ -3,42 +3,51 @@ import { readFileSync } from 'node:fs';
 import { glOptions } from '@typegpu/gl';
 import { tgpu } from 'typegpu';
 
-import {
-  INPUT_ARGUMENTS,
-  INPUT_LENGTHS,
-  MODIFIER_HEADER,
-  MODIFIER_STRIDE,
-} from '#simulation/data-layout.ts';
+import { MODIFIER_HEADER, MODIFIER_STRIDE } from '#simulation/data-layout.ts';
 import { integrate } from '#simulation/kernels/integrate.ts';
 
-/** Build-time only: consumers receive these assembled shaders, never TypeGPU. */
-export function compileSimulation() {
-  const vertex = readFileSync(new URL('simulation.vert.glsl', import.meta.url), 'utf8');
-  const fragmentTemplate = readFileSync(new URL('simulation.frag.glsl', import.meta.url), 'utf8');
+import { createInputLayout } from './input-layout.ts';
 
+const inputs = createInputLayout();
+
+/** Generate GLSL simulation functions and assemble the complete WebGL2 artifact. */
+export function compileWebGL2() {
   const generatedFunctions = tgpu.resolve([integrate], glOptions());
   const functions = adaptWebGL2(generatedFunctions);
-
-  const fragment = fragmentTemplate.replace('#include <simulation-functions>', () => functions);
-
-  // CPU upload offsets use float32 words. std140 arrays start on vec4 boundaries.
-  const layout: Record<string, { offset: number; length: number; padded: number }> = {};
-  let words = 0;
-  for (const [name, length] of Object.entries(INPUT_LENGTHS)) {
-    const padded = Math.ceil(length / 4) * 4;
-    layout[name] = { offset: words, length, padded };
-    words += padded;
-  }
+  const vertex = readShader('webgl2/simulation.vert.glsl');
+  const fragment = assembleShader('webgl2/simulation.frag.glsl', functions);
 
   return {
     vertex,
     fragment,
-    arguments: Object.fromEntries(INPUT_ARGUMENTS.map((name) => [name, name])),
-    layout,
-    words,
+    arguments: inputs.arguments,
+    layout: inputs.layout,
+    words: inputs.words,
     modifierHeader: MODIFIER_HEADER,
     modifierStride: MODIFIER_STRIDE,
   };
+}
+
+/** Generate native WGSL simulation functions and assemble the complete WebGPU artifact. */
+export function compileWebGPU() {
+  const functions = tgpu.resolve([integrate]);
+  const source = assembleShader('webgpu/simulation.wgsl', functions);
+
+  return {
+    source,
+    layout: inputs.layout,
+    words: inputs.words,
+    arguments: inputs.arguments,
+  };
+}
+
+function readShader(filename: string): string {
+  return readFileSync(new URL(filename, import.meta.url), 'utf8');
+}
+
+/** Insert generated functions into the authored storage and entry-point wrapper. */
+function assembleShader(filename: string, functions: string): string {
+  return readShader(filename).replace('#include <simulation-functions>', () => functions);
 }
 
 /**

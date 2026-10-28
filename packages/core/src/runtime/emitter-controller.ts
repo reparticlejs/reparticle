@@ -4,28 +4,27 @@ import { modifiersSchema } from '#config/schemas/definition/modifiers.js';
 import { sampleCurve } from '#curves/sample-curve.js';
 import { sampleInitialProperties } from '#curves/sample-initial-properties.js';
 import { SampledShape } from '#curves/sampled-shape.js';
-import { createSimulationParameters } from '#runtime/gpu/parameters.js';
-import { GpuSimulation } from '#runtime/gpu/particle-simulation.js';
-import { textureLayout } from '#runtime/gpu/texture-layout.js';
 import { ModifierSampler } from '#runtime/modifiers/sampler.js';
 import { ParticleSlots } from '#runtime/particles/slots.js';
 import { EmitterPlayback } from '#runtime/playback/emitter.js';
 import { prewarm } from '#runtime/playback/prewarm.js';
 import { SpawnRate } from '#runtime/playback/spawn-rate.js';
 import { SpawnSchedule } from '#runtime/playback/spawn-schedule.js';
+import { createSimulationParameters } from '#runtime/shared/parameters.js';
+import { textureLayout } from '#runtime/shared/texture-layout.js';
 import { EffectTransform } from '#runtime/transforms/effect.js';
 import { EmitterVelocity } from '#runtime/transforms/velocity.js';
+import type { Simulation, SimulationContext } from '#types/backend.js';
 import type { EmitterConfig, EmitterParameters, ModifierConfig } from '#types/effect.js';
-import type { EmitterContext } from '#types/emitter.js';
 import type { InitialPropertyCurves } from '#types/initial-property-curves.js';
 import type { EmitterState, EmitterStateListener, StopOptions } from '#types/lifecycle.js';
 
 /**
  * Coordinate one emitter's playback, CPU slot metadata, and GPU simulation.
  * Particle state stays in GPU textures; CPU metadata controls birth admission
- * and expiration without readbacks. The renderer owns the GL context.
+ * and expiration without readbacks. The renderer owns the GPU context.
  */
-export class Emitter {
+export class EmitterController<T extends WebGLTexture | GPUTexture = WebGLTexture | GPUTexture> {
   private layout: ReturnType<typeof textureLayout>;
   public readonly capacity: number;
   /** Gate new births without pausing the simulation or resetting playback. */
@@ -50,8 +49,8 @@ export class Emitter {
   private readonly initialSeed: number;
   private needsPrewarm = true;
 
-  private simulation: GpuSimulation | null = null;
-  private context: EmitterContext | null = null;
+  private simulation: Simulation<T> | null = null;
+  private context: SimulationContext<T> | null = null;
   private readonly simulationParameters = createSimulationParameters();
   private disposed = false;
 
@@ -59,7 +58,7 @@ export class Emitter {
   private notifying = false;
 
   public constructor(
-    context: EmitterContext | null,
+    context: SimulationContext<T> | null,
     definition: EmitterConfig,
     sharedModifiers: unknown = [],
     public readonly effectTransform = new EffectTransform(),
@@ -102,21 +101,18 @@ export class Emitter {
   }
 
   /** Attach the renderer's context once. CPU controls are usable before attachment. */
-  public initialize(context: EmitterContext): void {
+  public initialize(context: SimulationContext<T>): void {
     this.assertAlive();
     if (this.context) {
-      if (this.context.gl !== context.gl) {
-        throw new Error('An emitter cannot move between WebGL contexts');
+      if (this.context.identity !== context.identity) {
+        throw new Error('An emitter cannot move between GPU contexts');
       }
       return;
     }
     context.assertAvailable?.();
     try {
-      this.layout = textureLayout(
-        this.capacity,
-        context.gl.getParameter(context.gl.MAX_TEXTURE_SIZE),
-      );
-      const simulation = new GpuSimulation(context, this.width, this.rows, this.capacity);
+      this.layout = textureLayout(this.capacity, context.maxTextureSize);
+      const simulation = context.createSimulation(this.width, this.rows, this.capacity);
       this.simulation = simulation;
       try {
         // Warm both state targets without changing playback, seeds, or queued controls.
@@ -147,13 +143,6 @@ export class Emitter {
   /** Rows in each of the five particle-state bands. */
   public get rows(): number {
     return this.layout.rows;
-  }
-
-  public get gl(): WebGL2RenderingContext {
-    if (!this.context) {
-      throw new Error('Emitter GPU resources have not been initialized');
-    }
-    return this.context.gl;
   }
 
   public get worldX(): number {
@@ -329,7 +318,7 @@ export class Emitter {
   }
 
   /** Borrowed birth-data texture for renderer adapters: three RGBA bands. */
-  public get birthTexture(): WebGLTexture {
+  public get birthTexture(): T {
     this.assertAlive();
     if (!this.simulation) {
       throw new Error('Emitter has not been initialized');
@@ -338,7 +327,7 @@ export class Emitter {
   }
 
   /** Borrowed changing-state texture for renderer adapters: two RGBA bands. */
-  public get texture(): WebGLTexture {
+  public get texture(): T {
     this.assertAlive();
     if (!this.simulation) {
       throw new Error('Emitter GPU resources have not been initialized');
@@ -423,6 +412,7 @@ export class Emitter {
     try {
       let transitions = this.playback.takeTransitions();
       while (transitions.length > 0) {
+        this.context?.flush?.();
         for (const state of transitions) {
           for (const listener of [...this.listeners]) {
             listener({ emitterId: this.id, state });

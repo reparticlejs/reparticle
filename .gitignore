@@ -9,3 +9,5 @@ exports/
 .astro/
 
 **/__screenshots__/
+
+.vitest-attachments/

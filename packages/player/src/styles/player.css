@@ -194,3 +194,24 @@
     min-height: 44px;
   }
 }
+
+.backend-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.backend-select select {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid hsl(var(--border, 240 6% 26%));
+  border-radius: 8px;
+  background: hsl(var(--background, 240 6% 7%));
+  color: inherit;
+  font: inherit;
+}
+@media (max-width: 640px) {
+  .backend-select select {
+    min-height: 44px;
+  }
+}

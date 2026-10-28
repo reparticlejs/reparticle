@@ -3,9 +3,14 @@ title: Particle architecture
 ---
 
 reparticle separates particle simulation from rendering. `@reparticle/core` owns
-effect validation, playback, particle allocation, and WebGL2 simulation.
+effect validation, playback, particle allocation, and GPU simulation.
 `@reparticle/pixi` connects the engine to PixiJS. PixiJS is the first and primary
 renderer, and the only renderer currently available.
+
+The core root exports shared validation, curves, and `EmitterController` without
+loading either backend. Device-specific `Emitter` classes and simulation adapters
+live in `@reparticle/core/webgl2` and `@reparticle/core/webgpu`. Pixi imports shared
+logic from the root and loads its selected adapter separately.
 
 ## Coverage inventory
 
@@ -21,12 +26,12 @@ lifetime sorting.
 ## Shader build
 
 Simulation functions live in `packages/core/src/simulation`. They are written in
-TypeScript with TypeGPU and compiled to GLSL by `scripts/build-shaders.ts`.
-The build writes `src/simulation/shaders.json`; edit the TypeScript and GLSL
-templates, then rebuild core instead of editing that generated file.
+TypeScript with TypeGPU and compiled to GLSL and WGSL by `scripts/build-shaders.ts`.
+The build writes `src/simulation/shaders/webgl2.json` and `webgpu.json`. Edit the
+TypeScript and shader templates, then rebuild core instead of editing generated files.
 
 TypeGPU and its compiler are build dependencies only. Applications receive the
-generated GLSL and need no compiler plugin. WebGL still compiles and links the
+generated shaders and need no compiler plugin. WebGL still compiles and links the
 GLSL for the device when the first simulation acquires its program.
 
 ## Particle storage
@@ -45,7 +50,7 @@ as a packed mask. Other simulation inputs use a uniform buffer. Curves and modif
 records are read from that buffer without copying whole arrays in the shader.
 
 `data-layout.ts` defines sizes and logical bands. `storage.ts` reconstructs those
-logical bands from the physical textures. The GLSL wrapper packs results back into
+logical bands from the physical textures. The backend wrappers pack results back into
 the physical layout.
 
 ## Update flow
@@ -70,7 +75,13 @@ Emitters in the same WebGL context share a compiled simulation program. Each emi
 owns its textures, framebuffers, uniform buffer, and vertex array. Releasing one
 emitter does not invalidate the others; the last release deletes the shared program.
 
-The host renderer owns the WebGL context. Pixi supplies its context to core and
+WebGPU emitters share compute pipelines per device, with their own textures and
+uniform buffers. Pipelines are cached while the device is reachable.
+Pixi batches the emitters in one effect update into a shared command submission.
+Repeated steps, texture reads, and state callbacks flush pending work to preserve
+update order. Unchanged simulation uniforms are not uploaded again.
+
+The host renderer owns the WebGL context or WebGPU device. Pixi supplies its context to core and
 restores rendering state after simulation work. Drawing reads the current particle
 textures without advancing simulation.
 
@@ -84,8 +95,13 @@ not the application's textures. Bounds and hit areas must be supplied when neede
 
 ## Requirements and verification
 
-The current backend requires WebGL2 and floating-point render targets
-(`EXT_color_buffer_float`). There is no WebGPU backend or CPU fallback.
+The WebGL2 backend requires floating-point render targets (`EXT_color_buffer_float`).
+The WebGPU backend uses compute shaders and requires a WebGPU device. There is no CPU fallback.
+
+The default Pixi entry registers asynchronous loaders. Pixi loads the matching backend
+before constructing its render pipes during `app.init()`. Explicit `/webgl2` and `/webgpu`
+imports register only that backend and exclude the other implementation from the bundle.
+Simulation is allowed between renders and during resource preparation, never inside an active draw.
 Live effects belong to one renderer context; context-loss recovery is not supported.
 
 Run `pnpm check` for formatting, lint, types, tests, and production builds.

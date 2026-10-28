@@ -9,12 +9,12 @@ const includes = new Map([
   ['pixi-global-uniforms', globalUniformsBitGl.vertex.header],
 ]);
 
-/** Embed complete GLSL sources in the package; consumers need no shader loader. */
+/** Embed complete GLSL and WGSL sources in the package; consumers need no shader loader. */
 export const shaderPlugin: TsdownPlugin = {
   name: 'particle-shader-includes',
 
   async load(path) {
-    if (!path.endsWith('.glsl')) {
+    if (!path.endsWith('.glsl') && !path.endsWith('.wgsl')) {
       return null;
     }
 

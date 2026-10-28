@@ -1,21 +1,21 @@
-import { ExternalSource, type WebGLRenderer } from 'pixi.js';
+import { ExternalSource, type WebGLRenderer, type WebGPURenderer } from 'pixi.js';
 
 /**
  * Adapt core simulation textures for Pixi's shader resources.
  *
- * core supplies raw WebGLTexture handles; Pixi binds them through ExternalSource.
+ * core supplies raw GPU texture handles; Pixi binds them through ExternalSource.
  * Each handle gets one cached wrapper, reused whenever that output becomes current.
  * No particle data is copied, uploaded, or read back by this adapter.
  *
  * One emitter view owns this cache. core owns the underlying textures, and both
- * libraries must use the same WebGL context. Width and height describe the full
+ * libraries must use the same GPU context. Width and height describe the full
  * simulation texture, including every particle-state row band.
  */
 export class SimulationSources {
-  private readonly sourcesByTexture = new Map<WebGLTexture, ExternalSource>();
+  private readonly sourcesByTexture = new Map<WebGLTexture | GPUTexture, ExternalSource>();
 
   public constructor(
-    private readonly renderer: WebGLRenderer,
+    private readonly renderer: WebGLRenderer | WebGPURenderer,
     private readonly width: number,
     private readonly height: number,
   ) {}
@@ -25,7 +25,7 @@ export class SimulationSources {
    * Simulation reuses its two alternating state outputs and a fixed birth output.
    * Separate wrappers let Pixi detect texture switches through source identity.
    */
-  public get(texture: WebGLTexture): ExternalSource {
+  public get(texture: WebGLTexture | GPUTexture): ExternalSource {
     const cachedSource = this.sourcesByTexture.get(texture);
     if (cachedSource) {
       return cachedSource;

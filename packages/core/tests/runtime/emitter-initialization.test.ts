@@ -1,8 +1,8 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 
 import { parseEffectConfig } from '#config/parse-effect.js';
-import { Emitter } from '#runtime/emitter.js';
-import type { EmitterContext } from '#types/emitter.js';
+import { Emitter } from '#runtime/webgl2/emitter.js';
+import type { EmitterContext } from '#types/webgl2/emitter.js';
 
 import magicImpact from '../../../../examples/shared/public/effects/magic-impact.json';
 import skeleton from '../../../../site/src/content/effect.example.json';
@@ -15,8 +15,8 @@ const gpu = vi.hoisted(() => ({
   destroy: vi.fn<() => void>(),
 }));
 
-vi.mock('#runtime/gpu/particle-simulation.js', () => ({
-  GpuSimulation: class {
+vi.mock('#runtime/webgl2/particle-simulation.js', () => ({
+  WebGL2Simulation: class {
     public reset = gpu.reset;
     public clear = gpu.clear;
     public update = gpu.update;
@@ -64,7 +64,6 @@ it('warms both GPU paths once without resetting controls or stop state', () => {
   const state = emitter.state;
   emitter.initialize(context);
   expect(emitter.initialized).toBe(true);
-  expect(emitter.gl).toBe(context.gl);
   expect(emitter.state).toBe(state);
   expect(emitter.x).toBe(19);
   expect(emitter.emitting).toBe(false);
@@ -84,8 +83,10 @@ it('starts updates after attachment and rejects migration to another context', (
   const before = gpu.update.mock.calls.length;
   emitter.update(0.01);
   expect(gpu.update.mock.calls.length).toBeGreaterThan(before);
-  expect(() => emitter.initialize({ ...context, gl: new Context() })).toThrow(
-    'cannot move between WebGL contexts',
+  const otherGl = new Context();
+  otherGl.getParameter = vi.fn<WebGL2RenderingContext['getParameter']>(() => 16384);
+  expect(() => emitter.initialize({ ...context, gl: otherGl })).toThrow(
+    'cannot move between GPU contexts',
   );
   emitter.destroy();
 });

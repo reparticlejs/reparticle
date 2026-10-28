@@ -1,5 +1,5 @@
 import { ParticleEffect } from '@reparticle/pixi';
-import type { Application, WebGLRenderer } from 'pixi.js';
+import type { Application } from 'pixi.js';
 
 import type { Example } from '../types/example';
 import type { MountedExample } from '../types/mounted-example';
@@ -13,7 +13,7 @@ import { animateEffect } from './motion';
  * Pixi asset loads are shared and are not cancelled or unloaded here.
  */
 export async function loadExample(
-  app: Application<WebGLRenderer>,
+  app: Application,
   example: Example,
   signal: AbortSignal,
 ): Promise<MountedExample | undefined> {
@@ -44,11 +44,7 @@ async function loadEffectConfig(file: string, signal: AbortSignal) {
 }
 
 /** Own only this effect's stage entry, resize listener, and optional motion callback. */
-function mountExample(
-  app: Application<WebGLRenderer>,
-  example: Example,
-  effect: ParticleEffect,
-): MountedExample {
+function mountExample(app: Application, example: Example, effect: ParticleEffect): MountedExample {
   let motion: ReturnType<typeof animateEffect> | undefined;
   let destroyed = false;
 

@@ -21,7 +21,9 @@ export default defineConfig({
           browser: {
             enabled: true,
             headless: true,
-            provider: playwright({ launchOptions: { channel: 'chromium' } }),
+            provider: playwright({
+              launchOptions: { channel: 'chromium', args: ['--enable-unsafe-webgpu'] },
+            }),
             instances: [{ browser: 'chromium' }],
           },
         },

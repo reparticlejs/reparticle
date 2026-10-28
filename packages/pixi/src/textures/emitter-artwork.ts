@@ -1,6 +1,7 @@
 import { Texture, type BufferImageSource, type Shader } from 'pixi.js';
 
 import type { createUniforms } from '#rendering/uniforms.js';
+import type { ParticleBackend } from '#types/backend.js';
 import type { Flipbook } from '#types/flipbook.js';
 import type { ParticleTexture, ParticlePivot } from '#types/particle-texture.js';
 
@@ -25,12 +26,9 @@ export class EmitterArtwork {
   public constructor(
     private readonly maxTextureSize: number,
     options: ParticleTexture<Texture>,
+    private readonly bindArtwork: ParticleBackend['bindArtwork'],
   ) {
     this.setTexture(options);
-  }
-
-  public get texture(): Texture | null {
-    return this.currentTexture;
   }
 
   /** Prepare replacement metadata before changing any current artwork state. */
@@ -82,7 +80,7 @@ export class EmitterArtwork {
     uniforms.automaticSize = this.automaticSize ? 1 : 0;
     const animation = this.flipbook;
     const texture = this.currentTexture;
-    shader.resources.artwork = texture?.source ?? Texture.EMPTY.source;
+    this.bindArtwork(shader, texture?.source ?? Texture.EMPTY.source);
     uniforms.textured = texture ? 1 : 0;
     uniforms.straightAlpha = texture?.source.alphaMode === 'no-premultiply-alpha' ? 1 : 0;
     if (texture) {

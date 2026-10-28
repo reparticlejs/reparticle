@@ -57,6 +57,14 @@ label {
   margin-bottom: 12px;
   font-weight: 600;
 }
+/* Match the Effect label gap without inheriting its bold weight in the select. */
+.sidebar .backend-select > span {
+  display: block;
+  margin-bottom: 12px;
+}
+.sidebar .backend-select select {
+  font-weight: 400;
+}
 .playback-actions {
   display: flex;
   gap: 8px;

@@ -1,13 +1,11 @@
-import type { Emitter } from '@reparticle/core';
-import { Geometry, GlProgram, Shader, State, Texture, type WebGLRenderer } from 'pixi.js';
+import type { EmitterController } from '@reparticle/core';
+import { Geometry, Shader, State, Texture } from 'pixi.js';
 
-import fragment from '#shaders/particle.frag.glsl';
-import vertex from '#shaders/particle.vert.glsl';
 import { EmitterArtwork } from '#textures/emitter-artwork.js';
 import { SimulationSources } from '#textures/simulation-sources.js';
+import type { ParticleBackend, ParticleRenderer } from '#types/backend.js';
 import type { ParticleTexture } from '#types/particle-texture.js';
 
-import { restoreSimulationState } from './restore-simulation-state';
 import { createUniforms } from './uniforms';
 
 const PARTICLE_BANDS = 2;
@@ -22,19 +20,20 @@ export class EmitterResources {
   public readonly shader: Shader;
   public readonly particleSources: SimulationSources;
   public readonly birthSources: SimulationSources;
-  public readonly state = State.for2d();
+  public readonly state: State;
   public readonly geometry: Geometry;
-  public readonly drawOptions: Parameters<WebGLRenderer['encoder']['draw']>[0];
+  public readonly drawOptions: Parameters<ParticleRenderer['encoder']['draw']>[0];
   public readonly uniforms: ReturnType<typeof createUniforms>;
   private disposed = false;
 
   public constructor(
-    private readonly renderer: WebGLRenderer,
-    emitter: Emitter,
+    renderer: ParticleRenderer,
+    emitter: EmitterController,
+    private readonly backend: ParticleBackend,
     options: ParticleTexture<Texture>,
   ) {
+    this.state = backend.createState?.() ?? State.for2d();
     this.uniforms = createUniforms(emitter.configuration);
-    const gl = renderer.gl;
     this.particleSources = new SimulationSources(
       renderer,
       emitter.width,
@@ -45,23 +44,21 @@ export class EmitterResources {
     let shader: Shader | undefined;
     let geometry: Geometry | undefined;
     try {
-      artwork = new EmitterArtwork(gl.getParameter(gl.MAX_TEXTURE_SIZE), options);
+      artwork = new EmitterArtwork(backend.maxTextureSize, options, backend.bindArtwork);
       this.artwork = artwork;
-      shader = new Shader({
-        glProgram: GlProgram.from({ vertex, fragment, name: 'reparticle' }),
-        resources: {
-          particleUniforms: this.uniforms,
-          particles: this.particleSources.get(emitter.texture),
-          birthParticles: this.birthSources.get(emitter.birthTexture),
-          artwork: Texture.EMPTY.source,
-          animationFrames: Texture.EMPTY.source,
-        },
+      shader = backend.createShader({
+        particleUniforms: this.uniforms,
+        particles: this.particleSources.get(emitter.texture),
+        birthParticles: this.birthSources.get(emitter.birthTexture),
+        artwork: Texture.EMPTY.source,
+        animationFrames: Texture.EMPTY.source,
+        artworkSampler: Texture.EMPTY.source.style,
       });
       this.shader = shader;
       // Compile now, but defer uniform syncing until the active global group is bound.
-      renderer.shader.bind(shader, true);
-      // Instance and vertex IDs address slots and quad corners without buffers.
-      geometry = new Geometry({ topology: 'triangle-strip' });
+      backend.prepareShader?.(shader);
+      // Each backend supplies the quad geometry its vertex shader expects.
+      geometry = backend.createGeometry();
       this.geometry = geometry;
       this.drawOptions = {
         geometry,
@@ -80,7 +77,7 @@ export class EmitterResources {
       this.birthSources.destroy();
       throw error;
     } finally {
-      restoreSimulationState(renderer);
+      backend.restoreState?.();
     }
   }
 
@@ -92,13 +89,13 @@ export class EmitterResources {
     this.disposed = true;
     try {
       this.geometry.destroy();
-      // GlProgram.from() is shared; Pixi owns the compiled program cache.
+      // Pixi owns the shared GL program / GPU pipeline caches.
       this.shader.destroy();
       this.artwork.destroy();
       this.particleSources.destroy();
       this.birthSources.destroy();
     } finally {
-      restoreSimulationState(this.renderer);
+      this.backend.restoreState?.();
     }
   }
 }

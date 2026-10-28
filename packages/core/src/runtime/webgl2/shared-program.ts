@@ -1,5 +1,5 @@
-import shaders from '#simulation/shaders.json';
-import type { SharedSimulationProgram } from '#types/simulation-program.js';
+import shaders from '#simulation/shaders/webgl2.json';
+import type { SharedSimulationProgram } from '#types/webgl2/simulation-program.js';
 
 // Each borrowed WebGL context gets one linked simulation program. Individual
 // simulations own their textures/buffers; this module owns only shaders/programs.

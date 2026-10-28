@@ -1,4 +1,4 @@
-import type { Application, WebGLRenderer } from 'pixi.js';
+import type { Application } from 'pixi.js';
 
 import type { Example } from '../types/example';
 import type { ExamplePlayer } from '../types/example-player';
@@ -9,7 +9,7 @@ import { loadArtwork } from './artwork';
 import { loadExample } from './example';
 
 /** Own one selection at a time. The application and stats belong to the caller. */
-export function createExamplePlayer(app: Application<WebGLRenderer>, stats: Stats): ExamplePlayer {
+export function createExamplePlayer(app: Application, stats: Stats): ExamplePlayer {
   let activeExample: MountedExample | undefined;
   let pendingLoad: AbortController | undefined;
   let destroyed = false;

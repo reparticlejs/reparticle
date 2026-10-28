@@ -7,6 +7,25 @@ It includes the core engine.
 
 [Documentation and examples](https://github.com/reparticlejs/reparticle)
 
+## Backends
+
+`@reparticle/core` exports validation, curves, and the shared `EmitterController`.
+It includes neither GPU backend.
+
+For a device-specific emitter, choose one entry point:
+
+```ts
+import { Emitter } from '@reparticle/core/webgl2'; // Supply { gl, canvas }.
+// Or:
+import { Emitter } from '@reparticle/core/webgpu'; // Supply { device }.
+```
+
+Each backend exports `createSimulationContext` for renderer integrations using
+`EmitterController`.
+Both entry points export the context type as `EmitterContext`.
+The explicit entry points exclude the other backend. Pixi users can use
+automatic selection through `@reparticle/pixi`.
+
 ## Validation schemas
 
 `parseEffectConfig(input)` validates an effect and applies defaults. For validation

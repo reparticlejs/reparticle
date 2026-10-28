@@ -1,4 +1,4 @@
-import { Emitter, parseEffectConfig } from '@reparticle/core';
+import { EmitterController, parseEffectConfig } from '@reparticle/core';
 import { expect, it } from 'vitest';
 
 import { properties } from '../src/content/properties';
@@ -28,7 +28,7 @@ it.each([
   expect(change?.parameters).toBeDefined();
   const before = parseEffectConfig(previous.definition);
   const after = parseEffectConfig(next.definition);
-  const emitter = new Emitter(null, before.emitters[0]);
+  const emitter = new EmitterController(null, before.emitters[0]);
   try {
     emitter.setParameters(change!.parameters!);
     expect(emitter.configuration).toEqual(after.emitters[0]);

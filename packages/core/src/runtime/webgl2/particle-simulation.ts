@@ -1,15 +1,15 @@
-import shaders from '#simulation/shaders.json';
-import type { DataTexture } from '#types/data-texture.js';
-import type { EmitterContext, PipelineTexture } from '#types/emitter.js';
+import { SimulationInputs } from '#runtime/shared/inputs.js';
+import shaders from '#simulation/shaders/webgl2.json';
+import type { SimulationUniformLayout } from '#types/simulation-uniform-layout.js';
+import type { SimulationParameters } from '#types/simulation.js';
+import type { DataTexture } from '#types/webgl2/data-texture.js';
+import type { EmitterContext, PipelineTexture } from '#types/webgl2/emitter.js';
 import type {
   SimulationBinding,
   SharedSimulationProgram,
   SimulationTarget,
-  SimulationUniformLayout,
-} from '#types/simulation-program.js';
-import type { SimulationParameters } from '#types/simulation.js';
+} from '#types/webgl2/simulation-program.js';
 
-import { SimulationInputs } from './inputs';
 import { acquireSimulationProgram, releaseSimulationProgram } from './shared-program';
 
 const layouts: Record<string, SimulationUniformLayout> = shaders.layout;
@@ -26,7 +26,7 @@ const TEXTURE_UNIT = { state: 0, spawnMask: 1, birth: 2 } as const;
  * and flags; the host must restore rendering state afterward. Reset before the
  * first update, and destroy this instance before destroying the context.
  */
-export class GpuSimulation {
+export class WebGL2Simulation {
   private readonly gl: WebGL2RenderingContext;
   private readonly height: number;
   private readonly maxSize: number;

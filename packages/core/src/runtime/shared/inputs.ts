@@ -1,10 +1,10 @@
-import type { PipelineTexture } from '#types/emitter.js';
 import type { SimulationParameters } from '#types/simulation.js';
 
 import { UniformBuffer } from './uniform-buffer';
 
-// Positional boundary used by the generated shader. Keep this order aligned with integrate()
-// and INPUT_ARGUMENTS in simulation/data-layout.ts. Each uniform occupies one vec4.
+// Argument indexes, not byte offsets into a GPU buffer. Keep this order aligned with
+// INPUT_ARGUMENTS in simulation/data-layout.ts: backends use the generated metadata
+// to locate these values. Slots 1–12 each hold a vec4; later slots hold larger arrays.
 const ARGUMENT = {
   state: 0,
   step: 1,
@@ -26,10 +26,23 @@ const ARGUMENT = {
 } as const;
 const ARGUMENT_COUNT = ARGUMENT.modifiers + 1;
 
-/** Pack named parameters into reusable arrays for the generated shader input layout. */
+/**
+ * Convert one simulation step's named parameters into the ordered inputs used by
+ * both WebGL2 and WebGPU. This is CPU-side packing only: it does not allocate GPU
+ * resources, bind textures, upload data, or advance particles.
+ *
+ * Small parameter groups use reusable four-number buffers. State, spawn masks,
+ * sampled curves, and modifier arrays are borrowed from the caller. Each backend
+ * uploads these values into its own resources using the generated input layout.
+ */
 export class SimulationInputs {
-  /** Borrowed kernel arguments; call write() before the first run. Reused each step. */
-  public readonly args: (PipelineTexture | ArrayLike<number>)[] = new Array(ARGUMENT_COUNT).fill(0);
+  /**
+   * Reused argument list, populated by write(). Entries are borrowed, not snapshots:
+   * consume them before the next write() and do not modify their contents.
+   */
+  public readonly args: ({ texture: unknown } | ArrayLike<number>)[] = new Array(
+    ARGUMENT_COUNT,
+  ).fill(0);
   private readonly step = new UniformBuffer();
   private readonly emission = new UniformBuffer();
   private readonly shape = new UniformBuffer();
@@ -44,12 +57,12 @@ export class SimulationInputs {
   private readonly orientation = new UniformBuffer();
 
   /**
-   * Update named groups in place and bind the previous particle-state texture.
+   * Pack a step and retain a reference to its previous particle-state texture.
    * Zeroes pad unused vec4 components; they are not additional particle settings.
-   * Buffer selection may change, but neither buffers nor the argument list are
-   * allocated here. This prepares inputs only; the kernel performs the uploads.
+   * UniformBuffer reuses its existing arrays, swapping them when values change.
+   * The state wrapper is opaque here because its texture belongs to either backend.
    */
-  public write(state: PipelineTexture, parameters: SimulationParameters): void {
+  public write(state: { texture: unknown }, parameters: SimulationParameters): void {
     const {
       step,
       emission,
@@ -124,7 +137,8 @@ export class SimulationInputs {
       orientation.initialAngularVelocity,
     );
 
-    // Existing texture inputs are borrowed, never cloned.
+    // Borrow CPU arrays directly. Backends upload the spawn mask as a texture and
+    // curves/modifiers as uniform data; these arrays are not GPU textures themselves.
     this.args[ARGUMENT.spawnMask] = parameters.spawnMask;
     this.args[ARGUMENT.rotationCurve] = parameters.rotationCurve;
     this.args[ARGUMENT.angularVelocityCurve] = parameters.angularVelocityCurve;

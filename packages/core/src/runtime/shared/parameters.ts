@@ -4,7 +4,7 @@ import type { SimulationParameters } from '#types/simulation.js';
  * Allocate the mutable parameter groups once for an emitter.
  *
  * Zeroes initialize storage; they are not effect defaults or a runnable step.
- * Emitter.integrate() fills every group before its first update and mutates
+ * EmitterController.integrate() fills every group before its first update and mutates
  * the same objects afterward. SimulationInputs packs them into GPU uniforms.
  *
  * Texture inputs start empty. The emitter replaces these references with its

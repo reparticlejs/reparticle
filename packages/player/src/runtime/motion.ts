@@ -1,5 +1,5 @@
 import type { ParticleEffect } from '@reparticle/pixi';
-import { type Application, type Ticker, UPDATE_PRIORITY, type WebGLRenderer } from 'pixi.js';
+import { type Application, type Ticker, UPDATE_PRIORITY } from 'pixi.js';
 
 import type { Example } from '../types/example';
 
@@ -12,7 +12,7 @@ const HORIZONTAL_REACH = 0.3;
  * Pausing the effect also freezes the path; this helper does not own the effect.
  */
 export function animateEffect(
-  app: Application<WebGLRenderer>,
+  app: Application,
   effect: ParticleEffect,
   motion: NonNullable<Example['motion']>,
 ) {

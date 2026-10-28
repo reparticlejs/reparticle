@@ -28,7 +28,7 @@ PixiJS is our first and primary renderer, and the renderer available today.
 
 ## Add it to your app
 
-For an existing **PixiJS v8.22.0+ (v8)** application using **WebGL2**:
+For an existing **PixiJS v8.22.0+ (v8)** application using **WebGL2 or WebGPU**:
 
 ```sh
 npm install @reparticle/pixi

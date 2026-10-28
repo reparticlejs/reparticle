@@ -1,10 +1,15 @@
-import type { Emitter, StopOptions } from '@reparticle/core';
-import { color32BitToUniform, type Texture, type WebGLRenderer, type Matrix } from 'pixi.js';
+import type { EmitterController } from '@reparticle/core';
+import { color32BitToUniform, type Texture, type Matrix } from 'pixi.js';
 
 import { resolveRendering } from '#config/resolve-rendering.js';
 import { EmitterResources } from '#rendering/emitter-resources.js';
 import { resolveTint } from '#rendering/resolve-tint.js';
-import type { ParticleRendering, ParticleTint } from '#types/particle-rendering.js';
+import type { ParticleBackend, ParticleRenderer } from '#types/backend.js';
+import type {
+  ParticleRendering,
+  ResolvedParticleRendering,
+  ParticleTint,
+} from '#types/particle-rendering.js';
 import type { ParticleTexture } from '#types/particle-texture.js';
 
 /**
@@ -13,7 +18,6 @@ import type { ParticleTexture } from '#types/particle-texture.js';
  * Pixi owns the render target, clipping and inherited display-object state.
  */
 export class EmitterRenderer {
-  private readonly renderer: WebGLRenderer;
   private readonly resources: EmitterResources;
   private disposed = false;
   private currentTint: ParticleTint;
@@ -21,24 +25,17 @@ export class EmitterRenderer {
   private animationHalfStep = 0;
 
   public constructor(
-    renderer: WebGLRenderer,
-    public readonly emitter: Emitter,
-    options: ParticleRendering = {},
+    private readonly renderer: ParticleRenderer,
+    public readonly emitter: EmitterController,
+    private readonly backend: ParticleBackend,
+    options: ResolvedParticleRendering,
   ) {
     this.currentTint = resolveTint(options.tint);
-    this.renderer = renderer;
+    // First rendering can happen long after effect creation. Recheck borrowed
+    // textures here in case the caller has destroyed them in the meantime.
     const rendering = resolveRendering(options);
     this.blendMode = rendering.blendMode;
-    this.resources = new EmitterResources(renderer, emitter, rendering);
-  }
-
-  /** Caller owns the texture. Atlas trim and rotation are respected. */
-  public get texture(): Texture | null {
-    return this.resources.artwork.texture;
-  }
-
-  public set texture(value: Texture | null) {
-    this.setTexture(value ? { textures: [value] } : {});
+    this.resources = new EmitterResources(renderer, emitter, backend, rendering);
   }
 
   public setBlendMode(blendMode: NonNullable<ParticleRendering['blendMode']>): void {
@@ -67,10 +64,6 @@ export class EmitterRenderer {
     this.animationHalfStep = 0;
   }
 
-  public stop(options: StopOptions): void {
-    this.emitter.stop(options);
-  }
-
   public reset(): void {
     this.emitter.reset();
     this.animationHalfStep = 0;
@@ -90,7 +83,7 @@ export class EmitterRenderer {
     // Reuse the draw command; Pixi binds the shader, textures, geometry, and state.
     resources.state.blendMode = this.blendMode;
     // Follow Pixi mesh rendering: bind the active render group and target uniforms.
-    resources.shader.groups[100] = this.renderer.globalUniforms.bindGroup;
+    resources.shader.groups[this.backend.globalGroup] = this.renderer.globalUniforms.bindGroup;
     this.renderer.encoder.draw(resources.drawOptions);
   }
 

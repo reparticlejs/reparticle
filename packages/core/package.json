@@ -29,6 +29,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./webgl2": {
+      "types": "./dist/webgl2.d.ts",
+      "import": "./dist/webgl2.js"
+    },
+    "./webgpu": {
+      "types": "./dist/webgpu.d.ts",
+      "import": "./dist/webgpu.js"
     }
   },
   "publishConfig": {

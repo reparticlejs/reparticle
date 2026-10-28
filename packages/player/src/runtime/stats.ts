@@ -1,20 +1,21 @@
 import type { ParticleEffect } from '@reparticle/pixi';
-import { type Application, UPDATE_PRIORITY, type WebGLRenderer } from 'pixi.js';
+import { type Application, UPDATE_PRIORITY } from 'pixi.js';
 
 import type { Stats } from '../types/stats';
 
 const SAMPLE_INTERVAL_MS = 200;
-const EMPTY_STATS = 'WebGL2\n0 particles\n— fps';
 
 /**
  * Keep one text overlay for the application's lifetime, sampling five times a second.
  * FPS measures ticker callbacks against wall-clock time, not GPU execution time.
  * Particle counts come from CPU bookkeeping; no GPU readback is performed.
  */
-export function createStats(app: Application<WebGLRenderer>, host: HTMLElement): Stats {
+export function createStats(app: Application, host: HTMLElement): Stats {
+  const backend = app.renderer.name === 'webgpu' ? 'WebGPU' : 'WebGL2';
+  const emptyStats = `${backend}\n0 particles\n— fps`;
   const overlay = document.createElement('div');
   overlay.className = 'demo-stats';
-  overlay.textContent = EMPTY_STATS;
+  overlay.textContent = emptyStats;
 
   let activeEffect: ParticleEffect | undefined;
   let sampleStartedAt = performance.now();
@@ -31,7 +32,7 @@ export function createStats(app: Application<WebGLRenderer>, host: HTMLElement):
     // Ignore ticker speed and delta clamping: report actual callback frequency.
     const fps = Math.round((framesSinceSample * 1000) / elapsedMs);
     const particleCount = countParticles(activeEffect);
-    overlay.textContent = `WebGL2\n${particleCount} particles\n${fps} fps`;
+    overlay.textContent = `${backend}\n${particleCount} particles\n${fps} fps`;
 
     sampleStartedAt = now;
     framesSinceSample = 0;
@@ -42,7 +43,7 @@ export function createStats(app: Application<WebGLRenderer>, host: HTMLElement):
     activeEffect = effect;
     sampleStartedAt = performance.now();
     framesSinceSample = 0;
-    overlay.textContent = EMPTY_STATS;
+    overlay.textContent = emptyStats;
   }
 
   /** Remove the observer and overlay without destroying the effect or shared ticker. */

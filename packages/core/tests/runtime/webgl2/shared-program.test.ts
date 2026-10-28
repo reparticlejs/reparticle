@@ -1,6 +1,9 @@
 import { expect, it, vi } from 'vitest';
 
-import { acquireSimulationProgram, releaseSimulationProgram } from '#runtime/gpu/shared-program.js';
+import {
+  acquireSimulationProgram,
+  releaseSimulationProgram,
+} from '#runtime/webgl2/shared-program.js';
 
 /** WebGL ownership tests; real shader execution is checked by the browser integration suite. */
 function context() {
