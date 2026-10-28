@@ -27,7 +27,7 @@ const eyebrow = isApi ? (apiLabels[currentApi?.kind ?? ''] ?? 'Reference') : cur
 const contents = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
 const showContents = isApi && !wide && contents.length > 0;
 ---
-<Site title={`${title} — reparticle`} description={description}>
+<Site title={`${title} | reparticle`} description={description}>
   <div class:list={["container-page grid gap-10 pb-10 md:grid-cols-[220px_minmax(0,1fr)]", showContents && "xl:grid-cols-[220px_minmax(0,1fr)_200px]"]}>
     {isApi ? <ApiSidebar /> : <DocsSidebar groups={documentation} />}
     <article class:list={["prose-docs min-w-0 animate-fade-in", !wide && "max-w-3xl"]}>

@@ -10,7 +10,7 @@ export const getStaticPaths = (() => {
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 const { property } = Astro.props;
 ---
-<Site title={`${propertyTitle(property)} — reparticle Lab`} description={property.description}>
+<Site title={`${propertyTitle(property)} | reparticle Lab`} description={property.description}>
   <div class="container-page lab-experiment">
     <header class="lab-heading">
       <a class="lab-back" href={`${import.meta.env.BASE_URL}lab/`}>← Back to Lab</a>

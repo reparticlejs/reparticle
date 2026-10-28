@@ -43,10 +43,10 @@
   },
   "lint-staged": {
     "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}": [
-      "oxfmt --check",
+      "oxfmt --check --no-error-on-unmatched-pattern",
       "oxlint"
     ],
-    "*.{json,jsonc,yaml,yml,md,mdx,html,css,scss,less,vue,astro}": "oxfmt --check"
+    "*.{json,jsonc,yaml,yml,md,mdx,html,css,scss,less,vue,astro}": "oxfmt --check --no-error-on-unmatched-pattern"
   },
   "engines": {
     "node": ">=24"
