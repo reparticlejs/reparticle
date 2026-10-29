@@ -9,7 +9,7 @@ import type { PlayerBackend } from '../types/player-backend';
 import { useMountEffect } from './use-mount-effect';
 
 /** Own the Pixi player in refs; React state describes only what the UI displays. */
-export function useExamplePlayer(initialExample: Example) {
+export function useExamplePlayer(initialExample: Example, showStats = true) {
   const host = useRef<HTMLDivElement>(null);
   const player = useRef<ExamplePlayer | undefined>(undefined);
   const lifetime = useRef<AbortController | undefined>(undefined);
@@ -89,7 +89,7 @@ export function useExamplePlayer(initialExample: Example) {
     mountSignal.current = controller.signal;
     setState({ example: selected, paused: false, loading: true, error: '' });
     try {
-      const created = await createPixiApp(container, controller.signal, selectedBackend);
+      const created = await createPixiApp(container, controller.signal, selectedBackend, showStats);
       if (controller.signal.aborted) {
         created?.destroy();
         return;

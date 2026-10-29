@@ -9,7 +9,7 @@ import { loadArtwork } from './artwork';
 import { loadExample } from './example';
 
 /** Own one selection at a time. The application and stats belong to the caller. */
-export function createExamplePlayer(app: Application, stats: Stats): ExamplePlayer {
+export function createExamplePlayer(app: Application, stats?: Stats): ExamplePlayer {
   let activeExample: MountedExample | undefined;
   let pendingLoad: AbortController | undefined;
   let destroyed = false;
@@ -34,7 +34,7 @@ export function createExamplePlayer(app: Application, stats: Stats): ExamplePlay
         return false;
       }
       activeExample = next;
-      stats.setEffect(next.effect);
+      stats?.setEffect(next.effect);
       return true;
     } catch (error) {
       if (request.signal.aborted) {
@@ -113,7 +113,7 @@ export function createExamplePlayer(app: Application, stats: Stats): ExamplePlay
     updateRevision++;
     pendingLoad?.abort();
     pendingLoad = undefined;
-    stats.setEffect(undefined);
+    stats?.setEffect(undefined);
 
     const previous = activeExample;
     activeExample = undefined;

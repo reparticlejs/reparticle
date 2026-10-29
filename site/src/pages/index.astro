@@ -1,7 +1,7 @@
 ---
 import Site from '../layouts/site.astro';
 import Player from '../components/player';
-import HeroMesh from '../components/hero-mesh.astro';
+import HeroParticles from '../components/hero-particles';
 import { Code } from 'astro:components';
 
 const base = import.meta.env.BASE_URL;
@@ -14,8 +14,8 @@ effect.position.set(400, 300);
 app.stage.addChild(effect);`;
 ---
 <Site title="reparticle | GPU particle engine" description="A GPU particle engine with JSON-defined effects. PixiJS is our first and primary renderer. Explore the docs, API, and live experiments.">
-  <section class="relative overflow-hidden border-b">
-    <HeroMesh />
+  <section class="home-hero relative overflow-hidden border-b">
+    <HeroParticles client:load />
     <div class="container-page relative pb-10">
       <p class="flex flex-wrap gap-x-5 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
         <span>GPU simulation</span><span>WebGL2</span><span>TypeScript</span><span>MIT</span>
@@ -93,6 +93,10 @@ app.stage.addChild(effect);`;
 </Site>
 
 <style>
+  .home-hero :global(.hero-particles) { position: absolute; inset: 0; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .home-hero :global(.hero-particles) { display: none; }
+  }
   .pixi-name { color: #c21875; font-weight: 600; }
   :global(.dark) .pixi-name { color: #e955a5; }
   .home-preview :global(.canvas-host) { height: 420px; }

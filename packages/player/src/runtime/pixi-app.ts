@@ -14,6 +14,7 @@ export async function createPixiApp(
   host: HTMLDivElement,
   signal: AbortSignal,
   backend: PlayerBackend = 'auto',
+  showStats = true,
 ): Promise<ExamplePlayer | undefined> {
   const app = new Application();
 
@@ -61,11 +62,11 @@ export async function createPixiApp(
     return undefined;
   }
 
-  return mountApplication(app, host);
+  return mountApplication(app, host, showStats);
 }
 
 /** Mount shared resources in order and release them in reverse order. */
-function mountApplication(app: Application, host: HTMLDivElement) {
+function mountApplication(app: Application, host: HTMLDivElement, showStats: boolean) {
   const cleanup: (() => void)[] = [() => destroyApplication(app)];
   let destroyed = false;
 
@@ -78,8 +79,10 @@ function mountApplication(app: Application, host: HTMLDivElement) {
   }
 
   try {
-    const stats = createStats(app, host);
-    cleanup.push(() => stats.destroy());
+    const stats = showStats ? createStats(app, host) : undefined;
+    if (stats) {
+      cleanup.push(() => stats.destroy());
+    }
     const player = createExamplePlayer(app, stats);
     cleanup.push(() => player.destroy());
 

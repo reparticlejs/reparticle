@@ -215,3 +215,12 @@
     min-height: 44px;
   }
 }
+
+/* Canvas-only embeds inherit their host dimensions. */
+.immersive-player,
+.immersive-player .canvas-host {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}

@@ -3,7 +3,12 @@ import type { PlayerProps } from '../types/player-props';
 import { BackendSelect } from './backend-select';
 
 /** Reusable preview with an optional effect picker; the caller supplies the catalog. */
-export function Player({ initialExample, examples = [], gallery = false }: PlayerProps) {
+export function Player({
+  initialExample,
+  examples = [],
+  gallery = false,
+  immersive = false,
+}: PlayerProps) {
   const {
     host,
     example,
@@ -15,7 +20,15 @@ export function Player({ initialExample, examples = [], gallery = false }: Playe
     select,
     togglePlayback,
     restart,
-  } = useExamplePlayer(initialExample);
+  } = useExamplePlayer(initialExample, !immersive);
+
+  if (immersive) {
+    return (
+      <div className="player immersive-player">
+        <div className="canvas-host" ref={host} />
+      </div>
+    );
+  }
 
   return (
     <div className={gallery ? 'player gallery-player' : 'player'}>
