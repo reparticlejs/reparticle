@@ -1,5 +1,12 @@
 # @reparticle/pixi
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [b7d7e47]
+  - @reparticle/core@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
