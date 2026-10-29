@@ -1,5 +1,11 @@
 # @reparticle/core
 
+## 0.3.0
+
+### Minor Changes
+
+- b7d7e47: Add a noise modifier for smooth turbulent motion on WebGL2 and WebGPU, with configurable strength, swirl size, animation speed, and seed.
+
 ## 0.2.0
 
 ### Minor Changes
