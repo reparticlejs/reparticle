@@ -11,7 +11,30 @@ import { Emitter } from '#runtime/webgl2/emitter.js';
 import { createSimulationContext } from '#runtime/webgpu/context.js';
 import { readGPU } from '#test-support/read-gpu-texture';
 
+const noise = {
+  version: 1,
+  modifiers: [{ type: 'noise', magnitude: 25, scale: 80, speed: -0.3, seed: 65535 }],
+  emitters: ['world', 'local'].map((space) => ({
+    id: space,
+    capacity: 64,
+    seed: 12,
+    space,
+    duration: 0.2,
+    startOffset: 0.4,
+    position: { x: 23, y: -17 },
+    rotation: 35,
+    scale: -1.5,
+    emission: { rate: 40, shape: { type: 'box', width: 120, height: 90 } },
+    initial: { lifetime: 2, speed: 20, direction: 0, spread: 0, size: 4 },
+    modifiers: [
+      { type: 'noise', magnitude: 90, spread: 20, scale: 45, speed: 0.4, seed: 42 },
+      { type: 'drag', magnitude: 0.3 },
+    ],
+  })),
+};
+
 it.each([
+  { name: 'noise with transforms, both scopes, and loop boundaries', definition: noise },
   { name: 'magic impact', definition: magicImpact },
   { name: 'water stream', definition: water },
   { name: 'confetti', definition: confetti },

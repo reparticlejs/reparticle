@@ -4,13 +4,15 @@ import { readModifier } from '#simulation/resources.ts';
 
 import { applyAcceleration } from './acceleration.ts';
 import { applyDragVelocity } from './drag.ts';
+import { applyNoise } from './noise.ts';
 import { applyRadial } from './radial.ts';
 import { applyVortex } from './vortex.ts';
 
 /**
  * Read one packed record and apply it to velocity.
  * Record layout matches runtime/modifiers/list.ts:
- * [type, magnitude, spread, centerX, centerY, directionX, directionY, cutoff, directional].
+ * [type, magnitude, spread, centerX, centerY, directionX, directionY, cutoff, directional,
+ * frequency, phase, seed]. Noise uses directional for handedness and direction for its basis.
  * The vectors compile to shader values, not per-particle JavaScript objects.
  */
 export const dispatchModifier = tgpu
@@ -23,6 +25,7 @@ export const dispatchModifier = tgpu
     const dragType = 1;
     const radialType = 2;
     const vortexType = 3;
+    const noiseType = 4;
     const type = readModifier(offset);
     const magnitude = readModifier(offset + 1);
     const spread = readModifier(offset + 2);
@@ -52,7 +55,21 @@ export const dispatchModifier = tgpu
     const centerY = readModifier(offset + 4);
     const maxDistance = readModifier(offset + 7);
     let acceleration = d.vec2f(0, 0);
-    if (type === radialType) {
+    if (type === noiseType) {
+      const force = applyNoise(
+        position,
+        d.vec2f(centerX, centerY),
+        d.vec2f(directionX, directionY),
+        readModifier(offset + 9),
+        readModifier(offset + 10),
+        readModifier(offset + 11),
+        readModifier(offset + 8),
+      );
+      acceleration = d.vec2f(
+        force.x * (magnitude + spread * spreadFactor),
+        force.y * (magnitude + spread * spreadFactor),
+      );
+    } else if (type === radialType) {
       // At the center, radial acceleration follows the particle's heading.
       acceleration = applyRadial(
         position[0],

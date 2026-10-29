@@ -32,6 +32,7 @@ const order = [
   'cyclone',
   'spinning-coins',
   'soft-smoke',
+  'turbulent-smoke',
   'steam-plume',
   'fire-plume',
   'ring-fire',

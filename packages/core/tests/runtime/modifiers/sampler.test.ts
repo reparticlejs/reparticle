@@ -60,10 +60,10 @@ it('transforms shared centers into local space without moving emitter-local cent
   );
   const values = modifiers.sample(0, true, 10, 0, 90, 2, identity);
   expect(values[5]).toBe(1);
-  expect(values[14]).toBeCloseTo(-10);
-  expect(values[15]).toBeCloseTo(0);
-  expect(values[18]).toBe(40);
-  expect(values[12]).toBe(15);
+  expect(values[17]).toBeCloseTo(-10);
+  expect(values[18]).toBeCloseTo(0);
+  expect(values[21]).toBe(40);
+  expect(values[15]).toBe(15);
 });
 
 it('handles negative and collapsed local scale and restores the shared list afterward', () => {
@@ -87,6 +87,7 @@ it.each(['local', 'shared'])(
   (scope) => {
     const definitions = [
       { type: 'acceleration', magnitude: 10, rotation: 35, spread: 3 },
+      { type: 'noise', magnitude: 30, scale: 70, seed: 42, spread: 5 },
       { type: 'drag', magnitude: 2, rotation: 20, useDirection: true },
       { type: 'radial', x: 3, y: 5, magnitude: 4, maxDistance: 50 },
       { type: 'vortex', x: 3, y: 5, magnitude: 6, maxDistance: 50, rotation: 15 },
@@ -119,4 +120,17 @@ it('keeps local-space forces unchanged when the whole effect is reflected', () =
   const normal = list.sample(0, true, 5, 3, 40, 2, effect).slice();
   effect.handedness = -1;
   expect(list.sample(0, true, 5, 3, 40, 2, effect)).toEqual(normal);
+});
+
+it('uses continuous seconds for noise while magnitude keeps the modifier clock', () => {
+  const list = new ModifierSampler([{ type: 'noise', magnitude: 40, speed: 0.5, seed: 9 }]);
+  const before = list.sample(0.99, false, 0, 0, 0, 1, identity, 1.99).slice();
+  const after = list.sample(0.01, false, 0, 0, 0, 1, identity, 2.01).slice();
+  expect(before[12]).toBeCloseTo(0.995);
+  expect(after[12]).toBeCloseTo(1.005);
+  expect(after[13]).toBe(9);
+  expect(advance(before)).not.toEqual(advance(after));
+  const frozen = new ModifierSampler([{ type: 'noise', magnitude: 40, speed: 0 }]);
+  const first = frozen.sample(0, false, 0, 0, 0, 1, identity, 0).slice();
+  expect(frozen.sample(0, false, 0, 0, 0, 1, identity, 100)).toEqual(first);
 });

@@ -1,7 +1,10 @@
+import { d } from 'typegpu';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
 import { createSimulationParameters } from '#runtime/shared/parameters.js';
 import { WebGL2Simulation } from '#runtime/webgl2/particle-simulation.js';
+import { MODIFIER_WORDS, MODIFIER_HEADER, MODIFIER_STRIDE } from '#simulation/data-layout.js';
+import { applyNoise } from '#simulation/modifiers/noise.js';
 
 let gl: WebGL2RenderingContext;
 let canvas: HTMLCanvasElement;
@@ -51,7 +54,7 @@ function parameters(capacity = 4) {
   }
   result.rotationCurve = new Float32Array(65);
   result.angularVelocityCurve = new Float32Array(65).fill(1);
-  result.modifiers = new Float32Array(1154);
+  result.modifiers = new Float32Array(MODIFIER_WORDS);
   return result;
 }
 
@@ -156,10 +159,25 @@ it('reads all 128 modifier records from the packed uniform buffer', () => {
   const input = parameters();
   input.modifiers[0] = 128;
   for (let index = 0; index < 128; index++) {
-    input.modifiers.set([0, 60, 0, 0, 0, 1, 0, 0, 0], 2 + index * 9);
+    input.modifiers.set([0, 60, 0, 0, 0, 1, 0, 0, 0], MODIFIER_HEADER + index * MODIFIER_STRIDE);
   }
   sim.update(input);
   const state = read(sim.texture, 4, 2);
   expect(state[2]).toBeCloseTo(128, 3);
   expect(state[0]).toBeCloseTo(128 / 60, 3);
+});
+
+it('matches CPU noise forces at negative coordinates and high seeds', () => {
+  const sim = simulation();
+  const input = parameters();
+  input.position.x = -37;
+  input.position.y = 19;
+  input.emission.speed = 0;
+  input.modifiers[0] = 1;
+  input.modifiers.set([4, 80, 0, 0, 0, 1, 0, 0, 1, 0.02, 0.37, 65535], MODIFIER_HEADER);
+  sim.update(input);
+  const force = applyNoise(d.vec2f(-37, 19), d.vec2f(0, 0), d.vec2f(1, 0), 0.02, 0.37, 65535, 1);
+  const state = read(sim.texture, 4, 2);
+  expect(state[2]).toBeCloseTo((force.x * 80) / 60, 3);
+  expect(state[3]).toBeCloseTo((force.y * 80) / 60, 3);
 });

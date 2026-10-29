@@ -48,6 +48,8 @@ export class EmitterController<T extends WebGLTexture | GPUTexture = WebGLTextur
   private spawnSeed: number;
   private readonly initialSeed: number;
   private needsPrewarm = true;
+  /** Continuous simulation seconds: noise must not jump at emission loop boundaries. */
+  private simulationTime = 0;
 
   private simulation: Simulation<T> | null = null;
   private context: SimulationContext<T> | null = null;
@@ -382,6 +384,7 @@ export class EmitterController<T extends WebGLTexture | GPUTexture = WebGLTextur
     this.spawnSchedule.reset();
     this.particleSlots.reset();
     this.playback.reset();
+    this.simulationTime = 0;
     this.emitterVelocity.reset();
     this.needsPrewarm = true;
     this.spawnSeed = this.initialSeed;
@@ -479,6 +482,7 @@ export class EmitterController<T extends WebGLTexture | GPUTexture = WebGLTextur
     parameters.rotationCurve = this.rotationSamples;
     parameters.angularVelocityCurve = this.angularVelocitySamples;
     this.simulation!.update(parameters);
+    this.simulationTime += seconds;
   }
 
   /** Birth properties use the emitter's normalized age, not each particle's age. */
@@ -574,6 +578,7 @@ export class EmitterController<T extends WebGLTexture | GPUTexture = WebGLTextur
       settings.rotation,
       settings.scale,
       this.effectTransform,
+      this.simulationTime,
     );
   }
 

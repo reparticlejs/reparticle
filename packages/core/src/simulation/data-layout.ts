@@ -17,9 +17,10 @@ export const MODIFIER_COUNT_INDEX = 0;
 export const MODIFIER_RADIAL_FLAG_INDEX = 1;
 /**
  * Words per modifier: type, magnitude, spread, center X/Y, direction X/Y,
- * distance cutoff, and directional-drag flag. Keep the writer and dispatch reader aligned.
+ * distance cutoff, directional-drag flag (noise handedness), then noise frequency, phase,
+ * and seed. Keep the writer and dispatch reader aligned.
  */
-export const MODIFIER_STRIDE = 9;
+export const MODIFIER_STRIDE = 12;
 /** Up to 64 emitter modifiers followed by 64 effect modifiers, in authored order. */
 export const MAX_MODIFIERS = 128;
 /** Total modifier storage, including its header and all available records. */

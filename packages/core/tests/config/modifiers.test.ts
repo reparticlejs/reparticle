@@ -88,3 +88,25 @@ it.each([
   expect(() => mergeEmitterParameters(current, { modifiers })).toThrow(ZodError);
   expect(current).toEqual(skeleton.emitters[0]);
 });
+
+it('validates noise defaults and rejects invalid field settings', () => {
+  expect(modifierSchema.parse({ type: 'noise' })).toEqual({
+    type: 'noise',
+    magnitude: 0,
+    spread: 0,
+    scale: 100,
+    speed: 0.2,
+    seed: 0,
+  });
+  for (const invalid of [
+    { scale: 0 },
+    { scale: -1 },
+    { speed: Infinity },
+    { seed: -1 },
+    { seed: 0.5 },
+    { seed: 65536 },
+  ]) {
+    expect(modifierSchema.safeParse({ type: 'noise', ...invalid }).success).toBe(false);
+  }
+  expect(modifierSchema.safeParse({ type: 'noise', speed: -1, seed: 65535 }).success).toBe(true);
+});

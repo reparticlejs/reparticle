@@ -32,11 +32,21 @@ const dragSchema = z.strictObject({
   rotation: defaultValue(z.number(), 0),
 });
 
+/** Smooth swirling acceleration; scale sets swirl size in authored scene units. */
+const noiseSchema = z.strictObject({
+  magnitude: defaultValue(scalarPropertySchema, 0),
+  spread: defaultValue(z.number().check(z.minimum(0)), 0),
+  scale: defaultValue(z.number().check(z.gt(0)), 100),
+  speed: defaultValue(z.number(), 0.2),
+  seed: defaultValue(z.number().check(z.int(), z.minimum(0), z.maximum(65535)), 0),
+});
+
 export const modifierSchema = z.discriminatedUnion('type', [
   z.extend(accelerationSchema, { type: z.literal('acceleration') }),
   z.extend(dragSchema, { type: z.literal('drag') }),
   z.extend(radialSchema, { type: z.literal('radial') }),
   z.extend(vortexSchema, { type: z.literal('vortex') }),
+  z.extend(noiseSchema, { type: z.literal('noise') }),
 ]);
 
 /** Each scope permits 64 modifiers; the GPU applies at most 128 in one pass. */

@@ -4,13 +4,14 @@ import { parseEffectConfig } from '#config/parse-effect.js';
 import skeleton from '#effect-example';
 import magicImpact from '#examples/effects/magic-impact.json';
 import { Emitter } from '#runtime/webgl2/emitter.js';
+import type { SimulationParameters } from '#types/simulation.js';
 import type { EmitterContext } from '#types/webgl2/emitter.js';
 
 const gpu = vi.hoisted(() => ({
   construct: vi.fn<() => void>(),
   reset: vi.fn<() => void>(),
   clear: vi.fn<() => void>(),
-  update: vi.fn<() => void>(),
+  update: vi.fn<(parameters: SimulationParameters) => void>(),
   destroy: vi.fn<() => void>(),
 }));
 
@@ -189,4 +190,39 @@ it('emits the magic-impact ring on a slow first frame and after reset', () => {
   expect(slow.particleCount).toBe(fast.particleCount);
   slow.destroy();
   fast.destroy();
+});
+
+it('keeps noise time continuous through loops and draining, and resets prewarm deterministically', () => {
+  const config = parseEffectConfig({
+    version: 1,
+    emitters: [
+      {
+        id: 'noise',
+        capacity: 64,
+        seed: 1,
+        duration: 0.1,
+        startOffset: 0.2,
+        emission: { rate: 20, shape: { type: 'point' } },
+        initial: { lifetime: 2, speed: 0, direction: 0, spread: 0, size: 1 },
+        modifiers: [{ type: 'noise', magnitude: 50, speed: 1 }],
+      },
+    ],
+  }).emitters[0];
+  const emitter = new Emitter(context, config);
+  const phases: number[] = [];
+  gpu.update.mockImplementation((parameters) => {
+    phases.push(parameters.modifiers[12]!);
+  });
+  emitter.update(0.1);
+  const first = [...phases];
+  emitter.update(0.1);
+  emitter.stop();
+  emitter.update(0.1);
+  expect(phases.every((phase, index) => index === 0 || phase >= phases[index - 1]!)).toBe(true);
+  expect(phases.at(-1)).toBeGreaterThan(0.3);
+  emitter.reset();
+  phases.length = 0;
+  emitter.update(0.1);
+  expect(phases).toEqual(first);
+  emitter.destroy();
 });

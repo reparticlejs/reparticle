@@ -1,24 +1,24 @@
 import { d } from 'typegpu';
 import { vi } from 'vitest';
 
+import { MODIFIER_WORDS } from '#simulation/data-layout.js';
 import type { ParticleTexture } from '#types/layout.js';
 
 /** CPU tests execute the authored shader math with only GPU storage reads replaced. */
-const inputs = vi.hoisted(
-  (): {
-    rotation: Float32Array;
-    angular: Float32Array;
-    modifiers: Float32Array;
-    state: ParticleTexture;
-    mask: Float32Array;
-  } => ({
-    state: [],
-    mask: new Float32Array(0),
-    rotation: new Float32Array(65),
-    angular: new Float32Array(65),
-    modifiers: new Float32Array(1154),
-  }),
-);
+const inputs: {
+  rotation: Float32Array;
+  angular: Float32Array;
+  modifiers: Float32Array;
+  state: ParticleTexture;
+  mask: Float32Array;
+} = {
+  state: [],
+  mask: new Float32Array(0),
+  rotation: new Float32Array(65),
+  angular: new Float32Array(65),
+  modifiers: new Float32Array(MODIFIER_WORDS),
+};
+
 vi.mock('#simulation/resources.ts', () => ({
   readCurve: (selector: number, index: number) =>
     (selector === 0 ? inputs.rotation : inputs.angular)[index]!,

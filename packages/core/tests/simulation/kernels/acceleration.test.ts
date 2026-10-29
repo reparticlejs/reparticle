@@ -34,7 +34,9 @@ it('shares persistent spread with drag and applies acceleration first on both ax
       new Float32Array(Math.ceil(context.constants.capacity / 24)).fill(16777215),
       new Float32Array(65),
       new Float32Array(65).fill(1),
-      new Float32Array([2, 0, 0, 100, 40, 0, 0, 0.6, -0.8, 0, 0, 1, 2, 2, 0, 0, 1, 0, 0, 0]),
+      new Float32Array([
+        2, 0, 0, 100, 40, 0, 0, 0.6, -0.8, 0, 0, 0, 0, 0, 1, 2, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+      ]),
     );
   expect(run(1)[2]).toBeCloseTo((100 + 120 * 0.6 * 0.1) * 0.7);
   expect(run(1)[3]).toBeCloseTo((50 - 120 * 0.8 * 0.1) * 0.7);

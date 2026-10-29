@@ -17,7 +17,7 @@ export const applyModifiers = tgpu
     'use gpu';
     const count = readModifier(0);
     const headerSize = 2;
-    const recordSize = 9;
+    const recordSize = 12;
     const position = d.vec2f(x, y);
     const heading = d.vec2f(headingX, headingY);
     let velocity = d.vec2f(velocityX, velocityY);

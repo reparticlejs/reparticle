@@ -11,7 +11,7 @@ import type { ModifierConfig } from '#types/effect.js';
 import type { SampledModifier } from '#types/modifier.js';
 import type { Transform } from '#types/transform.js';
 
-const MODIFIER_TYPES = { acceleration: 0, drag: 1, radial: 2, vortex: 3 } as const;
+const MODIFIER_TYPES = { acceleration: 0, drag: 1, radial: 2, vortex: 3, noise: 4 } as const;
 
 const FIELDS = {
   type: 0,
@@ -23,6 +23,9 @@ const FIELDS = {
   directionY: 6,
   cutoff: 7,
   directional: 8,
+  frequency: 9,
+  phase: 10,
+  seed: 11,
 } as const;
 
 /** Space for emitter modifiers followed by effect modifiers. */
@@ -30,6 +33,7 @@ export const MODIFIER_BUFFER_SIZE = MODIFIER_WORDS;
 
 // Buffer header: [active count, contains radial modifier]. Each entry stores:
 // [type, magnitude, spread, centerX, centerY, directionX, directionY, cutoff, directional].
+// Noise also stores frequency, phase, and seed after the common fields.
 // This layout must match simulation/modifiers/dispatch.ts.
 
 /**
@@ -55,9 +59,15 @@ export class ModifierList {
    * list's authored coordinates into the particle simulation space.
    * The caller supplies modifier time (emitter age divided by duration).
    * Magnitude curves extrapolate when that time exceeds their final point.
+   * Noise phase uses continuous simulationTime in seconds instead.
    * Zero magnitude with zero spread contributes nothing and is skipped.
    */
-  public write(values: Float32Array, modifierAge: number, transform: Readonly<Transform>): void {
+  public write(
+    values: Float32Array,
+    modifierAge: number,
+    transform: Readonly<Transform>,
+    simulationTime = 0,
+  ): void {
     const { x: originX, y: originY, rotation, scale, handedness } = transform;
     // Canvas Y points down, so counterclockwise angles use a negative sign.
     const radians = (-rotation * Math.PI) / 180;
@@ -96,6 +106,18 @@ export class ModifierList {
       this.writeDirection(values, offset, modifier.type, directionAngle, handedness);
       values[offset + FIELDS.cutoff] = cutoff;
       values[offset + FIELDS.directional] = directional ? 1 : 0;
+      values[offset + FIELDS.frequency] = 0;
+      values[offset + FIELDS.phase] = 0;
+      values[offset + FIELDS.seed] = 0;
+      if (modifier.type === 'noise') {
+        // Inverse-transform positions into the authored field, then transform forces back.
+        values[offset + FIELDS.directionX] = cosine;
+        values[offset + FIELDS.directionY] = sine;
+        values[offset + FIELDS.directional] = handedness;
+        values[offset + FIELDS.frequency] = scale === 0 ? 0 : 1 / (modifier.scale * scale);
+        values[offset + FIELDS.phase] = simulationTime * modifier.speed;
+        values[offset + FIELDS.seed] = modifier.seed;
+      }
 
       if (modifier.type === 'radial') {
         values[MODIFIER_RADIAL_FLAG_INDEX] = 1;

@@ -36,13 +36,13 @@ it('moves shared modifier centers and rotates/scales world forces', () => {
   expect(values[3]).toBe(20);
   expect(values[7]).toBeCloseTo(-1);
   expect(values[8]).toBeCloseTo(0);
-  expect(values[14]).toBeCloseTo(110);
-  expect(values[15]).toBeCloseTo(30);
-  expect(values[18]).toBe(40);
+  expect(values[17]).toBeCloseTo(110);
+  expect(values[18]).toBeCloseTo(30);
+  expect(values[21]).toBe(40);
   const local = shared.sample(0, true, 0, 0, 0, 1, transform);
   expect(local[3]).toBe(10);
-  expect(local[14]).toBe(10);
-  expect(local[15]).toBe(5);
+  expect(local[17]).toBe(10);
+  expect(local[18]).toBe(5);
 });
 
 it('reflects local X before rotation and translation', () => {

@@ -46,6 +46,7 @@ export class ModifierSampler {
    * Return the reused buffer; its contents remain valid only until the next call.
    * The header count bounds valid entries, so old trailing entries need no clearing.
    * modifierAge is emitter time divided by authored duration; it may exceed 1.
+   * simulationTime is continuous seconds for noise animation, independent of loops.
    * Emitter position, counterclockwise rotation (degrees), and signed uniform scale
    * are relative to the effect. effect maps effect coordinates into world space.
    * localParticleSpace selects emitter-local output; otherwise output is world-space.
@@ -58,15 +59,31 @@ export class ModifierSampler {
     emitterRotation: number,
     emitterScale: number,
     effect: EffectTransform,
+    simulationTime = 0,
   ): Float32Array {
     // Reset active count and radial flag; records beyond the new count are ignored.
     this.buffer[MODIFIER_COUNT_INDEX] = 0;
     this.buffer[MODIFIER_RADIAL_FLAG_INDEX] = 0;
 
     if (localParticleSpace) {
-      this.sampleLocalSpace(modifierAge, emitterX, emitterY, emitterRotation, emitterScale);
+      this.sampleLocalSpace(
+        modifierAge,
+        emitterX,
+        emitterY,
+        emitterRotation,
+        emitterScale,
+        simulationTime,
+      );
     } else {
-      this.sampleWorldSpace(modifierAge, emitterX, emitterY, emitterRotation, emitterScale, effect);
+      this.sampleWorldSpace(
+        modifierAge,
+        emitterX,
+        emitterY,
+        emitterRotation,
+        emitterScale,
+        effect,
+        simulationTime,
+      );
     }
 
     return this.buffer;
@@ -79,9 +96,10 @@ export class ModifierSampler {
     emitterY: number,
     emitterRotation: number,
     emitterScale: number,
+    simulationTime: number,
   ): void {
     // Emitter modifiers already use emitter-local coordinates.
-    this.emitterModifiers.write(this.buffer, modifierAge, LOCAL_TRANSFORM);
+    this.emitterModifiers.write(this.buffer, modifierAge, LOCAL_TRANSFORM, simulationTime);
     // Zero scale has no inverse. Emitter-local modifiers still apply above.
     if (emitterScale === 0) {
       return;
@@ -99,7 +117,7 @@ export class ModifierSampler {
     // Negative uniform scale flips both axes: a half-turn preserves that orientation.
     transform.rotation = -emitterRotation + (emitterScale < 0 ? 180 : 0);
     transform.scale = Math.abs(inverseScale);
-    this.effectModifiers.write(this.buffer, modifierAge, transform);
+    this.effectModifiers.write(this.buffer, modifierAge, transform, simulationTime);
   }
 
   /** Compose emitter → effect → world; shared modifiers only need effect → world. */
@@ -110,6 +128,7 @@ export class ModifierSampler {
     emitterRotation: number,
     emitterScale: number,
     effect: EffectTransform,
+    simulationTime: number,
   ): void {
     const transform = this.emitterToWorld;
     transform.x = effect.applyX(emitterX, emitterY);
@@ -118,7 +137,7 @@ export class ModifierSampler {
     transform.scale = emitterScale * effect.scale;
     transform.handedness = effect.handedness;
 
-    this.emitterModifiers.write(this.buffer, modifierAge, transform);
-    this.effectModifiers.write(this.buffer, modifierAge, effect);
+    this.emitterModifiers.write(this.buffer, modifierAge, transform, simulationTime);
+    this.effectModifiers.write(this.buffer, modifierAge, effect, simulationTime);
   }
 }

@@ -35,8 +35,8 @@ it('combines vortex and radial after drag with stable spread and one position st
       new Float32Array(65),
       new Float32Array(65).fill(1),
       new Float32Array([
-        4, 1, 0, 100, 40, 0, 0, 0.6, -0.8, 0, 0, 1, 2, 2, 0, 0, 1, 0, 0, 0, 2, 100, 40, 0, 0, 0, 0,
-        5, 0, 3, 100, 40, 0, 0, -1, 0, 5, 0,
+        4, 1, 0, 100, 40, 0, 0, 0.6, -0.8, 0, 0, 0, 0, 0, 1, 2, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2,
+        100, 40, 0, 0, 0, 0, 5, 0, 0, 0, 0, 3, 100, 40, 0, 0, -1, 0, 5, 0, 0, 0, 0,
       ]),
     );
   expect(run(1)[2]).toBeCloseTo((100 + 120 * 0.6 * 0.1) * 0.7 + 7.2 + 9.6);

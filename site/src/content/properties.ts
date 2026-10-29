@@ -267,7 +267,7 @@ export const properties: Property[] = [
     path: 'modifiers',
     group: 'Modifiers',
     description:
-      'Ordered list of acceleration, drag, radial, and vortex forces. Up to 64 per emitter. Emitter modifiers run before effect-level modifiers; repeated types are allowed.',
+      'Ordered list of acceleration, drag, radial, vortex, and noise forces. Up to 64 per emitter. Emitter modifiers run before effect-level modifiers; repeated types are allowed.',
     default: '[]',
     value: modifiers,
   },
@@ -523,6 +523,8 @@ for (const channel of ['red', 'green', 'blue', 'alpha']) {
 }
 
 const modifierDescriptions: Record<string, string> = {
+  noise:
+    'Smooth swirling forces for turbulent smoke, fire, and drifting particles. Scale sets swirl size; speed moves the field continuously, including across emission loops. Seed changes the pattern.',
   acceleration:
     'Constant force along the rotated local up direction. Changes velocity every simulation step.',
   drag: 'Velocity damping. Positive strength slows particles; directional mode damps only the selected axis.',
@@ -543,12 +545,24 @@ for (const [type, description] of Object.entries(modifierDescriptions)) {
   });
   for (const field of [
     'spread',
-    ...(type !== 'radial' ? ['rotation'] : []),
+    ...(!['radial', 'noise'].includes(type) ? ['rotation'] : []),
+    ...(type === 'noise' ? ['scale', 'speed', 'seed'] : []),
     ...(['radial', 'vortex'].includes(type) ? ['x', 'y', 'maxDistance'] : []),
     ...(type === 'drag' ? ['useDirection'] : []),
   ]) {
-    const value = field === 'useDirection' ? false : field === 'maxDistance' ? 100 : 0;
+    const value =
+      field === 'useDirection'
+        ? false
+        : ['maxDistance', 'scale'].includes(field)
+          ? 100
+          : field === 'speed'
+            ? 0.2
+            : 0;
     const descriptions: Record<string, string> = {
+      scale: 'Swirl size in scene units. Smaller values create tighter turbulence.',
+      speed:
+        'Field movement in cells per simulation second. Zero freezes the field; negative values reverse it.',
+      seed: 'Whole-number seed for a repeatable noise pattern, independent of the emitter seed.',
       spread: 'Variation in modifier strength for individual particles.',
       rotation: 'Counterclockwise rotation of the modifier axis, in degrees.',
       x: 'Horizontal center of the modifier in its authored scope.',
@@ -565,11 +579,17 @@ for (const [type, description] of Object.entries(modifierDescriptions)) {
       ...(typeof value === 'number'
         ? {
             range:
-              field === 'rotation'
-                ? [-180, 180, 1]
-                : field === 'x' || field === 'y'
-                  ? [-150, 150, 1]
-                  : [0, 200, 1],
+              field === 'scale'
+                ? [10, 300, 1]
+                : field === 'speed'
+                  ? [-2, 2, 0.05]
+                  : field === 'seed'
+                    ? [0, 65535, 1]
+                    : field === 'rotation'
+                      ? [-180, 180, 1]
+                      : field === 'x' || field === 'y'
+                        ? [-150, 150, 1]
+                        : [0, 200, 1],
           }
         : {}),
       setup: { modifiers: [base], 'initial.spread': Math.PI * 2 },
@@ -590,10 +610,10 @@ properties.push({
   path: 'modifiers.0.type',
   group: 'Modifiers',
   description:
-    'Modifier discriminator. Acceleration pushes, drag slows, radial pushes away from a center, and vortex circulates around it. Each type has its own valid fields.',
+    'Modifier discriminator. Acceleration pushes, drag slows, radial pushes away from a center, vortex circulates around it, and noise adds smooth turbulence. Each type has its own valid fields.',
   default: 'Required',
   value: 'acceleration',
-  choices: ['acceleration', 'drag', 'radial', 'vortex'],
+  choices: ['acceleration', 'drag', 'radial', 'vortex', 'noise'],
   setup: { modifiers: [{ type: 'acceleration', magnitude: 20 }] },
 });
 
@@ -858,6 +878,9 @@ for (const property of properties) {
   property.description = modifierDescriptions[type];
   const labels: Record<string, string> = {
     magnitude: 'Strength',
+    scale: 'Swirl size',
+    speed: 'Field speed',
+    seed: 'Seed',
     spread: 'Spread',
     rotation: 'Direction',
     x: 'Center X',

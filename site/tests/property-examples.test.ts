@@ -26,12 +26,12 @@ describe('documented property experiments', () => {
   }
 });
 
-it('shows exactly four named modifier experiments', () => {
+it('shows the named modifier experiments', () => {
   expect(
     labProperties
       .filter((property) => property.group === 'Modifiers')
       .map((property) => property.label),
-  ).toEqual(['Acceleration', 'Drag', 'Radial', 'Vortex']);
+  ).toEqual(['Noise', 'Acceleration', 'Drag', 'Radial', 'Vortex']);
   expect(
     labProperties.some((property) =>
       ['modifiers', 'modifiers.0.type', 'effect.modifiers'].includes(property.path),

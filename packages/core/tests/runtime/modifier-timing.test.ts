@@ -27,13 +27,13 @@ it.each([0, 1, 42])('separates authored and sampled clocks for seed %s', (seed) 
   expect(playback.modifierAge).toBeCloseTo(sampledDuration);
 });
 
-it.each(['acceleration', 'drag', 'radial', 'vortex'] as const)(
+it.each(['acceleration', 'drag', 'radial', 'vortex', 'noise'] as const)(
   'extrapolates local and shared %s magnitudes beyond authored duration',
   (type) => {
     const modifiers = new ModifierSampler([{ type, magnitude: ramp }], [{ type, magnitude: ramp }]);
     const values = modifiers.sample(1.5, false, 0, 0, 0, 1, identity);
     expect(values[3]).toBeCloseTo(40);
-    expect(values[12]).toBeCloseTo(40);
+    expect(values[15]).toBeCloseTo(40);
     expect(new SampledCurve(ramp).at(1.5)).toBe(30);
   },
 );

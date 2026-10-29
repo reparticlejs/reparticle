@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "smoke",
+      "capacity": 512,
+      "seed": 37,
+      "startOffset": 4,
+      "position": {
+        "x": 0,
+        "y": 100
+      },
+      "emission": {
+        "rate": 55,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 4,
+        "lifetimeSpread": 0.6,
+        "speed": 85,
+        "speedSpread": 10,
+        "direction": -1.5707963267948966,
+        "spread": 0.3,
+        "size": 80,
+        "sizeSpread": 20,
+        "rotationSpread": 180,
+        "angularVelocitySpread": 20,
+        "red": 0.65,
+        "green": 0.7,
+        "blue": 0.8,
+        "alpha": 0.15
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.4,
+              "tangent": 0
+            },
+            {
+              "time": 0.4,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 2,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.15,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.6,
+              "value": 0.5,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "noise",
+          "magnitude": 70,
+          "scale": 80,
+          "speed": 0.25,
+          "seed": 42
+        },
+        {
+          "type": "drag",
+          "magnitude": 0.1
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    }
+  ]
+}
