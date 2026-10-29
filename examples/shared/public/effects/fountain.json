@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "water",
+      "capacity": 2048,
+      "seed": 59,
+      "startOffset": 2,
+      "position": {
+        "x": 0,
+        "y": 95
+      },
+      "orientation": "movement-direction",
+      "stretchWithVelocity": true,
+      "emission": {
+        "rate": 700,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 1.65,
+        "lifetimeSpread": 0.12,
+        "speed": 330,
+        "speedSpread": 30,
+        "direction": -1.5707963267948966,
+        "spread": 0.52,
+        "size": 7,
+        "sizeSpread": 2,
+        "stretchY": 0.35,
+        "red": 0.42,
+        "green": 0.76,
+        "blue": 1,
+        "alpha": 0.65
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.6,
+              "tangent": 0
+            },
+            {
+              "time": 0.5,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.55,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.4,
+              "tangent": 0
+            },
+            {
+              "time": 0.1,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.75,
+              "value": 0.9,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 430,
+          "rotation": 180
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "highlights",
+      "capacity": 512,
+      "seed": 101,
+      "startOffset": 2,
+      "position": {
+        "x": 0,
+        "y": 95
+      },
+      "orientation": "movement-direction",
+      "stretchWithVelocity": true,
+      "emission": {
+        "rate": 160,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 1.65,
+        "lifetimeSpread": 0.12,
+        "speed": 330,
+        "speedSpread": 30,
+        "direction": -1.5707963267948966,
+        "spread": 0.52,
+        "size": 3,
+        "sizeSpread": 1,
+        "stretchY": 0.35,
+        "red": 0.8,
+        "green": 0.93,
+        "blue": 1,
+        "alpha": 0.7
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.6,
+              "tangent": 0
+            },
+            {
+              "time": 0.5,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0.55,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.4,
+              "tangent": 0
+            },
+            {
+              "time": 0.1,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.75,
+              "value": 0.9,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "acceleration",
+          "magnitude": 430,
+          "rotation": 180
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      }
+    }
+  ]
+}

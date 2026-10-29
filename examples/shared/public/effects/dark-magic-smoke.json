@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "smoke",
+      "capacity": 512,
+      "seed": 29,
+      "startOffset": 4,
+      "emission": {
+        "rate": 40,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 3,
+        "lifetimeSpread": 0.6,
+        "speed": 42,
+        "speedSpread": 8,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 140,
+        "sizeSpread": 35,
+        "rotationSpread": 180,
+        "angularVelocity": 20,
+        "angularVelocitySpread": 35,
+        "red": 0.35,
+        "green": 0.025,
+        "blue": 0.48,
+        "alpha": 0.45
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.5,
+              "tangent": 0
+            },
+            {
+              "time": 0.45,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 1.8,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.18,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.55,
+              "value": 0.65,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "vortex",
+          "magnitude": 12,
+          "maxDistance": 400
+        }
+      ],
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "magic",
+      "capacity": 512,
+      "seed": 71,
+      "startOffset": 4,
+      "emission": {
+        "rate": 32,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 3,
+        "lifetimeSpread": 0.6,
+        "speed": 36,
+        "speedSpread": 8,
+        "direction": 0,
+        "spread": 6.283185307179586,
+        "size": 115,
+        "sizeSpread": 28,
+        "rotationSpread": 180,
+        "angularVelocity": 20,
+        "angularVelocitySpread": 35,
+        "red": 0.68,
+        "green": 0.07,
+        "blue": 1,
+        "alpha": 0.16
+      },
+      "overLifetime": {
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.5,
+              "tangent": 0
+            },
+            {
+              "time": 0.45,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 1.8,
+              "tangent": 0
+            }
+          ]
+        },
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.18,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.55,
+              "value": 0.65,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "vortex",
+          "magnitude": 12,
+          "maxDistance": 400
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      }
+    }
+  ]
+}
