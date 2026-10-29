@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "stars",
+      "seed": 42,
+      "capacity": 1024,
+      "startOffset": 2,
+      "emission": {
+        "rate": 240,
+        "shape": {
+          "type": "point"
+        }
+      },
+      "initial": {
+        "lifetime": 1.8,
+        "lifetimeSpread": 0.3,
+        "speed": 35,
+        "direction": 0,
+        "speedSpread": 20,
+        "spread": 6.283185307179586,
+        "size": 2,
+        "sizeSpread": 0.8,
+        "stretchY": 3,
+        "red": 0.65,
+        "green": 0.85,
+        "blue": 1,
+        "alpha": 0.9
+      },
+      "orientation": "movement-direction",
+      "stretchWithVelocity": true,
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.12,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.75,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "scale": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0.25,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 1.5,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "modifiers": [
+        {
+          "type": "radial",
+          "magnitude": 650,
+          "maxDistance": 10000
+        }
+      ],
+      "rendering": {
+        "blendMode": "add"
+      }
+    }
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "version": 1,
+  "emitters": [
+    {
+      "id": "pink",
+      "seed": 23,
+      "capacity": 256,
+      "startOffset": 8,
+      "position": {
+        "x": 0,
+        "y": -20
+      },
+      "orientation": "angular-velocity",
+      "emission": {
+        "rate": 14,
+        "shape": {
+          "type": "box",
+          "width": 800,
+          "height": 20
+        }
+      },
+      "initial": {
+        "lifetime": 8,
+        "lifetimeSpread": 1.5,
+        "speed": -80,
+        "speedSpread": 25,
+        "direction": 0,
+        "spread": 0,
+        "size": 14,
+        "sizeSpread": 5,
+        "rotation": 0,
+        "rotationSpread": 180,
+        "angularVelocity": 110,
+        "angularVelocitySpread": 60,
+        "red": 1,
+        "green": 0.28,
+        "blue": 0.52,
+        "alpha": 0.95
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.05,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.8,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "stretchX": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.25,
+              "value": -0.8,
+              "tangent": 0
+            },
+            {
+              "time": 0.5,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.75,
+              "value": -0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "gold",
+      "seed": 47,
+      "capacity": 256,
+      "startOffset": 8,
+      "position": {
+        "x": 0,
+        "y": -20
+      },
+      "orientation": "angular-velocity",
+      "emission": {
+        "rate": 14,
+        "shape": {
+          "type": "box",
+          "width": 800,
+          "height": 20
+        }
+      },
+      "initial": {
+        "lifetime": 8,
+        "lifetimeSpread": 1.5,
+        "speed": -80,
+        "speedSpread": 25,
+        "direction": 0,
+        "spread": 0,
+        "size": 14,
+        "sizeSpread": 5,
+        "rotation": 0,
+        "rotationSpread": 180,
+        "angularVelocity": -95,
+        "angularVelocitySpread": 60,
+        "red": 1,
+        "green": 0.78,
+        "blue": 0.2,
+        "alpha": 0.95
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.05,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.8,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "stretchX": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.25,
+              "value": -0.8,
+              "tangent": 0
+            },
+            {
+              "time": 0.5,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.75,
+              "value": -0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "rendering": {
+        "blendMode": "normal"
+      }
+    },
+    {
+      "id": "blue",
+      "seed": 83,
+      "capacity": 256,
+      "startOffset": 8,
+      "position": {
+        "x": 0,
+        "y": -20
+      },
+      "orientation": "angular-velocity",
+      "emission": {
+        "rate": 14,
+        "shape": {
+          "type": "box",
+          "width": 800,
+          "height": 20
+        }
+      },
+      "initial": {
+        "lifetime": 8,
+        "lifetimeSpread": 1.5,
+        "speed": -80,
+        "speedSpread": 25,
+        "direction": 0,
+        "spread": 0,
+        "size": 14,
+        "sizeSpread": 5,
+        "rotation": 0,
+        "rotationSpread": 180,
+        "angularVelocity": 135,
+        "angularVelocitySpread": 60,
+        "red": 0.25,
+        "green": 0.72,
+        "blue": 1,
+        "alpha": 0.95
+      },
+      "overLifetime": {
+        "alpha": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.05,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 0.8,
+              "value": 1,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        },
+        "stretchX": {
+          "points": [
+            {
+              "time": 0,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.25,
+              "value": -0.8,
+              "tangent": 0
+            },
+            {
+              "time": 0.5,
+              "value": 0,
+              "tangent": 0
+            },
+            {
+              "time": 0.75,
+              "value": -0.8,
+              "tangent": 0
+            },
+            {
+              "time": 1,
+              "value": 0,
+              "tangent": 0
+            }
+          ]
+        }
+      },
+      "rendering": {
+        "blendMode": "normal"
+      }
+    }
+  ]
+}
