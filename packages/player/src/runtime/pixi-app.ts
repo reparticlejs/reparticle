@@ -20,12 +20,11 @@ export async function createPixiApp(
   try {
     await app.init({
       resizeTo: host,
-      // A single-entry preference prevents silent fallback during backend testing.
-      ...(backend === 'auto'
-        ? {}
-        : { preference: [backend === 'webgl2' ? ('webgl' as const) : ('webgpu' as const)] }),
+      // Auto prefers WebGPU; explicit selections stay strict for backend testing.
+      preference:
+        backend === 'auto' ? ['webgpu', 'webgl'] : [backend === 'webgl2' ? 'webgl' : 'webgpu'],
       backgroundAlpha: 0,
-      // Let Pixi choose the backend; require WebGL2 if it selects WebGL.
+      // Require WebGL2 when Auto falls back or WebGL is selected explicitly.
       preferWebGLVersion: 2,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
