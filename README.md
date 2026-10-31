@@ -86,6 +86,8 @@ pnpm dev:site
 
 Run `pnpm check` before submitting changes. Tests install Chromium automatically when needed. See the [Development guide](https://reparticlejs.github.io/reparticle/docs/development/) for the full workflow.
 
+Created by [Sargis Sargsyan](https://saqsun.github.io/).
+
 ## License
 
 [MIT](LICENSE). Example artwork has its own [licenses and credits](examples/shared/README.md). Particle concepts and behavior are inspired by [Defold](https://defold.com/).
